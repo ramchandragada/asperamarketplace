@@ -13,4 +13,8 @@ Starting commit: `191c380` on `cursor/phase-2-identity-seller-10f6`
 
 ## Outcome
 
-Pending.
+Catalogue schema and GIN search index migrated on local non-prod Postgres. Seller draft/submit and admin review APIs ship with audit + outbox. Public `/browse` and `/products/[slug]` work without login. Seed creates an approved seller and `cotton-tea-towel-set-demo` listing. Typecheck, lint, tests (including catalogue integration), and build passed locally. Production was not migrated.
+
+## Next
+
+Phase 4 cart/checkout after review. User may still need to merge earlier PRs and provision hosted non-prod Postgres for deploy continuity.

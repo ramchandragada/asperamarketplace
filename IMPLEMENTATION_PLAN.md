@@ -49,6 +49,7 @@ Recorded 2026-09-24 after the platform migration against local PostgreSQL 16.
 | Local smoke | `pnpm start`, `curl` | `GET /api/health` returned `database: configured`. Home page showed Configured. |
 | Production | Unchanged | No production database. Migration not pointed at production. |
 | Railway | Not connected | Local PostgreSQL and `docker-compose.yml` are the non-production path for this slice. |
+| GitHub Actions | Run `36018512468` on pull request #2 | Passed: Postgres service, migrate, typecheck, lint, test, and build. |
 
 ## Phase 0 exit criteria
 

@@ -9,7 +9,7 @@
 - Log redaction of credentials, tokens, and card-like numbers
 - Configuration defaults and rejection of an unknown log level without echoing the value
 
-`pnpm typecheck`, `pnpm lint`, and `pnpm build` are required with the tests. GitHub Actions runs all four.
+`pnpm typecheck`, `pnpm lint`, and `pnpm build` are required with the tests. GitHub Actions run `36017324374` passed all four on pull request #2. The run warned that the checkout, setup-node, and pnpm actions still declare a Node.js 20 runtime and were forced onto Node.js 24.
 
 ## Local smoke, 2026-09-24
 

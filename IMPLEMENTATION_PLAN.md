@@ -35,6 +35,7 @@ Recorded 2026-09-24 on Node.js v24.21.0 and pnpm 10.33.3.
 | Application build | `pnpm build` | Passed. Routes: `/`, `/_not-found`, `/api/health`. Proxy compiled. |
 | Local smoke | `pnpm start --port 3000`, then `curl` | `GET /` returned HTTP 200 with the foundation page. `GET /api/health` returned HTTP 200, the API envelope, `database: not_configured`, and echoed a valid `x-request-id`. A malformed request id was replaced. Security headers were present. Desktop and mobile screenshots of `/` showed the same status content. |
 | Vercel production | Unchanged | `main` is still the empty deploy of `bff8c57`. This slice is not merged. |
+| GitHub Actions | Run `36017324374` on pull request #2 | Passed: install, typecheck, lint, test, and build. The log warns that `actions/checkout@v4`, `actions/setup-node@v4`, and `pnpm/action-setup@v4` still target Node.js 20 and were forced onto Node.js 24. |
 
 ## Phase 0 exit criteria
 

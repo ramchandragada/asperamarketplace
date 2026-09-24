@@ -1,5 +1,15 @@
 # Migrations
 
+## Third migration
+
+Name: `20260924153355_catalogue_discovery` (+ `20260924153407_products_search_gin`)  
+Checkpoint: `docs/schema-checkpoints/2026-09-24-catalogue-discovery.sql`  
+Tables: `categories`, `brands`, `products`, `product_variants`, `inventory_items`, `stock_movements`  
+Enums: `ProductStatus`  
+Indexes: standard FK/status indexes plus GIN `to_tsvector` on `products.search_document`
+
+Additive only. Apply with `pnpm db:migrate` on a non-production database, then `pnpm db:seed` for fictional admin/seller accounts and one approved public listing.
+
 ## Second migration
 
 Name: `20260924151736_identity_seller_onboarding`  
@@ -28,7 +38,7 @@ The local development password in `.env.example` and `docker-compose.yml` is fic
 
 ## Compatibility
 
-The migration is additive. It creates five platform tables and their indexes. It does not alter or drop existing marketplace domain tables, because none existed.
+The catalogue migration is additive. It creates catalogue and inventory tables and a GIN search index. It does not drop identity or platform tables. Launch category taxonomy remains an open business decision (A-26); seed uses a generic configurable category only.
 
 ## Rollback
 
@@ -37,7 +47,7 @@ The migration is additive. It creates five platform tables and their indexes. It
 | Local disposable database | Drop the database, recreate it, and migrate again. Example: `dropdb aspera_marketplace_dev && createdb -O aspera_dev aspera_marketplace_dev && pnpm db:migrate` |
 | Shared non-production database with no important data | Same as local, after confirming the target is not production |
 | Shared non-production database that must keep other data | Restore from a host backup taken before the migration. Do not hand-edit `_prisma_migrations` |
-| Production | Not authorized for this migration. Production had no database when this slice shipped |
+| Production | Not authorized for this migration. Production had no marketplace database when this slice shipped |
 
 Prisma does not emit automatic down SQL for this migration. Reversal is restore or recreate, not an in-place reverse script.
 

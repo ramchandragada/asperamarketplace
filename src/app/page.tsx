@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { checkDatabaseStatus } from "@/platform/health";
 import { getOptionalActor } from "@/modules/identity/service";
+import { searchApprovedProducts } from "@/modules/catalogue/service";
+import { formatPaise } from "@/modules/catalogue/helpers";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const database = await checkDatabaseStatus();
   const actor = await getOptionalActor();
+  const catalogue = await searchApprovedProducts({ page: 1, pageSize: 3 });
   const databaseLabel =
     database === "configured"
       ? "Configured"
@@ -28,11 +31,11 @@ export default async function Home() {
             Aspera Marketplace
           </p>
           <h1 className="text-4xl font-semibold tracking-tight">
-            Identity and seller foundations
+            Catalogue and discovery
           </h1>
           <p className="max-w-2xl text-lg leading-8 text-muted">
-            Register, sign in, apply as a seller, and approve sellers in the
-            local mock environment. Catalogue and checkout arrive later.
+            Browse moderated seller listings without signing in. Prices and stock
+            are server-owned integers.
           </p>
         </header>
         <section
@@ -45,7 +48,7 @@ export default async function Home() {
           <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-muted">Phase</dt>
-              <dd className="font-medium">Identity and seller onboarding</dd>
+              <dd className="font-medium">Catalogue and discovery</dd>
             </div>
             <div>
               <dt className="text-muted">Database</dt>
@@ -57,13 +60,17 @@ export default async function Home() {
                 {actor ? actor.displayName : "Signed out"}
               </dd>
             </div>
+            <div>
+              <dt className="text-muted">Public listings</dt>
+              <dd className="font-medium">{catalogue.total}</dd>
+            </div>
           </dl>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href="/api/health"
+              href="/browse"
               className="inline-flex rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground"
             >
-              Open health check
+              Browse catalogue
             </Link>
             {actor ? (
               <Link
@@ -90,6 +97,25 @@ export default async function Home() {
             )}
           </div>
         </section>
+        {catalogue.items.length > 0 ? (
+          <section aria-labelledby="featured-heading" className="flex flex-col gap-4">
+            <h2 id="featured-heading" className="text-xl font-semibold">
+              Approved listings
+            </h2>
+            <ul className="flex flex-col gap-4">
+              {catalogue.items.map((item) => (
+                <li key={item.id} className="border-b border-border pb-3">
+                  <Link href={`/products/${item.slug}`} className="hover:underline">
+                    <span className="font-medium">{item.title}</span>
+                  </Link>
+                  <p className="text-sm text-muted">
+                    {formatPaise(item.minPricePaise)} · {item.sellerName}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
       </main>
     </>
   );

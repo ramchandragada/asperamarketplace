@@ -34,13 +34,24 @@ export default async function AccountPage() {
         </ul>
       </section>
       <nav className="flex flex-col gap-2 text-sm">
+        <Link href="/browse" className="underline">
+          Browse catalogue
+        </Link>
         <Link href="/seller/onboarding" className="underline">
           Seller onboarding
         </Link>
+        <Link href="/seller/catalogue" className="underline">
+          Seller catalogue
+        </Link>
         {actorIsAdmin(actor) ? (
-          <Link href="/admin/sellers" className="underline">
-            Admin seller queue
-          </Link>
+          <>
+            <Link href="/admin/sellers" className="underline">
+              Admin seller queue
+            </Link>
+            <Link href="/admin/products" className="underline">
+              Admin product moderation
+            </Link>
+          </>
         ) : null}
         <LogoutButton />
         <Link href="/" className="underline">

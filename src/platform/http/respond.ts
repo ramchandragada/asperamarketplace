@@ -12,6 +12,11 @@ import {
   ValidationError,
 } from "@/modules/seller/service";
 import { SellerTransitionError } from "@/modules/seller/states";
+import {
+  CatalogueConflictError,
+  CatalogueValidationError,
+} from "@/modules/catalogue/service";
+import { ProductTransitionError } from "@/modules/catalogue/helpers";
 import { StorageValidationError } from "@/platform/storage/local";
 
 export function getRequestId(request: Request): string {
@@ -84,7 +89,8 @@ export function jsonError(
 
   if (
     error instanceof IdentityConflictError ||
-    error instanceof SellerConflictError
+    error instanceof SellerConflictError ||
+    error instanceof CatalogueConflictError
   ) {
     return NextResponse.json(
       fail({
@@ -98,8 +104,10 @@ export function jsonError(
 
   if (
     error instanceof ValidationError ||
+    error instanceof CatalogueValidationError ||
     error instanceof StorageValidationError ||
-    error instanceof SellerTransitionError
+    error instanceof SellerTransitionError ||
+    error instanceof ProductTransitionError
   ) {
     return NextResponse.json(
       fail({

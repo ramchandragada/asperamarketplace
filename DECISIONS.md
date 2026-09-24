@@ -130,3 +130,18 @@ Status: accepted
 
 The first migration creates `audit_logs`, `idempotency_records`, `outbox_events`, `feature_flags`, and `platform_settings`. Domain tables for sellers, catalogue, orders, and money wait for the slice that implements them. A schema checkpoint was committed before `prisma migrate`.
 
+## D-017 — First-party credential auth for Phase 2
+
+Date: 2026-09-24  
+Status: accepted
+
+Phase 2 uses email/password accounts, bcrypt password hashes, and opaque httpOnly session cookies stored as SHA-256 hashes. This avoids blocking on an external identity provider while A-25 (data ownership / processors) remains open. A managed IdP such as Clerk can replace the credential store later behind the same session/actor boundary. Roles are enforced in server policies, not only in the UI.
+
+## D-018 — Masked KYC identifiers and local document storage
+
+Date: 2026-09-24  
+Status: accepted
+
+PAN and GSTIN are validated on input and stored only in masked form (`pan_last4`, `gstin_masked`). KYC files use a storage port with a local filesystem adapter under `uploads/kyc` (configurable via `DOCUMENT_STORAGE_PATH`). An S3-compatible adapter can replace the local adapter without changing seller services.
+
+

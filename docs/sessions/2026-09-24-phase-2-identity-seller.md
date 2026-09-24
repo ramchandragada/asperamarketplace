@@ -19,4 +19,8 @@ Phase 1 complete. Platform tables exist. Local PostgreSQL `aspera_marketplace_de
 
 ## Outcome
 
-Pending.
+Identity and seller onboarding shipped. Migration `20260924151736_identity_seller_onboarding` applied locally. Typecheck, lint, tests (including approval integration), and build passed. Local smoke signed in the seeded seller and created a draft. Production was not migrated.
+
+## Next step
+
+Phase 3 catalogue and discovery after review. User may need to provision hosted non-prod Postgres / merge earlier PRs for deploy continuity.

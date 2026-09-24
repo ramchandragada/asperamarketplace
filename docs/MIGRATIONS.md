@@ -1,12 +1,21 @@
 # Migrations
 
+## Second migration
+
+Name: `20260924151736_identity_seller_onboarding`  
+Checkpoint: `docs/schema-checkpoints/2026-09-24-identity-seller.sql`  
+Tables: `users`, `roles`, `user_roles`, `sessions`, `login_attempts`, `sellers`, `seller_kyc_cases`, `kyc_documents`  
+Enums: user status, seller status, KYC stage/status
+
+Additive only. Apply with `pnpm db:migrate` on a non-production database, then `pnpm db:seed` for fictional admin/seller accounts.
+
 ## First migration
 
 Name: `20260924150842_platform_foundation`  
 Checkpoint: `docs/schema-checkpoints/2026-09-24-platform-tables.sql`  
 Tables: `audit_logs`, `idempotency_records`, `outbox_events`, `feature_flags`, `platform_settings`
 
-This migration is for non-production databases. It must not be pointed at production until production credentials, backups, and a reviewed launch checklist exist.
+These migrations are for non-production databases. They must not be pointed at production until production credentials, backups, and a reviewed launch checklist exist.
 
 ## Apply locally
 

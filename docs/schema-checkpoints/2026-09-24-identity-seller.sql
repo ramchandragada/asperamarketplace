@@ -27,9 +27,10 @@ CREATE TABLE IF NOT EXISTS user_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id),
   role_id UUID NOT NULL REFERENCES roles(id),
+  scope_key TEXT NOT NULL DEFAULT 'global',
   seller_id UUID,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT user_roles_user_role_seller_key UNIQUE (user_id, role_id, seller_id)
+  CONSTRAINT user_roles_user_role_scope_key UNIQUE (user_id, role_id, scope_key)
 );
 
 CREATE INDEX IF NOT EXISTS user_roles_user_id_idx ON user_roles (user_id);

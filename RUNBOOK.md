@@ -1,36 +1,29 @@
 # Runbook
 
-Phase 1 foundation operations.
-
 ## Start locally
 
 1. Install Node.js 24.21.0 and pnpm 10.33.3.
-2. Start PostgreSQL 16 with `docker compose up -d`, or use a local install with database `aspera_marketplace_dev`.
-3. Copy `.env.example` to `.env` and set `DATABASE_URL` to that non-production database.
-4. Run `pnpm install` and `pnpm db:migrate`.
-5. Run `pnpm dev`, or `pnpm build` and `pnpm start`.
-6. Open http://localhost:3000 and request http://localhost:3000/api/health.
+2. Start PostgreSQL 16 (`docker compose up -d` or local install).
+3. Copy `.env.example` to `.env` and set `DATABASE_URL` to the non-production database.
+4. Run `pnpm install`, `pnpm db:migrate`, and `pnpm db:seed`.
+5. Run `pnpm dev` or `pnpm build && pnpm start`.
 
-A healthy response has HTTP 200, `code` `OK`, and `data.database` `configured` when the database is reachable.
+Seeded accounts are documented in `README.md`. They are fictional.
+
+## Seller approval smoke
+
+1. Sign in as the seeded seller, open `/seller/onboarding`, create a draft, upload a PDF, submit.
+2. Sign in as the seeded admin, open `/admin/sellers`, approve.
+3. Confirm an audit row and `SellerApproved` outbox event exist.
 
 ## Migrations
 
-See [docs/MIGRATIONS.md](docs/MIGRATIONS.md). Confirm the target is not production before every migrate. Rollback for a disposable local database is drop, recreate, and migrate again.
+See [docs/MIGRATIONS.md](docs/MIGRATIONS.md). Confirm the target is not production before every migrate.
 
 ## Checks
 
-`pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build` are the local gate. CI also runs `pnpm db:migrate` against a disposable Postgres service.
+`pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build`. CI migrates a disposable Postgres service first.
 
-## Deploy
+## Deploy / rollback
 
-Vercel builds this repository from GitHub. Production tracks `main`. This branch must not be treated as production until it is merged and a new deployment is recorded. The current production deployment is still the empty `bff8c57` build.
-
-Railway is not connected. Do not set a production `DATABASE_URL` until a production database, backups, and a launch checklist exist.
-
-## Rollback
-
-Application rollback is a Vercel promotion of the previous deployment. Database rollback for this phase is recreate or restore on a non-production instance. There is no production schema to roll back.
-
-## Incident note for this slice
-
-If `/api/health` returns 503 with `database: unavailable`, the process is up and PostgreSQL is not reachable. Check `DATABASE_URL`, network access, and `pnpm db:status`. Logs for `health.checked` include `requestId` and `database`.
+Vercel production still tracks `main` and has no marketplace database. Application rollback is a previous Vercel deployment. Database rollback for disposable non-prod is drop/recreate/migrate.

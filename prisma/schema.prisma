@@ -84,3 +84,182 @@ model PlatformSetting {
 
   @@map("platform_settings")
 }
+
+enum UserStatus {
+  active
+  suspended
+  deleted
+}
+
+enum SellerStatus {
+  draft
+  submitted
+  under_review
+  approved
+  rejected
+  suspended
+}
+
+enum KycCaseStatus {
+  open
+  complete
+  rejected
+}
+
+enum KycStage {
+  business_profile
+  documents
+  agreement
+  risk_screening
+  manual_review
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(6)
+  passwordHash    String    @map("password_hash")
+  displayName     String    @map("display_name")
+  status          UserStatus @default(active)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  roles             UserRole[]
+  sessions          Session[]
+  ownedSellers      Seller[]           @relation("SellerOwner")
+  reviewedSellers   Seller[]           @relation("SellerReviewer")
+  uploadedDocuments KycDocument[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  name        String
+  description String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  users UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  roleId    String   @map("role_id") @db.Uuid
+  /// "global" for platform roles, or the seller UUID for seller-scoped roles.
+  scopeKey  String   @default("global") @map("scope_key")
+  sellerId  String?  @map("seller_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user   User    @relation(fields: [userId], references: [id])
+  role   Role    @relation(fields: [roleId], references: [id])
+  seller Seller? @relation(fields: [sellerId], references: [id])
+
+  @@unique([userId, roleId, scopeKey])
+  @@index([userId])
+  @@map("user_roles")
+}
+
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  tokenHash  String    @unique @map("token_hash")
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(6)
+  ipAddress  String?   @map("ip_address")
+  userAgent  String?   @map("user_agent")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String
+  success   Boolean
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([email, createdAt])
+  @@map("login_attempts")
+}
+
+model Seller {
+  id                String       @id @default(uuid()) @db.Uuid
+  ownerUserId       String       @map("owner_user_id") @db.Uuid
+  legalName         String       @map("legal_name")
+  tradeName         String?      @map("trade_name")
+  status            SellerStatus
+  statusReason      String?      @map("status_reason")
+  contactEmail      String       @map("contact_email")
+  contactPhone      String?      @map("contact_phone")
+  panLast4          String?      @map("pan_last4")
+  gstinMasked       String?      @map("gstin_masked")
+  registeredState   String?      @map("registered_state")
+  agreementAcceptedAt DateTime?  @map("agreement_accepted_at") @db.Timestamptz(6)
+  submittedAt       DateTime?    @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt        DateTime?    @map("reviewed_at") @db.Timestamptz(6)
+  reviewedByUserId  String?      @map("reviewed_by_user_id") @db.Uuid
+  approvedAt        DateTime?    @map("approved_at") @db.Timestamptz(6)
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version           Int          @default(1)
+
+  owner       User            @relation("SellerOwner", fields: [ownerUserId], references: [id])
+  reviewer    User?           @relation("SellerReviewer", fields: [reviewedByUserId], references: [id])
+  kycCases    SellerKycCase[]
+  documents   KycDocument[]
+  userRoles   UserRole[]
+
+  @@index([status])
+  @@index([ownerUserId])
+  @@map("sellers")
+}
+
+model SellerKycCase {
+  id        String        @id @default(uuid()) @db.Uuid
+  sellerId  String        @map("seller_id") @db.Uuid
+  stage     KycStage
+  status    KycCaseStatus
+  notes     String?
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  seller    Seller        @relation(fields: [sellerId], references: [id])
+  documents KycDocument[]
+
+  @@index([sellerId])
+  @@map("seller_kyc_cases")
+}
+
+model KycDocument {
+  id               String   @id @default(uuid()) @db.Uuid
+  sellerId         String   @map("seller_id") @db.Uuid
+  kycCaseId        String   @map("kyc_case_id") @db.Uuid
+  documentType     String   @map("document_type")
+  storageKey       String   @map("storage_key")
+  fileName         String   @map("file_name")
+  contentType      String   @map("content_type")
+  byteSize         Int      @map("byte_size")
+  checksumSha256   String   @map("checksum_sha256")
+  uploadedByUserId String   @map("uploaded_by_user_id") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  seller   Seller        @relation(fields: [sellerId], references: [id])
+  kycCase  SellerKycCase @relation(fields: [kycCaseId], references: [id])
+  uploader User          @relation(fields: [uploadedByUserId], references: [id])
+
+  @@index([sellerId])
+  @@map("kyc_documents")
+}

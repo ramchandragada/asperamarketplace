@@ -21,6 +21,7 @@ Each assumption is reversible until a legal, payment-regulatory, inventory-owner
 | A-13 | Hindi and other Indian languages are a readiness requirement (Unicode, transliteration hooks, locale fields). Phase 1 copy can be English until a localisation slice. | Content language can expand without a schema rewrite if text fields are UTF-8 and templates carry a locale. |
 | A-14 | ONDC is an adapter boundary only. The company is not an ONDC participant. | Participation requires a separate checklist, certification, and an explicit decision. |
 | A-15 | Feature work lands on `cursor/<description>-10f6` branches. `main` stays the branch Vercel deploys. | The suffix is specific to this cloud-agent session policy. |
+| A-16 | Phase 2 authentication is first-party email/password with server sessions. A managed IdP is optional later. See D-017. | Switching to Clerk or another IdP is an explicit decision once A-25 names processors. |
 
 ## Open decisions that code must not invent
 

@@ -1,46 +1,59 @@
 # API
 
-Phase 1 exposes one read endpoint. There is no public mutation, authentication, or marketplace catalogue API.
+JSON responses use the standard envelope: `data`, `error`, `code`, `message`, `fieldErrors`, `requestId`. Correlation id header: `x-request-id`.
 
-Every JSON response uses this envelope:
+## Health
 
-| Field | Success | Failure |
-| --- | --- | --- |
-| `data` | Result object | `null` |
-| `error` | `null` | Short error text |
-| `code` | `OK` | Stable machine code |
-| `message` | Human-readable status | Human-readable status |
-| `fieldErrors` | `null` | Map of field name to messages, or `null` |
-| `requestId` | Correlation id | Correlation id |
+### `GET /api/health`
 
-The server reads `x-request-id`. A UUID is kept. Any other value is replaced with a new UUID. The same id is returned in the `x-request-id` response header and in `requestId`.
+Returns process and database readiness. See earlier Phase 1 notes. `database` may be `configured`, `not_configured`, or `unavailable`.
 
-## `GET /api/health`
+## Auth
 
-Returns HTTP 200 when the process can serve the route and the database is configured or intentionally absent. Returns HTTP 503 when `DATABASE_URL` is set and the database cannot be reached.
+### `POST /api/auth/register`
 
-```json
-{
-  "data": {
-    "status": "ok",
-    "service": "aspera-marketplace",
-    "phase": "foundations",
-    "database": "configured"
-  },
-  "error": null,
-  "code": "OK",
-  "message": "Service is ready",
-  "fieldErrors": null,
-  "requestId": "4f1c2a10-6b7d-4e8f-9a11-223344556677"
-}
-```
+Body: `{ email, password, displayName, intent: "customer" | "seller" }`  
+Creates the user, assigns a role, sets an httpOnly `aspera_session` cookie.
 
-`database` values:
+### `POST /api/auth/login`
 
-| Value | Meaning |
-| --- | --- |
-| `not_configured` | `DATABASE_URL` is unset |
-| `configured` | A `SELECT 1` against PostgreSQL succeeded |
-| `unavailable` | `DATABASE_URL` is set and the query failed. Response status is 503 and `data.status` is `degraded` |
+Body: `{ email, password }`  
+Creates a session cookie. Failed attempts are recorded in `login_attempts` without storing the password.
 
-`cache-control` is `no-store`. This endpoint is readiness for the foundation process, not a marketplace launch claim.
+### `POST /api/auth/logout`
+
+Revokes the current session cookie.
+
+### `GET /api/auth/me`
+
+Returns the authenticated actor or `{ authenticated: false }`.
+
+## Seller
+
+### `GET /api/seller`
+
+Lists sellers owned by the current user.
+
+### `POST /api/seller`
+
+Creates a seller draft. PAN/GSTIN are validated then stored masked.
+
+### `POST /api/seller/:sellerId/documents`
+
+`multipart/form-data` with `file` and `documentType`. Stores the file through the document storage port.
+
+### `POST /api/seller/submit`
+
+Body: `{ sellerId, acceptAgreement: true }`  
+Moves draft → submitted when at least one document exists.
+
+## Admin
+
+### `GET /api/admin/sellers`
+
+Admin-only queue.
+
+### `POST /api/admin/sellers/review`
+
+Body: `{ sellerId, decision: "approve" | "reject", reason, expectedVersion }`  
+Optimistic concurrency via `expectedVersion`. Approval writes audit + `SellerApproved` outbox and a seller-scoped `seller_owner` role.

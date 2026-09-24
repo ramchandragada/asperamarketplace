@@ -1,7 +1,9 @@
 # Project audit
 
 Audit date: 2026-09-24  
-Auditor scope: Phase 0 discovery only. No application code was added.
+Auditor scope: Phase 0 discovery only. No application code was added during the audit.
+
+Phase 1 slice 1 later added the application shell described in `IMPLEMENTATION_PLAN.md`. This file remains the record of the empty starting point. It is not a description of the current branch.
 
 ## Repository identity
 

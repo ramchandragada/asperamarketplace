@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Status: proposed in Phase 0. Nothing in this document is implemented.
+Status: the Phase 1 application shell is implemented. Domain modules, PostgreSQL, Prisma, and provider adapters remain proposed.
 
 ## System shape
 
@@ -37,9 +37,9 @@ PostgreSQL is the system of record. Redis, OpenSearch, and object storage are re
 
 | Concern | Choice | When it is introduced |
 | --- | --- | --- |
-| Application | Next.js App Router, TypeScript strict | Phase 1 |
-| UI | Tailwind CSS and shadcn/ui | Phase 1 tokens, components as screens are built |
-| Validation | Zod on every mutation, server-side | Phase 1 envelope, then each module |
+| Application | Next.js App Router, TypeScript strict | Implemented in Phase 1 slice 1 |
+| UI | Tailwind CSS and shadcn/ui | Tokens exist. Components arrive with real screens |
+| Validation | Zod on every mutation, server-side | Envelope and public config exist. Mutations do not |
 | Forms | React Hook Form | First authenticated form |
 | Database | PostgreSQL | Phase 1, after a non-production database exists |
 | ORM | Prisma | With the first migration, not before |
@@ -50,11 +50,11 @@ PostgreSQL is the system of record. Redis, OpenSearch, and object storage are re
 | Notifications | Email, SMS, WhatsApp, and in-app ports | Phase 5 transactional stubs |
 | Search | PostgreSQL search first | Phase 3 |
 | Analytics charts | Recharts inside admin and seller tools | Phase 9 |
-| Observability | Structured logs and an OpenTelemetry-compatible port | Phase 1 logs, tracing when a collector exists |
+| Observability | Structured logs and an OpenTelemetry-compatible port | JSON logs and redaction exist. Tracing waits for a collector |
 | App hosting | Vercel project already linked to this repository | Existing |
 | Data hosting | Railway PostgreSQL, separate per environment | When Phase 1 needs a database |
 
-Package manager will be pinned in Phase 1 from the lockfile that slice creates. This machine has Node.js 22.14.0, npm 10.9.7, and pnpm 10.33.3 available. The Vercel project is set to Node.js 24.x. Phase 1 must pin one Node version in the repository and align the Vercel setting with it.
+The repository pins Node.js 24.21.0 and pnpm 10.33.3. The Vercel project was already set to Node.js 24.x, so that project setting was not changed.
 
 ## Deployment split
 

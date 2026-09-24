@@ -1,9 +1,10 @@
 # Implementation plan
 
-Phase 0 status: documentation written in this change. No marketplace feature is implemented. Phase 0 is complete only for discovery and planning.
+Phase 0 is complete for discovery and planning. Phase 1 slice 1, the application foundation, is implemented on `cursor/phase-1-foundations-10f6`. Prisma, a database, and marketplace screens are still absent.
 
 Starting commit inspected: `bff8c577c6b1348b4b9cd87bf47c073ea65068d6` on `main`.  
-Work branch: `cursor/phase-0-discovery-10f6`.
+Phase 0 branch: `cursor/phase-0-discovery-10f6`.  
+Phase 1 branch: `cursor/phase-1-foundations-10f6`.
 
 ## Baseline checks
 
@@ -19,7 +20,23 @@ Recorded 2026-09-24 before any product code existed.
 | Vercel production build | Deployment `dpl_DUinJHJE55SJ2CYBTkVF59xMfD98` for `bff8c57` | State `READY`. Build warned that output has no `functions`, `static`, or `services` directory. Public URL returned HTTP 404 `NOT_FOUND`. |
 | Local toolchain on the audit machine | `node -v`, `npm -v`, `pnpm -v` | Node.js v22.14.0, npm 10.9.7, pnpm 10.33.3. Not pinned by the repository. Vercel project Node setting is 24.x. |
 
-There is no failing test suite to preserve. The next slice must add the checks before it adds features, then record the first real pass or failure here.
+There is no failing test suite to preserve. Phase 1 slice 1 added the first runnable checks. Their results are below.
+
+## Phase 1 slice 1 checks
+
+Recorded 2026-09-24 on Node.js v24.21.0 and pnpm 10.33.3.
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Typecheck | `pnpm typecheck` | Passed |
+| Lint | `pnpm lint` | Passed. npm warns that ESLint 9.39.5 is deprecated. `eslint-config-next` 16.3.6 installed that major. See D-014. |
+| Unit tests | `pnpm test` | Passed. 4 files, 8 tests. |
+| Integration tests | No database | Not runnable |
+| Application build | `pnpm build` | Passed. Routes: `/`, `/_not-found`, `/api/health`. Proxy compiled. |
+| Local smoke | `pnpm start --port 3000`, then `curl` | `GET /` returned HTTP 200 with the foundation page. `GET /api/health` returned HTTP 200, the API envelope, `database: not_configured`, and echoed a valid `x-request-id`. A malformed request id was replaced. Security headers were present. Desktop and mobile screenshots of `/` showed the same status content. |
+| Vercel production | Unchanged | `main` is still the empty deploy of `bff8c57`. This slice is not merged. |
+
+## Phase 0 exit criteria
 
 ## Phase 0 exit criteria
 
@@ -42,19 +59,9 @@ Work one vertical slice at a time. A slice is done only when its checks have bee
 
 ### Phase 1 — Foundations
 
-Slice 1, the only next slice:
+Slice 1 is done. It pinned Node.js 24.21.0 and pnpm 10.33.3, added the Next.js app, health route, API envelope, redacting logger, `.env.example`, `.gitignore`, and GitHub Actions. The Vercel project was already set to Node.js 24.x, so that setting was left unchanged. Slice 1 does not add Prisma, marketplace screens, or a database.
 
-- Pin Node and the package manager.
-- Add Next.js App Router with TypeScript strict mode, ESLint, and a build.
-- Add a health route and the standard API envelope (`data`, `error`, `code`, `message`, `fieldErrors`, `requestId`).
-- Add structured logging with a correlation ID and redaction rules.
-- Add `.env.example` with names and descriptions only, and a `.gitignore` for env files, keys, dumps, and uploads.
-- Add GitHub Actions for typecheck, lint, and build.
-- Align the Vercel Node setting with the pinned version when the project settings are updated. Do not change production behavior beyond what a reviewed app deploy requires.
-
-Slice 1 does not add Prisma, pages that imitate the marketplace, or a database.
-
-Slice 2, only after slice 1 checks pass and a non-production Postgres instance exists:
+Slice 2, only after a non-production Postgres instance exists:
 
 - Commit the schema checkpoint.
 - Add Prisma and the first migration for platform tables the slice actually uses (audit, idempotency, outbox, feature flags), not the full domain model.
@@ -96,15 +103,16 @@ Event taxonomy first, then dashboards, search analytics, seller health, and expe
 
 Security review, accessibility review against WCAG 2.2 AA as a quality goal, load test, backup restore drill, observability, and a launch checklist. Launch still requires the open legal decisions in `ASSUMPTIONS.md`.
 
-## Later documents, not part of Phase 0
+## Later documents
 
-Create these with the slice that makes them true:
+Phase 1 slice 1 added the documents that this slice made true:
 
-- `SECURITY.md` and `RUNBOOK.md` with Phase 1 operations
-- `API.md` when the first mutation contract exists
-- `DESIGN_SYSTEM.md` when tokens exist
-- `TESTING.md` when the first automated test exists
-- `COMPLIANCE_REGISTER.md` when an owner and evidence model exist
+- `SECURITY.md` and `RUNBOOK.md` cover the foundation operations only
+- `API.md` documents the response envelope and `GET /api/health`. No mutation exists yet
+- `DESIGN_SYSTEM.md` records the first tokens
+- `TESTING.md` records the first automated tests
+
+`COMPLIANCE_REGISTER.md` waits until an owner and evidence model exist.
 
 ## Definition of done for every later slice
 

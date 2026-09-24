@@ -98,4 +98,18 @@ Roles in the brief are enforced in policies on the server. Hiding a button is no
 Date: 2026-09-24  
 Status: accepted
 
-No `package.json` exists, so typecheck, lint, test, and build scripts are undefined. The baseline is "not runnable", recorded in `IMPLEMENTATION_PLAN.md`. The Vercel build of `bff8c57` completed with an empty-output warning. That is the only build result available.
+No `package.json` existed at audit time, so typecheck, lint, test, and build scripts were undefined. The baseline is "not runnable", recorded in `IMPLEMENTATION_PLAN.md`. The Vercel build of `bff8c57` completed with an empty-output warning. That was the only build result available during Phase 0. Phase 1 slice 1 added the scripts and recorded a passing run.
+
+## D-013 — Pin Node.js 24.21.0 and pnpm 10.33.3
+
+Date: 2026-09-24  
+Status: accepted
+
+The Vercel project was already set to Node.js 24.x. Phase 1 pins the same major, specifically 24.21.0, in `.nvmrc`, `.node-version`, and `package.json` `engines`. The package manager is pnpm 10.33.3, recorded in `packageManager` and the lockfile. CI installs both. The Vercel Node setting was not edited, because it already matched and a setting change was not required for this slice.
+
+## D-014 — Keep ESLint 9 with the Next.js config
+
+Date: 2026-09-24  
+Status: accepted
+
+`eslint-config-next` 16.3.6 installed ESLint 9.39.5. npm reports that release as deprecated. The slice keeps the version the Next config installed. Moving to ESLint 10 is a separate change after that config supports it.

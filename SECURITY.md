@@ -6,7 +6,11 @@ This note covers the foundation slice. It is not a completed security review.
 
 The repository is public. `.env.example` lists variable names and descriptions. Live values stay in `.env.local` or the host's environment settings. Git ignores `.env*`, private keys, certificate bundles, service-account files, database dumps, and `/uploads`.
 
-No payment, storage, or notification secret is read by this slice.
+No payment, storage, or notification secret is read by this slice. `DATABASE_URL` is required for the platform tables and must stay in host environment settings or a gitignored `.env` file.
+
+## Database
+
+The first migration creates platform tables only. It was applied to a local non-production database named `aspera_marketplace_dev`. Production has no database. Do not apply migrations until the target environment is verified. See `docs/MIGRATIONS.md`.
 
 ## Logs
 

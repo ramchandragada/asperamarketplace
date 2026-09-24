@@ -18,4 +18,8 @@ Slice 1 was complete. No Prisma, no database, no Railway connection. Local Postg
 
 ## Outcome
 
-Pending. This note is opened before the slice edits.
+Schema checkpoint committed first. Prisma 6.16.2 added. Migration `20260924150842_platform_foundation` applied to `aspera_marketplace_dev`. Health reports `database: configured`. Typecheck, lint, tests, and build passed. `docker-compose.yml` and `docs/MIGRATIONS.md` document the non-production path. Production was not migrated. Railway remains unconnected.
+
+## Next step
+
+Phase 2: identity and seller onboarding, after this Phase 1 branch is reviewed.

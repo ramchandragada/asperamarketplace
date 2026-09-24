@@ -1,6 +1,6 @@
 # API
 
-Phase 1 slice 1 exposes one read endpoint. There is no mutation, authentication, or database.
+Phase 1 exposes one read endpoint. There is no public mutation, authentication, or marketplace catalogue API.
 
 Every JSON response uses this envelope:
 
@@ -17,7 +17,7 @@ The server reads `x-request-id`. A UUID is kept. Any other value is replaced wit
 
 ## `GET /api/health`
 
-Returns HTTP 200 when the application process can serve the route.
+Returns HTTP 200 when the process can serve the route and the database is configured or intentionally absent. Returns HTTP 503 when `DATABASE_URL` is set and the database cannot be reached.
 
 ```json
 {
@@ -25,7 +25,7 @@ Returns HTTP 200 when the application process can serve the route.
     "status": "ok",
     "service": "aspera-marketplace",
     "phase": "foundations",
-    "database": "not_configured"
+    "database": "configured"
   },
   "error": null,
   "code": "OK",
@@ -35,4 +35,12 @@ Returns HTTP 200 when the application process can serve the route.
 }
 ```
 
-`database` is `not_configured` because this slice has no PostgreSQL connection. The response is not a marketplace readiness claim. `cache-control` is `no-store`.
+`database` values:
+
+| Value | Meaning |
+| --- | --- |
+| `not_configured` | `DATABASE_URL` is unset |
+| `configured` | A `SELECT 1` against PostgreSQL succeeded |
+| `unavailable` | `DATABASE_URL` is set and the query failed. Response status is 503 and `data.status` is `degraded` |
+
+`cache-control` is `no-store`. This endpoint is readiness for the foundation process, not a marketplace launch claim.

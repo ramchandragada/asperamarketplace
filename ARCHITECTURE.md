@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Status: the Phase 1 application shell is implemented. Domain modules, PostgreSQL, Prisma, and provider adapters remain proposed.
+Status: Phase 1 foundations are implemented. Domain modules, hosted Postgres, and provider adapters remain proposed.
 
 ## System shape
 
@@ -41,8 +41,8 @@ PostgreSQL is the system of record. Redis, OpenSearch, and object storage are re
 | UI | Tailwind CSS and shadcn/ui | Tokens exist. Components arrive with real screens |
 | Validation | Zod on every mutation, server-side | Envelope and public config exist. Mutations do not |
 | Forms | React Hook Form | First authenticated form |
-| Database | PostgreSQL | Phase 1, after a non-production database exists |
-| ORM | Prisma | With the first migration, not before |
+| Database | PostgreSQL | Non-production local instance in Phase 1. Hosted instance later |
+| ORM | Prisma 6.16.2 | First platform migration applied |
 | Cache and queue port | Redis-compatible interface, in-memory adapter in development | When the first async job needs it |
 | Files | S3-compatible port, local filesystem adapter in development | Seller KYC documents |
 | Payments | Provider port, local mock first, Razorpay-compatible adapter later | Phase 5 |
@@ -68,7 +68,7 @@ Environments are separate:
 | Preview | Vercel preview from the feature branch | Preview database, never production |
 | Production | Vercel production from `main` | Production Railway database |
 
-No environment exists beyond the empty Vercel production deployment today.
+No environment exists beyond the empty Vercel production deployment and a local non-production PostgreSQL used for Phase 1 migrations. Preview and production databases are not provisioned.
 
 ## Module boundaries
 

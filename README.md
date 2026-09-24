@@ -1,6 +1,6 @@
 # Aspera Marketplace
 
-India-first multi-vendor marketplace. The repository currently contains the application foundation: a Next.js shell, a health check, structured logs, and the Phase 0 planning documents. Catalogue, checkout, payments, and a database are not implemented.
+India-first multi-vendor marketplace. The repository currently contains the Phase 1 foundation: a Next.js shell, platform database tables, a health check, structured logs, and planning documents. Catalogue, checkout, and payments are not implemented.
 
 Source of truth: https://github.com/ramchandragada/asperamarketplace
 
@@ -10,15 +10,26 @@ The linked Vercel project is `asperamarketplace` on team `ramchandragadas-projec
 
 - Node.js 24.21.0 (`.nvmrc`)
 - pnpm 10.33.3
+- PostgreSQL 16 for local development
 
 ## Local setup
 
 ```bash
+# Database: Docker when available
+docker compose up -d
+
+# Or install PostgreSQL 16 and create database aspera_marketplace_dev
+# owned by role aspera_dev.
+
+cp .env.example .env
+# Set DATABASE_URL to the non-production database. Never use production.
+
 pnpm install
+pnpm db:migrate
 pnpm dev
 ```
 
-The app listens on http://localhost:3000. `GET /api/health` returns the service status. Copy `.env.example` to `.env.local` only when you need to override `LOG_LEVEL`. Do not put secrets in Git.
+The app listens on http://localhost:3000. `GET /api/health` returns the service and database status.
 
 ## Checks
 
@@ -29,20 +40,21 @@ pnpm test
 pnpm build
 ```
 
-GitHub Actions runs the same checks on pull requests and on pushes to `main`.
+GitHub Actions runs migrate, then those checks, against a PostgreSQL 16 service.
 
 ## Read before changing the code
 
 - [PROJECT_AUDIT.md](PROJECT_AUDIT.md) — the empty starting point
-- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) — what is done and the next slice
+- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) — what is done and the next phase
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [DECISIONS.md](DECISIONS.md)
 - [ASSUMPTIONS.md](ASSUMPTIONS.md)
 - [RISK_REGISTER.md](RISK_REGISTER.md)
+- [docs/MIGRATIONS.md](docs/MIGRATIONS.md)
 - [API.md](API.md)
 - [TESTING.md](TESTING.md)
 - [SECURITY.md](SECURITY.md)
 - [RUNBOOK.md](RUNBOOK.md)
 - [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
 
-The next slice is a non-production PostgreSQL migration for platform tables. It does not start until that database exists.
+Phase 1 is complete. The next phase is identity and seller onboarding.

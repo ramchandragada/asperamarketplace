@@ -113,3 +113,20 @@ Date: 2026-09-24
 Status: accepted
 
 `eslint-config-next` 16.3.6 installed ESLint 9.39.5. npm reports that release as deprecated. The slice keeps the version the Next config installed. Moving to ESLint 10 is a separate change after that config supports it.
+
+## D-015 — Prisma 6.16.2 and a local non-production Postgres
+
+Date: 2026-09-24  
+Status: accepted
+
+Phase 1 slice 2 pins Prisma CLI and client to 6.16.2. Newer Prisma 7/8 pre-releases were rejected because the client and CLI must match and the release candidate pulled unrelated peer warnings.
+
+A non-production PostgreSQL 16 database named `aspera_marketplace_dev` was created in this environment. `docker-compose.yml` provides the same database for machines with Docker. Railway remains the intended hosted path and is still not connected. No production database exists, and this migration was not applied to production.
+
+## D-016 — Platform tables only in the first migration
+
+Date: 2026-09-24  
+Status: accepted
+
+The first migration creates `audit_logs`, `idempotency_records`, `outbox_events`, `feature_flags`, and `platform_settings`. Domain tables for sellers, catalogue, orders, and money wait for the slice that implements them. A schema checkpoint was committed before `prisma migrate`.
+

@@ -1,4 +1,16 @@
-export default function Home() {
+import { checkDatabaseStatus } from "@/platform/health";
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const database = await checkDatabaseStatus();
+  const databaseLabel =
+    database === "configured"
+      ? "Configured"
+      : database === "unavailable"
+        ? "Unavailable"
+        : "Not configured";
+
   return (
     <>
       <a className="skip-link" href="#content">
@@ -16,9 +28,9 @@ export default function Home() {
             Service foundation
           </h1>
           <p className="max-w-2xl text-lg leading-8 text-muted">
-            This deployment runs the application shell, a health check, and
-            structured logs. Catalogue, checkout, and payments arrive in later
-            slices.
+            This deployment runs the application shell, platform database
+            tables, a health check, and structured logs. Catalogue, checkout,
+            and payments arrive in later slices.
           </p>
         </header>
         <section
@@ -35,7 +47,7 @@ export default function Home() {
             </div>
             <div>
               <dt className="text-muted">Database</dt>
-              <dd className="font-medium">Not configured</dd>
+              <dd className="font-medium">{databaseLabel}</dd>
             </div>
           </dl>
           <a

@@ -1,6 +1,6 @@
 # Risk register
 
-Reviewed: 2026-09-24, Phase 0. Scores are relative (low, medium, high). Owners are roles, not named people, because no operating roster exists.
+Reviewed: 2026-09-24, after Phase 1 slice 1. Scores are relative (low, medium, high). Owners are roles, not named people, because no operating roster exists.
 
 | ID | Risk | Likelihood | Impact | Status | Mitigation | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -8,17 +8,17 @@ Reviewed: 2026-09-24, Phase 0. Scores are relative (low, medium, high). Owners a
 | R-02 | Seller-of-record, invoice issuer, or inventory ownership gets hardcoded. | Medium | High | Open | Store those as versioned configuration. Leave A-20 to A-28 unresolved until counsel and the business owner decide. | Business owner, counsel |
 | R-03 | The platform collects or routes customer funds without a licensed payment aggregator. | Medium | High | Open | Payment port plus mock provider only. No live keys. Production wiring waits on A-23 and the RBI directions then in force. | Finance, counsel |
 | R-04 | Tax output is treated as filed GST or TCS. | Medium | High | Open | Configurable rules with an explanation trace. In-product warning that a qualified Indian tax professional must review outputs before production use. | Finance, tax adviser |
-| R-05 | A migration or seed runs against production. | Low today, high once a database exists | High | Open | No database in Phase 0. Separate credentials per environment. Refuse destructive commands against production. Checkpoint schema in Git before the first migration. | Engineering |
-| R-06 | Real personal data or live secrets enter Git. The repository is public. | Medium | High | Open | `.env.example` will hold names only. Seeds use fictional data. Ignore env files, keys, dumps, and session files. | Engineering |
+| R-05 | A migration or seed runs against production. | Low today, high once a production database exists | High | Open | Separate credentials per environment. Refuse destructive commands against production. Checkpoint schema in Git before migrations. Document rollback in `docs/MIGRATIONS.md`. The first migration targeted only `aspera_marketplace_dev`. | Engineering |
+| R-06 | Real personal data or live secrets enter Git. The repository is public. | Medium | High | Open | `.env.example` holds names only. `.gitignore` excludes env files, keys, dumps, and uploads. Local `DATABASE_URL` stays in `.env` / `.env.local`. Seeds, when they exist, must use fictional data. | Engineering |
 | R-07 | Browser-supplied price, tax, stock, role, or totals are trusted. | Medium | High | Open | Server recalculates every mutation. Idempotency keys on money and stock commands. Ledger and stock movements are append-only. | Engineering |
 | R-08 | Payment redirect is treated as proof of payment, or webhooks are replayed. | Medium | High | Open | Verify signatures, persist webhook events, reject replays, post the ledger only inside an idempotent server command. | Engineering |
 | R-09 | ONDC models leak into the private marketplace and block a later network role, or the product claims ONDC participation early. | Medium | Medium | Open | Internal canonical models. Versioned adapter only. No participation claim until formal onboarding finishes. | Product, engineering |
 | R-10 | Compliance UI implies legal approval. | Medium | High | Open | Show operational controls and evidence. No approval badge. Maintain a compliance register with owner, due date, and evidence when that module is built. | Legal, product |
 | R-11 | Placeholder Git author `Your Name <your@email.com>` continues, so history does not identify the maintainer. | High | Low | Open | Configure Git identity on each computer before the next commit that should carry the maintainer. This Phase 0 commit uses the environment identity. | Engineering |
-| R-12 | Node 24.x on Vercel and Node 22 on a developer machine drift. | Medium | Medium | Open | Pin the Node version in Phase 1 and set Vercel to the same major. | Engineering |
+| R-12 | Node 24.x on Vercel and Node 22 on a developer machine drift. | Medium | Medium | Mitigated | The repository pins Node.js 24.21.0 in `.nvmrc` and `package.json` engines. CI installs that version. The Vercel project was already `24.x` and was not changed. | Engineering |
 | R-13 | An adjacent Vercel project, `aspera-dock`, is mistaken for this codebase. | Low | Medium | Open | This audit scopes only `asperamarketplace` linked to `ramchandragada/asperamarketplace`. | Engineering |
-| R-14 | Railway is assumed to be provisioned because the brief names the dashboard. | Medium | Medium | Open | No Railway config or CLI access was found. Do not point the app at a database until a non-production instance is created and recorded. | Engineering |
+| R-14 | Railway is assumed to be provisioned because the brief names the dashboard. | Medium | Medium | Mitigated for Phase 1 | No Railway config or CLI access was found. Phase 1 uses local PostgreSQL and `docker-compose.yml`. Hosted Postgres waits for an explicit provision step. | Engineering |
 | R-15 | Dark patterns, fake urgency, or manipulated reviews ship with merchandising. | Medium | High | Open | Ranking and review modules must label sponsored placement and keep moderation evidence. Not in Phase 0. | Product, trust and safety |
 | R-16 | DPDP consent, retention, and deletion are bolted on after personal data is collected. | Medium | High | Open | Do not collect real personal data before the privacy workflow exists. Development seeds stay fictional. | Privacy owner |
 
-Residual risk after Phase 0: the public URL still 404s, and `main` is still connected to Vercel. That is expected until a reviewed application exists. Phase 0 does not change production runtime behavior.
+Residual risk after Phase 1: https://asperamarketplace.vercel.app still serves the empty `main` deploy until this branch is reviewed and merged. The foundation app has no authentication. Production has no database, so the platform migration cannot have affected production data.

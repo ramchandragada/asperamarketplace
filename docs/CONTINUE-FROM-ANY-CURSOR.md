@@ -7,7 +7,7 @@ The GitHub repository is the source of truth. Open it in Cursor on any machine:
 
 ```bash
 git fetch origin
-git checkout cursor/phase-7-finance-ledger-10f6
+git checkout cursor/phase-8-trust-safety-10f6
 pnpm install
 ```
 
@@ -25,7 +25,8 @@ pnpm install
 | 4 Cart/checkout | `cursor/phase-4-cart-checkout-10f6` | #5 |
 | 5 Payments/orders | `cursor/phase-5-payments-orders-10f6` | #6 |
 | 6 Fulfilment/care | `cursor/phase-6-fulfilment-care-10f6` | #7 |
-| 7 Finance | `cursor/phase-7-finance-ledger-10f6` | (this branch) |
+| 7 Finance | `cursor/phase-7-finance-ledger-10f6` | #8 |
+| 8 Trust/safety | `cursor/phase-8-trust-safety-10f6` | (this branch) |
 
 Prefer the newest branch tip when continuing work. Merging PRs in order keeps `main`/Vercel production aligned.
 

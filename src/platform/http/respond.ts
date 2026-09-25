@@ -41,6 +41,7 @@ import {
   FinanceConflictError,
   FinanceValidationError,
 } from "@/modules/finance/service";
+import { TrustValidationError } from "@/modules/trust/service";
 import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
 
@@ -147,7 +148,8 @@ export function jsonError(
     error instanceof PaymentTransitionError ||
     error instanceof FulfilmentValidationError ||
     error instanceof FulfilmentTransitionError ||
-    error instanceof FinanceValidationError
+    error instanceof FinanceValidationError ||
+    error instanceof TrustValidationError
   ) {
     return NextResponse.json(
       fail({

@@ -991,3 +991,126 @@ model ReconciliationException {
   @@index([status, kind])
   @@map("reconciliation_exceptions")
 }
+
+enum RiskCaseStatus {
+  open
+  investigating
+  mitigated
+  closed
+}
+
+enum CounterfeitCaseStatus {
+  reported
+  under_review
+  upheld
+  dismissed
+}
+
+enum ReviewModerationStatus {
+  pending
+  approved
+  rejected
+  hidden
+}
+
+enum PrivacyRequestStatus {
+  received
+  in_progress
+  completed
+  rejected
+}
+
+enum ComplianceEvidenceStatus {
+  draft
+  submitted
+  accepted
+  rejected
+}
+
+model RiskCase {
+  id          String         @id @default(uuid()) @db.Uuid
+  subjectType String         @map("subject_type")
+  subjectId   String         @map("subject_id")
+  severity    String         @default("medium")
+  title       String
+  details     String
+  status      RiskCaseStatus @default(open)
+  statusReason String?       @map("status_reason")
+  openedById  String?        @map("opened_by_id") @db.Uuid
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  closedAt    DateTime?      @map("closed_at") @db.Timestamptz(6)
+
+  @@index([status, severity])
+  @@index([subjectType, subjectId])
+  @@map("risk_cases")
+}
+
+model CounterfeitCase {
+  id          String                 @id @default(uuid()) @db.Uuid
+  productId   String                 @map("product_id") @db.Uuid
+  sellerId    String                 @map("seller_id") @db.Uuid
+  reporterId  String?                @map("reporter_id") @db.Uuid
+  brandClaim  String                 @map("brand_claim")
+  evidenceNote String                @map("evidence_note")
+  status      CounterfeitCaseStatus  @default(reported)
+  statusReason String?               @map("status_reason")
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  resolvedAt  DateTime?              @map("resolved_at") @db.Timestamptz(6)
+
+  @@index([status])
+  @@index([sellerId, status])
+  @@index([productId])
+  @@map("counterfeit_cases")
+}
+
+model ProductReview {
+  id          String                 @id @default(uuid()) @db.Uuid
+  productId   String                 @map("product_id") @db.Uuid
+  userId      String                 @map("user_id") @db.Uuid
+  orderId     String?                @map("order_id") @db.Uuid
+  rating      Int
+  title       String
+  body        String
+  status      ReviewModerationStatus @default(pending)
+  statusReason String?               @map("status_reason")
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([productId, status])
+  @@index([userId])
+  @@index([status])
+  @@map("product_reviews")
+}
+
+model PrivacyRequest {
+  id          String               @id @default(uuid()) @db.Uuid
+  userId      String               @map("user_id") @db.Uuid
+  requestType String               @map("request_type")
+  details     String
+  status      PrivacyRequestStatus @default(received)
+  statusReason String?             @map("status_reason")
+  createdAt   DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  completedAt DateTime?            @map("completed_at") @db.Timestamptz(6)
+
+  @@index([userId, status])
+  @@index([status])
+  @@map("privacy_requests")
+}
+
+model ComplianceEvidence {
+  id            String                    @id @default(uuid()) @db.Uuid
+  registerKey   String                    @map("register_key")
+  title         String
+  summary       String
+  evidenceUri   String?                   @map("evidence_uri")
+  status        ComplianceEvidenceStatus  @default(draft)
+  submittedById String?                   @map("submitted_by_id") @db.Uuid
+  createdAt     DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([registerKey, status])
+  @@map("compliance_evidence")
+}

@@ -49,6 +49,9 @@ export default async function AccountPage() {
         <Link href="/support" className="underline">
           Support / returns
         </Link>
+        <Link href="/privacy" className="underline">
+          Privacy requests
+        </Link>
         <Link href="/seller/onboarding" className="underline">
           Seller onboarding
         </Link>
@@ -68,6 +71,9 @@ export default async function AccountPage() {
             </Link>
             <Link href="/admin/finance" className="underline">
               Admin finance
+            </Link>
+            <Link href="/admin/trust" className="underline">
+              Admin trust & safety
             </Link>
           </>
         ) : null}

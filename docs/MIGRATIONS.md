@@ -1,5 +1,12 @@
 # Migrations
 
+## Eighth migration
+
+Name: `20260925080000_trust_safety`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-trust-safety.sql`  
+Tables: `risk_cases`, `counterfeit_cases`, `product_reviews`, `privacy_requests`, `compliance_evidence`  
+Enums: `RiskCaseStatus`, `CounterfeitCaseStatus`, `ReviewModerationStatus`, `PrivacyRequestStatus`, `ComplianceEvidenceStatus`
+
 ## Sixth migration
 
 Name: `20260925060800_fulfilment_care`  

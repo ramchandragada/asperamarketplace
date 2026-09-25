@@ -13,6 +13,9 @@ export async function GET(request: Request) {
       categorySlug: url.searchParams.get("categorySlug") ?? undefined,
       minPricePaise: url.searchParams.get("minPricePaise") ?? undefined,
       maxPricePaise: url.searchParams.get("maxPricePaise") ?? undefined,
+      inStockOnly: url.searchParams.get("inStockOnly") === "true",
+      verifiedSellerOnly: url.searchParams.get("verifiedSellerOnly") === "true",
+      sort: url.searchParams.get("sort") ?? undefined,
       page: url.searchParams.get("page") ?? undefined,
       pageSize: url.searchParams.get("pageSize") ?? undefined,
     });

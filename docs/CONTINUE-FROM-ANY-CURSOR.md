@@ -3,13 +3,15 @@
 The GitHub repository is the source of truth. Open it in Cursor on any machine:
 
 1. Cursor → Open Repository → `https://github.com/ramchandragada/asperamarketplace`
-2. Check out the latest feature branch (currently Phase 10 tip):
+2. Check out the latest feature branch (storefront UX + seller shell tip):
 
 ```bash
 git fetch origin
-git checkout cursor/post-phase-10-continuity-10f6
+git checkout cursor/ux-storefront-seller-shell-10f6
 pnpm install
 ```
+
+If that branch is unavailable, use `cursor/post-phase-10-continuity-10f6` (PR #12).
 
 3. For local run, copy `.env.example` → `.env` and set `DATABASE_URL` to the shared Neon non-prod URL from the Vercel project (or your own local Postgres).
 4. Run `pnpm db:migrate` then `pnpm db:seed` then `pnpm dev`.
@@ -31,7 +33,8 @@ Alternatively use **Cursor Cloud Agents** on this repo: they already have the en
 | 8 Trust/safety | `cursor/phase-8-trust-safety-10f6` | #9 |
 | 9 Analytics | `cursor/phase-9-analytics-10f6` | #10 |
 | 10 Hardening | `cursor/phase-10-hardening-launch-10f6` | #11 |
-| Continuity | `cursor/post-phase-10-continuity-10f6` | (this branch) |
+| Continuity | `cursor/post-phase-10-continuity-10f6` | #12 |
+| UX + seller shell | `cursor/ux-storefront-seller-shell-10f6` | (this tip) |
 
 Prefer the newest branch tip when continuing work. Merging PRs in order keeps `main`/Vercel production aligned.
 

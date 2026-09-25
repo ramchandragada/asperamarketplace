@@ -3,8 +3,7 @@ import type { OrderStatus } from "@prisma/client";
 import { prisma } from "@/platform/db/prisma";
 import {
   actorIsAdmin,
-  actorOwnsSeller,
-  AuthorizationError,
+  requireSellerCapability,
   type Actor,
 } from "@/modules/identity/policy";
 import { assertFulfilmentTransition } from "@/modules/fulfilment/states";
@@ -29,10 +28,28 @@ export class FulfilmentValidationError extends Error {
   }
 }
 
-function requireSellerOrAdmin(actor: Actor, sellerId: string) {
-  if (!actorOwnsSeller(actor, sellerId) && !actorIsAdmin(actor)) {
-    throw new AuthorizationError("Seller ownership required");
+function requireFulfilmentWrite(actor: Actor, sellerId: string) {
+  requireSellerCapability(actor, sellerId, "fulfilment.write");
+}
+
+function requireReturnsReview(actor: Actor, sellerId: string) {
+  requireSellerCapability(actor, sellerId, "returns.review");
+}
+
+async function assertFulfilmentWrite(actor: Actor, sellerId: string) {
+  const seller = await prisma.seller.findUnique({ where: { id: sellerId } });
+  if (seller?.ownerUserId === actor.userId || actorIsAdmin(actor)) {
+    return;
   }
+  requireFulfilmentWrite(actor, sellerId);
+}
+
+async function assertReturnsReview(actor: Actor, sellerId: string) {
+  const seller = await prisma.seller.findUnique({ where: { id: sellerId } });
+  if (seller?.ownerUserId === actor.userId || actorIsAdmin(actor)) {
+    return;
+  }
+  requireReturnsReview(actor, sellerId);
 }
 
 async function refreshOrderStatus(orderId: string, correlationId: string) {
@@ -85,7 +102,7 @@ async function refreshOrderStatus(orderId: string, correlationId: string) {
 }
 
 export async function listSellerFulfilment(actor: Actor, sellerId: string) {
-  requireSellerOrAdmin(actor, sellerId);
+  await assertFulfilmentWrite(actor, sellerId);
   return prisma.orderFulfilmentGroup.findMany({
     where: {
       sellerId,
@@ -109,7 +126,7 @@ export async function startProcessing(
     where: { id: input.fulfilmentGroupId },
     include: { order: true },
   });
-  requireSellerOrAdmin(actor, group.sellerId);
+  await assertFulfilmentWrite(actor, group.sellerId);
   if (group.order.status !== "paid" && group.order.status !== "partially_cancelled") {
     throw new FulfilmentValidationError("Order must be paid before processing");
   }
@@ -157,7 +174,7 @@ export async function shipGroup(
     where: { id: input.fulfilmentGroupId },
     include: { order: { include: { user: true } } },
   });
-  requireSellerOrAdmin(actor, group.sellerId);
+  await assertFulfilmentWrite(actor, group.sellerId);
   assertFulfilmentTransition(group.status, "shipped");
 
   const trackingNumber =
@@ -231,7 +248,7 @@ export async function markDelivered(
   const group = await prisma.orderFulfilmentGroup.findUniqueOrThrow({
     where: { id: input.fulfilmentGroupId },
   });
-  requireSellerOrAdmin(actor, group.sellerId);
+  await assertFulfilmentWrite(actor, group.sellerId);
   assertFulfilmentTransition(group.status, "delivered");
 
   const updated = await prisma.$transaction(async (tx) => {
@@ -282,7 +299,7 @@ export async function cancelFulfilmentGroup(
     where: { id: input.fulfilmentGroupId },
     include: { lines: true, order: true },
   });
-  requireSellerOrAdmin(actor, group.sellerId);
+  await assertFulfilmentWrite(actor, group.sellerId);
   assertFulfilmentTransition(group.status, "cancelled");
 
   const updated = await prisma.$transaction(async (tx) => {
@@ -429,7 +446,7 @@ export async function reviewReturnRequest(
     where: { id: input.returnRequestId },
     include: { order: { include: { lines: true } } },
   });
-  requireSellerOrAdmin(actor, request.sellerId);
+  await assertReturnsReview(actor, request.sellerId);
   if (request.status !== "requested") {
     throw new FulfilmentValidationError("Return is not awaiting review");
   }
@@ -611,7 +628,7 @@ export async function createDispute(
 }
 
 export async function listReturnsForSeller(actor: Actor, sellerId: string) {
-  requireSellerOrAdmin(actor, sellerId);
+  await assertReturnsReview(actor, sellerId);
   return prisma.returnRequest.findMany({
     where: { sellerId },
     orderBy: { createdAt: "desc" },

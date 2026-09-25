@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
 import { ProductGallery } from "@/components/product-gallery";
 import { ProductPurchasePanel } from "@/components/product-purchase-panel";
 import { ProductReviewsPanel } from "@/components/product-reviews-panel";
+import { ProductShareBar } from "@/components/product-share";
 import { PageShell } from "@/components/ui/page-shell";
 import {
   getPublicProductBySlug,
@@ -37,6 +39,16 @@ function readAttrs(raw: unknown): Record<string, unknown> {
   return {};
 }
 
+async function absoluteProductUrl(slug: string) {
+  const headerList = await headers();
+  const host =
+    headerList.get("x-forwarded-host") ??
+    headerList.get("host") ??
+    "localhost:3000";
+  const proto = headerList.get("x-forwarded-proto") ?? "https";
+  return `${proto}://${host}/products/${encodeURIComponent(slug)}`;
+}
+
 export default async function ProductDetailPage({
   params,
 }: {
@@ -49,7 +61,26 @@ export default async function ProductDetailPage({
   }
 
   const actor = await getOptionalActor();
-  const reviews = await listApprovedReviewsForProduct(product.id);
+  const [reviews, sellerProductCount, similar, alsoBought, shareUrl] =
+    await Promise.all([
+      listApprovedReviewsForProduct(product.id),
+      prisma.product.count({
+        where: { sellerId: product.sellerId, status: "approved" },
+      }),
+      searchApprovedProducts({
+        categorySlug: product.category.slug,
+        page: 1,
+        pageSize: 10,
+        sort: "newest",
+      }),
+      searchApprovedProducts({
+        page: 1,
+        pageSize: 12,
+        sort: "rating",
+      }),
+      absoluteProductUrl(product.slug),
+    ]);
+
   const sellerName = product.seller.tradeName ?? product.seller.legalName;
   const sellerVerified = product.seller.status === "approved";
   const attrs = readAttrs(product.attributes);
@@ -89,17 +120,13 @@ export default async function ProductDetailPage({
       ? (attrs.ratingDistribution as Record<string, number>)
       : null;
 
-  const sellerProductCount = await prisma.product.count({
-    where: { sellerId: product.sellerId, status: "approved" },
-  });
-
-  const similar = await searchApprovedProducts({
-    categorySlug: product.category.slug,
-    page: 1,
-    pageSize: 8,
-    sort: "newest",
-  });
-  const similarItems = similar.items.filter((item) => item.id !== product.id);
+  const similarItems = similar.items
+    .filter((item) => item.id !== product.id)
+    .slice(0, 8);
+  const similarIds = new Set(similarItems.map((item) => item.id));
+  const alsoBoughtItems = alsoBought.items
+    .filter((item) => item.id !== product.id && !similarIds.has(item.id))
+    .slice(0, 8);
 
   const variants = product.variants.map((variant) => {
     const available = Math.max(
@@ -126,18 +153,38 @@ export default async function ProductDetailPage({
   return (
     <PageShell className="pb-24 sm:pb-12">
       <nav aria-label="Breadcrumb" className="text-xs text-muted">
-        <Link href="/" className="hover:text-accent">
-          Home
-        </Link>
-        <span aria-hidden> › </span>
-        <Link
-          href={`/browse?categorySlug=${encodeURIComponent(product.category.slug)}`}
-          className="hover:text-accent"
-        >
-          {product.category.name}
-        </Link>
-        <span aria-hidden> › </span>
-        <span className="text-foreground">{product.title}</span>
+        <ol className="flex flex-wrap items-center gap-1">
+          <li>
+            <Link href="/" className="hover:text-accent">
+              Home
+            </Link>
+          </li>
+          <li aria-hidden className="text-muted">
+            &gt;
+          </li>
+          <li>
+            <Link href="/shop" className="hover:text-accent">
+              Shop
+            </Link>
+          </li>
+          <li aria-hidden className="text-muted">
+            &gt;
+          </li>
+          <li>
+            <Link
+              href={`/browse?categorySlug=${encodeURIComponent(product.category.slug)}`}
+              className="hover:text-accent"
+            >
+              {product.category.name}
+            </Link>
+          </li>
+          <li aria-hidden className="text-muted">
+            &gt;
+          </li>
+          <li className="max-w-[40ch] truncate text-foreground" aria-current="page">
+            {product.title}
+          </li>
+        </ol>
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-2">
@@ -169,6 +216,9 @@ export default async function ProductDetailPage({
                 </span>
               </p>
             ) : null}
+            <div className="mt-4">
+              <ProductShareBar title={product.title} url={shareUrl} />
+            </div>
           </div>
 
           <ProductPurchasePanel variants={variants} highlights={highlights} />
@@ -181,7 +231,7 @@ export default async function ProductDetailPage({
               <div>
                 <p className="font-semibold">{sellerName}</p>
                 <p className="mt-1 text-sm text-muted">
-                  {sellerVerified ? "★ Verified seller" : "Seller"} ·{" "}
+                  {sellerVerified ? "Verified seller" : "Seller"} ·{" "}
                   {sellerProductCount} products
                 </p>
               </div>
@@ -201,7 +251,9 @@ export default async function ProductDetailPage({
           </div>
 
           <section className="text-sm leading-7 text-muted">
-            <h2 className="text-lg font-semibold text-foreground">About this item</h2>
+            <h2 className="text-lg font-semibold text-foreground">
+              About this item
+            </h2>
             <p className="mt-2 whitespace-pre-wrap">{product.description}</p>
           </section>
         </div>
@@ -219,14 +271,46 @@ export default async function ProductDetailPage({
           title: review.title,
           body: review.body,
           createdAt: review.createdAt.toISOString(),
+          authorName: review.authorName,
         }))}
       />
 
       {similarItems.length > 0 ? (
         <section className="flex flex-col gap-4">
-          <h2 className="font-display text-2xl font-semibold">You may also like</h2>
+          <div className="flex items-end justify-between gap-3">
+            <h2 className="font-display text-2xl font-semibold">
+              Similar products
+            </h2>
+            <Link
+              href={`/browse?categorySlug=${encodeURIComponent(product.category.slug)}`}
+              className="text-sm font-medium text-accent hover:underline"
+            >
+              See all →
+            </Link>
+          </div>
           <div className="rail-scroll">
             {similarItems.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {alsoBoughtItems.length > 0 ? (
+        <section className="flex flex-col gap-4">
+          <div className="flex items-end justify-between gap-3">
+            <h2 className="font-display text-2xl font-semibold">
+              Customers also bought
+            </h2>
+            <Link
+              href="/shop?sort=rating"
+              className="text-sm font-medium text-accent hover:underline"
+            >
+              See all →
+            </Link>
+          </div>
+          <div className="rail-scroll">
+            {alsoBoughtItems.map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}
           </div>

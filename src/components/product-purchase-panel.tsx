@@ -81,6 +81,35 @@ export function ProductPurchasePanel({
         <p className="mt-1 text-sm text-muted">Inclusive of taxes</p>
       </div>
 
+      {colorOptions.length > 0 ? (
+        <div>
+          <p className="mb-2 text-sm font-semibold">
+            Select colour
+            {selected.optionValues?.color || selected.optionValues?.Color
+              ? `: ${selected.optionValues.color ?? selected.optionValues.Color}`
+              : ""}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {colorOptions.map(([color, variantId]) => (
+              <button
+                key={color}
+                type="button"
+                title={color}
+                onClick={() => setSelectedId(variantId)}
+                className={`h-9 w-9 rounded-full border-2 shadow-sm ${
+                  selectedId === variantId
+                    ? "border-accent ring-2 ring-accent/30"
+                    : "border-border hover:border-accent"
+                }`}
+                style={{ backgroundColor: colorToCss(color) }}
+                aria-label={color}
+                aria-pressed={selectedId === variantId}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {sizeVariants.length > 1 ? (
         <div>
           <p className="mb-2 text-sm font-semibold">Select size</p>
@@ -90,6 +119,34 @@ export function ProductPurchasePanel({
                 variant.optionValues?.size ??
                 variant.optionValues?.Size ??
                 variant.title;
+              const active = variant.id === selected.id;
+              const soldOut = variant.availableQty <= 0;
+              return (
+                <button
+                  key={variant.id}
+                  type="button"
+                  disabled={soldOut}
+                  onClick={() => setSelectedId(variant.id)}
+                  className={`min-w-[2.75rem] rounded-[var(--radius-sm)] border px-3 py-2 text-sm font-medium ${
+                    active
+                      ? "border-accent bg-accent-soft font-semibold text-accent"
+                      : soldOut
+                        ? "cursor-not-allowed border-border text-muted line-through opacity-60"
+                        : "border-border hover:border-accent"
+                  }`}
+                  aria-pressed={active}
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : variants.length > 1 ? (
+        <div>
+          <p className="mb-2 text-sm font-semibold">Select option</p>
+          <div className="flex flex-wrap gap-2">
+            {variants.map((variant) => {
               const active = variant.id === selected.id;
               return (
                 <button
@@ -101,32 +158,12 @@ export function ProductPurchasePanel({
                       ? "border-accent bg-accent-soft font-semibold text-accent"
                       : "border-border hover:border-accent"
                   }`}
+                  aria-pressed={active}
                 >
-                  {size} {formatPaise(variant.sellingPricePaise)}
+                  {variant.title}
                 </button>
               );
             })}
-          </div>
-        </div>
-      ) : null}
-
-      {colorOptions.length > 0 ? (
-        <div>
-          <p className="mb-2 text-sm font-semibold">Select colour</p>
-          <div className="flex flex-wrap gap-2">
-            {colorOptions.map(([color, variantId]) => (
-              <button
-                key={color}
-                type="button"
-                title={color}
-                onClick={() => setSelectedId(variantId)}
-                className={`h-8 w-8 rounded-full border-2 ${
-                  selectedId === variantId ? "border-accent" : "border-border"
-                }`}
-                style={{ backgroundColor: colorToCss(color) }}
-                aria-label={color}
-              />
-            ))}
           </div>
         </div>
       ) : null}

@@ -266,11 +266,23 @@ export async function listReviewsForModeration(actor: Actor) {
 }
 
 export async function listApprovedReviewsForProduct(productId: string) {
-  return prisma.productReview.findMany({
+  const reviews = await prisma.productReview.findMany({
     where: { productId, status: "approved" },
     orderBy: { createdAt: "desc" },
     take: 50,
   });
+  if (reviews.length === 0) return [];
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: [...new Set(reviews.map((review) => review.userId))] } },
+    select: { id: true, displayName: true },
+  });
+  const names = new Map(users.map((user) => [user.id, user.displayName]));
+
+  return reviews.map((review) => ({
+    ...review,
+    authorName: names.get(review.userId) ?? "Aspera shopper",
+  }));
 }
 
 export async function createPrivacyRequest(

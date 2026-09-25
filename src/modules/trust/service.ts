@@ -265,6 +265,14 @@ export async function listReviewsForModeration(actor: Actor) {
   });
 }
 
+export async function listApprovedReviewsForProduct(productId: string) {
+  return prisma.productReview.findMany({
+    where: { productId, status: "approved" },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+}
+
 export async function createPrivacyRequest(
   actor: Actor,
   input: CreatePrivacyRequestInput,

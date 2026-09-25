@@ -1,5 +1,13 @@
 # Migrations
 
+## Tenth migration
+
+Name: `20260925100000_tax_profiles`  
+Checkpoint: (continuation slice; schema after Phase 9 analytics)  
+Tables: `tax_profiles`  
+
+Configurable tax policy rows with explanation text. Active profile feeds checkout tax traces. **Not a legal GST engine** — A-21/A-24 remain open.
+
 ## Ninth migration
 
 Name: `20260925090000_analytics`  

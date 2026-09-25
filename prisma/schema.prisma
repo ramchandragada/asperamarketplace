@@ -1155,3 +1155,20 @@ model Experiment {
   @@index([status])
   @@map("experiments")
 }
+
+/// Configurable tax policy. Not a legal GST determination — A-24 remains open.
+model TaxProfile {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  name        String
+  description String
+  rateBps     Int      @map("rate_bps")
+  active      Boolean  @default(false)
+  version     Int      @default(1)
+  explanation String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([active])
+  @@map("tax_profiles")
+}

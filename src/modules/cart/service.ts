@@ -6,6 +6,7 @@ import {
   TotalsMismatchError,
   type CheckoutSnapshot,
 } from "@/modules/cart/pricing";
+import { resolveActiveTaxPolicy } from "@/modules/tax/service";
 import type {
   AddCartItemInput,
   ConfirmCheckoutInput,
@@ -447,11 +448,13 @@ export async function previewCheckout(
   }
   const cart = await getOrCreateOpenCart(actor.userId);
   const priced = await loadPricedLines(cart.id);
+  const taxPolicy = await resolveActiveTaxPolicy();
   const snapshot = buildCheckoutSnapshot({
     lines: priced.lines,
     couponCode: input.couponCode,
     destinationState: address.state,
     totalWeightGrams: priced.totalWeightGrams,
+    taxPolicy,
   });
   assertClientTotal(snapshot, input.clientTotalPaise);
   return {
@@ -510,11 +513,13 @@ export async function confirmCheckout(
   }
 
   const priced = await loadPricedLines(openCart.id);
+  const taxPolicy = await resolveActiveTaxPolicy();
   const snapshot = buildCheckoutSnapshot({
     lines: priced.lines,
     couponCode: input.couponCode,
     destinationState: address.state,
     totalWeightGrams: priced.totalWeightGrams,
+    taxPolicy,
   });
   assertClientTotal(snapshot, input.clientTotalPaise);
 

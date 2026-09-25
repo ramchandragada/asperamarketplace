@@ -51,6 +51,9 @@ describe("cart pricing helpers", () => {
     expect(snapshot.discountPaise).toBe(14970);
     expect(snapshot.groups).toHaveLength(2);
     expect(snapshot.tax.policyKey).toBe("india_placeholder_gst_trace");
+    expect(snapshot.tax.explanation).toContain(
+      "qualified Indian tax professional",
+    );
     expect(snapshot.totalPaise).toBe(
       snapshot.subtotalPaise -
         snapshot.discountPaise +

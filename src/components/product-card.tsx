@@ -8,6 +8,8 @@ import {
   formatPaise,
   type ProductCardBadge,
 } from "@/modules/catalogue/helpers";
+import { sellerStorefrontLabelText } from "@/modules/catalogue/claims";
+import { SHIPPING_POLICY } from "@/modules/cart/pricing";
 
 export type ProductCardModel = {
   id: string;
@@ -140,10 +142,12 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
   const showImage = Boolean(product.primaryImageUrl) && !imageFailed;
   const freeDelivery =
     product.freeDeliveryHint === true ||
-    product.deliveryFeePaise === 0 ||
-    product.minPricePaise >= 99_900;
+    product.minPricePaise >= SHIPPING_POLICY.freeAbovePaise;
   const hasRating =
     product.ratingAverage != null && (product.reviewCount ?? 0) > 0;
+  const sellerLabel = product.sellerVerified
+    ? sellerStorefrontLabelText("approved_seller")
+    : null;
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]">
@@ -218,18 +222,15 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
           ) : null}
           {freeDelivery ? (
             <span className="text-[12px] font-medium text-success">
-              Free delivery
+              Free delivery on eligible orders
             </span>
           ) : (
             <p className="text-[12px] text-muted">
-              Delivery{" "}
-              {product.deliveryFeePaise != null
-                ? formatPaise(product.deliveryFeePaise)
-                : "from ₹40"}
+              Delivery calculated at checkout
             </p>
           )}
           <p className="mt-auto pt-1 text-[12px] text-muted">
-            {product.sellerVerified ? "Featured store · " : ""}
+            {sellerLabel ? `${sellerLabel} · ` : ""}
             {product.sellerName}
           </p>
         </div>

@@ -16,6 +16,11 @@ import {
   type ProductCardBadge,
 } from "@/modules/catalogue/helpers";
 import {
+  freeDeliveryHintFromPolicy,
+  resolveStorefrontRating,
+} from "@/modules/catalogue/claims";
+import { SHIPPING_POLICY } from "@/modules/cart/pricing";
+import {
   searchProductsSchema,
   type CreateProductInput,
   type ReviewProductInput,
@@ -378,7 +383,7 @@ export async function searchApprovedProducts(
         : sort === "price_desc"
           ? Prisma.sql`ORDER BY min_price_paise DESC`
           : sort === "rating"
-            ? Prisma.sql`ORDER BY COALESCE((p.attributes->>'ratingAverage')::float, 0) DESC, p.published_at DESC NULLS LAST`
+            ? Prisma.sql`ORDER BY p.published_at DESC NULLS LAST`
             : sort === "relevance"
               ? Prisma.sql`ORDER BY ts_rank(to_tsvector('english', p.search_document), plainto_tsquery('english', ${query})) DESC, p.published_at DESC NULLS LAST`
               : Prisma.sql`ORDER BY p.published_at DESC NULLS LAST`;
@@ -570,11 +575,14 @@ export async function searchApprovedProducts(
       typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null;
     const reviewCount =
       typeof attrs.reviewCount === "number" ? attrs.reviewCount : 0;
-    const dealEndsAt =
-      typeof attrs.dealEndsAt === "string" ? attrs.dealEndsAt : null;
-    const deliveryFeePaise =
-      typeof attrs.deliveryFeePaise === "number" ? attrs.deliveryFeePaise : null;
     const sellerVerified = product.seller.status === "approved";
+    const minPricePaise = Math.min(...prices);
+    const minMrpPaise = Math.min(...mrps);
+    const storefrontRating = resolveStorefrontRating({
+      // List cards do not join ProductReview yet — never fall back to attributes.
+      attributeRatingAverage: ratingAverage,
+      attributeReviewCount: reviewCount,
+    });
     return {
       id: product.id,
       slug: product.slug,
@@ -583,29 +591,34 @@ export async function searchApprovedProducts(
       categoryName: product.category.name,
       sellerName: product.seller.tradeName ?? product.seller.legalName,
       sellerVerified,
-      minPricePaise: Math.min(...prices),
-      minMrpPaise: Math.min(...mrps),
+      minPricePaise,
+      minMrpPaise,
       availableQty,
-      ratingAverage,
-      reviewCount,
-      dealEndsAt,
-      deliveryFeePaise,
-      freeDeliveryHint: deliveryFeePaise === 0,
+      ratingAverage: storefrontRating?.average ?? null,
+      reviewCount: storefrontRating?.count ?? 0,
+      dealEndsAt: null,
+      deliveryFeePaise: null,
+      freeDeliveryHint: freeDeliveryHintFromPolicy({
+        minPricePaise,
+        freeAbovePaise: SHIPPING_POLICY.freeAbovePaise,
+      }),
       variantCount: product.variants.length,
       badge: resolveProductBadge({
         brandSlug: product.brand?.slug,
         brandName: product.brand?.name,
         sellerVerified,
         availableQty,
-        freeDelivery: deliveryFeePaise === 0,
-        discountPercent: discountPercent(
-          Math.min(...mrps),
-          Math.min(...prices),
-        ),
+        freeDelivery: freeDeliveryHintFromPolicy({
+          minPricePaise,
+          freeAbovePaise: SHIPPING_POLICY.freeAbovePaise,
+        }),
+        discountPercent: discountPercent(minMrpPaise, minPricePaise),
         createdAt: product.createdAt,
       }),
       primaryImageUrl: product.images[0]?.url ?? null,
-      primaryImageAlt: product.images[0]?.altText ?? product.title,
+      primaryImageAlt:
+        product.images[0]?.altText ??
+        `${product.title} (catalogue preview image)`,
     };
   });
 
@@ -696,42 +709,29 @@ async function enrichStorefrontCards<
         : {};
     const sellerVerified =
       item.sellerVerified ?? product?.seller.status === "approved";
-    const freeDelivery =
-      item.freeDeliveryHint === true ||
-      (typeof attrs.deliveryFeePaise === "number" &&
-        attrs.deliveryFeePaise === 0);
+    const freeDelivery = freeDeliveryHintFromPolicy({
+      minPricePaise: item.minPricePaise ?? 0,
+      freeAbovePaise: SHIPPING_POLICY.freeAbovePaise,
+    });
     const disc =
       item.minMrpPaise != null && item.minPricePaise != null
         ? discountPercent(item.minMrpPaise, item.minPricePaise)
         : null;
+    const storefrontRating = resolveStorefrontRating({
+      // Enrichment must not promote attribute demo metrics.
+      attributeRatingAverage:
+        typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null,
+      attributeReviewCount:
+        typeof attrs.reviewCount === "number" ? attrs.reviewCount : null,
+    });
     return {
       ...item,
-      ratingAverage:
-        item.ratingAverage ??
-        (typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null),
-      reviewCount:
-        item.reviewCount ??
-        (typeof attrs.reviewCount === "number" ? attrs.reviewCount : 0),
-      dealEndsAt:
-        item.dealEndsAt ??
-        (typeof attrs.dealEndsAt === "string" ? attrs.dealEndsAt : null),
-      deliveryFeePaise:
-        item.deliveryFeePaise ??
-        (typeof attrs.deliveryFeePaise === "number"
-          ? attrs.deliveryFeePaise
-          : null),
-      freeDeliveryHint:
-        item.freeDeliveryHint ??
-        (typeof attrs.deliveryFeePaise === "number"
-          ? attrs.deliveryFeePaise === 0
-          : undefined),
-      deliveryOriginalPaise:
-        typeof attrs.deliveryOriginalPaise === "number"
-          ? attrs.deliveryOriginalPaise
-          : typeof attrs.deliveryFeePaise === "number" &&
-              attrs.deliveryFeePaise > 0
-            ? Math.round((attrs.deliveryFeePaise as number) * 1.15)
-            : null,
+      ratingAverage: storefrontRating?.average ?? null,
+      reviewCount: storefrontRating?.count ?? 0,
+      dealEndsAt: null,
+      deliveryFeePaise: null,
+      freeDeliveryHint: item.freeDeliveryHint ?? freeDelivery,
+      deliveryOriginalPaise: null,
       variantCount: item.variantCount ?? product?._count.variants ?? 1,
       badge:
         item.badge !== undefined

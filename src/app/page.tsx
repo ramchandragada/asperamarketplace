@@ -96,11 +96,17 @@ export default async function Home() {
     under999,
     sellers,
   ] = await Promise.all([
-    searchApprovedProducts({ page: 1, pageSize: 10, sort: "newest" }),
+    searchApprovedProducts({
+      page: 1,
+      pageSize: 10,
+      sort: "newest",
+      inStockOnly: true,
+    }),
     searchApprovedProducts({
       page: 1,
       pageSize: 16,
       sort: "newest",
+      inStockOnly: true,
       categorySlug: categorySlugSet.has("fashion") ? "fashion" : undefined,
     }),
     searchApprovedProducts({
@@ -108,18 +114,21 @@ export default async function Home() {
       pageSize: 4,
       sort: "price_asc",
       maxPricePaise: 29900,
+      inStockOnly: true,
     }),
     searchApprovedProducts({
       page: 1,
       pageSize: 4,
       sort: "price_asc",
       maxPricePaise: 59900,
+      inStockOnly: true,
     }),
     searchApprovedProducts({
       page: 1,
       pageSize: 4,
       sort: "price_asc",
       maxPricePaise: 99900,
+      inStockOnly: true,
     }),
     prisma.seller.findMany({
       where: { status: "approved" },
@@ -149,12 +158,15 @@ export default async function Home() {
     }),
   ]);
 
-  // Deduplicate products across homepage rails
+  // Deduplicate products across homepage rails; never merchandising OOS SKUs
   const usedIds = new Set<string>();
-  function takeUnique<T extends { id: string }>(items: T[], count: number) {
+  function takeUnique<
+    T extends { id: string; availableQty?: number },
+  >(items: T[], count: number) {
     const out: T[] = [];
     for (const item of items) {
       if (usedIds.has(item.id)) continue;
+      if ((item.availableQty ?? 0) <= 0) continue;
       usedIds.add(item.id);
       out.push(item);
       if (out.length >= count) break;
@@ -168,6 +180,7 @@ export default async function Home() {
       page: 1,
       pageSize: 20,
       sort: "relevance",
+      inStockOnly: true,
     });
     trending = [
       ...trending,

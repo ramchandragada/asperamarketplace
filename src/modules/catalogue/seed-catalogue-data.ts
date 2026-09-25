@@ -359,8 +359,8 @@ export function imagesForProduct(
   const secondary = pool[(index + 1) % pool.length]!;
   const tertiary = pool[(index + 2) % pool.length]!;
   return [
-    { url: primary, altText: `${title} — primary view`, sortOrder: 0, isPrimary: true },
-    { url: secondary, altText: `${title} — alternate view`, sortOrder: 1, isPrimary: false },
-    { url: tertiary, altText: `${title} — detail view`, sortOrder: 2, isPrimary: false },
+    { url: primary, altText: `${title} — development placeholder image (not product photography)`, sortOrder: 0, isPrimary: true },
+    { url: secondary, altText: `${title} — development placeholder image (not product photography)`, sortOrder: 1, isPrimary: false },
+    { url: tertiary, altText: `${title} — development placeholder image (not product photography)`, sortOrder: 2, isPrimary: false },
   ];
 }

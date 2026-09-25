@@ -10,33 +10,12 @@ import {
 
 export type SeedSellerMap = Record<string, { id: string }>;
 
-function storefrontAttributes(item: (typeof SEED_PRODUCTS)[number], index: number) {
-  const ratingAverage = Number((3.5 + ((index * 11) % 13) * 0.1).toFixed(1));
-  const reviewBuckets = [
-    80 + ((index * 17) % 120),
-    180 + ((index * 23) % 320),
-    900 + ((index * 41) % 2200),
-    1800 + ((index * 53) % 2800),
-    60 + ((index * 19) % 90),
-  ];
-  const reviewCount = reviewBuckets[index % reviewBuckets.length]!;
-  const dealEndsAt =
-    index % 5 === 0
-      ? new Date(Date.now() + (18 + (index % 30)) * 60 * 60 * 1000).toISOString()
-      : undefined;
-  const deliveryOptions = [
-    { deliveryFeePaise: 0, deliveryLabel: "Free Delivery" },
-    { deliveryFeePaise: 4000, deliveryLabel: "Delivery ₹40" },
-    { deliveryFeePaise: 6000, deliveryLabel: "Delivery ₹60" },
-    { deliveryFeePaise: 9900, deliveryLabel: "Express Delivery ₹99" },
-    {
-      deliveryFeePaise: 6000,
-      deliveryLabel: "Free Delivery above ₹499",
-      freeDeliveryThresholdPaise: 49900,
-    },
-  ] as const;
-  const delivery = deliveryOptions[index % deliveryOptions.length]!;
-
+function storefrontAttributes(item: (typeof SEED_PRODUCTS)[number]) {
+  /**
+   * P0 truthfulness: do not fabricate ratingAverage, reviewCount, ratingDistribution,
+   * or dealEndsAt. Public ratings must come from ProductReview rows only.
+   * Delivery fees are not invented here — checkout uses SHIPPING_POLICY.
+   */
   const highlights: Record<string, string> = {};
   if (item.categorySlug === "fashion") {
     highlights.Material = "Cotton blend";
@@ -72,35 +51,11 @@ function storefrontAttributes(item: (typeof SEED_PRODUCTS)[number], index: numbe
     highlights.Origin = "India";
   }
 
-  // Proportional star distribution around the average
-  const weights =
-    ratingAverage >= 4.3
-      ? [0.05, 0.08, 0.12, 0.3, 0.45]
-      : ratingAverage >= 3.8
-        ? [0.05, 0.1, 0.15, 0.3, 0.4]
-        : [0.08, 0.12, 0.2, 0.3, 0.3];
-  let allocated = 0;
-  const ratingDistribution: Record<string, number> = {};
-  for (let star = 1; star <= 5; star += 1) {
-    const share =
-      star === 5
-        ? reviewCount - allocated
-        : Math.round(reviewCount * weights[star - 1]!);
-    ratingDistribution[String(star)] = Math.max(0, share);
-    allocated += ratingDistribution[String(star)]!;
-  }
-
   return {
-    ratingAverage,
-    reviewCount,
-    ratingDistribution,
-    dealEndsAt,
-    deliveryFeePaise: delivery.deliveryFeePaise,
-    deliveryLabel: delivery.deliveryLabel,
-    freeDeliveryThresholdPaise:
-      "freeDeliveryThresholdPaise" in delivery
-        ? delivery.freeDeliveryThresholdPaise
-        : undefined,
+    demoCatalogue: true,
+    mediaPlaceholder: true,
+    mediaNote:
+      "Development Unsplash placeholders — replace with licensed product photography before commercial launch.",
     highlights,
   };
 }
@@ -210,7 +165,7 @@ export async function seedMarketplaceCatalogue(
       )?.name,
       sku: item.sku,
     });
-    const attributes = storefrontAttributes(item, index) as Prisma.InputJsonValue;
+    const attributes = storefrontAttributes(item) as Prisma.InputJsonValue;
     const useFashionSizes = item.categorySlug === "fashion";
 
     const existing = await prisma.product.findUnique({

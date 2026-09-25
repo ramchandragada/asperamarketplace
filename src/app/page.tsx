@@ -4,6 +4,7 @@ import { PageShell, SectionHeading } from "@/components/ui/page-shell";
 import {
   CategoryCircles,
   HeroCarousel,
+  OriginalBrandsSection,
   PromoBanner,
   SellerLogoStrip,
   TrustSignalBar,
@@ -181,6 +182,84 @@ const HERO_SLIDES = [
   },
 ];
 
+const ORIGINAL_BRAND_CARDS = [
+  {
+    id: "personal-care",
+    label: "Personal Care",
+    href: "/browse?categorySlug=beauty-personal-care",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80",
+    overlay: "rgba(26, 92, 92, 0.92)",
+  },
+  {
+    id: "electronics",
+    label: "Electronics",
+    href: "/browse?categorySlug=electronics-accessories",
+    imageUrl:
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+    overlay: "rgba(76, 29, 149, 0.9)",
+  },
+  {
+    id: "makeup",
+    label: "Makeup",
+    href: "/browse?categorySlug=beauty-personal-care&q=lip",
+    imageUrl:
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80",
+    overlay: "rgba(157, 23, 77, 0.9)",
+  },
+  {
+    id: "smart-phones",
+    label: "Smart Phones",
+    href: "/browse?categorySlug=mobile-accessories",
+    imageUrl:
+      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80",
+    overlay: "rgba(30, 58, 138, 0.92)",
+  },
+  {
+    id: "men-perfume",
+    label: "Men Perfume",
+    href: "/browse?categorySlug=beauty-personal-care&q=perfume",
+    imageUrl:
+      "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=600&q=80",
+    overlay: "rgba(120, 53, 15, 0.92)",
+  },
+  {
+    id: "home-appliances",
+    label: "Home Essentials",
+    href: "/browse?categorySlug=home-kitchen",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=600&q=80",
+    overlay: "rgba(232, 131, 58, 0.92)",
+  },
+  {
+    id: "sports",
+    label: "Sports & Fitness",
+    href: "/browse?categorySlug=sports-fitness",
+    imageUrl:
+      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=600&q=80",
+    overlay: "rgba(15, 118, 110, 0.92)",
+  },
+  {
+    id: "fashion",
+    label: "Fashion",
+    href: "/browse?categorySlug=fashion",
+    imageUrl:
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80",
+    overlay: "rgba(190, 24, 93, 0.9)",
+  },
+];
+
+const BRAND_LOGOS = [
+  { id: "narmada", name: "Narmada Weave", mark: "NW", href: "/browse?q=narmada" },
+  { id: "coastal", name: "Coastal Bloom", mark: "CB", href: "/browse?q=coastal" },
+  { id: "silicon", name: "Silicon Bay", mark: "SB", href: "/browse?q=silicon" },
+  { id: "pulse", name: "Pulse Fit", mark: "PF", href: "/browse?q=pulse" },
+  { id: "lotus", name: "Little Lotus", mark: "LL", href: "/browse?q=lotus" },
+  { id: "quill", name: "Ink & Quill", mark: "IQ", href: "/browse?q=quill" },
+  { id: "trail", name: "Trailmark", mark: "TM", href: "/browse?q=trailmark" },
+  { id: "aspera-home", name: "Aspera Home", mark: "AH", href: "/browse?q=aspera%20home" },
+];
+
 export default async function Home() {
   const categories = await listActiveCategories();
   const categorySlugs = categories.map((category) => category.slug);
@@ -260,6 +339,7 @@ export default async function Home() {
   return (
     <div className="flex flex-col">
       <HeroCarousel slides={HERO_SLIDES} />
+      <OriginalBrandsSection cards={ORIGINAL_BRAND_CARDS} logos={BRAND_LOGOS} />
       <TrustSignalBar />
       <CategoryCircles categories={circleCategories} />
       <PromoBanner

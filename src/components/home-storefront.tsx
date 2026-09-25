@@ -382,3 +382,93 @@ export function SellerLogoStrip({
     </section>
   );
 }
+
+export type OriginalBrandCard = {
+  id: string;
+  label: string;
+  href: string;
+  imageUrl: string;
+  overlay: string;
+};
+
+export function OriginalBrandsSection({
+  cards,
+  logos,
+}: {
+  cards: OriginalBrandCard[];
+  logos: Array<{ id: string; name: string; href: string; mark?: string }>;
+}) {
+  return (
+    <section className="border-b border-border/70 bg-[#fbf8f3] py-8 md:py-10">
+      <div className="container-shell flex flex-col gap-5">
+        <div className="flex items-end justify-between gap-3">
+          <h2 className="flex items-center gap-2 font-display text-2xl font-semibold tracking-tight md:text-[1.75rem]">
+            Original Brands
+            <span
+              className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-accent-foreground"
+              aria-label="Verified"
+              title="Verified brands"
+            >
+              ✓
+            </span>
+          </h2>
+          <Link
+            href="/shop"
+            className="text-xs font-bold tracking-wide text-accent uppercase hover:underline md:text-sm"
+          >
+            View all &gt;
+          </Link>
+        </div>
+
+        <div className="rail-scroll [grid-auto-columns:minmax(9.5rem,11rem)] md:[grid-auto-columns:minmax(11rem,13rem)]">
+          {cards.map((card) => (
+            <Link
+              key={card.id}
+              href={card.href}
+              className="group relative block h-44 overflow-hidden rounded-[var(--radius)] border border-border/60 shadow-sm md:h-52"
+            >
+              <Image
+                src={card.imageUrl}
+                alt=""
+                fill
+                sizes="(max-width: 768px) 160px, 208px"
+                className="object-cover transition duration-300 group-hover:scale-105"
+              />
+              <span className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+              <span
+                className="absolute inset-x-0 bottom-0 px-3 py-2.5 text-center text-sm font-bold text-white"
+                style={{ backgroundColor: card.overlay }}
+              >
+                {card.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        {logos.length > 0 ? (
+          <div className="mt-2">
+            <p className="mb-3 text-[11px] font-semibold tracking-[0.14em] text-muted uppercase">
+              Featured brand partners
+            </p>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+              {logos.map((logo) => (
+                <Link
+                  key={logo.id}
+                  href={logo.href}
+                  className="flex h-[4.25rem] flex-col items-center justify-center gap-1 rounded-[var(--radius-sm)] border border-border bg-white px-2 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-accent/40 hover:shadow-sm"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent">
+                    {(logo.mark ?? logo.name).slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="line-clamp-1 text-[10px] font-semibold text-muted">
+                    {logo.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}

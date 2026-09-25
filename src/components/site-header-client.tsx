@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react"
 import {
   ALL_CATEGORIES_MENU,
   MEGA_MENU,
+  SEARCH_PLACEHOLDER,
   TRENDING_SEARCHES,
   type MegaMenuCategory,
   type MegaMenuColumn,
@@ -45,6 +46,28 @@ function UserIcon({ className = "h-5 w-5" }: { className?: string }) {
       <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.8" />
       <path
         d="M5 19c1.5-3 4-4.5 7-4.5S17.5 16 19 19"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function PhoneAppIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="7"
+        y="2.5"
+        width="10"
+        height="19"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M10 5.5h4M11 18.5h2"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
@@ -131,15 +154,19 @@ function CategoryNav() {
           <Link
             key={entry.key}
             href={entry.href}
-            className={`shrink-0 rounded-[var(--radius-sm)] px-3 py-1.5 whitespace-nowrap ${
+            className={`shrink-0 rounded-[var(--radius-sm)] px-2.5 py-1.5 whitespace-nowrap ${
               openKey === entry.key
                 ? "bg-accent-soft text-accent"
                 : "hover:bg-accent-soft/70"
             }`}
             onMouseEnter={() => open(entry.key)}
             onFocus={() => open(entry.key)}
+            aria-expanded={openKey === entry.key}
           >
             {entry.label}
+            <span className="ml-0.5 text-[10px] text-muted" aria-hidden>
+              ▾
+            </span>
           </Link>
         ))}
       </nav>
@@ -273,7 +300,7 @@ function HeaderSearch() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onFocus={() => setFocused(true)}
-            placeholder="Search for products, brands and more"
+            placeholder={SEARCH_PLACEHOLDER}
             autoComplete="off"
             aria-autocomplete="list"
             aria-controls={listId}
@@ -411,6 +438,14 @@ export function SiteHeaderClient({
               Admin
             </Link>
           ) : null}
+          <Link
+            href="/download-app"
+            className="hidden items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground lg:inline-flex"
+            title="Download the Aspera app"
+          >
+            <PhoneAppIcon className="h-4 w-4" />
+            <span className="text-xs font-medium">Download App</span>
+          </Link>
           <Link
             href={accountHref}
             className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/70 sm:px-2.5"

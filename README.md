@@ -1,6 +1,6 @@
 # Aspera Marketplace
 
-India-first multi-vendor marketplace. Engineering through Phase 10 + continuity (PR #12) and the storefront/seller-shell UX slice live on stacked `cursor/*-10f6` branches. Tip for this work: `cursor/ux-storefront-seller-shell-10f6` (based on `cursor/post-phase-10-continuity-10f6`). Production launch remains blocked on open legal items A-20–A-28 in `ASSUMPTIONS.md`.
+India-first multi-vendor marketplace. Tip branch: `cursor/catalogue-seed-visuals-10f6` (stacked on UX shell / PR #13 and continuity / PR #12). Production launch remains blocked on open legal items A-20–A-28 in `ASSUMPTIONS.md`.
 
 Source of truth: https://github.com/ramchandragada/asperamarketplace
 
@@ -32,12 +32,15 @@ App: http://localhost:3000
 | Account | Email | Password |
 | --- | --- | --- |
 | Admin | `admin@aspera.local` | `AsperaAdminDevOnly1!` |
-| Seller owner | `seller@aspera.local` | `AsperaSellerDevOnly1!` |
+| Seller owner (home) | `seller@aspera.local` | `AsperaSellerDevOnly1!` |
+| Seller fashion | `seller.fashion@aspera.local` | `AsperaFashionDevOnly1!` |
+| Seller tech | `seller.tech@aspera.local` | `AsperaTechDevOnly1!` |
+| Seller wellness | `seller.wellness@aspera.local` | `AsperaWellnessDevOnly1!` |
 | Seller ops | `seller.ops@aspera.local` | `AsperaOpsDevOnly1!` |
 | Seller finance | `seller.finance@aspera.local` | `AsperaFinanceDevOnly1!` |
 | Seller support | `seller.support@aspera.local` | `AsperaSupportDevOnly1!` |
 
-Do not use real personal data. These passwords are for local development and CI-like smoke only.
+Catalogue seed: **12 categories**, **≥10 products each** (see `docs/CATALOGUE_SEED.md`). Run `pnpm db:migrate && pnpm db:seed` on non-production only.
 
 ### Useful routes
 

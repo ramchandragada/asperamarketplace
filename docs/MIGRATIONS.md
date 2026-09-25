@@ -1,5 +1,13 @@
 # Migrations
 
+## Eleventh migration
+
+Name: `20260925120000_product_images`  
+Checkpoint: (catalogue visuals slice)  
+Tables: `product_images`
+
+Stores primary and gallery image URLs for catalogue cards and PDPs. Seeded Unsplash URLs are development/preview imagery only.
+
 ## Tenth migration
 
 Name: `20260925100000_tax_profiles`  

@@ -3,15 +3,17 @@
 The GitHub repository is the source of truth. Open it in Cursor on any machine:
 
 1. Cursor → Open Repository → `https://github.com/ramchandragada/asperamarketplace`
-2. Check out the latest feature branch (storefront UX + seller shell tip):
+2. Check out the latest feature branch (catalogue seed tip):
 
 ```bash
 git fetch origin
-git checkout cursor/ux-storefront-seller-shell-10f6
+git checkout cursor/catalogue-seed-visuals-10f6
 pnpm install
+pnpm db:migrate
+pnpm db:seed
 ```
 
-If that branch is unavailable, use `cursor/post-phase-10-continuity-10f6` (PR #12).
+If that branch is unavailable, use `cursor/ux-storefront-seller-shell-10f6` or `cursor/post-phase-10-continuity-10f6`.
 
 3. For local run, copy `.env.example` → `.env` and set `DATABASE_URL` to the shared Neon non-prod URL from the Vercel project (or your own local Postgres).
 4. Run `pnpm db:migrate` then `pnpm db:seed` then `pnpm dev`.
@@ -34,9 +36,10 @@ Alternatively use **Cursor Cloud Agents** on this repo: they already have the en
 | 9 Analytics | `cursor/phase-9-analytics-10f6` | #10 |
 | 10 Hardening | `cursor/phase-10-hardening-launch-10f6` | #11 |
 | Continuity | `cursor/post-phase-10-continuity-10f6` | #12 |
-| UX + seller shell | `cursor/ux-storefront-seller-shell-10f6` | (this tip) |
+| UX + seller shell | `cursor/ux-storefront-seller-shell-10f6` | #13 |
+| Catalogue seed + visuals | `cursor/catalogue-seed-visuals-10f6` | (this tip) |
 
-Prefer the newest branch tip when continuing work. Merging PRs in order keeps `main`/Vercel production aligned.
+Prefer the newest branch tip when continuing work. Merging PRs in order keeps `main`/Vercel production aligned. After checkout, run `pnpm db:migrate && pnpm db:seed` on **non-production** so preview DBs get the rich catalogue.
 
 ## Preview
 
@@ -47,3 +50,7 @@ Vercel previews deploy from each PR branch. Sign into Vercel to open protected p
 After clone/checkout of the tip branch, the same Neon non-prod database and Vercel project stay shared. No machine-local secrets are required beyond copying env from the Vercel project (or using Cursor Cloud Agents which already have them).
 
 See `docs/LAUNCH_CHECKLIST.md` before any production cutover. Legal A-20–A-28 remain open.
+
+## Auto-deploy after each slice
+
+See [DEPLOYMENT_POLICY.md](./DEPLOYMENT_POLICY.md). Preview deploys and Neon non-prod migrate/seed happen after each completed slice without waiting for an explicit deploy request. Production `main` is never auto-merged.

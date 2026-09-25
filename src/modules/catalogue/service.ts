@@ -316,6 +316,7 @@ export async function getPublicProductBySlug(slug: string) {
       },
       category: true,
       brand: true,
+      images: { orderBy: { sortOrder: "asc" } },
       variants: {
         where: { isActive: true },
         include: { inventory: true },
@@ -410,19 +411,20 @@ export async function searchApprovedProducts(
     `);
 
     const total = Number(rows[0]?.total_count ?? 0);
+    const baseItems = rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      summary: row.summary,
+      categoryName: row.category_name,
+      sellerName: row.seller_name,
+      sellerVerified: row.seller_status === "approved",
+      minPricePaise: row.min_price_paise,
+      minMrpPaise: row.min_mrp_paise,
+      availableQty: row.available_qty,
+    }));
     return {
-      items: rows.map((row) => ({
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-        summary: row.summary,
-        categoryName: row.category_name,
-        sellerName: row.seller_name,
-        sellerVerified: row.seller_status === "approved",
-        minPricePaise: row.min_price_paise,
-        minMrpPaise: row.min_mrp_paise,
-        availableQty: row.available_qty,
-      })),
+      items: await attachPrimaryImages(baseItems),
       page,
       pageSize,
       total,
@@ -478,6 +480,11 @@ export async function searchApprovedProducts(
       include: {
         category: true,
         seller: { select: { legalName: true, tradeName: true, status: true } },
+        images: {
+          where: { isPrimary: true },
+          take: 1,
+          orderBy: { sortOrder: "asc" },
+        },
         variants: {
           where: { isActive: true },
           include: { inventory: true },
@@ -505,6 +512,8 @@ export async function searchApprovedProducts(
       minPricePaise: Math.min(...prices),
       minMrpPaise: Math.min(...mrps),
       availableQty,
+      primaryImageUrl: product.images[0]?.url ?? null,
+      primaryImageAlt: product.images[0]?.altText ?? product.title,
     };
   });
 
@@ -524,6 +533,34 @@ export async function searchApprovedProducts(
     pageSize,
     total,
   };
+}
+
+async function attachPrimaryImages<
+  T extends { id: string; title: string },
+>(items: T[]) {
+  if (items.length === 0) {
+    return items.map((item) => ({
+      ...item,
+      primaryImageUrl: null as string | null,
+      primaryImageAlt: item.title,
+    }));
+  }
+  const images = await prisma.productImage.findMany({
+    where: {
+      productId: { in: items.map((item) => item.id) },
+      isPrimary: true,
+    },
+    orderBy: { sortOrder: "asc" },
+  });
+  const byProduct = new Map(images.map((image) => [image.productId, image]));
+  return items.map((item) => {
+    const image = byProduct.get(item.id);
+    return {
+      ...item,
+      primaryImageUrl: image?.url ?? null,
+      primaryImageAlt: image?.altText ?? item.title,
+    };
+  });
 }
 
 export class CatalogueValidationError extends Error {

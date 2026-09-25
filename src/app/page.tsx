@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ProductCard } from "@/components/product-card";
 import { Badge } from "@/components/ui/badge";
 import { PageShell, SectionHeading } from "@/components/ui/page-shell";
@@ -8,23 +9,31 @@ import {
 } from "@/modules/catalogue/service";
 import { getOptionalActor } from "@/modules/identity/service";
 import { prisma } from "@/platform/db/prisma";
+import { SEED_CATEGORIES } from "@/modules/catalogue/seed-catalogue-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [actor, catalogue, categories, approvedSellerCount] = await Promise.all([
-    getOptionalActor(),
-    searchApprovedProducts({ page: 1, pageSize: 8, sort: "newest" }),
-    listActiveCategories(),
-    prisma.seller.count({ where: { status: "approved" } }),
-  ]);
+  const [actor, catalogue, newest, dealsSource, categories, approvedSellerCount] =
+    await Promise.all([
+      getOptionalActor(),
+      searchApprovedProducts({ page: 1, pageSize: 12, sort: "newest" }),
+      searchApprovedProducts({ page: 1, pageSize: 8, sort: "newest" }),
+      searchApprovedProducts({ page: 1, pageSize: 24, sort: "newest" }),
+      listActiveCategories(),
+      prisma.seller.count({ where: { status: "approved" } }),
+    ]);
 
-  const deals = catalogue.items
+  const deals = dealsSource.items
     .filter(
       (item) =>
         item.minMrpPaise != null && item.minMrpPaise > item.minPricePaise,
     )
     .slice(0, 8);
+
+  const categoryVisual = Object.fromEntries(
+    SEED_CATEGORIES.map((category) => [category.slug, category.imagePool[0]]),
+  );
 
   return (
     <PageShell className="gap-12 md:gap-16">
@@ -43,18 +52,18 @@ export default async function Home() {
               Aspera Marketplace
             </p>
             <h1 className="mt-3 max-w-xl text-4xl font-semibold tracking-tight md:text-5xl">
-              Shop verified Indian sellers with clear prices and calm checkout.
+              A richer catalogue from verified Indian sellers.
             </h1>
             <p className="mt-4 max-w-lg text-base leading-7 opacity-90">
-              Discover moderated listings, transparent delivery at checkout, and
-              seller trust signals grounded in KYC status—not marketing badges.
+              Browse image-led product cards, transparent prices, and server-priced
+              checkout. Seed listings are fictional development data for preview.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/browse"
                 className="inline-flex rounded-[var(--radius-sm)] bg-surface px-5 py-2.5 text-sm font-semibold text-accent"
               >
-                Browse catalogue
+                Shop the catalogue
               </Link>
               <Link
                 href={actor ? "/seller" : "/seller/onboarding"}
@@ -75,8 +84,8 @@ export default async function Home() {
             </div>
             <div className="rounded-[var(--radius-sm)] bg-black/15 p-4 backdrop-blur-sm sm:col-span-2">
               <p className="text-sm leading-6 opacity-90">
-                Secure session checkout · Server-priced cart · Mock payments in
-                non-production
+                Secure session checkout · Mock payments in non-production · A-24 tax
+                assumptions remain open
               </p>
             </div>
           </div>
@@ -87,58 +96,76 @@ export default async function Home() {
         <SectionHeading
           eyebrow="Categories"
           title="Shop by category"
-          description="Focused launch catalogue with room to expand without rewriting the core."
+          description="Twelve India-focused categories seeded for discovery, filters, and seller distribution."
           action={
             <Link href="/browse" className="text-sm font-medium text-accent underline">
               View all
             </Link>
           }
         />
-        <div className="rail-scroll md:grid md:grid-cols-4 md:overflow-visible">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/browse?categorySlug=${encodeURIComponent(category.slug)}`}
-              className="rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5"
-            >
-              <p className="text-lg font-semibold">{category.name}</p>
-              <p className="mt-2 line-clamp-2 text-sm text-muted">
-                {category.description ?? "Browse approved listings in this category."}
-              </p>
-            </Link>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
+          {categories.map((category) => {
+            const image = categoryVisual[category.slug];
+            return (
+              <Link
+                key={category.id}
+                href={`/browse?categorySlug=${encodeURIComponent(category.slug)}`}
+                className="group overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-card)]"
+              >
+                <div className="relative aspect-[5/4] bg-accent-soft">
+                  {image ? (
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="160px"
+                      className="object-cover transition group-hover:scale-[1.03]"
+                    />
+                  ) : null}
+                </div>
+                <div className="p-3">
+                  <p className="text-sm font-semibold">{category.name}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-5">
+        <SectionHeading
+          eyebrow="New arrivals"
+          title="Fresh from moderated sellers"
+          description="Newest approved listings with server-side prices in paise."
+        />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          {newest.items.map((item) => (
+            <ProductCard key={item.id} product={item} />
           ))}
-          {categories.length === 0 ? (
-            <p className="text-sm text-muted">Categories appear after seeding.</p>
-          ) : null}
         </div>
       </section>
 
       <section className="flex flex-col gap-5">
         <SectionHeading
           eyebrow="Trending"
-          title="Fresh from moderated sellers"
-          description="Prices and stock are computed on the server in paise."
+          title="Popular picks across categories"
+          description="Curated from the seeded catalogue for visual density—not live popularity scores."
         />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <div className="rail-scroll">
           {catalogue.items.map((item) => (
             <ProductCard key={item.id} product={item} />
           ))}
         </div>
-        {catalogue.items.length === 0 ? (
-          <p className="text-sm text-muted">
-            No approved products yet. Seed the non-production database to explore.
-          </p>
-        ) : null}
       </section>
 
       {deals.length > 0 ? (
         <section className="flex flex-col gap-5">
           <SectionHeading
-            eyebrow="Value"
+            eyebrow="Deals"
             title="Marked below MRP"
             description="Discount shown only when MRP is higher than selling price."
           />
-          <div className="rail-scroll">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {deals.map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}
@@ -151,12 +178,12 @@ export default async function Home() {
           <div>
             <Badge tone="success">Seller verification</Badge>
             <h2 className="mt-3 text-2xl font-semibold">
-              Trust built from KYC status, not slogans
+              Products from multiple approved sellers
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
-              “Verified seller” means the seller profile is approved in this
-              environment after KYC review. It is not a legal or tax endorsement.
-              GST and tax configuration remain open assumptions (A-24).
+              Catalogue seed distributes listings across home, fashion, tech, and
+              wellness demo sellers. “Verified seller” means approved KYC status in
+              this environment—not a legal endorsement.
             </p>
           </div>
           <Link

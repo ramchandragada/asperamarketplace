@@ -519,7 +519,7 @@ export function SiteHeaderClient({
         <HeaderSearch />
       </div>
       <div
-        className={`overflow-hidden transition-[max-height,opacity] duration-200 ${
+        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
           compact ? "max-h-0 opacity-0" : "max-h-40 opacity-100"
         }`}
       >

@@ -65,7 +65,7 @@ export function SiteFooter() {
           <p className="font-semibold text-foreground">Shop</p>
           <ul className="mt-2 space-y-1.5 text-muted">
             <li>
-              <Link href="/browse" className="hover:text-accent">
+              <Link href="/shop" className="hover:text-accent">
                 All categories
               </Link>
             </li>

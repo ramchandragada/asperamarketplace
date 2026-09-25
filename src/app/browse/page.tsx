@@ -22,6 +22,8 @@ export default async function BrowsePage({
     verifiedSellerOnly?: string;
     minPricePaise?: string;
     maxPricePaise?: string;
+    minRating?: string;
+    minDiscountPercent?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -47,6 +49,10 @@ export default async function BrowsePage({
       maxPricePaise: params.maxPricePaise
         ? Number(params.maxPricePaise)
         : undefined,
+      minRating: params.minRating ? Number(params.minRating) : undefined,
+      minDiscountPercent: params.minDiscountPercent
+        ? Number(params.minDiscountPercent)
+        : undefined,
       page: 1,
       pageSize: 24,
     }),
@@ -66,12 +72,20 @@ export default async function BrowsePage({
         categories={categories.map((category) => ({
           slug: category.slug,
           name: category.name,
+          productCount: category.productCount,
         }))}
         initialCategorySlug={categorySlug}
         initialSort={sort}
         initialInStockOnly={inStockOnly}
         initialVerifiedOnly={verifiedSellerOnly}
+        initialMinRating={params.minRating ? Number(params.minRating) : undefined}
+        initialMinDiscount={
+          params.minDiscountPercent
+            ? Number(params.minDiscountPercent)
+            : undefined
+        }
         heading={heading}
+        browseBasePath="/browse"
       />
     </PageShell>
   );

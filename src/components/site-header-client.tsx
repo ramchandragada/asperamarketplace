@@ -22,20 +22,24 @@ function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
 }
 
 function BagIcon({ className = "h-5 w-5" }: { className?: string }) {
+  /* Meesho header cart: open basket + handle + wheels */
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M6 8h12l-1 12H7L6 8z"
+        d="M3.5 5.5h1.7l1.2 2.4h12.6l-1.4 7.2H7.2L5.2 5.5"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth="1.6"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M9 8V7a3 3 0 016 0v1"
+        d="M8.2 15.1h9.4"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth="1.6"
         strokeLinecap="round"
       />
+      <circle cx="9" cy="19" r="1.25" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="16.5" cy="19" r="1.25" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }

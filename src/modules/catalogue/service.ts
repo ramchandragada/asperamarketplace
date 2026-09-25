@@ -424,7 +424,7 @@ export async function searchApprovedProducts(
       availableQty: row.available_qty,
     }));
     return {
-      items: await attachPrimaryImages(baseItems),
+      items: await enrichStorefrontCards(await attachPrimaryImages(baseItems)),
       page,
       pageSize,
       total,
@@ -501,6 +501,20 @@ export async function searchApprovedProducts(
       const reserved = variant.inventory?.reserved ?? 0;
       return sum + Math.max(onHand - reserved, 0);
     }, 0);
+    const attrs =
+      product.attributes &&
+      typeof product.attributes === "object" &&
+      !Array.isArray(product.attributes)
+        ? (product.attributes as Record<string, unknown>)
+        : {};
+    const ratingAverage =
+      typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null;
+    const reviewCount =
+      typeof attrs.reviewCount === "number" ? attrs.reviewCount : 0;
+    const dealEndsAt =
+      typeof attrs.dealEndsAt === "string" ? attrs.dealEndsAt : null;
+    const deliveryFeePaise =
+      typeof attrs.deliveryFeePaise === "number" ? attrs.deliveryFeePaise : null;
     return {
       id: product.id,
       slug: product.slug,
@@ -512,6 +526,11 @@ export async function searchApprovedProducts(
       minPricePaise: Math.min(...prices),
       minMrpPaise: Math.min(...mrps),
       availableQty,
+      ratingAverage,
+      reviewCount,
+      dealEndsAt,
+      deliveryFeePaise,
+      freeDeliveryHint: deliveryFeePaise === 0,
       primaryImageUrl: product.images[0]?.url ?? null,
       primaryImageAlt: product.images[0]?.altText ?? product.title,
     };
@@ -528,11 +547,62 @@ export async function searchApprovedProducts(
   items = items.slice(0, pageSize);
 
   return {
-    items,
+    items: await enrichStorefrontCards(items),
     page,
     pageSize,
     total,
   };
+}
+
+async function enrichStorefrontCards<
+  T extends {
+    id: string;
+    ratingAverage?: number | null;
+    reviewCount?: number;
+    dealEndsAt?: string | null;
+    deliveryFeePaise?: number | null;
+    freeDeliveryHint?: boolean;
+  },
+>(items: T[]) {
+  if (items.length === 0) return items;
+  const needsAttrs = items.some(
+    (item) => item.ratingAverage == null && item.dealEndsAt == null,
+  );
+  if (!needsAttrs) return items;
+  const products = await prisma.product.findMany({
+    where: { id: { in: items.map((item) => item.id) } },
+    select: { id: true, attributes: true },
+  });
+  const byId = new Map(products.map((product) => [product.id, product.attributes]));
+  return items.map((item) => {
+    const raw = byId.get(item.id);
+    const attrs =
+      raw && typeof raw === "object" && !Array.isArray(raw)
+        ? (raw as Record<string, unknown>)
+        : {};
+    return {
+      ...item,
+      ratingAverage:
+        item.ratingAverage ??
+        (typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null),
+      reviewCount:
+        item.reviewCount ??
+        (typeof attrs.reviewCount === "number" ? attrs.reviewCount : 0),
+      dealEndsAt:
+        item.dealEndsAt ??
+        (typeof attrs.dealEndsAt === "string" ? attrs.dealEndsAt : null),
+      deliveryFeePaise:
+        item.deliveryFeePaise ??
+        (typeof attrs.deliveryFeePaise === "number"
+          ? attrs.deliveryFeePaise
+          : null),
+      freeDeliveryHint:
+        item.freeDeliveryHint ??
+        (typeof attrs.deliveryFeePaise === "number"
+          ? attrs.deliveryFeePaise === 0
+          : undefined),
+    };
+  });
 }
 
 async function attachPrimaryImages<

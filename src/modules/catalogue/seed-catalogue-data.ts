@@ -40,6 +40,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1586075010923-2dd4570fb338"),
       U("photo-1556911220-bff31c812dba"),
       U("photo-1484154218962-a197022b5858"),
+      U("photo-1600585154340-be6161a56a0c"),
+      U("photo-1493666438817-866a91353ca9"),
     ],
   },
   {
@@ -50,6 +52,9 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1483985988355-763728e1935b"),
       U("photo-1490481651871-ab68de25d43d"),
       U("photo-1445205170230-053b83016050"),
+      U("photo-1515886657613-9f3515b0c78f"),
+      U("photo-1469334031218-e382a71b716b"),
+      U("photo-1434389677669-e08b4cac3105"),
     ],
   },
   {
@@ -60,6 +65,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1596462502278-27bfdc403348"),
       U("photo-1571781926291-c77df89afad5"),
       U("photo-1522335789203-aabd1fc54bc9"),
+      U("photo-1612817288484-6f916006741a"),
+      U("photo-1556228578-0d85b1a4d571"),
     ],
   },
   {
@@ -70,6 +77,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1556911220-e15b29be8c8f"),
       U("photo-1556909114-f6e7ad7d3136"),
       U("photo-1586023492125-27b2c045efd7"),
+      U("photo-1556912173-46c336c7fd55"),
+      U("photo-1616046229478-9901c5536a45"),
     ],
   },
   {
@@ -80,6 +89,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1505740420928-5e560c06d30e"),
       U("photo-1572569511254-d8f925fe2cbb"),
       U("photo-1484704849700-f032a568e944"),
+      U("photo-1546435770-a3e426bf472b"),
+      U("photo-1583394838336-acd977736f90"),
     ],
   },
   {
@@ -90,6 +101,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1511707171634-5f897ff02aa9"),
       U("photo-1580910051074-3eb694886505"),
       U("photo-1601784551446-20c9e07cdbdb"),
+      U("photo-1605236453806-6ff36851218e"),
+      U("photo-1592899677977-9c10ca588bbd"),
     ],
   },
   {
@@ -100,6 +113,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1517836357463-d25dfeac3438"),
       U("photo-1571019614242-c5c5dee9f50b"),
       U("photo-1544367567-0f2fcb009e0b"),
+      U("photo-1518611012118-696072aa579a"),
+      U("photo-1576678927484-cc907957088c"),
     ],
   },
   {
@@ -110,6 +125,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1515488042361-ee00e0ddd4e4"),
       U("photo-1503454537195-1dcabb73ffb9"),
       U("photo-1566459967917-75f63c8d0b7b"),
+      U("photo-1519689373023-dd07c7988603"),
+      U("photo-1503919545889-aef44e1b0f0b"),
     ],
   },
   {
@@ -120,6 +137,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1452860606245-08befc0ff44b"),
       U("photo-1517842645767-c639042777db"),
       U("photo-1586281380349-632531db7ed4"),
+      U("photo-1456735190827-d1262f71b8a3"),
+      U("photo-1586075010923-2dd4570fb338"),
     ],
   },
   {
@@ -130,6 +149,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1517963879433-6ad2b056d944"),
       U("photo-1576678927484-cc907957088c"),
       U("photo-1534438327276-14e5300c3a48"),
+      U("photo-1518611012118-696072aa579a"),
+      U("photo-1599058945522-28d272b53567"),
     ],
   },
   {
@@ -140,6 +161,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1549298916-b41d501d3772"),
       U("photo-1548036328-c9fa89d128fa"),
       U("photo-1560343090-f0409e92791a"),
+      U("photo-1543163521-1bf539c55dd2"),
+      U("photo-1622560480605-d83c853bc5c3"),
     ],
   },
   {
@@ -150,6 +173,8 @@ export const SEED_CATEGORIES: SeedCategoryDef[] = [
       U("photo-1581578731548-c64695cc6952"),
       U("photo-1563453392212-326f5e854473"),
       U("photo-1558618666-fcd25c85cd64"),
+      U("photo-1585421514738-01798e348b17"),
+      U("photo-1527515637462-cff94eecc1ac"),
     ],
   },
 ];

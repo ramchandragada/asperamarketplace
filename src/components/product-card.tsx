@@ -2,9 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { useEffect, useState, type MouseEvent } from "react";
 import { formatPaise } from "@/modules/catalogue/helpers";
 
 export type ProductCardModel = {
@@ -21,6 +19,8 @@ export type ProductCardModel = {
   ratingAverage?: number | null;
   reviewCount?: number;
   freeDeliveryHint?: boolean;
+  deliveryFeePaise?: number | null;
+  dealEndsAt?: string | null;
   primaryImageUrl?: string | null;
   primaryImageAlt?: string | null;
 };
@@ -28,6 +28,87 @@ export type ProductCardModel = {
 export function discountPercent(mrp: number, price: number) {
   if (!mrp || mrp <= price) return null;
   return Math.round(((mrp - price) / mrp) * 100);
+}
+
+function useCountdown(iso: string | null | undefined) {
+  const [label, setLabel] = useState<string | null>(null);
+  useEffect(() => {
+    if (!iso) {
+      setLabel(null);
+      return;
+    }
+    const end = new Date(iso).getTime();
+    if (Number.isNaN(end) || end <= Date.now()) {
+      setLabel(null);
+      return;
+    }
+    function tick() {
+      const diff = end - Date.now();
+      if (diff <= 0) {
+        setLabel(null);
+        return;
+      }
+      const hours = Math.floor(diff / 3_600_000);
+      const minutes = Math.floor((diff % 3_600_000) / 60_000);
+      const seconds = Math.floor((diff % 60_000) / 1000);
+      setLabel(
+        `${String(hours).padStart(2, "0")}h:${String(minutes).padStart(2, "0")}m:${String(seconds).padStart(2, "0")}s`,
+      );
+    }
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [iso]);
+  return label;
+}
+
+function WishlistButton({ productId }: { productId: string }) {
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("aspera.wishlist");
+      const ids = raw ? (JSON.parse(raw) as string[]) : [];
+      setSaved(ids.includes(productId));
+    } catch {
+      /* ignore */
+    }
+  }, [productId]);
+
+  function toggle(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    try {
+      const raw = localStorage.getItem("aspera.wishlist");
+      const ids = raw ? (JSON.parse(raw) as string[]) : [];
+      const next = ids.includes(productId)
+        ? ids.filter((id) => id !== productId)
+        : [...ids, productId];
+      localStorage.setItem("aspera.wishlist", JSON.stringify(next));
+      setSaved(next.includes(productId));
+    } catch {
+      setSaved((prev) => !prev);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-muted shadow-sm backdrop-blur-sm hover:text-danger"
+      aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
+      aria-pressed={saved}
+    >
+      <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+        <path
+          d="M12 20s-7-4.35-7-9.2A3.8 3.8 0 0112 7.5a3.8 3.8 0 017 3.3C19 15.65 12 20 12 20z"
+          fill={saved ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className={saved ? "text-danger" : undefined}
+        />
+      </svg>
+    </button>
+  );
 }
 
 export function ProductCard({ product }: { product: ProductCardModel }) {
@@ -39,11 +120,19 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
   const initials = product.title.slice(0, 1).toUpperCase();
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(product.primaryImageUrl) && !imageFailed;
+  const countdown = useCountdown(product.dealEndsAt);
+  const freeDelivery =
+    product.freeDeliveryHint === true ||
+    product.deliveryFeePaise === 0 ||
+    product.minPricePaise >= 99_900;
+  const hasRating =
+    product.ratingAverage != null && (product.reviewCount ?? 0) > 0;
 
   return (
-    <Card as="article" className="group flex h-full flex-col overflow-hidden">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-card)] transition hover:shadow-[var(--shadow-soft)]">
       <Link href={`/products/${product.slug}`} className="flex h-full flex-col">
-        <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-accent-soft via-surface-raised to-warning-soft/40">
+        <div className="relative aspect-square overflow-hidden bg-accent-soft/40">
+          <WishlistButton productId={product.id} />
           {showImage ? (
             <Image
               src={product.primaryImageUrl as string}
@@ -61,51 +150,62 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               <span className="sr-only">No product image available</span>
             </div>
           )}
-          <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-            {product.sellerVerified ? (
-              <Badge tone="success">Verified seller</Badge>
-            ) : null}
-            {discount ? <Badge tone="warning">{discount}% off</Badge> : null}
-          </div>
+          {countdown ? (
+            <div className="absolute bottom-2 left-2 rounded bg-danger px-1.5 py-0.5 font-mono text-[11px] font-semibold text-white">
+              {countdown}
+            </div>
+          ) : null}
           {!inStock ? (
             <div className="absolute inset-x-0 bottom-0 bg-foreground/70 px-2 py-1 text-center text-xs text-background">
               Out of stock
             </div>
-          ) : product.availableQty <= 5 ? (
-            <div className="absolute inset-x-0 bottom-0 bg-warning/90 px-2 py-1 text-center text-xs text-white">
-              Only {product.availableQty} left
-            </div>
           ) : null}
         </div>
-        <div className="flex flex-1 flex-col gap-1.5 p-3">
-          {product.categoryName ? (
-            <p className="text-[11px] font-medium tracking-wide text-muted uppercase">
-              {product.categoryName}
-            </p>
-          ) : null}
-          <h3 className="line-clamp-2 text-sm font-semibold leading-5 group-hover:underline">
+        <div className="flex flex-1 flex-col gap-1 p-2.5">
+          <h3 className="line-clamp-2 text-sm leading-5 font-medium text-foreground">
             {product.title}
           </h3>
-          <p className="text-sm">
-            <span className="font-semibold">{formatPaise(product.minPricePaise)}</span>
+          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-base font-bold text-foreground">
+              {formatPaise(product.minPricePaise)}
+            </span>
             {product.minMrpPaise && product.minMrpPaise > product.minPricePaise ? (
-              <span className="ml-2 text-xs text-muted line-through">
+              <span className="text-[13px] text-muted line-through">
                 {formatPaise(product.minMrpPaise)}
               </span>
             ) : null}
+            {discount ? (
+              <span className="text-xs font-semibold text-success">{discount}% off</span>
+            ) : null}
           </p>
+          {hasRating ? (
+            <p className="flex items-center gap-1.5 text-xs">
+              <span className="inline-flex items-center gap-0.5 rounded bg-success px-1.5 py-0.5 font-semibold text-white">
+                ★ {product.ratingAverage!.toFixed(1)}
+              </span>
+              <span className="text-muted">
+                {(product.reviewCount ?? 0) >= 1000
+                  ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}K reviews`
+                  : `${product.reviewCount} reviews`}
+              </span>
+            </p>
+          ) : null}
           <p className="text-xs text-muted">
-            {product.sellerName}
-            {product.ratingAverage != null && (product.reviewCount ?? 0) > 0
-              ? ` · ${product.ratingAverage.toFixed(1)}★ (${product.reviewCount})`
-              : ""}
+            {freeDelivery
+              ? "Free Delivery"
+              : product.deliveryFeePaise != null
+                ? `Delivery ${formatPaise(product.deliveryFeePaise)}`
+                : "Delivery ₹60"}
           </p>
-          <p className="mt-auto pt-1 text-xs text-muted">
-            Delivery estimate on checkout
-            {inStock ? " · In stock" : ""}
-          </p>
+          {product.sellerVerified ? (
+            <p className="mt-auto pt-1 text-[11px] font-medium text-accent">
+              Verified ✓
+            </p>
+          ) : (
+            <span className="mt-auto" />
+          )}
         </div>
       </Link>
-    </Card>
+    </article>
   );
 }

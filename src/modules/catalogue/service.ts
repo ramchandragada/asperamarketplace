@@ -34,10 +34,24 @@ async function requireApprovedSellerOwnership(actor: Actor, sellerId: string) {
 }
 
 export async function listActiveCategories() {
-  return prisma.category.findMany({
+  const categories = await prisma.category.findMany({
     where: { isActive: true },
     orderBy: { name: "asc" },
+    include: {
+      _count: {
+        select: { products: { where: { status: "approved" } } },
+      },
+    },
   });
+  return categories.map((category) => ({
+    id: category.id,
+    slug: category.slug,
+    name: category.name,
+    description: category.description,
+    parentId: category.parentId,
+    isActive: category.isActive,
+    productCount: category._count.products,
+  }));
 }
 
 export async function ensureGenericCategory() {
@@ -475,8 +489,14 @@ export async function searchApprovedProducts(
     prisma.product.findMany({
       where,
       orderBy,
-      skip: offset,
-      take: pageSize * (sort === "newest" ? 1 : 3),
+      skip:
+        input.minRating != null || input.minDiscountPercent != null
+          ? 0
+          : offset,
+      take:
+        input.minRating != null || input.minDiscountPercent != null
+          ? Math.min(200, pageSize * 8)
+          : pageSize * (sort === "newest" ? 1 : 3),
       include: {
         category: true,
         seller: { select: { legalName: true, tradeName: true, status: true } },
@@ -539,18 +559,41 @@ export async function searchApprovedProducts(
   if (input.inStockOnly) {
     items = items.filter((item) => item.availableQty > 0);
   }
+  if (input.minRating != null) {
+    items = items.filter(
+      (item) => (item.ratingAverage ?? 0) >= (input.minRating as number),
+    );
+  }
+  if (input.minDiscountPercent != null) {
+    items = items.filter((item) => {
+      const mrp = item.minMrpPaise ?? 0;
+      if (!mrp || mrp <= item.minPricePaise) return false;
+      const discount = Math.round(((mrp - item.minPricePaise) / mrp) * 100);
+      return discount >= (input.minDiscountPercent as number);
+    });
+  }
   if (sort === "price_asc") {
     items = [...items].sort((a, b) => a.minPricePaise - b.minPricePaise);
   } else if (sort === "price_desc") {
     items = [...items].sort((a, b) => b.minPricePaise - a.minPricePaise);
   }
-  items = items.slice(0, pageSize);
+  // When client-side filters shrink the page, still return filtered slice
+  let working = items;
+  if (input.minRating != null || input.minDiscountPercent != null) {
+    working = working.slice(offset, offset + pageSize);
+  } else {
+    working = working.slice(0, pageSize);
+  }
+  const filteredTotal =
+    input.minRating != null || input.minDiscountPercent != null
+      ? items.length
+      : total;
 
   return {
-    items: await enrichStorefrontCards(items),
+    items: await enrichStorefrontCards(working),
     page,
     pageSize,
-    total,
+    total: filteredTotal,
   };
 }
 

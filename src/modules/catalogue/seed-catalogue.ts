@@ -8,47 +8,130 @@ import {
   SEED_PRODUCTS,
 } from "./seed-catalogue-data";
 
-export type SeedSellerMap = Record<
-  "home" | "fashion" | "tech" | "wellness",
-  { id: string }
->;
+export type SeedSellerMap = Record<string, { id: string }>;
 
 function storefrontAttributes(item: (typeof SEED_PRODUCTS)[number], index: number) {
-  const ratingAverage = Number((3.4 + ((index * 7) % 14) * 0.1).toFixed(1));
-  const reviewCount = 12 + ((index * 97) % 4800);
+  const ratingAverage = Number((3.5 + ((index * 11) % 13) * 0.1).toFixed(1));
+  const reviewBuckets = [
+    80 + ((index * 17) % 120),
+    180 + ((index * 23) % 320),
+    900 + ((index * 41) % 2200),
+    1800 + ((index * 53) % 2800),
+    60 + ((index * 19) % 90),
+  ];
+  const reviewCount = reviewBuckets[index % reviewBuckets.length]!;
   const dealEndsAt =
     index % 5 === 0
       ? new Date(Date.now() + (18 + (index % 30)) * 60 * 60 * 1000).toISOString()
       : undefined;
-  const deliveryFeePaise = index % 3 === 0 ? 0 : 6000;
-  const highlights: Record<string, string> = {
-    Origin: "India",
-  };
+  const deliveryOptions = [
+    { deliveryFeePaise: 0, deliveryLabel: "Free Delivery" },
+    { deliveryFeePaise: 4000, deliveryLabel: "Delivery ₹40" },
+    { deliveryFeePaise: 6000, deliveryLabel: "Delivery ₹60" },
+    { deliveryFeePaise: 9900, deliveryLabel: "Express Delivery ₹99" },
+    {
+      deliveryFeePaise: 6000,
+      deliveryLabel: "Free Delivery above ₹499",
+      freeDeliveryThresholdPaise: 49900,
+    },
+  ] as const;
+  const delivery = deliveryOptions[index % deliveryOptions.length]!;
+
+  const highlights: Record<string, string> = {};
   if (item.categorySlug === "fashion") {
     highlights.Material = "Cotton blend";
     highlights.Occasion = "Casual";
     highlights.Fit = "Regular";
+    highlights.Origin = "India";
   } else if (item.categorySlug.includes("beauty")) {
     highlights.Type = "Personal care";
     highlights.Skin = "All skin types";
-  } else if (item.categorySlug.includes("electronics") || item.categorySlug.includes("mobile")) {
+    highlights.Origin = "India";
+  } else if (
+    item.categorySlug.includes("electronics") ||
+    item.categorySlug.includes("mobile")
+  ) {
     highlights.Warranty = "6 months seller warranty";
     highlights.Compatibility = "Universal";
-  } else if (item.categorySlug.includes("home") || item.categorySlug.includes("household")) {
+    highlights.Origin = "India";
+  } else if (
+    item.categorySlug.includes("home") ||
+    item.categorySlug.includes("household")
+  ) {
     highlights.Material = "Everyday household grade";
     highlights.Care = "Wipe clean";
-  } else if (item.categorySlug.includes("sports") || item.categorySlug.includes("health")) {
+    highlights.Origin = "India";
+  } else if (
+    item.categorySlug.includes("sports") ||
+    item.categorySlug.includes("health")
+  ) {
     highlights.Use = "Home fitness";
     highlights.Level = "Beginner friendly";
+    highlights.Origin = "India";
+  } else {
+    highlights.Origin = "India";
+  }
+
+  // Proportional star distribution around the average
+  const weights =
+    ratingAverage >= 4.3
+      ? [0.05, 0.08, 0.12, 0.3, 0.45]
+      : ratingAverage >= 3.8
+        ? [0.05, 0.1, 0.15, 0.3, 0.4]
+        : [0.08, 0.12, 0.2, 0.3, 0.3];
+  let allocated = 0;
+  const ratingDistribution: Record<string, number> = {};
+  for (let star = 1; star <= 5; star += 1) {
+    const share =
+      star === 5
+        ? reviewCount - allocated
+        : Math.round(reviewCount * weights[star - 1]!);
+    ratingDistribution[String(star)] = Math.max(0, share);
+    allocated += ratingDistribution[String(star)]!;
   }
 
   return {
     ratingAverage,
     reviewCount,
+    ratingDistribution,
     dealEndsAt,
-    deliveryFeePaise,
+    deliveryFeePaise: delivery.deliveryFeePaise,
+    deliveryLabel: delivery.deliveryLabel,
+    freeDeliveryThresholdPaise:
+      "freeDeliveryThresholdPaise" in delivery
+        ? delivery.freeDeliveryThresholdPaise
+        : undefined,
     highlights,
   };
+}
+
+function customerFacingDescription(item: (typeof SEED_PRODUCTS)[number]) {
+  if (!/seed|fictional|demo|development|placeholder/i.test(item.description)) {
+    return item.description;
+  }
+  const title = item.title;
+  if (item.categorySlug === "fashion") {
+    return `${title} crafted for everyday Indian wardrobes. Soft, breathable fabric with a comfortable regular fit that layers well through the year. Easy to wash and pair with casual or festive looks.`;
+  }
+  if (item.categorySlug.includes("beauty")) {
+    return `${title} for daily grooming routines. Lightweight formula designed for regular use with a fresh finish. Packaged for bathroom shelves and travel pouches alike.`;
+  }
+  if (
+    item.categorySlug.includes("electronics") ||
+    item.categorySlug.includes("mobile")
+  ) {
+    return `${title} built for reliable everyday use. Compact design with practical ports and protective detailing for desks, bags, and on-the-go charging. Compatible with common devices.`;
+  }
+  if (item.categorySlug.includes("home") || item.categorySlug.includes("household")) {
+    return `${title} made for Indian homes and apartments. Durable everyday construction that is easy to clean and store. A practical upgrade for kitchens, living rooms, or utility spaces.`;
+  }
+  if (item.categorySlug.includes("baby")) {
+    return `${title} designed with little ones in mind. Soft-touch materials and practical sizing for daily care routines. Easy to pack for home, travel, or gifting.`;
+  }
+  if (item.categorySlug.includes("sports") || item.categorySlug.includes("health")) {
+    return `${title} for home workouts and active routines. Stable, beginner-friendly build that stores compactly after use. Suitable for living-room sessions and outdoor warm-ups.`;
+  }
+  return `${title} selected for everyday value on Aspera. Thoughtful materials and practical sizing for Indian households. A reliable pick for regular use and easy reordering.`;
 }
 
 const FASHION_SIZES = ["S", "M", "L", "XL"] as const;
@@ -99,18 +182,28 @@ export async function seedMarketplaceCatalogue(
   const perCategory: Record<string, number> = {};
 
   for (const [index, item] of SEED_PRODUCTS.entries()) {
-    const seller = input.sellers[item.sellerKey];
+    const sellerPool = Object.values(input.sellers);
+    const preferred = input.sellers[item.sellerKey];
+    const seller =
+      preferred ?? sellerPool[index % Math.max(sellerPool.length, 1)]!;
+    // Rotate some listings across extra sellers for storefront diversity
+    const diversified =
+      sellerPool.length > 4 && index % 3 === 0
+        ? sellerPool[index % sellerPool.length]!
+        : seller;
     const categoryId = categoryIds[item.categorySlug];
     const brandId = brandIds[item.brandSlug];
-    if (!seller || !categoryId || !brandId) {
+    if (!diversified || !categoryId || !brandId) {
       throw new Error(`Missing refs for ${item.slug}`);
     }
+    const activeSeller = diversified;
 
     const status: ProductStatus = item.status ?? "approved";
+    const description = customerFacingDescription(item);
     const searchDocument = buildSearchDocument({
       title: item.title,
       summary: item.summary,
-      description: item.description,
+      description,
       brandName: SEED_BRANDS.find((brand) => brand.slug === item.brandSlug)?.name,
       categoryName: SEED_CATEGORIES.find(
         (category) => category.slug === item.categorySlug,
@@ -129,13 +222,13 @@ export async function seedMarketplaceCatalogue(
       await prisma.$transaction(async (tx) => {
         const product = await tx.product.create({
           data: {
-            sellerId: seller.id,
+            sellerId: activeSeller.id,
             categoryId,
             brandId,
             slug: item.slug,
             title: item.title,
             summary: item.summary,
-            description: item.description,
+            description,
             status,
             countryOfOrigin: "India",
             hsnCode: item.hsnCode,
@@ -187,7 +280,7 @@ export async function seedMarketplaceCatalogue(
           const inventory = await tx.inventoryItem.create({
             data: {
               variantId: variant.id,
-              sellerId: seller.id,
+              sellerId: activeSeller.id,
               onHand: def.onHand,
               reserved: 0,
               damaged: 0,
@@ -230,10 +323,10 @@ export async function seedMarketplaceCatalogue(
         data: {
           title: item.title,
           summary: item.summary,
-          description: item.description,
+          description,
           categoryId,
           brandId,
-          sellerId: seller.id,
+          sellerId: activeSeller.id,
           searchDocument,
           hsnCode: item.hsnCode,
           attributes,
@@ -274,7 +367,7 @@ export async function seedMarketplaceCatalogue(
               where: { variantId: found.id },
               data: {
                 onHand: Math.max(2, Math.floor(item.onHand / FASHION_SIZES.length)),
-                sellerId: seller.id,
+                sellerId: activeSeller.id,
               },
             });
           } else {
@@ -292,7 +385,7 @@ export async function seedMarketplaceCatalogue(
             await prisma.inventoryItem.create({
               data: {
                 variantId: variant.id,
-                sellerId: seller.id,
+                sellerId: activeSeller.id,
                 onHand: Math.max(2, Math.floor(item.onHand / FASHION_SIZES.length)),
                 reserved: 0,
                 damaged: 0,
@@ -315,7 +408,7 @@ export async function seedMarketplaceCatalogue(
           });
           await prisma.inventoryItem.updateMany({
             where: { variantId: variant.id },
-            data: { onHand: item.onHand, sellerId: seller.id },
+            data: { onHand: item.onHand, sellerId: activeSeller.id },
           });
         }
       }

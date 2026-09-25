@@ -12,13 +12,26 @@ export type BrowseProduct = ProductCardModel & {
   categoryName: string;
 };
 
-type CategoryOption = { slug: string; name: string };
+type CategoryOption = { slug: string; name: string; productCount?: number };
 
 const PRICE_PRESETS = [
   { key: "u200", label: "Under ₹200", min: 0, max: 200 },
   { key: "200-500", label: "₹200 – ₹500", min: 200, max: 500 },
   { key: "500-1000", label: "₹500 – ₹1,000", min: 500, max: 1000 },
   { key: "a1000", label: "Above ₹1,000", min: 1000, max: null as number | null },
+] as const;
+
+const RATING_OPTIONS = [
+  { value: 4, label: "4★ & above" },
+  { value: 3, label: "3★ & above" },
+  { value: 2, label: "2★ & above" },
+] as const;
+
+const DISCOUNT_OPTIONS = [
+  { value: 10, label: "10% or more" },
+  { value: 20, label: "20% or more" },
+  { value: 30, label: "30% or more" },
+  { value: 40, label: "40% or more" },
 ] as const;
 
 export function CatalogueBrowse({
@@ -30,7 +43,10 @@ export function CatalogueBrowse({
   initialSort = "newest",
   initialInStockOnly = false,
   initialVerifiedOnly = false,
+  initialMinRating,
+  initialMinDiscount,
   heading,
+  browseBasePath = "/browse",
 }: {
   initialItems: BrowseProduct[];
   initialQuery: string;
@@ -40,7 +56,10 @@ export function CatalogueBrowse({
   initialSort?: string;
   initialInStockOnly?: boolean;
   initialVerifiedOnly?: boolean;
+  initialMinRating?: number;
+  initialMinDiscount?: number;
   heading?: string;
+  browseBasePath?: string;
 }) {
   const [items, setItems] = useState(initialItems);
   const [total, setTotal] = useState(initialTotal);
@@ -49,6 +68,12 @@ export function CatalogueBrowse({
   const [sort, setSort] = useState(initialSort);
   const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
   const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly);
+  const [minRating, setMinRating] = useState<number | null>(
+    initialMinRating ?? null,
+  );
+  const [minDiscount, setMinDiscount] = useState<number | null>(
+    initialMinDiscount ?? null,
+  );
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [pricePreset, setPricePreset] = useState("");
@@ -58,6 +83,8 @@ export function CatalogueBrowse({
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
     price: true,
+    rating: true,
+    discount: true,
     seller: true,
     availability: true,
   });
@@ -104,6 +131,20 @@ export function CatalogueBrowse({
         },
       });
     }
+    if (minRating != null) {
+      list.push({
+        key: "rating",
+        label: `${minRating}★ & above`,
+        clear: () => setMinRating(null),
+      });
+    }
+    if (minDiscount != null) {
+      list.push({
+        key: "discount",
+        label: `${minDiscount}% or more`,
+        clear: () => setMinDiscount(null),
+      });
+    }
     if (inStockOnly) {
       list.push({
         key: "stock",
@@ -128,6 +169,8 @@ export function CatalogueBrowse({
     pricePreset,
     minPrice,
     maxPrice,
+    minRating,
+    minDiscount,
   ]);
 
   async function runSearch(next?: {
@@ -138,6 +181,8 @@ export function CatalogueBrowse({
     verifiedOnly?: boolean;
     minPrice?: string;
     maxPrice?: string;
+    minRating?: number | null;
+    minDiscount?: number | null;
   }) {
     setError(null);
     const params = new URLSearchParams();
@@ -148,6 +193,9 @@ export function CatalogueBrowse({
     const verified = next?.verifiedOnly ?? verifiedOnly;
     const min = next?.minPrice ?? minPrice;
     const max = next?.maxPrice ?? maxPrice;
+    const rating = next?.minRating !== undefined ? next.minRating : minRating;
+    const discount =
+      next?.minDiscount !== undefined ? next.minDiscount : minDiscount;
     if (q) params.set("q", q);
     if (cat) params.set("categorySlug", cat);
     if (sortValue) params.set("sort", sortValue);
@@ -158,6 +206,12 @@ export function CatalogueBrowse({
     }
     if (max.trim()) {
       params.set("maxPricePaise", String(Math.round(Number(max) * 100)));
+    }
+    if (rating != null) {
+      params.set("minRating", String(rating));
+    }
+    if (discount != null) {
+      params.set("minDiscountPercent", String(discount));
     }
     params.set("pageSize", "24");
 
@@ -190,6 +244,8 @@ export function CatalogueBrowse({
     setSort("newest");
     setInStockOnly(false);
     setVerifiedOnly(false);
+    setMinRating(null);
+    setMinDiscount(null);
     setMinPrice("");
     setMaxPrice("");
     setPricePreset("");
@@ -202,6 +258,8 @@ export function CatalogueBrowse({
         verifiedOnly: false,
         minPrice: "",
         maxPrice: "",
+        minRating: null,
+        minDiscount: null,
       });
     });
   }
@@ -251,6 +309,9 @@ export function CatalogueBrowse({
                   }}
                 />
                 {category.name}
+                {category.productCount != null
+                  ? ` (${category.productCount})`
+                  : ""}
               </label>
             </li>
           ))}
@@ -327,6 +388,60 @@ export function CatalogueBrowse({
             />
           </label>
         </div>
+      </FilterSection>
+
+      <FilterSection
+        title="Customer Rating"
+        open={openSections.rating !== false}
+        onToggle={() => toggleSection("rating")}
+      >
+        <ul className="space-y-1.5">
+          {RATING_OPTIONS.map((option) => (
+            <li key={option.value}>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="rating"
+                  checked={minRating === option.value}
+                  onChange={() => {
+                    setMinRating(option.value);
+                    startTransition(() => {
+                      void runSearch({ minRating: option.value });
+                    });
+                  }}
+                />
+                {option.label}
+              </label>
+            </li>
+          ))}
+        </ul>
+      </FilterSection>
+
+      <FilterSection
+        title="Discount"
+        open={openSections.discount !== false}
+        onToggle={() => toggleSection("discount")}
+      >
+        <ul className="space-y-1.5">
+          {DISCOUNT_OPTIONS.map((option) => (
+            <li key={option.value}>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="discount"
+                  checked={minDiscount === option.value}
+                  onChange={() => {
+                    setMinDiscount(option.value);
+                    startTransition(() => {
+                      void runSearch({ minDiscount: option.value });
+                    });
+                  }}
+                />
+                {option.label}
+              </label>
+            </li>
+          ))}
+        </ul>
       </FilterSection>
 
       <FilterSection
@@ -448,6 +563,8 @@ export function CatalogueBrowse({
                       chip.key === "price" || chip.key === "priceCustom"
                         ? ""
                         : maxPrice,
+                    minRating: chip.key === "rating" ? null : minRating,
+                    minDiscount: chip.key === "discount" ? null : minDiscount,
                   });
                 });
               }}
@@ -506,7 +623,10 @@ export function CatalogueBrowse({
               title="No products found"
               description="Try clearing filters or searching a broader term."
               action={
-                <Link href="/browse" className="text-sm font-medium text-accent underline">
+                <Link
+                  href={browseBasePath}
+                  className="text-sm font-medium text-accent underline"
+                >
                   Continue shopping
                 </Link>
               }

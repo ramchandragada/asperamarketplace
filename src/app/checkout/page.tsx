@@ -23,10 +23,10 @@ export default async function CheckoutPage() {
         <p className="text-sm font-medium tracking-wide text-muted uppercase">
           Checkout review
         </p>
-        <h1 className="mt-2 text-3xl font-semibold">Confirm and reserve</h1>
+        <h1 className="mt-2 font-display text-3xl font-semibold">Checkout</h1>
         <p className="mt-2 text-muted">
-          Preview builds a server price snapshot with tax and shipping traces.
-          Confirm atomically reserves stock. No live payment in this phase.
+          Confirm your address and review the order summary. Payment is a
+          placeholder on this preview — no live charges are taken.
         </p>
       </div>
       <CheckoutPanel initialCart={cart} initialAddresses={addresses} />

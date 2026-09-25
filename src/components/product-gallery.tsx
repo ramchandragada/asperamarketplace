@@ -59,44 +59,72 @@ export function ProductGallery({
         </ul>
       ) : null}
 
-      <div
-        ref={mainRef}
-        className="relative order-1 aspect-square flex-1 overflow-hidden rounded-[var(--radius)] border border-border bg-accent-soft/40 shadow-[var(--shadow-card)] lg:order-2"
-        onMouseMove={(event) => {
-          const rect = mainRef.current?.getBoundingClientRect();
-          if (!rect) return;
-          const x = ((event.clientX - rect.left) / rect.width) * 100;
-          const y = ((event.clientY - rect.top) / rect.height) * 100;
-          setZoom({ x, y });
-        }}
-        onMouseLeave={() => setZoom(null)}
-      >
-        {showImage ? (
-          <Image
-            src={current.url}
-            alt={current.altText || title}
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className={`object-cover transition duration-200 ${
-              zoom ? "scale-150" : "scale-100"
-            }`}
-            style={
-              zoom
-                ? { transformOrigin: `${zoom.x}% ${zoom.y}%` }
-                : undefined
-            }
-            onError={() =>
-              setFailed((prev) => ({ ...prev, [current.id]: true }))
-            }
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-8xl font-semibold text-accent/25" aria-hidden>
-              {initials}
-            </span>
+      <div className="relative order-1 flex-1 lg:order-2">
+        <div
+          ref={mainRef}
+          className="relative aspect-square overflow-hidden rounded-[var(--radius)] border border-border bg-accent-soft/40 shadow-[var(--shadow-card)]"
+          onMouseMove={(event) => {
+            const rect = mainRef.current?.getBoundingClientRect();
+            if (!rect) return;
+            const x = ((event.clientX - rect.left) / rect.width) * 100;
+            const y = ((event.clientY - rect.top) / rect.height) * 100;
+            setZoom({ x, y });
+          }}
+          onMouseLeave={() => setZoom(null)}
+        >
+          {showImage ? (
+            <Image
+              src={current.url}
+              alt={current.altText || title}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className={`object-cover transition duration-150 ${
+                zoom ? "scale-[1.65]" : "scale-100"
+              }`}
+              style={
+                zoom ? { transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined
+              }
+              onError={() =>
+                setFailed((prev) => ({ ...prev, [current.id]: true }))
+              }
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-8xl font-semibold text-accent/25" aria-hidden>
+                {initials}
+              </span>
+            </div>
+          )}
+          {zoom && showImage ? (
+            <div
+              className="pointer-events-none absolute inset-4 hidden rounded-[var(--radius-sm)] border-2 border-white/80 shadow-lg lg:block"
+              style={{
+                width: "28%",
+                height: "28%",
+                left: `clamp(1rem, ${zoom.x}% - 14%, calc(100% - 28% - 1rem))`,
+                top: `clamp(1rem, ${zoom.y}% - 14%, calc(100% - 28% - 1rem))`,
+              }}
+              aria-hidden
+            />
+          ) : null}
+        </div>
+        {zoom && showImage ? (
+          <div
+            className="pointer-events-none absolute top-0 left-[calc(100%+1rem)] hidden h-full w-[min(22rem,40vw)] overflow-hidden rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-mega)] xl:block"
+            aria-hidden
+          >
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url(${current.url})`,
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "250%",
+                backgroundPosition: `${zoom.x}% ${zoom.y}%`,
+              }}
+            />
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

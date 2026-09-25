@@ -157,9 +157,9 @@ async function main() {
   const home = await ensureSeller({
     email: DEV_SELLER_EMAIL,
     password: DEV_SELLER_PASSWORD,
-    displayName: "Dev Seller",
-    legalName: "Aspera Demo Traders Private Limited",
-    tradeName: "HomeStyle Co.",
+    displayName: "Home Seller",
+    legalName: "HomeCraft Essentials Private Limited",
+    tradeName: "HomeCraft Essentials",
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
@@ -167,8 +167,8 @@ async function main() {
     email: "seller.fashion@aspera.local",
     password: "AsperaFashionDevOnly1!",
     displayName: "Fashion Seller",
-    legalName: "Narmada Styles Private Limited",
-    tradeName: "Aspera Fashion Hub",
+    legalName: "Priya Boutique Private Limited",
+    tradeName: "Priya's Boutique",
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
@@ -176,7 +176,7 @@ async function main() {
     email: "seller.tech@aspera.local",
     password: "AsperaTechDevOnly1!",
     displayName: "Tech Seller",
-    legalName: "Silicon Bay Devices LLP",
+    legalName: "TechZone India LLP",
     tradeName: "TechZone India",
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
@@ -185,8 +185,44 @@ async function main() {
     email: "seller.wellness@aspera.local",
     password: "AsperaWellnessDevOnly1!",
     displayName: "Wellness Seller",
-    legalName: "Coastal Bloom Wellness Private Limited",
-    tradeName: "GlowUp Beauty",
+    legalName: "GreenLeaf Organics Private Limited",
+    tradeName: "GreenLeaf Organics",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const textile = await ensureSeller({
+    email: "seller.textile@aspera.local",
+    password: "AsperaTextileDevOnly1!",
+    displayName: "Textile Seller",
+    legalName: "Delhi Textile House Private Limited",
+    tradeName: "Delhi Textile House",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const sports = await ensureSeller({
+    email: "seller.sports@aspera.local",
+    password: "AsperaSportsDevOnly1!",
+    displayName: "Sports Seller",
+    legalName: "FitLife Sports Private Limited",
+    tradeName: "FitLife Sports",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const mumbai = await ensureSeller({
+    email: "seller.mumbai@aspera.local",
+    password: "AsperaMumbaiDevOnly1!",
+    displayName: "Mumbai Fashion Seller",
+    legalName: "Mumbai Fashion Studio LLP",
+    tradeName: "Mumbai Fashion Studio",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const artisan = await ensureSeller({
+    email: "seller.artisan@aspera.local",
+    password: "AsperaArtisanDevOnly1!",
+    displayName: "Artisan Seller",
+    legalName: "Artisan Weaves Company Private Limited",
+    tradeName: "Artisan Weaves Co.",
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
@@ -258,6 +294,10 @@ async function main() {
       fashion: { id: fashion.seller.id },
       tech: { id: tech.seller.id },
       wellness: { id: wellness.seller.id },
+      textile: { id: textile.seller.id },
+      sports: { id: sports.seller.id },
+      mumbai: { id: mumbai.seller.id },
+      artisan: { id: artisan.seller.id },
     },
   });
 

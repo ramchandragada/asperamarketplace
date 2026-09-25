@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CartPanel } from "@/components/cart-panel";
+import { PageShell } from "@/components/ui/page-shell";
 import { getCartForActor } from "@/modules/cart/service";
 import { getOptionalActor } from "@/modules/identity/service";
 
@@ -10,28 +11,24 @@ export const metadata = { title: "Cart · Aspera Marketplace" };
 export default async function CartPage() {
   const actor = await getOptionalActor();
   if (!actor) {
-    redirect("/login");
+    redirect("/login?next=/cart");
   }
   const cart = await getCartForActor(actor);
 
   return (
-    <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-6 px-6 py-16">
+    <PageShell>
       <div>
-        <p className="text-sm font-medium tracking-wide text-muted uppercase">
-          Aspera Marketplace
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold">Your cart</h1>
+        <h1 className="font-display text-3xl font-semibold">Your cart</h1>
         <p className="mt-2 text-muted">
-          Quantities are checked against server inventory. Line prices come from
-          the catalogue, not the browser.
+          Review items, update quantities, and proceed to checkout.
         </p>
       </div>
       <CartPanel initialCart={cart} />
       <p className="text-sm">
-        <Link href="/browse" className="underline">
-          Continue browsing
+        <Link href="/shop" className="text-accent underline">
+          Continue shopping
         </Link>
       </p>
-    </main>
+    </PageShell>
   );
 }

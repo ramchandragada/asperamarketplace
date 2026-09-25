@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Source_Serif_4, DM_Sans } from "next/font/google";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { ToastHost } from "@/components/toast-host";
 import "./globals.css";
 
 const display = Source_Serif_4({
@@ -15,9 +17,18 @@ const sans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Aspera Marketplace",
+  title: {
+    default: "Aspera Marketplace — India's Trusted Multi-Vendor Marketplace",
+    template: "%s · Aspera Marketplace",
+  },
   description:
     "India-first multi-vendor marketplace with verified sellers, transparent pricing, and responsible commerce.",
+  openGraph: {
+    title: "Aspera Marketplace",
+    description:
+      "Shop quality products from verified Indian sellers at the best prices.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -35,8 +46,10 @@ export default function RootLayout({
           Skip to content
         </a>
         <SiteHeader />
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 pb-16 md:pb-0">{children}</div>
         <SiteFooter />
+        <MobileBottomNav />
+        <ToastHost />
       </body>
     </html>
   );

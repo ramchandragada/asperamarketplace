@@ -68,16 +68,26 @@ export default async function ProductDetailPage({
     !Array.isArray(attrs.highlights)
       ? (attrs.highlights as Record<string, string>)
       : {};
-  const highlights = [
-    ...Object.entries(highlightsRaw).map(([label, value]) => ({
-      label,
-      value: String(value),
-    })),
-    product.brand ? { label: "Brand", value: product.brand.name } : null,
-    product.countryOfOrigin
-      ? { label: "Origin", value: product.countryOfOrigin }
-      : null,
-  ].filter(Boolean) as Array<{ label: string; value: string }>;
+  const highlightsMap = new Map<string, string>();
+  for (const [label, value] of Object.entries(highlightsRaw)) {
+    highlightsMap.set(label.toLowerCase(), String(value));
+  }
+  if (product.brand) {
+    highlightsMap.set("brand", product.brand.name);
+  }
+  if (product.countryOfOrigin && !highlightsMap.has("origin")) {
+    highlightsMap.set("origin", product.countryOfOrigin);
+  }
+  const highlights = [...highlightsMap.entries()].map(([label, value]) => ({
+    label: label.charAt(0).toUpperCase() + label.slice(1),
+    value,
+  }));
+  const ratingDistribution =
+    attrs.ratingDistribution &&
+    typeof attrs.ratingDistribution === "object" &&
+    !Array.isArray(attrs.ratingDistribution)
+      ? (attrs.ratingDistribution as Record<string, number>)
+      : null;
 
   const sellerProductCount = await prisma.product.count({
     where: { sellerId: product.sellerId, status: "approved" },
@@ -176,7 +186,13 @@ export default async function ProductDetailPage({
                 </p>
               </div>
               <Link
-                href={`/browse?q=${encodeURIComponent(sellerName)}`}
+                href={`/shops/${encodeURIComponent(
+                  sellerName
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-")
+                    .replace(/^-+|-+$/g, "")
+                    .slice(0, 80),
+                )}`}
                 className="shrink-0 text-sm font-medium text-accent hover:underline"
               >
                 View shop →
@@ -196,6 +212,7 @@ export default async function ProductDetailPage({
         canReview={Boolean(actor)}
         seededAverage={seededAverage}
         seededCount={seededCount}
+        seededDistribution={ratingDistribution}
         initialReviews={reviews.map((review) => ({
           id: review.id,
           rating: review.rating,

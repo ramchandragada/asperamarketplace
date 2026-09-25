@@ -235,24 +235,21 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   },
 ];
 
-export const ALL_CATEGORIES_MENU: MegaMenuColumn[] = [
-  {
-    heading: "Shop by department",
-    links: MEGA_MENU.map((entry) => ({
-      label: entry.label,
-      href: entry.href,
+/** All-categories mega panel: one column per top category (first-column links), max 5. */
+export function buildAllCategoriesMenu(): {
+  href: string;
+  columns: MegaMenuColumn[];
+} {
+  return {
+    href: "/shop",
+    columns: MEGA_MENU.slice(0, 5).map((entry) => ({
+      heading: entry.label,
+      links: entry.columns[0]?.links ?? [],
     })),
-  },
-  {
-    heading: "More",
-    links: [
-      { label: "Household essentials", href: browse("household-essentials") },
-      { label: "General merchandise", href: browse("general-merchandise") },
-      { label: "New arrivals", href: "/browse?sort=newest" },
-      { label: "Deals", href: "/browse?sort=newest" },
-    ],
-  },
-];
+  };
+}
+
+export const ALL_CATEGORIES_MENU = buildAllCategoriesMenu();
 
 export const TRENDING_SEARCHES = [
   "kurta",

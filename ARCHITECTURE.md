@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Status: proposed in Phase 0. Nothing in this document is implemented.
+Status: Phase 1 foundations and Phase 2 identity/seller onboarding are implemented. Catalogue, payments, and hosted Postgres remain proposed.
 
 ## System shape
 
@@ -37,12 +37,12 @@ PostgreSQL is the system of record. Redis, OpenSearch, and object storage are re
 
 | Concern | Choice | When it is introduced |
 | --- | --- | --- |
-| Application | Next.js App Router, TypeScript strict | Phase 1 |
-| UI | Tailwind CSS and shadcn/ui | Phase 1 tokens, components as screens are built |
-| Validation | Zod on every mutation, server-side | Phase 1 envelope, then each module |
+| Application | Next.js App Router, TypeScript strict | Implemented in Phase 1 slice 1 |
+| UI | Tailwind CSS and shadcn/ui | Tokens exist. Components arrive with real screens |
+| Validation | Zod on every mutation, server-side | Envelope and public config exist. Mutations do not |
 | Forms | React Hook Form | First authenticated form |
-| Database | PostgreSQL | Phase 1, after a non-production database exists |
-| ORM | Prisma | With the first migration, not before |
+| Database | PostgreSQL | Non-production local instance in Phase 1. Hosted instance later |
+| ORM | Prisma 6.16.2 | First platform migration applied |
 | Cache and queue port | Redis-compatible interface, in-memory adapter in development | When the first async job needs it |
 | Files | S3-compatible port, local filesystem adapter in development | Seller KYC documents |
 | Payments | Provider port, local mock first, Razorpay-compatible adapter later | Phase 5 |
@@ -50,11 +50,11 @@ PostgreSQL is the system of record. Redis, OpenSearch, and object storage are re
 | Notifications | Email, SMS, WhatsApp, and in-app ports | Phase 5 transactional stubs |
 | Search | PostgreSQL search first | Phase 3 |
 | Analytics charts | Recharts inside admin and seller tools | Phase 9 |
-| Observability | Structured logs and an OpenTelemetry-compatible port | Phase 1 logs, tracing when a collector exists |
+| Observability | Structured logs and an OpenTelemetry-compatible port | JSON logs and redaction exist. Tracing waits for a collector |
 | App hosting | Vercel project already linked to this repository | Existing |
 | Data hosting | Railway PostgreSQL, separate per environment | When Phase 1 needs a database |
 
-Package manager will be pinned in Phase 1 from the lockfile that slice creates. This machine has Node.js 22.14.0, npm 10.9.7, and pnpm 10.33.3 available. The Vercel project is set to Node.js 24.x. Phase 1 must pin one Node version in the repository and align the Vercel setting with it.
+The repository pins Node.js 24.21.0 and pnpm 10.33.3. The Vercel project was already set to Node.js 24.x, so that project setting was not changed.
 
 ## Deployment split
 
@@ -68,7 +68,7 @@ Environments are separate:
 | Preview | Vercel preview from the feature branch | Preview database, never production |
 | Production | Vercel production from `main` | Production Railway database |
 
-No environment exists beyond the empty Vercel production deployment today.
+No environment exists beyond the empty Vercel production deployment and a local non-production PostgreSQL used for Phase 1 migrations. Preview and production databases are not provisioned.
 
 ## Module boundaries
 

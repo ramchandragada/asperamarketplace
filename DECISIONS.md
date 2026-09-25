@@ -98,4 +98,57 @@ Roles in the brief are enforced in policies on the server. Hiding a button is no
 Date: 2026-09-24  
 Status: accepted
 
-No `package.json` exists, so typecheck, lint, test, and build scripts are undefined. The baseline is "not runnable", recorded in `IMPLEMENTATION_PLAN.md`. The Vercel build of `bff8c57` completed with an empty-output warning. That is the only build result available.
+No `package.json` existed at audit time, so typecheck, lint, test, and build scripts were undefined. The baseline is "not runnable", recorded in `IMPLEMENTATION_PLAN.md`. The Vercel build of `bff8c57` completed with an empty-output warning. That was the only build result available during Phase 0. Phase 1 slice 1 added the scripts and recorded a passing run.
+
+## D-013 — Pin Node.js 24.21.0 and pnpm 10.33.3
+
+Date: 2026-09-24  
+Status: accepted
+
+The Vercel project was already set to Node.js 24.x. Phase 1 pins the same major, specifically 24.21.0, in `.nvmrc`, `.node-version`, and `package.json` `engines`. The package manager is pnpm 10.33.3, recorded in `packageManager` and the lockfile. CI installs both. The Vercel Node setting was not edited, because it already matched and a setting change was not required for this slice.
+
+## D-014 — Keep ESLint 9 with the Next.js config
+
+Date: 2026-09-24  
+Status: accepted
+
+`eslint-config-next` 16.3.6 installed ESLint 9.39.5. npm reports that release as deprecated. The slice keeps the version the Next config installed. Moving to ESLint 10 is a separate change after that config supports it.
+
+## D-015 — Prisma 6.16.2 and a local non-production Postgres
+
+Date: 2026-09-24  
+Status: accepted
+
+Phase 1 slice 2 pins Prisma CLI and client to 6.16.2. Newer Prisma 7/8 pre-releases were rejected because the client and CLI must match and the release candidate pulled unrelated peer warnings.
+
+A non-production PostgreSQL 16 database named `aspera_marketplace_dev` was created in this environment. `docker-compose.yml` provides the same database for machines with Docker. Railway remains the intended hosted path and is still not connected. No production database exists, and this migration was not applied to production.
+
+## D-016 — Platform tables only in the first migration
+
+Date: 2026-09-24  
+Status: accepted
+
+The first migration creates `audit_logs`, `idempotency_records`, `outbox_events`, `feature_flags`, and `platform_settings`. Domain tables for sellers, catalogue, orders, and money wait for the slice that implements them. A schema checkpoint was committed before `prisma migrate`.
+
+## D-017 — First-party credential auth for Phase 2
+
+Date: 2026-09-24  
+Status: accepted
+
+Phase 2 uses email/password accounts, bcrypt password hashes, and opaque httpOnly session cookies stored as SHA-256 hashes. This avoids blocking on an external identity provider while A-25 (data ownership / processors) remains open. A managed IdP such as Clerk can replace the credential store later behind the same session/actor boundary. Roles are enforced in server policies, not only in the UI.
+
+## D-018 — Masked KYC identifiers and local document storage
+
+Date: 2026-09-24  
+Status: accepted
+
+PAN and GSTIN are validated on input and stored only in masked form (`pan_last4`, `gstin_masked`). KYC files use a storage port with a local filesystem adapter under `uploads/kyc` (configurable via `DOCUMENT_STORAGE_PATH`). An S3-compatible adapter can replace the local adapter without changing seller services.
+
+
+
+## D-019 — Storefront UX shell + seller capability RBAC
+
+Date: 2026-09-25  
+Status: accepted
+
+Post–PR #12 work adds a reusable Tailwind design language (tokens, header/footer, product cards, empty/skeleton states), a commerce homepage and filtered browse experience, and seller staff capabilities (`seller_operations` / `seller_finance` / `seller_support`) enforced in server policies. The seller `/seller` action dashboard reads only real Prisma data. Meesho is a conceptual UX reference only—Aspera branding and layout remain independent. No shadcn package install was required; lightweight `components/ui` primitives follow the same composition style. Live Razorpay and `main` production alignment remain out of scope; A-20–A-28 stay open.

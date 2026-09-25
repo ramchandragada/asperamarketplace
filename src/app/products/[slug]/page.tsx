@@ -188,7 +188,7 @@ export default async function ProductDetailPage({
         </ol>
       </nav>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-8 overflow-visible lg:grid-cols-2">
         <ProductGallery
           title={product.title}
           images={product.images.map((image) => ({

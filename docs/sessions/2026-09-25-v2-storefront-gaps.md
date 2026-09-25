@@ -13,5 +13,11 @@ Base: `cursor/meesho-ux-overhaul-10f6`
 - 8 diversified sellers, review/delivery variety, mobile bottom nav
 - Login/register cleanup; cart Place order CTA; homepage See all links
 
+## Follow-up polish
+- Replaced every customer-facing seed description with Meesho-style copy (no seed/demo/fictional remnants)
+- Redistributed listings across textile / sports / mumbai / artisan sellers
+- SVG icons on mobile bottom nav; accordion category drawer on small screens
+- Softened checkout placeholder copy
+
 ## Notes
 - Public seller shop lives at `/shops/[slug]` (not under `/seller/*` dashboard layout)

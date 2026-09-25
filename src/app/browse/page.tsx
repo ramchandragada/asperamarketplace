@@ -9,7 +9,7 @@ import {
 } from "@/modules/catalogue/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Browse · Aspera Marketplace" };
+export const metadata = { title: "Shop · Aspera Marketplace" };
 
 export default async function BrowsePage({
   searchParams,
@@ -53,18 +53,12 @@ export default async function BrowsePage({
     listActiveCategories(),
   ]);
 
+  const heading =
+    categories.find((category) => category.slug === categorySlug)?.name ??
+    (query ? undefined : "Shop");
+
   return (
     <PageShell>
-      <header className="flex flex-col gap-3">
-        <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
-          Discover
-        </p>
-        <h1 className="text-4xl font-semibold tracking-tight">Browse Aspera</h1>
-        <p className="max-w-2xl text-base leading-7 text-muted">
-          Filter by category, price, stock, and verified sellers. Totals and
-          availability come from the server—never from the browser.
-        </p>
-      </header>
       <CatalogueBrowse
         initialItems={result.items as BrowseProduct[]}
         initialQuery={query}
@@ -77,6 +71,7 @@ export default async function BrowsePage({
         initialSort={sort}
         initialInStockOnly={inStockOnly}
         initialVerifiedOnly={verifiedSellerOnly}
+        heading={heading}
       />
     </PageShell>
   );

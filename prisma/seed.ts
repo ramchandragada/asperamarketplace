@@ -70,14 +70,14 @@ async function ensureSeller(input: {
         statusReason: "Seeded approved demo seller for catalogue density",
       },
     });
-  } else if (seller.status !== "approved") {
+  } else {
     seller = await prisma.seller.update({
       where: { id: seller.id },
       data: {
         status: "approved",
         tradeName: input.tradeName,
         legalName: input.legalName,
-        approvedAt: new Date(),
+        approvedAt: seller.approvedAt ?? new Date(),
         reviewedAt: new Date(),
         reviewedByUserId: input.adminId,
         statusReason: "Seeded approved demo seller for catalogue density",
@@ -159,7 +159,7 @@ async function main() {
     password: DEV_SELLER_PASSWORD,
     displayName: "Dev Seller",
     legalName: "Aspera Demo Traders Private Limited",
-    tradeName: "Aspera Demo Mart",
+    tradeName: "HomeStyle Co.",
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
@@ -168,7 +168,7 @@ async function main() {
     password: "AsperaFashionDevOnly1!",
     displayName: "Fashion Seller",
     legalName: "Narmada Styles Private Limited",
-    tradeName: "Narmada Styles",
+    tradeName: "Aspera Fashion Hub",
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
@@ -177,7 +177,7 @@ async function main() {
     password: "AsperaTechDevOnly1!",
     displayName: "Tech Seller",
     legalName: "Silicon Bay Devices LLP",
-    tradeName: "Silicon Bay Store",
+    tradeName: "TechZone India",
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
@@ -186,7 +186,7 @@ async function main() {
     password: "AsperaWellnessDevOnly1!",
     displayName: "Wellness Seller",
     legalName: "Coastal Bloom Wellness Private Limited",
-    tradeName: "Coastal Bloom",
+    tradeName: "GlowUp Beauty",
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });

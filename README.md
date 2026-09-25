@@ -1,6 +1,6 @@
 # Aspera Marketplace
 
-India-first multi-vendor marketplace. Tip branch: `cursor/catalogue-seed-visuals-10f6` (stacked on UX shell / PR #13 and continuity / PR #12). Production launch remains blocked on open legal items A-20–A-28 in `ASSUMPTIONS.md`.
+India-first multi-vendor marketplace. Tip branch: `cursor/meesho-ux-overhaul-10f6` (storefront UX overhaul stacked on catalogue seed / PR #14). Production launch remains blocked on open legal items A-20–A-28 in `ASSUMPTIONS.md`.
 
 Source of truth: https://github.com/ramchandragada/asperamarketplace
 

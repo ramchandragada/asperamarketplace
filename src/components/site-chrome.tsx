@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getOptionalActor } from "@/modules/identity/service";
 import { actorIsAdmin } from "@/modules/identity/policy";
 import { prisma } from "@/platform/db/prisma";
+import { SiteHeaderClient } from "@/components/site-header-client";
+import { MEGA_MENU } from "@/lib/mega-menu";
 
 async function cartCount(userId: string | undefined) {
   if (!userId) return 0;
@@ -27,147 +29,170 @@ export async function SiteHeader() {
     ) ?? false;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/90 backdrop-blur-md">
-      <div className="container-shell flex h-[var(--header-height)] items-center gap-4">
-        <Link
-          href="/"
-          className="shrink-0 text-lg font-semibold tracking-tight text-accent"
-        >
-          Aspera
-        </Link>
-        <form
-          action="/browse"
-          method="get"
-          className="hidden min-w-0 flex-1 md:block"
-          role="search"
-        >
-          <label className="sr-only" htmlFor="global-search">
-            Search products
-          </label>
-          <input
-            id="global-search"
-            name="q"
-            type="search"
-            placeholder="Search products, categories, sellers"
-            className="w-full rounded-full border border-border bg-background px-4 py-2 text-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          />
-        </form>
-        <nav
-          aria-label="Primary"
-          className="ml-auto flex items-center gap-1 text-sm sm:gap-2"
-        >
-          <Link
-            href="/browse"
-            className="rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/60 sm:px-3"
-          >
-            Shop
-          </Link>
-          {hasSellerRole || actor ? (
-            <Link
-              href="/seller"
-              className="rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/60 sm:px-3"
-            >
-              Sell
-            </Link>
-          ) : (
-            <Link
-              href="/seller/onboarding"
-              className="rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/60 sm:px-3"
-            >
-              Sell
-            </Link>
-          )}
-          {isAdmin ? (
-            <Link
-              href="/admin/sellers"
-              className="hidden rounded-[var(--radius-sm)] px-3 py-1.5 hover:bg-accent-soft/60 sm:inline"
-            >
-              Admin
-            </Link>
-          ) : null}
-          <Link
-            href="/cart"
-            className="rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/60 sm:px-3"
-          >
-            Cart{count > 0 ? ` (${count})` : ""}
-          </Link>
-          <Link
-            href={actor ? "/account" : "/login"}
-            className="rounded-[var(--radius-sm)] bg-accent px-3 py-1.5 font-medium text-accent-foreground"
-          >
-            {actor ? "Account" : "Sign in"}
-          </Link>
-        </nav>
-      </div>
-      <div className="container-shell pb-3 md:hidden">
-        <form action="/browse" method="get" role="search">
-          <label className="sr-only" htmlFor="mobile-search">
-            Search products
-          </label>
-          <input
-            id="mobile-search"
-            name="q"
-            type="search"
-            placeholder="Search Aspera"
-            className="w-full rounded-full border border-border bg-background px-4 py-2 text-sm"
-          />
-        </form>
-      </div>
-    </header>
+    <SiteHeaderClient
+      cartCount={count}
+      accountHref={actor ? "/account" : "/login"}
+      accountLabel={actor ? "Account" : "Account"}
+      sellHref={hasSellerRole || actor ? "/seller" : "/seller/onboarding"}
+      showAdmin={isAdmin}
+    />
   );
 }
 
 export function SiteFooter() {
+  const year = new Date().getFullYear();
   return (
     <footer className="mt-auto border-t border-border bg-surface">
-      <div className="container-shell grid gap-6 py-10 text-sm text-muted md:grid-cols-3">
-        <div>
-          <p className="text-base font-semibold text-foreground">Aspera Marketplace</p>
-          <p className="mt-2 max-w-sm leading-6">
-            India-first multi-vendor commerce with verified sellers, transparent
-            pricing, and responsible operations. Tax and compliance outputs need
-            professional review before production use.
+      <div className="container-shell grid gap-8 py-10 text-sm md:grid-cols-2 lg:grid-cols-5">
+        <div className="lg:col-span-1">
+          <p className="font-display text-lg font-bold text-accent">Aspera Marketplace</p>
+          <p className="mt-2 max-w-xs leading-6 text-muted">
+            India&apos;s trusted multi-vendor marketplace for quality products at the
+            best prices.
           </p>
+          <p className="mt-4 text-xs font-semibold tracking-wide text-foreground uppercase">
+            Follow us
+          </p>
+          <ul className="mt-2 flex flex-wrap gap-3 text-muted">
+            {["Instagram", "Facebook", "Twitter", "YouTube"].map((network) => (
+              <li key={network}>
+                <span className="hover:text-accent">{network}</span>
+              </li>
+            ))}
+          </ul>
         </div>
         <div>
-          <p className="font-medium text-foreground">Shop</p>
-          <ul className="mt-2 space-y-1">
+          <p className="font-semibold text-foreground">Shop</p>
+          <ul className="mt-2 space-y-1.5 text-muted">
             <li>
-              <Link href="/browse" className="hover:text-foreground">
-                Browse
+              <Link href="/browse" className="hover:text-accent">
+                All categories
               </Link>
             </li>
             <li>
-              <Link href="/cart" className="hover:text-foreground">
-                Cart
+              <Link href="/browse?sort=newest" className="hover:text-accent">
+                New arrivals
               </Link>
             </li>
             <li>
-              <Link href="/orders" className="hover:text-foreground">
-                Orders
+              <Link href="/browse" className="hover:text-accent">
+                Deals
+              </Link>
+            </li>
+            <li>
+              <Link href="/browse" className="hover:text-accent">
+                Trending
               </Link>
             </li>
           </ul>
         </div>
         <div>
-          <p className="font-medium text-foreground">Trust</p>
-          <ul className="mt-2 space-y-1">
+          <p className="font-semibold text-foreground">Customer care</p>
+          <ul className="mt-2 space-y-1.5 text-muted">
             <li>
-              <Link href="/privacy" className="hover:text-foreground">
-                Privacy requests
+              <Link href="/support" className="hover:text-accent">
+                Help centre
               </Link>
             </li>
             <li>
-              <Link href="/support" className="hover:text-foreground">
-                Support
+              <Link href="/support" className="hover:text-accent">
+                Return policy
               </Link>
             </li>
             <li>
-              <Link href="/seller/onboarding" className="hover:text-foreground">
-                Become a seller
+              <Link href="/orders" className="hover:text-accent">
+                Track order
+              </Link>
+            </li>
+            <li>
+              <Link href="/support" className="hover:text-accent">
+                Shipping info
               </Link>
             </li>
           </ul>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">About Aspera</p>
+          <ul className="mt-2 space-y-1.5 text-muted">
+            <li>
+              <Link href="/support" className="hover:text-accent">
+                About us
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacy" className="hover:text-accent">
+                Privacy
+              </Link>
+            </li>
+            <li>
+              <Link href="/support" className="hover:text-accent">
+                Press
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Sell on Aspera</p>
+          <ul className="mt-2 space-y-1.5 text-muted">
+            <li>
+              <Link href="/seller/onboarding" className="hover:text-accent">
+                Start selling
+              </Link>
+            </li>
+            <li>
+              <Link href="/seller" className="hover:text-accent">
+                Seller dashboard
+              </Link>
+            </li>
+            <li>
+              <Link href="/seller/onboarding" className="hover:text-accent">
+                Seller policies
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="border-t border-border bg-background/60">
+        <div className="container-shell py-6">
+          <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
+            Popular categories
+          </p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {MEGA_MENU.slice(0, 8).map((entry) => (
+              <div key={entry.key}>
+                <Link href={entry.href} className="text-sm font-medium text-accent">
+                  {entry.label}
+                </Link>
+                <ul className="mt-1 space-y-0.5 text-xs text-muted">
+                  {entry.columns[0]?.links.slice(0, 4).map((link) => (
+                    <li key={link.href + link.label}>
+                      <Link href={link.href} className="hover:text-foreground">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-border">
+        <div className="container-shell flex flex-col gap-2 py-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+          <p>© {year} Aspera Marketplace. All rights reserved.</p>
+          <p className="flex flex-wrap gap-3">
+            <Link href="/support" className="hover:text-foreground">
+              Terms
+            </Link>
+            <Link href="/privacy" className="hover:text-foreground">
+              Privacy
+            </Link>
+            <Link href="/support" className="hover:text-foreground">
+              Shipping policy
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

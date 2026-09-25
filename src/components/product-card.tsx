@@ -3,7 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore, type MouseEvent } from "react";
-import { discountPercent, formatPaise } from "@/modules/catalogue/helpers";
+import {
+  discountPercent,
+  formatPaise,
+  type ProductCardBadge,
+} from "@/modules/catalogue/helpers";
 
 export type ProductCardModel = {
   id: string;
@@ -23,6 +27,8 @@ export type ProductCardModel = {
   dealEndsAt?: string | null;
   primaryImageUrl?: string | null;
   primaryImageAlt?: string | null;
+  variantCount?: number;
+  badge?: ProductCardBadge | null;
 };
 
 export { discountPercent };
@@ -125,7 +131,7 @@ function WishlistButton({ productId }: { productId: string }) {
     <button
       type="button"
       onClick={toggle}
-      className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-muted shadow-sm backdrop-blur-sm hover:text-danger"
+      className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface/95 text-muted shadow-sm backdrop-blur-sm transition hover:scale-105 hover:text-danger"
       aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
       aria-pressed={saved}
     >
@@ -139,6 +145,22 @@ function WishlistButton({ productId }: { productId: string }) {
         />
       </svg>
     </button>
+  );
+}
+
+function BadgePill({ badge }: { badge: ProductCardBadge }) {
+  if (badge === "original") {
+    return (
+      <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 rounded bg-[#1a5c5c] px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white shadow-sm">
+        Aspera Original
+        <span aria-hidden>✓</span>
+      </span>
+    );
+  }
+  return (
+    <span className="absolute top-2 left-2 z-10 inline-flex items-center rounded bg-[#1e3a5f] px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white shadow-sm">
+      Mall
+    </span>
   );
 }
 
@@ -158,11 +180,13 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
     product.minPricePaise >= 99_900;
   const hasRating =
     product.ratingAverage != null && (product.reviewCount ?? 0) > 0;
+  const extraVariants = Math.max((product.variantCount ?? 1) - 1, 0);
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-card)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
       <Link href={`/products/${product.slug}`} className="flex h-full flex-col">
         <div className="relative aspect-square overflow-hidden bg-accent-soft/40">
+          {product.badge ? <BadgePill badge={product.badge} /> : null}
           <WishlistButton productId={product.id} />
           {showImage ? (
             <Image
@@ -181,18 +205,23 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               <span className="sr-only">No product image available</span>
             </div>
           )}
+          {extraVariants > 0 ? (
+            <span className="absolute right-2 bottom-2 z-10 rounded bg-foreground/80 px-1.5 py-0.5 text-[10px] font-semibold text-background backdrop-blur-sm">
+              +{extraVariants} More
+            </span>
+          ) : null}
           {countdown ? (
-            <div className="absolute bottom-2 left-2 rounded bg-danger px-1.5 py-0.5 font-mono text-[11px] font-semibold text-white">
+            <div className="animate-deal-pulse absolute bottom-2 left-2 z-10 rounded-md bg-danger px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-white shadow-[0_0_0_2px_rgba(211,47,47,0.35)]">
               {countdown}
             </div>
           ) : null}
           {!inStock ? (
-            <div className="absolute inset-x-0 bottom-0 bg-foreground/70 px-2 py-1 text-center text-xs text-background">
+            <div className="absolute inset-x-0 bottom-0 z-10 bg-foreground/70 px-2 py-1 text-center text-xs text-background">
               Out of stock
             </div>
           ) : null}
         </div>
-        <div className="flex flex-1 flex-col gap-1 p-2.5">
+        <div className="flex flex-1 flex-col gap-1.5 p-2.5">
           <h3 className="line-clamp-2 text-sm leading-5 font-medium text-foreground">
             {product.title}
           </h3>
@@ -206,7 +235,9 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               </span>
             ) : null}
             {discount ? (
-              <span className="text-xs font-semibold text-success">{discount}% off</span>
+              <span className="text-xs font-semibold text-success">
+                {discount}% off
+              </span>
             ) : null}
           </p>
           {hasRating ? (
@@ -221,15 +252,19 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               </span>
             </p>
           ) : null}
-          <p className="text-xs text-muted">
-            {freeDelivery
-              ? "Free Delivery"
-              : product.deliveryFeePaise != null
+          {freeDelivery ? (
+            <span className="inline-flex w-fit items-center rounded border border-success/25 bg-success-soft px-1.5 py-0.5 text-[11px] font-semibold text-success">
+              Free Delivery
+            </span>
+          ) : (
+            <p className="text-xs text-muted">
+              {product.deliveryFeePaise != null
                 ? `Delivery ${formatPaise(product.deliveryFeePaise)}`
                 : "Delivery ₹60"}
-          </p>
+            </p>
+          )}
           {product.sellerVerified ? (
-            <p className="mt-auto pt-1 text-[11px] font-medium text-accent">
+            <p className="mt-auto pt-0.5 text-[11px] font-medium text-accent">
               Verified ✓
             </p>
           ) : (

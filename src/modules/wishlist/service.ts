@@ -1,4 +1,5 @@
 import { prisma } from "@/platform/db/prisma";
+import { resolveProductBadge } from "@/modules/catalogue/helpers";
 
 export async function listWishlistProducts(userId: string) {
   const rows = await prisma.wishlistItem.findMany({
@@ -8,6 +9,7 @@ export async function listWishlistProducts(userId: string) {
       product: {
         include: {
           category: true,
+          brand: { select: { slug: true, name: true } },
           seller: { select: { legalName: true, tradeName: true, status: true } },
           images: {
             where: { isPrimary: true },
@@ -40,6 +42,7 @@ export async function listWishlistProducts(userId: string) {
         !Array.isArray(product.attributes)
           ? (product.attributes as Record<string, unknown>)
           : {};
+      const sellerVerified = product.seller.status === "approved";
       return {
         id: product.id,
         slug: product.slug,
@@ -47,7 +50,7 @@ export async function listWishlistProducts(userId: string) {
         summary: product.summary,
         categoryName: product.category.name,
         sellerName: product.seller.tradeName ?? product.seller.legalName,
-        sellerVerified: product.seller.status === "approved",
+        sellerVerified,
         minPricePaise: prices.length ? Math.min(...prices) : 0,
         minMrpPaise: mrps.length ? Math.min(...mrps) : null,
         availableQty,
@@ -62,6 +65,12 @@ export async function listWishlistProducts(userId: string) {
             ? attrs.deliveryFeePaise
             : null,
         freeDeliveryHint: attrs.deliveryFeePaise === 0,
+        variantCount: product.variants.length,
+        badge: resolveProductBadge({
+          brandSlug: product.brand?.slug,
+          brandName: product.brand?.name,
+          sellerVerified,
+        }),
         primaryImageUrl: product.images[0]?.url ?? null,
         primaryImageAlt: product.images[0]?.altText ?? product.title,
       };

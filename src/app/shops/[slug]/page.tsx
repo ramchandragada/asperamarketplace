@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
 import { PageShell } from "@/components/ui/page-shell";
+import { resolveProductBadge } from "@/modules/catalogue/helpers";
 import { prisma } from "@/platform/db/prisma";
 
 export const dynamic = "force-dynamic";
@@ -56,6 +57,7 @@ export default async function PublicSellerShopPage({
     orderBy: { publishedAt: "desc" },
     include: {
       category: true,
+      brand: { select: { slug: true, name: true } },
       seller: { select: { legalName: true, tradeName: true, status: true } },
       images: { where: { isPrimary: true }, take: 1 },
       variants: { where: { isActive: true }, include: { inventory: true } },
@@ -76,6 +78,7 @@ export default async function PublicSellerShopPage({
       !Array.isArray(product.attributes)
         ? (product.attributes as Record<string, unknown>)
         : {};
+    const sellerVerified = product.seller.status === "approved";
     return {
       id: product.id,
       slug: product.slug,
@@ -83,13 +86,26 @@ export default async function PublicSellerShopPage({
       summary: product.summary,
       categoryName: product.category.name,
       sellerName: product.seller.tradeName ?? product.seller.legalName,
-      sellerVerified: product.seller.status === "approved",
+      sellerVerified,
       minPricePaise: prices.length ? Math.min(...prices) : 0,
       minMrpPaise: mrps.length ? Math.min(...mrps) : null,
       availableQty,
       ratingAverage:
         typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null,
       reviewCount: typeof attrs.reviewCount === "number" ? attrs.reviewCount : 0,
+      dealEndsAt:
+        typeof attrs.dealEndsAt === "string" ? attrs.dealEndsAt : null,
+      deliveryFeePaise:
+        typeof attrs.deliveryFeePaise === "number"
+          ? attrs.deliveryFeePaise
+          : null,
+      freeDeliveryHint: attrs.deliveryFeePaise === 0,
+      variantCount: product.variants.length,
+      badge: resolveProductBadge({
+        brandSlug: product.brand?.slug,
+        brandName: product.brand?.name,
+        sellerVerified,
+      }),
       primaryImageUrl: product.images[0]?.url ?? null,
       primaryImageAlt: product.images[0]?.altText ?? product.title,
     };

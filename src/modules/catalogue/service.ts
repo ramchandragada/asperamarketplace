@@ -10,6 +10,7 @@ import {
 import {
   assertProductTransition,
   buildSearchDocument,
+  resolveProductBadge,
   slugify,
 } from "@/modules/catalogue/helpers";
 import {
@@ -534,6 +535,7 @@ export async function searchApprovedProducts(
         : pageSize,
       include: {
         category: true,
+        brand: { select: { slug: true, name: true } },
         seller: { select: { legalName: true, tradeName: true, status: true } },
         images: {
           where: { isPrimary: true },
@@ -570,6 +572,7 @@ export async function searchApprovedProducts(
       typeof attrs.dealEndsAt === "string" ? attrs.dealEndsAt : null;
     const deliveryFeePaise =
       typeof attrs.deliveryFeePaise === "number" ? attrs.deliveryFeePaise : null;
+    const sellerVerified = product.seller.status === "approved";
     return {
       id: product.id,
       slug: product.slug,
@@ -577,7 +580,7 @@ export async function searchApprovedProducts(
       summary: product.summary,
       categoryName: product.category.name,
       sellerName: product.seller.tradeName ?? product.seller.legalName,
-      sellerVerified: product.seller.status === "approved",
+      sellerVerified,
       minPricePaise: Math.min(...prices),
       minMrpPaise: Math.min(...mrps),
       availableQty,
@@ -586,6 +589,12 @@ export async function searchApprovedProducts(
       dealEndsAt,
       deliveryFeePaise,
       freeDeliveryHint: deliveryFeePaise === 0,
+      variantCount: product.variants.length,
+      badge: resolveProductBadge({
+        brandSlug: product.brand?.slug,
+        brandName: product.brand?.name,
+        sellerVerified,
+      }),
       primaryImageUrl: product.images[0]?.url ?? null,
       primaryImageAlt: product.images[0]?.altText ?? product.title,
     };
@@ -641,24 +650,39 @@ async function enrichStorefrontCards<
     dealEndsAt?: string | null;
     deliveryFeePaise?: number | null;
     freeDeliveryHint?: boolean;
+    variantCount?: number;
+    badge?: "original" | "mall" | null;
+    sellerVerified?: boolean;
   },
 >(items: T[]) {
   if (items.length === 0) return items;
-  const needsAttrs = items.some(
-    (item) => item.ratingAverage == null && item.dealEndsAt == null,
+  const needsMeta = items.some(
+    (item) =>
+      item.variantCount == null ||
+      item.badge === undefined ||
+      item.ratingAverage == null,
   );
-  if (!needsAttrs) return items;
+  if (!needsMeta) return items;
   const products = await prisma.product.findMany({
     where: { id: { in: items.map((item) => item.id) } },
-    select: { id: true, attributes: true },
+    select: {
+      id: true,
+      attributes: true,
+      brand: { select: { slug: true, name: true } },
+      seller: { select: { status: true } },
+      _count: { select: { variants: { where: { isActive: true } } } },
+    },
   });
-  const byId = new Map(products.map((product) => [product.id, product.attributes]));
+  const byId = new Map(products.map((product) => [product.id, product]));
   return items.map((item) => {
-    const raw = byId.get(item.id);
+    const product = byId.get(item.id);
+    const raw = product?.attributes;
     const attrs =
       raw && typeof raw === "object" && !Array.isArray(raw)
         ? (raw as Record<string, unknown>)
         : {};
+    const sellerVerified =
+      item.sellerVerified ?? product?.seller.status === "approved";
     return {
       ...item,
       ratingAverage:
@@ -680,6 +704,15 @@ async function enrichStorefrontCards<
         (typeof attrs.deliveryFeePaise === "number"
           ? attrs.deliveryFeePaise === 0
           : undefined),
+      variantCount: item.variantCount ?? product?._count.variants ?? 1,
+      badge:
+        item.badge !== undefined
+          ? item.badge
+          : resolveProductBadge({
+              brandSlug: product?.brand?.slug,
+              brandName: product?.brand?.name,
+              sellerVerified,
+            }),
     };
   });
 }

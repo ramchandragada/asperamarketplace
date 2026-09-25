@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import {
   MEGA_MENU,
-  POPULAR_NAV,
   SEARCH_PLACEHOLDER,
   TRENDING_SEARCHES,
   type MegaMenuColumn,
@@ -22,24 +21,20 @@ function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
 }
 
 function BagIcon({ className = "h-5 w-5" }: { className?: string }) {
-  /* Meesho header cart: open basket + handle + wheels */
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M3.5 5.5h1.7l1.2 2.4h12.6l-1.4 7.2H7.2L5.2 5.5"
+        d="M6 8h12l-1 11H7L6 8Z"
         stroke="currentColor"
         strokeWidth="1.6"
-        strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M8.2 15.1h9.4"
+        d="M9 8V7a3 3 0 0 1 6 0v1"
         stroke="currentColor"
         strokeWidth="1.6"
         strokeLinecap="round"
       />
-      <circle cx="9" cy="19" r="1.25" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="16.5" cy="19" r="1.25" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -58,6 +53,31 @@ function UserIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+function OrdersIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M7 7h10v12H7V7Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 7V5.5A3 3 0 0 1 15 5.5V7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10 12h4M10 15h4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function MegaPanel({
   columns,
   onNavigate,
@@ -66,7 +86,7 @@ function MegaPanel({
   onNavigate: () => void;
 }) {
   return (
-    <div className="absolute inset-x-0 top-full z-50 border-b border-border bg-surface shadow-[var(--shadow-mega)]">
+    <div className="absolute inset-x-0 top-full z-50 border-b border-[#E3E8E8] bg-white shadow-[var(--shadow-mega)]">
       <div className="container-shell grid gap-6 py-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {columns.map((column) => (
           <div key={column.heading}>
@@ -122,26 +142,19 @@ function CategoryNav() {
 
   return (
     <div
-      className="relative hidden border-t border-[#eee] bg-white md:block"
+      className="relative hidden border-t border-[#E3E8E8] bg-white md:block"
       onMouseLeave={scheduleClose}
     >
       <nav
         aria-label="Categories"
-        className="meesho-cat-nav mx-auto flex h-10 max-w-[90rem] items-center justify-between gap-0 overflow-x-auto px-4 text-[13px] text-[#333] md:px-6"
+        className="hide-scroll mx-auto flex h-12 max-w-[90rem] items-center justify-start gap-3 overflow-x-auto px-4 text-[14px] text-foreground md:px-6 lg:justify-between lg:gap-0"
       >
-        <Link
-          href={POPULAR_NAV.href}
-          className="shrink-0 px-1 py-2 whitespace-nowrap hover:text-[#9f2089]"
-          onMouseEnter={scheduleClose}
-        >
-          {POPULAR_NAV.label}
-        </Link>
         {MEGA_MENU.map((entry) => (
           <Link
             key={entry.key}
             href={entry.href}
-            className={`shrink-0 px-1 py-2 whitespace-nowrap hover:text-[#9f2089] ${
-              openKey === entry.key ? "text-[#9f2089]" : ""
+            className={`shrink-0 px-1.5 py-2 whitespace-nowrap hover:text-accent ${
+              openKey === entry.key ? "text-accent" : ""
             }`}
             onMouseEnter={() => open(entry.key)}
             onFocus={() => open(entry.key)}
@@ -271,7 +284,7 @@ function HeaderSearch() {
           Search products
         </label>
         <div className="relative">
-          <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[#9a9a9a]">
+          <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted">
             <SearchIcon className="h-[18px] w-[18px]" />
           </span>
           <input
@@ -285,7 +298,7 @@ function HeaderSearch() {
             autoComplete="off"
             aria-autocomplete="list"
             aria-controls={listId}
-            className="h-11 w-full rounded-[4px] border border-[#cfcfcf] bg-white py-2.5 pr-4 pl-10 text-[14px] text-[#333] outline-none placeholder:text-[#9a9a9a] focus-visible:border-[#9f2089] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#9f2089]/25"
+            className="h-11 w-full rounded-[8px] border border-border bg-white py-2.5 pr-4 pl-10 text-[14px] text-foreground outline-none placeholder:text-muted focus-visible:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/25"
           />
         </div>
       </form>
@@ -382,6 +395,7 @@ function HeaderSearch() {
 export function SiteHeaderClient({
   cartCount,
   accountHref,
+  accountLabel,
   sellHref,
   showAdmin,
 }: {
@@ -404,97 +418,95 @@ export function SiteHeaderClient({
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b border-[#f0f0f0] bg-white ${
-        compact ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : ""
+      className={`sticky top-0 z-40 border-b border-[#E3E8E8] bg-white ${
+        compact ? "shadow-[0_1px_3px_rgba(18,59,74,0.08)]" : ""
       }`}
       data-compact={compact ? "true" : "false"}
     >
-      {/* Meesho top row: logo | flexible search | supplier/investor/profile/cart */}
       <div
-        className={`mx-auto flex w-full max-w-[90rem] items-center px-4 md:px-6 ${
-          compact ? "h-14 gap-4" : "h-[72px] gap-5 md:gap-6"
+        className={`mx-auto flex w-full max-w-[90rem] items-center gap-4 px-4 md:gap-6 md:px-6 ${
+          compact ? "h-14" : "h-[72px]"
         }`}
       >
         <Link
           href="/"
-          className={`shrink-0 text-[24px] font-bold leading-none tracking-tight text-[#9f2089] lowercase ${
-            compact ? "text-[20px]" : ""
-          }`}
-          style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}
+          className="shrink-0 font-bold text-[22px] leading-none tracking-tight text-accent md:text-[24px]"
         >
-          aspera
+          Aspera
         </Link>
 
-        {/* Search fills remaining space up to the right nav — same as Meesho */}
         <div className="hidden min-w-0 flex-1 md:block">
-          <HeaderSearch />
+          <div className="mx-auto w-full max-w-[36rem]">
+            <HeaderSearch />
+          </div>
         </div>
 
         <nav
           aria-label="Primary"
-          className="ml-auto flex shrink-0 items-center md:ml-0"
+          className="ml-auto flex shrink-0 items-center gap-0.5 md:gap-1"
         >
           <Link
             href={sellHref}
-            className="hidden px-3 py-1 text-[14px] text-[#333] hover:text-[#9f2089] sm:inline"
-            style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}
+            className="hidden px-2.5 py-1 text-[14px] text-foreground hover:text-accent sm:inline"
           >
-            Become a Supplier
+            Become a seller
           </Link>
           <span
-            className="mx-1 hidden h-5 w-px bg-[#dfdfdf] sm:block"
-            aria-hidden
-          />
-          <Link
-            href="/about"
-            className="hidden px-3 py-1 text-[14px] text-[#333] hover:text-[#9f2089] md:inline"
-            style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}
-          >
-            Investor Relations
-          </Link>
-          <span
-            className="mx-1 hidden h-5 w-px bg-[#dfdfdf] md:block"
+            className="mx-0.5 hidden h-5 w-px bg-[#E3E8E8] sm:block"
             aria-hidden
           />
           {showAdmin ? (
             <>
               <Link
                 href="/admin/sellers"
-                className="hidden px-3 py-1 text-[14px] text-[#333] hover:text-[#9f2089] lg:inline"
+                className="hidden px-2.5 py-1 text-[14px] text-foreground hover:text-accent lg:inline"
               >
                 Admin
               </Link>
               <span
-                className="mx-1 hidden h-5 w-px bg-[#dfdfdf] lg:block"
+                className="mx-0.5 hidden h-5 w-px bg-[#E3E8E8] lg:block"
                 aria-hidden
               />
             </>
           ) : null}
           <Link
             href={accountHref}
-            className="inline-flex min-w-[52px] flex-col items-center gap-0.5 px-2.5 py-1 text-[#333] hover:text-[#9f2089]"
+            className="inline-flex min-w-[52px] flex-col items-center gap-0.5 px-2 py-1 text-foreground hover:text-accent"
           >
             <UserIcon className="h-5 w-5" />
-            <span className="text-[12px] leading-none">Profile</span>
+            <span className="text-[12px] leading-none">{accountLabel}</span>
+          </Link>
+          <Link
+            href="/orders"
+            className="hidden min-w-[52px] flex-col items-center gap-0.5 px-2 py-1 text-foreground hover:text-accent sm:inline-flex"
+          >
+            <OrdersIcon className="h-5 w-5" />
+            <span className="text-[12px] leading-none">Orders</span>
           </Link>
           <Link
             href="/cart"
-            className="relative inline-flex min-w-[52px] flex-col items-center gap-0.5 px-2.5 py-1 text-[#333] hover:text-[#9f2089]"
+            className="relative inline-flex min-w-[52px] flex-col items-center gap-0.5 px-2 py-1 text-foreground hover:text-accent"
             aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
           >
             <BagIcon className="h-5 w-5" />
             <span className="text-[12px] leading-none">Cart</span>
             {cartCount > 0 ? (
-              <span className="absolute top-0 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#9f2089] px-1 text-[10px] font-bold text-white">
+              <span className="absolute top-0 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             ) : null}
           </Link>
         </nav>
       </div>
-      <div className={`mx-auto w-full max-w-[90rem] px-4 md:hidden md:px-6 ${compact ? "hidden" : "pb-2.5"}`}>
+
+      <div
+        className={`mx-auto w-full max-w-[90rem] px-4 md:hidden md:px-6 ${
+          compact ? "hidden" : "pb-2.5"
+        }`}
+      >
         <HeaderSearch />
       </div>
+
       <div
         className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
           compact ? "max-h-0 opacity-0" : "max-h-40 opacity-100"
@@ -502,29 +514,22 @@ export function SiteHeaderClient({
       >
         <CategoryNav />
       </div>
+
       <div
-        className={`flex items-center gap-2 border-t border-border/60 px-3 py-2 md:hidden ${
+        className={`flex items-center gap-2 border-t border-[#E3E8E8] px-3 py-2 md:hidden ${
           compact ? "hidden" : ""
         }`}
       >
         <MobileCategoryDrawer />
         <nav
           aria-label="Mobile category shortcuts"
-          className="flex min-w-0 flex-1 gap-2 overflow-x-auto text-xs"
+          className="hide-scroll flex min-w-0 flex-1 gap-2 overflow-x-auto text-xs"
         >
-          {POPULAR_NAV ? (
-            <Link
-              href={POPULAR_NAV.href}
-              className="shrink-0 rounded-full border border-border bg-white px-3 py-1.5 font-medium whitespace-nowrap text-[#333]"
-            >
-              {POPULAR_NAV.label}
-            </Link>
-          ) : null}
           {MEGA_MENU.map((entry) => (
             <Link
               key={entry.key}
               href={entry.href}
-              className="shrink-0 rounded-full border border-border bg-background px-3 py-1.5 whitespace-nowrap"
+              className="shrink-0 rounded-full border border-border bg-background px-3 py-1.5 whitespace-nowrap hover:border-accent hover:text-accent"
             >
               {entry.label}
             </Link>

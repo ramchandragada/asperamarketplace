@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import {
   ALL_CATEGORIES_MENU,
   MEGA_MENU,
@@ -151,21 +151,40 @@ function CategoryNav() {
   );
 }
 
+function subscribeRecent(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener("aspera-recent-searches", onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener("aspera-recent-searches", onStoreChange);
+  };
+}
+
+function getRecentSnapshot() {
+  try {
+    return localStorage.getItem("aspera.recentSearches") ?? "[]";
+  } catch {
+    return "[]";
+  }
+}
+
 function HeaderSearch() {
   const [focused, setFocused] = useState(false);
   const [query, setQuery] = useState("");
-  const [recent, setRecent] = useState<string[]>([]);
+  const recentRaw = useSyncExternalStore(
+    subscribeRecent,
+    getRecentSnapshot,
+    () => "[]",
+  );
+  const recent = (() => {
+    try {
+      return JSON.parse(recentRaw) as string[];
+    } catch {
+      return [] as string[];
+    }
+  })();
   const listId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("aspera.recentSearches");
-      if (raw) setRecent(JSON.parse(raw) as string[]);
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
   useEffect(() => {
     function onDoc(event: MouseEvent) {
@@ -177,15 +196,15 @@ function HeaderSearch() {
 
   function remember(term: string) {
     const next = [term, ...recent.filter((entry) => entry !== term)].slice(0, 6);
-    setRecent(next);
     try {
       localStorage.setItem("aspera.recentSearches", JSON.stringify(next));
+      window.dispatchEvent(new Event("aspera-recent-searches"));
     } catch {
       /* ignore */
     }
   }
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  function onSubmit() {
     const value = query.trim();
     if (value) remember(value);
     setFocused(false);
@@ -195,7 +214,12 @@ function HeaderSearch() {
 
   return (
     <div ref={wrapRef} className="relative min-w-0 flex-1">
-      <form action="/browse" method="get" role="search" onSubmit={onSubmit}>
+      <form
+        action="/browse"
+        method="get"
+        role="search"
+        onSubmit={() => onSubmit()}
+      >
         <label className="sr-only" htmlFor="global-search">
           Search products
         </label>

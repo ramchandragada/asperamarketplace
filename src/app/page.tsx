@@ -14,7 +14,7 @@ import {
 } from "@/modules/catalogue/service";
 import { prisma } from "@/platform/db/prisma";
 import { SEED_CATEGORIES } from "@/modules/catalogue/seed-catalogue-data";
-import { discountPercent } from "@/components/product-card";
+import { discountPercent } from "@/modules/catalogue/helpers";
 
 export const dynamic = "force-dynamic";
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { discountPercent } from "@/components/product-card";
+import { discountPercent } from "@/modules/catalogue/helpers";
 
 describe("product card pricing helpers", () => {
   it("computes discount only when MRP exceeds price", () => {

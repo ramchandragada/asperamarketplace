@@ -24,7 +24,7 @@ export function ProductReviewsPanel({
   seededAverage?: number | null;
   seededCount?: number;
 }) {
-  const [reviews, setReviews] = useState(initialReviews);
+  const [reviews] = useState(initialReviews);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);

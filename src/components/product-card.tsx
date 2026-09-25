@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, type MouseEvent } from "react";
-import { formatPaise } from "@/modules/catalogue/helpers";
+import { useEffect, useState, useSyncExternalStore, type MouseEvent } from "react";
+import { discountPercent, formatPaise } from "@/modules/catalogue/helpers";
 
 export type ProductCardModel = {
   id: string;
@@ -25,68 +25,88 @@ export type ProductCardModel = {
   primaryImageAlt?: string | null;
 };
 
-export function discountPercent(mrp: number, price: number) {
-  if (!mrp || mrp <= price) return null;
-  return Math.round(((mrp - price) / mrp) * 100);
+export { discountPercent };
+
+function formatCountdown(end: number) {
+  const diff = end - Date.now();
+  if (diff <= 0) return null;
+  const hours = Math.floor(diff / 3_600_000);
+  const minutes = Math.floor((diff % 3_600_000) / 60_000);
+  const seconds = Math.floor((diff % 60_000) / 1000);
+  return `${String(hours).padStart(2, "0")}h:${String(minutes).padStart(2, "0")}m:${String(seconds).padStart(2, "0")}s`;
 }
 
 function useCountdown(iso: string | null | undefined) {
   const [label, setLabel] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!iso) {
-      setLabel(null);
-      return;
-    }
-    const end = new Date(iso).getTime();
-    if (Number.isNaN(end) || end <= Date.now()) {
-      setLabel(null);
-      return;
-    }
-    function tick() {
-      const diff = end - Date.now();
-      if (diff <= 0) {
+    let cancelled = false;
+    const end = iso ? new Date(iso).getTime() : Number.NaN;
+
+    const tick = () => {
+      if (cancelled) return;
+      if (!iso || Number.isNaN(end)) {
         setLabel(null);
         return;
       }
-      const hours = Math.floor(diff / 3_600_000);
-      const minutes = Math.floor((diff % 3_600_000) / 60_000);
-      const seconds = Math.floor((diff % 60_000) / 1000);
-      setLabel(
-        `${String(hours).padStart(2, "0")}h:${String(minutes).padStart(2, "0")}m:${String(seconds).padStart(2, "0")}s`,
-      );
-    }
-    tick();
+      setLabel(formatCountdown(end));
+    };
+
+    const frame = window.requestAnimationFrame(tick);
     const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(frame);
+      window.clearInterval(id);
+    };
   }, [iso]);
+
   return label;
 }
 
+function subscribeWishlist(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener("aspera-wishlist", onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener("aspera-wishlist", onStoreChange);
+  };
+}
+
+function getWishlistSnapshot() {
+  try {
+    return localStorage.getItem("aspera.wishlist") ?? "[]";
+  } catch {
+    return "[]";
+  }
+}
+
 function WishlistButton({ productId }: { productId: string }) {
-  const [saved, setSaved] = useState(false);
-  useEffect(() => {
+  const raw = useSyncExternalStore(
+    subscribeWishlist,
+    getWishlistSnapshot,
+    () => "[]",
+  );
+  const ids = (() => {
     try {
-      const raw = localStorage.getItem("aspera.wishlist");
-      const ids = raw ? (JSON.parse(raw) as string[]) : [];
-      setSaved(ids.includes(productId));
+      return JSON.parse(raw) as string[];
     } catch {
-      /* ignore */
+      return [] as string[];
     }
-  }, [productId]);
+  })();
+  const saved = ids.includes(productId);
 
   function toggle(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
     try {
-      const raw = localStorage.getItem("aspera.wishlist");
-      const ids = raw ? (JSON.parse(raw) as string[]) : [];
-      const next = ids.includes(productId)
+      const next = saved
         ? ids.filter((id) => id !== productId)
         : [...ids, productId];
       localStorage.setItem("aspera.wishlist", JSON.stringify(next));
-      setSaved(next.includes(productId));
+      window.dispatchEvent(new Event("aspera-wishlist"));
     } catch {
-      setSaved((prev) => !prev);
+      /* ignore */
     }
   }
 

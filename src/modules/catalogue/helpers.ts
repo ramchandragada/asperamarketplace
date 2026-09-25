@@ -66,3 +66,8 @@ export function buildSearchDocument(input: {
 export function formatPaise(paise: number): string {
   return `₹${(paise / 100).toFixed(2)}`;
 }
+
+export function discountPercent(mrp: number, price: number) {
+  if (!mrp || mrp <= price) return null;
+  return Math.round(((mrp - price) / mrp) * 100);
+}

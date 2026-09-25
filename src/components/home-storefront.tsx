@@ -357,27 +357,105 @@ export function PromoBanner({
   );
 }
 
-export function SellerLogoStrip({
-  sellers,
-}: {
-  sellers: Array<{ id: string; name: string; href: string }>;
-}) {
+export type SellerCardData = {
+  id: string;
+  name: string;
+  href: string;
+  productCount: number;
+  ratingAverage: number;
+};
+
+export function SellerLogoStrip({ sellers }: { sellers: SellerCardData[] }) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
   if (sellers.length === 0) return null;
+
+  function scrollBy(direction: -1 | 1) {
+    const node = scrollerRef.current;
+    if (!node) return;
+    const amount = Math.min(320, node.clientWidth * 0.8);
+    node.scrollBy({ left: direction * amount, behavior: "smooth" });
+  }
+
   return (
     <section className="container-shell flex flex-col gap-4 py-8">
-      <h2 className="font-display text-2xl font-semibold tracking-tight">
-        Shop by seller
-      </h2>
-      <div className="rail-scroll [grid-auto-columns:minmax(8rem,10rem)]">
-        {sellers.map((seller) => (
-          <Link
-            key={seller.id}
-            href={seller.href}
-            className="flex h-20 items-center justify-center rounded-[var(--radius)] border border-border bg-surface px-3 text-center text-sm font-semibold text-muted grayscale transition hover:border-accent hover:text-accent hover:grayscale-0"
-          >
-            {seller.name}
-          </Link>
-        ))}
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h2 className="font-display text-2xl font-semibold tracking-tight">
+            Shop by seller
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Verified shops with curated catalogues
+          </p>
+        </div>
+        {sellers.length > 3 ? (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Scroll sellers left"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-lg text-foreground shadow-sm hover:border-accent hover:text-accent"
+              onClick={() => scrollBy(-1)}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              aria-label="Scroll sellers right"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-lg text-foreground shadow-sm hover:border-accent hover:text-accent"
+              onClick={() => scrollBy(1)}
+            >
+              ›
+            </button>
+          </div>
+        ) : null}
+      </div>
+
+      <div
+        ref={scrollerRef}
+        className="rail-scroll [grid-auto-columns:minmax(11.5rem,13.5rem)]"
+      >
+        {sellers.map((seller) => {
+          const initial = seller.name.trim().slice(0, 1).toUpperCase() || "S";
+          return (
+            <article
+              key={seller.id}
+              className="flex flex-col gap-3 rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-bold text-accent-foreground"
+                  aria-hidden
+                >
+                  {initial}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {seller.name}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
+                    <span className="text-brand-accent" aria-hidden>
+                      ★
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {seller.ratingAverage.toFixed(1)}
+                    </span>
+                    <span aria-hidden>·</span>
+                    <span>
+                      {seller.productCount} product
+                      {seller.productCount === 1 ? "" : "s"}
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={seller.href}
+                className="mt-auto inline-flex items-center justify-center rounded-[var(--radius-sm)] border border-accent/30 bg-accent-soft/60 px-3 py-2 text-xs font-bold text-accent transition hover:bg-accent hover:text-accent-foreground"
+              >
+                Visit Shop →
+              </Link>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

@@ -16,7 +16,7 @@ import {
 } from "@/modules/catalogue/service";
 import { prisma } from "@/platform/db/prisma";
 import { SEED_CATEGORIES } from "@/modules/catalogue/seed-catalogue-data";
-import { discountPercent } from "@/modules/catalogue/helpers";
+import { discountPercent, slugify } from "@/modules/catalogue/helpers";
 
 export const dynamic = "force-dynamic";
 
@@ -310,7 +310,19 @@ export default async function Home() {
       where: { status: "approved" },
       take: 12,
       orderBy: { tradeName: "asc" },
-      select: { id: true, tradeName: true, legalName: true },
+      select: {
+        id: true,
+        tradeName: true,
+        legalName: true,
+        _count: {
+          select: { products: { where: { status: "approved" } } },
+        },
+        products: {
+          where: { status: "approved" },
+          select: { attributes: true },
+          take: 48,
+        },
+      },
     }),
   ]);
 
@@ -380,11 +392,33 @@ export default async function Home() {
         categories={circleCategories}
       />
       <SellerLogoStrip
-        sellers={sellers.map((seller) => ({
-          id: seller.id,
-          name: seller.tradeName ?? seller.legalName,
-          href: `/browse?q=${encodeURIComponent(seller.tradeName ?? seller.legalName)}`,
-        }))}
+        sellers={sellers.map((seller) => {
+          const name = seller.tradeName ?? seller.legalName;
+          const ratings = seller.products
+            .map((product) => {
+              const attrs =
+                product.attributes &&
+                typeof product.attributes === "object" &&
+                !Array.isArray(product.attributes)
+                  ? (product.attributes as Record<string, unknown>)
+                  : {};
+              return typeof attrs.ratingAverage === "number"
+                ? attrs.ratingAverage
+                : null;
+            })
+            .filter((value): value is number => value != null);
+          const ratingAverage =
+            ratings.length > 0
+              ? ratings.reduce((sum, value) => sum + value, 0) / ratings.length
+              : 4.0;
+          return {
+            id: seller.id,
+            name,
+            href: `/shops/${encodeURIComponent(slugify(name))}`,
+            productCount: seller._count.products,
+            ratingAverage: Number(ratingAverage.toFixed(1)),
+          };
+        })}
       />
 
       <PageShell className="gap-12 md:gap-14 !pt-4">

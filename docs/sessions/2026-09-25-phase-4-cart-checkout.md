@@ -13,4 +13,8 @@ Base: `cursor/phase-3-catalogue-discovery-10f6`
 
 ## Outcome
 
-Pending.
+Cart/checkout schema migrated on local non-prod Postgres. APIs cover cart lines, addresses, preview, and confirm-with-reservation (idempotent). PDP add-to-cart, `/cart`, and `/checkout` UI ship. Typecheck, lint, tests (30 passed), and production build passed locally. Production was not migrated. Live payment remains Phase 5.
+
+## Next
+
+Phase 5 mock payments and order state machine after review. Hosted Neon already has earlier migrations; apply `20260925040646_cart_checkout` on preview/non-prod before relying on cart routes there.

@@ -17,4 +17,4 @@ Catalogue schema and GIN search index migrated on local non-prod Postgres. Selle
 
 ## Next
 
-Phase 4 cart/checkout after review. User may still need to merge earlier PRs and provision hosted non-prod Postgres for deploy continuity.
+Phase 4 cart/checkout started on `cursor/phase-4-cart-checkout-10f6`.

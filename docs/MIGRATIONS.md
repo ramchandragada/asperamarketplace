@@ -1,5 +1,14 @@
 # Migrations
 
+## Fourth migration
+
+Name: `20260925040646_cart_checkout`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-cart-checkout.sql`  
+Tables: `carts`, `cart_items`, `customer_addresses`, `checkout_sessions`  
+Enums: `CartStatus`, `CheckoutStatus`
+
+Additive only. Server-owned checkout snapshots and stock reservations use existing `inventory_items` / `stock_movements` (movement type `reserve`). No live payment tables in this slice.
+
 ## Third migration
 
 Name: `20260924153355_catalogue_discovery` (+ `20260924153407_products_search_gin`)  
@@ -38,7 +47,7 @@ The local development password in `.env.example` and `docker-compose.yml` is fic
 
 ## Compatibility
 
-The catalogue migration is additive. It creates catalogue and inventory tables and a GIN search index. It does not drop identity or platform tables. Launch category taxonomy remains an open business decision (A-26); seed uses a generic configurable category only.
+The cart migration is additive. It creates cart, address, and checkout session tables. Inventory reservations increment `inventory_items.reserved` and append `stock_movements`. Tax/shipping are stub policies with explanation traces — not legal determinations.
 
 ## Rollback
 
@@ -47,7 +56,7 @@ The catalogue migration is additive. It creates catalogue and inventory tables a
 | Local disposable database | Drop the database, recreate it, and migrate again. Example: `dropdb aspera_marketplace_dev && createdb -O aspera_dev aspera_marketplace_dev && pnpm db:migrate` |
 | Shared non-production database with no important data | Same as local, after confirming the target is not production |
 | Shared non-production database that must keep other data | Restore from a host backup taken before the migration. Do not hand-edit `_prisma_migrations` |
-| Production | Not authorized for this migration. Production had no marketplace database when this slice shipped |
+| Production | Not authorized for this migration without a reviewed launch checklist |
 
 Prisma does not emit automatic down SQL for this migration. Reversal is restore or recreate, not an in-place reverse script.
 

@@ -419,8 +419,8 @@ export function SiteHeaderClient({
         >
           aspera
         </Link>
-        {/* Meesho: fixed-width search (~35–40%), not flex-stretch */}
-        <div className="hidden min-w-0 w-full max-w-[32rem] md:block lg:max-w-[36rem]">
+        {/* Meesho: search ~40–45% of header, then gap to right links */}
+        <div className="hidden min-w-0 w-[42%] max-w-[42rem] md:block lg:w-[45%]">
           <HeaderSearch />
         </div>
         <nav

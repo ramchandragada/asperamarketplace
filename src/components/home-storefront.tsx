@@ -84,110 +84,102 @@ export function MeeshoAppHero() {
     "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=" +
     encodeURIComponent(downloadTarget);
 
+  const sans = {
+    fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+  } as const;
+
   return (
     <section className="relative overflow-hidden bg-[#9f2089] text-white">
-      {/* subtle repeating mark pattern like Meesho */}
+      {/* Meesho-style repeating letter watermark */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        className="pointer-events-none absolute inset-0 opacity-[0.11]"
         aria-hidden
         style={{
           backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Ctext x='12' y='48' font-family='Arial Black, sans-serif' font-size='42' font-weight='900' fill='%23000000'%3Ea%3C/text%3E%3C/svg%3E\")",
-          backgroundSize: "72px 72px",
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Ctext x='18' y='58' font-family='Arial Black,Helvetica,sans-serif' font-size='52' font-weight='900' fill='%23000000'%3Ea%3C/text%3E%3C/svg%3E\")",
+          backgroundSize: "88px 88px",
         }}
       />
-      {/* concentric decorative rings behind models — Meesho signature */}
-      <div
-        className="pointer-events-none absolute top-[58%] left-[4%] hidden h-[560px] w-[560px] -translate-y-1/2 lg:block"
-        aria-hidden
-      >
-        <div className="absolute inset-0 rounded-full border-[20px] border-white/55" />
-        <div className="absolute inset-[10%] rounded-full border-[20px] border-[#5ec8e8]/70" />
-        <div className="absolute inset-[20%] rounded-full border-[20px] border-[#f48fc8]/65" />
-        <div className="absolute inset-[30%] rounded-full border-[18px] border-[#ffb84d]/55" />
-        <div className="absolute inset-[40%] rounded-full border-[14px] border-[#e878c0]/45" />
-      </div>
 
-      <div className="relative container-shell grid min-h-[280px] items-end gap-4 pt-6 pb-0 md:min-h-[360px] md:grid-cols-[1.1fr_0.9fr_1fr] md:items-center md:gap-8 md:py-0 lg:min-h-[400px]">
-        {/* Left: arched model portraits */}
-        <div className="relative z-[1] flex items-end justify-center gap-0 md:justify-start">
-          <div
-            className="relative h-[200px] w-[130px] overflow-hidden bg-[#c45aa8]/25 sm:h-[240px] sm:w-[150px] md:h-[310px] md:w-[185px] lg:h-[350px] lg:w-[205px]"
-            style={{ borderRadius: "999px 999px 0 0" }}
-          >
-            <Image
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80"
-              alt=""
-              fill
-              sizes="205px"
-              className="object-cover object-[center_15%]"
-              priority
-            />
-          </div>
-          <div
-            className="relative z-[1] -ml-5 h-[220px] w-[140px] overflow-hidden bg-[#c45aa8]/25 sm:-ml-6 sm:h-[260px] sm:w-[160px] md:-ml-8 md:h-[330px] md:w-[195px] lg:h-[370px] lg:w-[215px]"
-            style={{ borderRadius: "999px 999px 0 0" }}
-          >
-            <Image
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80"
-              alt=""
-              fill
-              sizes="215px"
-              className="object-cover object-[center_12%]"
-              priority
-            />
+      <div className="relative container-shell grid min-h-[300px] items-end gap-2 pt-4 pb-0 md:min-h-[380px] md:grid-cols-[1.15fr_0.85fr_1fr] md:items-stretch md:gap-4 md:pt-0 lg:min-h-[420px]">
+        {/* Left: rainbow rings + yellow-outfit arched models */}
+        <div className="relative z-[1] flex items-end justify-center md:justify-start">
+          <div className="relative flex h-full w-full max-w-[460px] items-end justify-center pt-8 md:pt-10">
+            {/* rainbow concentric arches behind models */}
+            <div
+              className="pointer-events-none absolute top-[8%] left-1/2 h-[120%] w-[120%] -translate-x-1/2"
+              aria-hidden
+            >
+              <div className="absolute inset-[6%] rounded-full border-[16px] border-white/70 md:border-[22px]" />
+              <div className="absolute inset-[16%] rounded-full border-[16px] border-[#4ec4e8]/85 md:border-[22px]" />
+              <div className="absolute inset-[26%] rounded-full border-[16px] border-[#ff7eb6]/80 md:border-[22px]" />
+              <div className="absolute inset-[36%] rounded-full border-[14px] border-[#ffc14a]/75 md:border-[18px]" />
+              <div className="absolute inset-[46%] rounded-full border-[12px] border-[#e85aad]/70 md:border-[16px]" />
+            </div>
+
+            <div className="relative z-[1] flex items-end">
+              <div
+                className="relative h-[210px] w-[135px] overflow-hidden bg-[#7a1868] sm:h-[250px] sm:w-[155px] md:h-[320px] md:w-[190px] lg:h-[360px] lg:w-[210px]"
+                style={{ borderRadius: "999px 999px 0 0" }}
+              >
+                <Image
+                  src="https://images.unsplash.com/photo-1774437787442-d58f8534ba9f?auto=format&fit=crop&w=600&q=80"
+                  alt=""
+                  fill
+                  sizes="210px"
+                  className="object-cover object-[center_12%]"
+                  priority
+                />
+              </div>
+              <div
+                className="relative z-[1] -ml-6 h-[230px] w-[145px] overflow-hidden bg-[#7a1868] sm:-ml-7 sm:h-[270px] sm:w-[165px] md:-ml-9 md:h-[340px] md:w-[200px] lg:h-[380px] lg:w-[220px]"
+                style={{ borderRadius: "999px 999px 0 0" }}
+              >
+                <Image
+                  src="https://images.unsplash.com/photo-1734527224906-92eaabc0f665?auto=format&fit=crop&w=600&q=80"
+                  alt=""
+                  fill
+                  sizes="220px"
+                  className="object-cover object-[center_10%]"
+                  priority
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Center: offer + QR */}
-        <div className="relative z-[1] flex flex-col items-center self-center px-2 pb-6 text-center md:pb-0">
-          <p
-            className="text-[15px] font-semibold leading-none text-white md:text-[16px]"
-            style={{
-              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-            }}
-          >
+        <div className="relative z-[1] flex flex-col items-center justify-center self-center px-2 pb-6 text-center md:pb-0">
+          <p className="text-[15px] font-semibold leading-tight text-white md:text-[17px]" style={sans}>
             Upto{" "}
-            <span className="text-[1.85rem] font-black tracking-tight text-[#ffe566] md:text-[2.15rem]">
+            <span className="text-[2rem] font-black tracking-tight text-[#ffe566] md:text-[2.35rem]">
               35% OFF
             </span>
           </p>
-          <p
-            className="mt-1.5 text-[15px] font-medium text-white md:text-[16px]"
-            style={{
-              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-            }}
-          >
+          <p className="mt-1 text-[15px] font-medium text-white md:text-[17px]" style={sans}>
             on your first order
           </p>
-          <p className="mt-0.5 text-[12px] text-white/85">*Only on App</p>
-          <div className="mt-4 rounded-md bg-white p-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+          <p className="mt-0.5 text-[12px] text-white/90">*Only on App</p>
+          <div className="mt-5 rounded-[6px] bg-white p-2.5 shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={qrUrl}
               alt="Scan to download Aspera app"
-              width={160}
-              height={160}
-              className="h-[148px] w-[148px] md:h-[160px] md:w-[160px]"
+              width={168}
+              height={168}
+              className="h-[152px] w-[152px] md:h-[168px] md:w-[168px]"
             />
           </div>
-          <p
-            className="mt-2.5 text-[13px] font-semibold tracking-wide text-white"
-            style={{
-              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-            }}
-          >
+          <p className="mt-3 text-[14px] font-semibold tracking-wide text-white" style={sans}>
             Scan now to install
           </p>
         </div>
 
-        {/* Right: tagline + CTA — Meesho uses bold sans, not serif */}
-        <div className="relative z-[1] flex flex-col items-center justify-center gap-5 self-center pb-8 text-center md:items-start md:pb-0 md:pl-4 md:text-left">
+        {/* Right: tagline + CTA */}
+        <div className="relative z-[1] flex flex-col items-center justify-center gap-6 self-center pb-8 text-center md:items-start md:pb-0 md:pl-6 md:text-left">
           <h1
-            className="max-w-[16rem] text-[1.75rem] leading-[1.2] font-bold text-balance md:max-w-[17rem] md:text-[2rem] lg:text-[2.25rem]"
-            style={{
-              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-            }}
+            className="max-w-[17rem] text-[1.85rem] leading-[1.18] font-bold text-balance md:max-w-[18rem] md:text-[2.15rem] lg:text-[2.4rem]"
+            style={sans}
           >
             Smart Shopping
             <br />
@@ -195,10 +187,8 @@ export function MeeshoAppHero() {
           </h1>
           <Link
             href="/browse"
-            className="inline-flex rounded-md bg-white px-10 py-3 text-[15px] font-bold text-[#9f2089] shadow-sm transition hover:bg-[#fff5fb]"
-            style={{
-              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-            }}
+            className="inline-flex rounded-md bg-white px-11 py-3.5 text-[16px] font-bold text-[#9f2089] shadow-sm transition hover:bg-[#fff5fb]"
+            style={sans}
           >
             Shop Now
           </Link>

@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  FormEvent,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 type Review = {
   id: string;
@@ -13,6 +18,8 @@ type Review = {
 };
 
 type Vote = "helpful" | "not_helpful" | null;
+
+const VOTE_EVENT = "aspera-review-vote";
 
 function voteKey(reviewId: string) {
   return `aspera.review-vote.${reviewId}`;
@@ -26,6 +33,89 @@ function readVote(reviewId: string): Vote {
     /* ignore */
   }
   return null;
+}
+
+function subscribeVote(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(VOTE_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(VOTE_EVENT, onStoreChange);
+  };
+}
+
+function writeVote(reviewId: string, next: Exclude<Vote, null>) {
+  try {
+    localStorage.setItem(voteKey(reviewId), next);
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(new Event(VOTE_EVENT));
+}
+
+function ReviewHelpfulness({
+  reviewId,
+  baseHelpful,
+  baseNotHelpful,
+}: {
+  reviewId: string;
+  baseHelpful: number;
+  baseNotHelpful: number;
+}) {
+  const vote = useSyncExternalStore(
+    subscribeVote,
+    () => readVote(reviewId),
+    () => null as Vote,
+  );
+  const [delta, setDelta] = useState({ helpful: 0, notHelpful: 0 });
+
+  function cast(next: Exclude<Vote, null>) {
+    const previous = readVote(reviewId);
+    if (previous === next) return;
+    writeVote(reviewId, next);
+    setDelta((prev) => {
+      let helpful = prev.helpful;
+      let notHelpful = prev.notHelpful;
+      if (previous === "helpful") helpful -= 1;
+      if (previous === "not_helpful") notHelpful -= 1;
+      if (next === "helpful") helpful += 1;
+      if (next === "not_helpful") notHelpful += 1;
+      return { helpful, notHelpful };
+    });
+  }
+
+  const helpful = Math.max(0, baseHelpful + delta.helpful);
+  const notHelpful = Math.max(0, baseNotHelpful + delta.notHelpful);
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+      <span className="text-muted">Was this helpful?</span>
+      <button
+        type="button"
+        onClick={() => cast("helpful")}
+        className={`rounded-full border px-2.5 py-1 font-medium ${
+          vote === "helpful"
+            ? "border-success bg-success-soft text-success"
+            : "border-border hover:border-accent"
+        }`}
+        aria-pressed={vote === "helpful"}
+      >
+        Yes ({helpful})
+      </button>
+      <button
+        type="button"
+        onClick={() => cast("not_helpful")}
+        className={`rounded-full border px-2.5 py-1 font-medium ${
+          vote === "not_helpful"
+            ? "border-danger bg-danger-soft text-danger"
+            : "border-border hover:border-accent"
+        }`}
+        aria-pressed={vote === "not_helpful"}
+      >
+        No ({notHelpful})
+      </button>
+    </div>
+  );
 }
 
 export function ProductReviewsPanel({
@@ -47,34 +137,6 @@ export function ProductReviewsPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [votes, setVotes] = useState<Record<string, Vote>>(() => {
-    const initial: Record<string, Vote> = {};
-    for (const review of initialReviews) {
-      initial[review.id] = null;
-    }
-    return initial;
-  });
-  const [voteCounts, setVoteCounts] = useState<
-    Record<string, { helpful: number; notHelpful: number }>
-  >(() =>
-    Object.fromEntries(
-      initialReviews.map((review) => [
-        review.id,
-        {
-          helpful: 1 + (review.id.charCodeAt(0) % 4),
-          notHelpful: review.id.charCodeAt(1) % 2,
-        },
-      ]),
-    ),
-  );
-
-  useEffect(() => {
-    const next: Record<string, Vote> = {};
-    for (const review of reviews) {
-      next[review.id] = readVote(review.id);
-    }
-    setVotes((prev) => ({ ...prev, ...next }));
-  }, [reviews]);
 
   const buckets = useMemo(() => {
     if (reviews.length > 0) {
@@ -99,26 +161,6 @@ export function ProductReviewsPanel({
       : (seededAverage ?? 0);
   const totalCount = reviews.length > 0 ? reviews.length : (seededCount ?? 0);
   const maxBucket = Math.max(1, ...buckets);
-
-  function castVote(reviewId: string, next: Exclude<Vote, null>) {
-    const previous = votes[reviewId] ?? readVote(reviewId);
-    setVotes((prev) => ({ ...prev, [reviewId]: next }));
-    try {
-      localStorage.setItem(voteKey(reviewId), next);
-    } catch {
-      /* ignore */
-    }
-    setVoteCounts((prev) => {
-      const current = prev[reviewId] ?? { helpful: 0, notHelpful: 0 };
-      let helpful = current.helpful;
-      let notHelpful = current.notHelpful;
-      if (previous === "helpful") helpful = Math.max(0, helpful - 1);
-      if (previous === "not_helpful") notHelpful = Math.max(0, notHelpful - 1);
-      if (next === "helpful") helpful += 1;
-      if (next === "not_helpful") notHelpful += 1;
-      return { ...prev, [reviewId]: { helpful, notHelpful } };
-    });
-  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -256,11 +298,6 @@ export function ProductReviewsPanel({
           {reviews.map((review) => {
             const author = review.authorName ?? "Aspera shopper";
             const initial = author.trim().slice(0, 1).toUpperCase() || "A";
-            const vote = votes[review.id];
-            const counts = voteCounts[review.id] ?? {
-              helpful: 0,
-              notHelpful: 0,
-            };
             return (
               <li
                 key={review.id}
@@ -294,33 +331,11 @@ export function ProductReviewsPanel({
                     <p className="mt-1 text-sm leading-6 text-muted">
                       {review.body}
                     </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                      <span className="text-muted">Was this helpful?</span>
-                      <button
-                        type="button"
-                        onClick={() => castVote(review.id, "helpful")}
-                        className={`rounded-full border px-2.5 py-1 font-medium ${
-                          vote === "helpful"
-                            ? "border-success bg-success-soft text-success"
-                            : "border-border hover:border-accent"
-                        }`}
-                        aria-pressed={vote === "helpful"}
-                      >
-                        Yes ({counts.helpful})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => castVote(review.id, "not_helpful")}
-                        className={`rounded-full border px-2.5 py-1 font-medium ${
-                          vote === "not_helpful"
-                            ? "border-danger bg-danger-soft text-danger"
-                            : "border-border hover:border-accent"
-                        }`}
-                        aria-pressed={vote === "not_helpful"}
-                      >
-                        No ({counts.notHelpful})
-                      </button>
-                    </div>
+                    <ReviewHelpfulness
+                      reviewId={review.id}
+                      baseHelpful={1 + (review.id.charCodeAt(0) % 4)}
+                      baseNotHelpful={review.id.charCodeAt(1) % 2}
+                    />
                   </div>
                 </div>
               </li>

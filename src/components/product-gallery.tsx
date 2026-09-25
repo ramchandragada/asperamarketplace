@@ -149,7 +149,7 @@ export function ProductGallery({
                     }
                   : desktopZoom && zoom
                     ? {
-                        transform: "scale(2)",
+                        transform: "scale(2.5)",
                         transformOrigin: `${zoom.x}% ${zoom.y}%`,
                       }
                     : undefined
@@ -192,7 +192,7 @@ export function ProductGallery({
 
         {desktopZoom && zoom && current ? (
           <div
-            className="pointer-events-none absolute top-0 left-[calc(100%+0.75rem)] z-40 hidden h-full w-[min(20rem,36vw)] overflow-hidden rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-mega)] lg:block"
+            className="pointer-events-none absolute top-0 left-[calc(100%+0.75rem)] z-40 hidden h-full w-[min(25rem,400px)] overflow-hidden rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-mega)] lg:block"
             aria-hidden
           >
             <div
@@ -200,7 +200,7 @@ export function ProductGallery({
               style={{
                 backgroundImage: `url(${current.url})`,
                 backgroundRepeat: "no-repeat",
-                backgroundSize: "220%",
+                backgroundSize: "250%",
                 backgroundPosition: `${zoom.x}% ${zoom.y}%`,
               }}
             />

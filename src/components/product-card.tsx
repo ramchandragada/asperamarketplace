@@ -117,7 +117,7 @@ function WishlistButton({ productId }: { productId: string }) {
       /* ignore */
     }
     void import("@/components/toast-host").then(({ showToast }) => {
-      showToast(saved ? "Removed from wishlist" : "Added to wishlist");
+      showToast(saved ? "♥ Removed from wishlist" : "♥ Added to wishlist");
     });
     void fetch("/api/wishlist", {
       method: "POST",
@@ -270,7 +270,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
                   <span className="text-muted line-through">
                     {formatPaise(product.deliveryOriginalPaise)}
                   </span>
-                  <span className="font-semibold text-foreground">
+                  <span className="font-semibold text-success">
                     {formatPaise(product.deliveryFeePaise)}
                   </span>
                 </>

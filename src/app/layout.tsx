@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Source_Serif_4, DM_Sans } from "next/font/google";
+import {
+  Source_Serif_4,
+  DM_Sans,
+  Caveat,
+  Bebas_Neue,
+  Nunito,
+} from "next/font/google";
 import { AppDownloadBanner } from "@/components/app-download-banner";
 import { BackToTopButton } from "@/components/back-to-top";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
@@ -16,6 +22,30 @@ const display = Source_Serif_4({
 const sans = DM_Sans({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+const brandScript = Caveat({
+  variable: "--font-brand-script",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const brandSport = Bebas_Neue({
+  variable: "--font-brand-sport",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const brandSoft = Nunito({
+  variable: "--font-brand-soft",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+});
+
+const brandTech = DM_Sans({
+  variable: "--font-brand-tech",
+  subsets: ["latin"],
+  weight: ["700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -41,7 +71,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${sans.variable} ${display.variable} h-full antialiased`}
+      className={`${sans.variable} ${display.variable} ${brandScript.variable} ${brandSport.variable} ${brandSoft.variable} ${brandTech.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
         <a className="skip-link" href="#content">

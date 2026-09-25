@@ -154,9 +154,10 @@ function CategoryNav() {
       >
         <Link
           href={POPULAR_NAV.href}
-          className="shrink-0 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-semibold text-brand-accent hover:bg-accent-soft/70"
+          className="inline-flex shrink-0 items-center gap-1 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-bold text-[#e85d04] hover:bg-[#fff4eb]"
           onMouseEnter={scheduleClose}
         >
+          <span aria-hidden>🔥</span>
           {POPULAR_NAV.label}
         </Link>
         <Link
@@ -435,7 +436,7 @@ export function SiteHeaderClient({
 
   useEffect(() => {
     function onScroll() {
-      setCompact(window.scrollY > 64);
+      setCompact(window.scrollY > 100);
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -444,19 +445,19 @@ export function SiteHeaderClient({
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b border-border/80 bg-surface/95 backdrop-blur-md transition-[box-shadow] duration-200 ${
+      className={`sticky top-0 z-40 border-b border-border/80 bg-surface/95 backdrop-blur-md transition-all duration-300 ease-out ${
         compact ? "shadow-[var(--shadow-card)]" : ""
       }`}
       data-compact={compact ? "true" : "false"}
     >
       <div
-        className={`container-shell flex items-center gap-3 transition-[height] duration-200 md:gap-5 ${
-          compact ? "h-12 md:h-14" : "h-[var(--header-height)]"
+        className={`container-shell flex items-center gap-3 transition-all duration-300 ease-out md:gap-5 ${
+          compact ? "h-12 py-2 md:h-14" : "h-[var(--header-height)]"
         }`}
       >
         <Link
           href="/"
-          className={`font-display shrink-0 font-bold tracking-tight text-accent transition-all duration-200 ${
+          className={`font-display shrink-0 font-bold tracking-tight text-accent transition-all duration-300 ease-out ${
             compact ? "text-lg md:text-xl" : "text-xl md:text-2xl"
           }`}
         >
@@ -518,7 +519,7 @@ export function SiteHeaderClient({
         <HeaderSearch />
       </div>
       <div
-        className={`overflow-hidden transition-[max-height,opacity] duration-200 ${
+        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
           compact ? "max-h-0 opacity-0" : "max-h-40 opacity-100"
         }`}
       >
@@ -537,8 +538,9 @@ export function SiteHeaderClient({
           {POPULAR_NAV ? (
             <Link
               href={POPULAR_NAV.href}
-              className="shrink-0 rounded-full border border-brand-accent/40 bg-brand-accent/10 px-3 py-1.5 font-semibold whitespace-nowrap text-brand-accent"
+              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#e85d04]/40 bg-[#fff4eb] px-3 py-1.5 font-bold whitespace-nowrap text-[#e85d04]"
             >
+              <span aria-hidden>🔥</span>
               {POPULAR_NAV.label}
             </Link>
           ) : null}

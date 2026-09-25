@@ -3,7 +3,9 @@
 import Link from "next/link";
 import {
   FormEvent,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
   type ReactNode,
@@ -31,14 +33,19 @@ const PRICE_PRESETS = [
 const RATING_OPTIONS = [
   { value: 4, label: "4★ & above" },
   { value: 3, label: "3★ & above" },
-  { value: 2, label: "2★ & above" },
 ] as const;
 
 const DISCOUNT_OPTIONS = [
-  { value: 10, label: "10% or more" },
-  { value: 20, label: "20% or more" },
-  { value: 30, label: "30% or more" },
-  { value: 40, label: "40% or more" },
+  { value: 10, label: "10%+" },
+  { value: 20, label: "20%+" },
+  { value: 30, label: "30%+" },
+  { value: 40, label: "40%+" },
+] as const;
+
+const GENDER_OPTIONS = [
+  { value: "women", label: "Women", categorySlug: "fashion", q: "" },
+  { value: "men", label: "Men", categorySlug: "fashion", q: "shirt" },
+  { value: "unisex", label: "Unisex", categorySlug: "bags-footwear", q: "" },
 ] as const;
 
 const SORT_OPTIONS = [
@@ -73,6 +80,7 @@ export function CatalogueBrowse({
   browseBasePath = "/browse",
   variant = "page",
   enableLoadMore = false,
+  infiniteScroll = false,
   updateUrl = true,
 }: {
   initialItems: BrowseProduct[];
@@ -94,9 +102,12 @@ export function CatalogueBrowse({
   /** `home` hides breadcrumb and uses Products For You chrome */
   variant?: "page" | "home";
   enableLoadMore?: boolean;
+  /** Auto-load next page when sentinel enters viewport */
+  infiniteScroll?: boolean;
   updateUrl?: boolean;
 }) {
   const isHome = variant === "home";
+  const useInfinite = infiniteScroll || (isHome && enableLoadMore);
   const initialMin = rupeesFromPaise(initialMinPricePaise);
   const initialMax = rupeesFromPaise(initialMaxPricePaise);
   const matchedPreset =
@@ -113,6 +124,7 @@ export function CatalogueBrowse({
   const [query, setQuery] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
   const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
+  const [gender, setGender] = useState<string>("");
   const [sort, setSort] = useState(initialSort);
   const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
   const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly);
@@ -130,8 +142,10 @@ export function CatalogueBrowse({
   const [error, setError] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
+    gender: true,
     brand: true,
     price: true,
     rating: true,
@@ -193,6 +207,10 @@ export function CatalogueBrowse({
     if (verifiedOnly) {
       list.push({ key: "verified", label: "Verified sellers" });
     }
+    if (gender) {
+      const option = GENDER_OPTIONS.find((entry) => entry.value === gender);
+      if (option) list.push({ key: "gender", label: option.label });
+    }
     return list;
   }, [
     query,
@@ -207,6 +225,7 @@ export function CatalogueBrowse({
     maxPrice,
     minRating,
     minDiscount,
+    gender,
   ]);
 
   async function runSearch(next?: {
@@ -283,11 +302,28 @@ export function CatalogueBrowse({
   }
 
   function loadMore() {
-    if (loadingMore || items.length >= total) return;
+    if (loadingMore || pending || items.length >= total) return;
     startTransition(() => {
       void runSearch({ page: page + 1, append: true });
     });
   }
+
+  useEffect(() => {
+    if (!useInfinite) return;
+    const node = sentinelRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          loadMore();
+        }
+      },
+      { rootMargin: "320px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadMore closes over latest page/items
+  }, [useInfinite, items.length, total, loadingMore, pending, page]);
 
   function applyAndClose() {
     startTransition(() => {
@@ -310,6 +346,7 @@ export function CatalogueBrowse({
     setPricePreset("");
     setCategorySearch("");
     setBrandSearch("");
+    setGender("");
     startTransition(() => {
       void runSearch({
         q: "",
@@ -339,6 +376,13 @@ export function CatalogueBrowse({
     if (key === "brand") {
       setBrandSlug("");
       next.brandSlug = "";
+    }
+    if (key === "gender") {
+      setGender("");
+      setCategorySlug("");
+      setQuery("");
+      next.categorySlug = "";
+      next.q = "";
     }
     if (key === "price" || key === "priceCustom") {
       setPricePreset("");
@@ -453,6 +497,56 @@ export function CatalogueBrowse({
           ))}
           {filteredCategories.length === 0 ? (
             <li className="text-xs text-muted">No categories match</li>
+          ) : null}
+        </ul>
+      </FilterSection>
+
+      <FilterSection
+        title="Gender"
+        open={openSections.gender !== false}
+        onToggle={() => toggleSection("gender")}
+      >
+        <ul className="space-y-1.5">
+          {GENDER_OPTIONS.map((option) => (
+            <li key={option.value}>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="gender"
+                  checked={gender === option.value}
+                  onChange={() => {
+                    setGender(option.value);
+                    setCategorySlug(option.categorySlug);
+                    setQuery(option.q);
+                    startTransition(() => {
+                      void runSearch({
+                        categorySlug: option.categorySlug,
+                        q: option.q,
+                      });
+                    });
+                  }}
+                />
+                {option.label}
+              </label>
+            </li>
+          ))}
+          {gender ? (
+            <li>
+              <button
+                type="button"
+                className="text-xs text-accent hover:underline"
+                onClick={() => {
+                  setGender("");
+                  setCategorySlug("");
+                  setQuery("");
+                  startTransition(() => {
+                    void runSearch({ categorySlug: "", q: "" });
+                  });
+                }}
+              >
+                Clear gender
+              </button>
+            </li>
           ) : null}
         </ul>
       </FilterSection>
@@ -864,9 +958,9 @@ export function CatalogueBrowse({
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
         <aside className="hidden lg:block">
-          <div className="sticky top-28 rounded-[var(--radius)] border border-border bg-surface p-4">
+          <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-[var(--radius)] border border-border bg-surface p-4">
             {filterPanel}
           </div>
         </aside>
@@ -877,28 +971,43 @@ export function CatalogueBrowse({
             <div
               className={`grid grid-cols-2 gap-3 ${
                 isHome
-                  ? "md:grid-cols-3"
+                  ? "md:grid-cols-3 xl:grid-cols-4"
                   : "md:grid-cols-3 xl:grid-cols-4"
               }`}
             >
-              {Array.from({ length: 9 }).map((_, index) => (
+              {Array.from({ length: 8 }).map((_, index) => (
                 <ProductCardSkeleton key={index} />
               ))}
             </div>
           ) : items.length > 0 ? (
             <>
-              <div
-                className={`grid grid-cols-2 gap-3 ${
-                  isHome
-                    ? "md:grid-cols-3"
-                    : "md:grid-cols-3 xl:grid-cols-4"
-                }`}
-              >
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
                 {items.map((item) => (
                   <ProductCard key={item.id} product={item} />
                 ))}
               </div>
-              {enableLoadMore && items.length < total ? (
+              {useInfinite && items.length < total ? (
+                <div
+                  ref={sentinelRef}
+                  className="flex flex-col items-center gap-3 py-4"
+                  aria-hidden={!loadingMore}
+                >
+                  <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+                    {(loadingMore || pending
+                      ? [0, 1, 2, 3]
+                      : []
+                    ).map((index) => (
+                      <ProductCardSkeleton key={`more-${index}`} />
+                    ))}
+                  </div>
+                  {loadingMore ? (
+                    <p className="text-xs font-medium text-muted">
+                      Loading more products…
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+              {!useInfinite && enableLoadMore && items.length < total ? (
                 <div className="flex justify-center pt-2">
                   <Button
                     type="button"

@@ -24,6 +24,8 @@ export type ProductCardModel = {
   reviewCount?: number;
   freeDeliveryHint?: boolean;
   deliveryFeePaise?: number | null;
+  /** Original delivery fee before discount (paise) */
+  deliveryOriginalPaise?: number | null;
   dealEndsAt?: string | null;
   primaryImageUrl?: string | null;
   primaryImageAlt?: string | null;
@@ -259,10 +261,26 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               Free Delivery
             </span>
           ) : (
-            <p className="text-xs text-muted">
-              {product.deliveryFeePaise != null
-                ? `Delivery ${formatPaise(product.deliveryFeePaise)}`
-                : "Delivery ₹60"}
+            <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+              <span>Delivery</span>
+              {product.deliveryOriginalPaise != null &&
+              product.deliveryFeePaise != null &&
+              product.deliveryOriginalPaise > product.deliveryFeePaise ? (
+                <>
+                  <span className="text-muted line-through">
+                    {formatPaise(product.deliveryOriginalPaise)}
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {formatPaise(product.deliveryFeePaise)}
+                  </span>
+                </>
+              ) : (
+                <span className="font-medium text-foreground">
+                  {product.deliveryFeePaise != null
+                    ? formatPaise(product.deliveryFeePaise)
+                    : "₹60"}
+                </span>
+              )}
             </p>
           )}
           {product.sellerVerified ? (

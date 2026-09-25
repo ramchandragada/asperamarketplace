@@ -206,6 +206,26 @@ h2,
   animation: aspera-deal-pulse 1.4s ease-in-out infinite;
 }
 
+@keyframes aspera-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(229, 229, 229, 0.55) 0%,
+    rgba(245, 245, 245, 0.95) 45%,
+    rgba(229, 229, 229, 0.55) 100%
+  );
+  background-size: 200% 100%;
+  animation: aspera-shimmer 1.35s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

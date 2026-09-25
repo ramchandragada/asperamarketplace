@@ -36,6 +36,9 @@ export function AddToCartButton({
       return;
     }
     setMessage(body.message ?? "Added");
+    void import("@/components/toast-host").then(({ showToast }) => {
+      showToast("Added to cart");
+    });
     router.refresh();
   }
 

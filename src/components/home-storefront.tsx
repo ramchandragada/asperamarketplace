@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 export type HeroBubble = {
   label: string;
@@ -219,23 +219,24 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
 
 export function TrustSignalBar() {
   const items = [
-    { label: "Easy Returns", icon: "↩" },
+    { label: "7 Days Easy Return", icon: "✓" },
     { label: "Cash on Delivery", icon: "₹" },
-    { label: "Verified Sellers", icon: "✓" },
-    { label: "Secure Payments", icon: "🔒" },
+    { label: "Lowest Prices", icon: "↓" },
   ];
   return (
-    <div className="border-y border-border bg-[#f8f5f0]">
-      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-3 text-sm text-foreground">
+    <div className="border-b border-border bg-white">
+      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-1 gap-y-1 py-2.5 text-xs text-muted sm:text-sm">
         {items.map((item, index) => (
-          <li key={item.label} className="flex items-center gap-2">
+          <li key={item.label} className="flex items-center gap-2 px-2 sm:px-3">
             {index > 0 ? (
-              <span className="mr-2 hidden text-border sm:inline" aria-hidden>
-                ·
+              <span className="mr-1 text-border" aria-hidden>
+                |
               </span>
             ) : null}
-            <span aria-hidden>{item.icon}</span>
-            <span className="font-medium">{item.label}</span>
+            <span className="font-semibold text-success" aria-hidden>
+              {item.icon}
+            </span>
+            <span className="font-medium text-foreground">{item.label}</span>
           </li>
         ))}
       </ul>
@@ -412,48 +413,27 @@ export function SellerLogoStrip({ sellers }: { sellers: SellerCardData[] }) {
 
       <div
         ref={scrollerRef}
-        className="rail-scroll [grid-auto-columns:minmax(11.5rem,13.5rem)]"
+        className="rail-scroll [grid-auto-columns:minmax(9rem,10.5rem)]"
       >
         {sellers.map((seller) => {
-          const initial = seller.name.trim().slice(0, 1).toUpperCase() || "S";
+          const style = brandLogoStyle(seller.name);
           return (
-            <article
+            <Link
               key={seller.id}
-              className="flex flex-col gap-3 rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
+              href={seller.href}
+              className="flex h-28 flex-col items-center justify-center gap-2 rounded-[var(--radius)] border border-border bg-white px-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-accent/40 hover:shadow-sm"
             >
-              <div className="flex items-center gap-3">
-                <span
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-bold text-accent-foreground"
-                  aria-hidden
-                >
-                  {initial}
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-foreground">
-                    {seller.name}
-                  </p>
-                  <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
-                    <span className="text-brand-accent" aria-hidden>
-                      ★
-                    </span>
-                    <span className="font-medium text-foreground">
-                      {seller.ratingAverage.toFixed(1)}
-                    </span>
-                    <span aria-hidden>·</span>
-                    <span>
-                      {seller.productCount} product
-                      {seller.productCount === 1 ? "" : "s"}
-                    </span>
-                  </p>
-                </div>
-              </div>
-              <Link
-                href={seller.href}
-                className="mt-auto inline-flex items-center justify-center rounded-[var(--radius-sm)] border border-accent/30 bg-accent-soft/60 px-3 py-2 text-xs font-bold text-accent transition hover:bg-accent hover:text-accent-foreground"
+              <span
+                className={`line-clamp-2 ${style.className}`}
+                style={style.style}
               >
-                Visit Shop →
-              </Link>
-            </article>
+                {seller.name}
+              </span>
+              <span className="text-[10px] font-medium text-muted">
+                ★ {seller.ratingAverage.toFixed(1)} · {seller.productCount}{" "}
+                products
+              </span>
+            </Link>
           );
         })}
       </div>
@@ -468,6 +448,124 @@ export type OriginalBrandCard = {
   imageUrl: string;
   overlay: string;
 };
+
+function brandLogoStyle(name: string): {
+  className: string;
+  style?: CSSProperties;
+} {
+  const key = name.toLowerCase();
+  if (key.includes("aspera")) {
+    return {
+      className: "font-display text-base font-bold tracking-tight text-accent",
+    };
+  }
+  if (key.includes("coastal") || key.includes("bloom")) {
+    return {
+      className: "text-[15px] italic font-semibold text-[#7a4a6e]",
+      style: { fontFamily: "Georgia, 'Times New Roman', serif" },
+    };
+  }
+  if (key.includes("silicon") || key.includes("bay")) {
+    return {
+      className:
+        "text-sm font-black uppercase tracking-[0.12em] text-[#1e3a5f]",
+      style: { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" },
+    };
+  }
+  if (key.includes("narmada") || key.includes("weave")) {
+    return {
+      className: "font-display text-[15px] font-semibold text-[#5c3d0f]",
+    };
+  }
+  if (key.includes("pulse") || key.includes("fit")) {
+    return {
+      className: "text-sm font-extrabold tracking-wide text-[#0e8a4f]",
+    };
+  }
+  if (key.includes("lotus")) {
+    return {
+      className: "text-[15px] font-semibold text-[#c45a7a]",
+      style: { fontFamily: "Georgia, serif" },
+    };
+  }
+  if (key.includes("quill") || key.includes("ink")) {
+    return {
+      className: "font-display text-sm font-bold text-[#2d4a3e]",
+    };
+  }
+  return {
+    className: "text-sm font-bold tracking-tight text-foreground",
+  };
+}
+
+function BrandPartnersRail({
+  logos,
+}: {
+  logos: Array<{ id: string; name: string; href: string; mark?: string }>;
+}) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  function scrollBy(direction: -1 | 1) {
+    const node = scrollerRef.current;
+    if (!node) return;
+    node.scrollBy({
+      left: direction * Math.min(280, node.clientWidth * 0.75),
+      behavior: "smooth",
+    });
+  }
+
+  return (
+    <div className="mt-2">
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <p className="text-[11px] font-semibold tracking-[0.14em] text-muted uppercase">
+          Featured brand partners
+        </p>
+        {logos.length > 4 ? (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Scroll brands left"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-lg shadow-sm hover:border-accent hover:text-accent"
+              onClick={() => scrollBy(-1)}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              aria-label="Scroll brands right"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-lg shadow-sm hover:border-accent hover:text-accent"
+              onClick={() => scrollBy(1)}
+            >
+              ›
+            </button>
+          </div>
+        ) : null}
+      </div>
+      <div
+        ref={scrollerRef}
+        className="rail-scroll [grid-auto-columns:minmax(7.5rem,9rem)]"
+      >
+        {logos.map((logo) => {
+          const style = brandLogoStyle(logo.name);
+          return (
+            <Link
+              key={logo.id}
+              href={logo.href}
+              className="flex h-24 flex-col items-center justify-center rounded-[var(--radius-sm)] border border-border bg-white px-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-accent/40 hover:shadow-sm"
+            >
+              <span
+                className={`line-clamp-2 ${style.className}`}
+                style={style.style}
+              >
+                {logo.name}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function OriginalBrandsSection({
   cards,
@@ -524,27 +622,7 @@ export function OriginalBrandsSection({
         </div>
 
         {logos.length > 0 ? (
-          <div className="mt-2">
-            <p className="mb-3 text-[11px] font-semibold tracking-[0.14em] text-muted uppercase">
-              Featured brand partners
-            </p>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-              {logos.map((logo) => (
-                <Link
-                  key={logo.id}
-                  href={logo.href}
-                  className="flex h-[4.25rem] flex-col items-center justify-center gap-1 rounded-[var(--radius-sm)] border border-border bg-white px-2 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-accent/40 hover:shadow-sm"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent">
-                    {(logo.mark ?? logo.name).slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="line-clamp-1 text-[10px] font-semibold text-muted">
-                    {logo.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <BrandPartnersRail logos={logos} />
         ) : null}
       </div>
     </section>

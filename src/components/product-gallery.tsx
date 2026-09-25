@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type TouchEvent as ReactTouchEvent,
+} from "react";
 
 export function ProductGallery({
   title,
@@ -13,11 +19,69 @@ export function ProductGallery({
   const [active, setActive] = useState(images[0]?.id ?? "");
   const [failed, setFailed] = useState<Record<string, boolean>>({});
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
+  const [pinchScale, setPinchScale] = useState(1);
+  const [pinchOrigin, setPinchOrigin] = useState({ x: 50, y: 50 });
   const mainRef = useRef<HTMLDivElement>(null);
+  const pinchStartDist = useRef<number | null>(null);
+  const pinchStartScale = useRef(1);
   const current =
     images.find((image) => image.id === active) ?? images[0] ?? null;
   const showImage = current && !failed[current.id];
   const initials = title.slice(0, 1).toUpperCase();
+
+  const touchDistance = useCallback((touches: ReactTouchEvent["touches"]) => {
+    const a = touches.item(0);
+    const b = touches.item(1);
+    if (!a || !b) return 0;
+    const dx = a.clientX - b.clientX;
+    const dy = a.clientY - b.clientY;
+    return Math.hypot(dx, dy);
+  }, []);
+
+  function onTouchStart(event: ReactTouchEvent<HTMLDivElement>) {
+    if (event.touches.length === 2) {
+      pinchStartDist.current = touchDistance(event.touches);
+      pinchStartScale.current = pinchScale;
+      const rect = mainRef.current?.getBoundingClientRect();
+      const a = event.touches.item(0);
+      const b = event.touches.item(1);
+      if (rect && a && b) {
+        const midX = (a.clientX + b.clientX) / 2;
+        const midY = (a.clientY + b.clientY) / 2;
+        setPinchOrigin({
+          x: ((midX - rect.left) / rect.width) * 100,
+          y: ((midY - rect.top) / rect.height) * 100,
+        });
+      }
+    }
+  }
+
+  function onTouchMove(event: ReactTouchEvent<HTMLDivElement>) {
+    if (event.touches.length === 2 && pinchStartDist.current) {
+      const dist = touchDistance(event.touches);
+      const next = Math.min(
+        3,
+        Math.max(1, (dist / pinchStartDist.current) * pinchStartScale.current),
+      );
+      setPinchScale(next);
+    }
+  }
+
+  function onTouchEnd() {
+    if (pinchScale < 1.08) {
+      setPinchScale(1);
+    }
+    pinchStartDist.current = null;
+  }
+
+  function onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "touch") return;
+    const rect = mainRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    setZoom({ x, y });
+  }
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row">
@@ -30,7 +94,10 @@ export function ProductGallery({
             <li key={image.id} className="shrink-0">
               <button
                 type="button"
-                onClick={() => setActive(image.id)}
+                onClick={() => {
+                  setActive(image.id);
+                  setPinchScale(1);
+                }}
                 className={`relative h-16 w-16 overflow-hidden rounded-[var(--radius-sm)] border ${
                   active === image.id ? "border-accent" : "border-border"
                 }`}
@@ -62,15 +129,13 @@ export function ProductGallery({
       <div className="relative order-1 flex-1 lg:order-2">
         <div
           ref={mainRef}
-          className="relative aspect-square overflow-hidden rounded-[var(--radius)] border border-border bg-accent-soft/40 shadow-[var(--shadow-card)]"
-          onMouseMove={(event) => {
-            const rect = mainRef.current?.getBoundingClientRect();
-            if (!rect) return;
-            const x = ((event.clientX - rect.left) / rect.width) * 100;
-            const y = ((event.clientY - rect.top) / rect.height) * 100;
-            setZoom({ x, y });
-          }}
-          onMouseLeave={() => setZoom(null)}
+          className="relative aspect-square touch-pinch-zoom overflow-hidden rounded-[var(--radius)] border border-border bg-accent-soft/40 shadow-[var(--shadow-card)]"
+          onPointerMove={onPointerMove}
+          onPointerLeave={() => setZoom(null)}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
         >
           {showImage ? (
             <Image
@@ -82,10 +147,17 @@ export function ProductGallery({
               placeholder="blur"
               blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2U4ZjRmNCIvPjwvc3ZnPg=="
               className={`object-cover transition duration-150 ${
-                zoom ? "scale-[1.65]" : "scale-100"
+                zoom && pinchScale <= 1 ? "scale-[1.65]" : "scale-100"
               }`}
               style={
-                zoom ? { transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined
+                pinchScale > 1
+                  ? {
+                      transform: `scale(${pinchScale})`,
+                      transformOrigin: `${pinchOrigin.x}% ${pinchOrigin.y}%`,
+                    }
+                  : zoom
+                    ? { transformOrigin: `${zoom.x}% ${zoom.y}%` }
+                    : undefined
               }
               onError={() =>
                 setFailed((prev) => ({ ...prev, [current.id]: true }))
@@ -98,7 +170,7 @@ export function ProductGallery({
               </span>
             </div>
           )}
-          {zoom && showImage ? (
+          {zoom && showImage && pinchScale <= 1 ? (
             <div
               className="pointer-events-none absolute inset-4 hidden rounded-[var(--radius-sm)] border-2 border-white/80 shadow-lg lg:block"
               style={{
@@ -111,7 +183,7 @@ export function ProductGallery({
             />
           ) : null}
         </div>
-        {zoom && showImage ? (
+        {zoom && showImage && pinchScale <= 1 ? (
           <div
             className="pointer-events-none absolute top-0 left-[calc(100%+1rem)] hidden h-full w-[min(22rem,40vw)] overflow-hidden rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-mega)] xl:block"
             aria-hidden
@@ -126,6 +198,15 @@ export function ProductGallery({
               }}
             />
           </div>
+        ) : null}
+        {pinchScale > 1.05 ? (
+          <button
+            type="button"
+            className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white lg:hidden"
+            onClick={() => setPinchScale(1)}
+          >
+            Reset zoom
+          </button>
         ) : null}
       </div>
     </div>

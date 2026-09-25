@@ -15,6 +15,7 @@ type Review = {
   body: string;
   createdAt: string;
   authorName?: string;
+  hasPhotos?: boolean;
 };
 
 type Vote = "helpful" | "not_helpful" | null;
@@ -56,64 +57,57 @@ function writeVote(reviewId: string, next: Exclude<Vote, null>) {
 function ReviewHelpfulness({
   reviewId,
   baseHelpful,
-  baseNotHelpful,
 }: {
   reviewId: string;
   baseHelpful: number;
-  baseNotHelpful: number;
 }) {
   const vote = useSyncExternalStore(
     subscribeVote,
     () => readVote(reviewId),
     () => null as Vote,
   );
-  const [delta, setDelta] = useState({ helpful: 0, notHelpful: 0 });
+  const [delta, setDelta] = useState(0);
 
-  function cast(next: Exclude<Vote, null>) {
+  function castHelpful() {
     const previous = readVote(reviewId);
-    if (previous === next) return;
-    writeVote(reviewId, next);
-    setDelta((prev) => {
-      let helpful = prev.helpful;
-      let notHelpful = prev.notHelpful;
-      if (previous === "helpful") helpful -= 1;
-      if (previous === "not_helpful") notHelpful -= 1;
-      if (next === "helpful") helpful += 1;
-      if (next === "not_helpful") notHelpful += 1;
-      return { helpful, notHelpful };
-    });
+    if (previous === "helpful") return;
+    writeVote(reviewId, "helpful");
+    setDelta((prev) => prev + (previous === "not_helpful" ? 1 : 1));
   }
 
-  const helpful = Math.max(0, baseHelpful + delta.helpful);
-  const notHelpful = Math.max(0, baseNotHelpful + delta.notHelpful);
+  const helpful = Math.max(0, baseHelpful + delta);
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-      <span className="text-muted">Was this helpful?</span>
-      <button
-        type="button"
-        onClick={() => cast("helpful")}
-        className={`rounded-full border px-2.5 py-1 font-medium ${
-          vote === "helpful"
-            ? "border-success bg-success-soft text-success"
-            : "border-border hover:border-accent"
-        }`}
-        aria-pressed={vote === "helpful"}
-      >
-        Yes ({helpful})
-      </button>
-      <button
-        type="button"
-        onClick={() => cast("not_helpful")}
-        className={`rounded-full border px-2.5 py-1 font-medium ${
-          vote === "not_helpful"
-            ? "border-danger bg-danger-soft text-danger"
-            : "border-border hover:border-accent"
-        }`}
-        aria-pressed={vote === "not_helpful"}
-      >
-        No ({notHelpful})
-      </button>
+    <button
+      type="button"
+      onClick={castHelpful}
+      className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+        vote === "helpful"
+          ? "border-success bg-success-soft text-success"
+          : "border-border text-muted hover:border-accent hover:text-foreground"
+      }`}
+      aria-pressed={vote === "helpful"}
+    >
+      <span aria-hidden>👍</span>
+      Helpful ({helpful})
+    </button>
+  );
+}
+
+function ReviewPhotoPlaceholders({ seed }: { seed: string }) {
+  const hues = [210, 340, 160];
+  return (
+    <div className="mt-3 flex gap-2">
+      {hues.map((hue, index) => (
+        <span
+          key={`${seed}-${index}`}
+          className="relative h-16 w-16 overflow-hidden rounded-[var(--radius-sm)] border border-border bg-accent-soft"
+          style={{
+            background: `linear-gradient(135deg, hsl(${hue} 35% 88%), hsl(${hue} 40% 72%))`,
+          }}
+          aria-label="Review photo"
+        />
+      ))}
     </div>
   );
 }
@@ -137,6 +131,7 @@ export function ProductReviewsPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const buckets = useMemo(() => {
     if (reviews.length > 0) {
@@ -159,8 +154,12 @@ export function ProductReviewsPanel({
     reviews.length > 0
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : (seededAverage ?? 0);
-  const totalCount = reviews.length > 0 ? reviews.length : (seededCount ?? 0);
+  const totalCount =
+    reviews.length > 0
+      ? Math.max(reviews.length, seededCount ?? 0)
+      : (seededCount ?? 0);
   const maxBucket = Math.max(1, ...buckets);
+  const visibleReviews = showAll ? reviews : reviews.slice(0, 3);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -294,54 +293,73 @@ export function ProductReviewsPanel({
           Be the first to share feedback once you receive your order.
         </p>
       ) : (
-        <ul className="flex flex-col gap-4">
-          {reviews.map((review) => {
-            const author = review.authorName ?? "Aspera shopper";
-            const initial = author.trim().slice(0, 1).toUpperCase() || "A";
-            return (
-              <li
-                key={review.id}
-                className="rounded-[var(--radius)] border border-border bg-surface p-4"
-              >
-                <div className="flex items-start gap-3">
-                  <span
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent"
-                    aria-hidden
-                  >
-                    {initial}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold">{author}</p>
-                      <span className="inline-flex items-center rounded bg-success px-1.5 py-0.5 text-xs font-semibold text-white">
-                        ★ {review.rating}
-                      </span>
+        <>
+          <ul className="flex flex-col gap-4">
+            {visibleReviews.map((review) => {
+              const author = review.authorName ?? "Aspera shopper";
+              const initial = author.trim().slice(0, 1).toUpperCase() || "A";
+              return (
+                <li
+                  key={review.id}
+                  className="rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
+                >
+                  <div className="flex items-start gap-3">
+                    <span
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent"
+                      aria-hidden
+                    >
+                      {initial}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold">{author}</p>
+                        <span className="inline-flex items-center rounded bg-success px-1.5 py-0.5 text-xs font-semibold text-white">
+                          {review.rating.toFixed(1)} ★
+                        </span>
+                      </div>
                       <time
-                        className="text-xs text-muted"
+                        className="mt-0.5 block text-xs text-muted"
                         dateTime={review.createdAt}
                       >
-                        {new Date(review.createdAt).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        Posted on{" "}
+                        {new Date(review.createdAt).toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          },
+                        )}
                       </time>
+                      <p className="mt-2 font-medium">{review.title}</p>
+                      <p className="mt-1 text-sm leading-6 text-muted">
+                        {review.body}
+                      </p>
+                      {review.hasPhotos ? (
+                        <ReviewPhotoPlaceholders seed={review.id} />
+                      ) : null}
+                      <ReviewHelpfulness
+                        reviewId={review.id}
+                        baseHelpful={review.id.charCodeAt(0) % 5}
+                      />
                     </div>
-                    <p className="mt-1.5 font-medium">{review.title}</p>
-                    <p className="mt-1 text-sm leading-6 text-muted">
-                      {review.body}
-                    </p>
-                    <ReviewHelpfulness
-                      reviewId={review.id}
-                      baseHelpful={1 + (review.id.charCodeAt(0) % 4)}
-                      baseNotHelpful={review.id.charCodeAt(1) % 2}
-                    />
                   </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                </li>
+              );
+            })}
+          </ul>
+          {reviews.length > 3 ? (
+            <button
+              type="button"
+              onClick={() => setShowAll((value) => !value)}
+              className="w-fit text-sm font-semibold text-accent hover:underline"
+            >
+              {showAll
+                ? "Show fewer reviews"
+                : `See all ${reviews.length} reviews →`}
+            </button>
+          ) : null}
+        </>
       )}
     </section>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Source_Serif_4, DM_Sans } from "next/font/google";
+import { AppDownloadBanner } from "@/components/app-download-banner";
 import { BackToTopButton } from "@/components/back-to-top";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
@@ -47,6 +48,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <SiteHeader />
+        <AppDownloadBanner />
         <div id="content" className="flex-1 pb-16 md:pb-0">
           {children}
         </div>

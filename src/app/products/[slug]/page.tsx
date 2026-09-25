@@ -7,6 +7,7 @@ import { ProductPurchasePanel } from "@/components/product-purchase-panel";
 import { ProductReviewsPanel } from "@/components/product-reviews-panel";
 import { ProductShareBar } from "@/components/product-share";
 import { PageShell } from "@/components/ui/page-shell";
+import { SAMPLE_REVIEWS } from "@/lib/sample-reviews";
 import {
   getPublicProductBySlug,
   searchApprovedProducts,
@@ -221,7 +222,19 @@ export default async function ProductDetailPage({
             </div>
           </div>
 
-          <ProductPurchasePanel variants={variants} highlights={highlights} />
+          <ProductPurchasePanel
+            variants={variants}
+            highlights={highlights}
+            showMall={Boolean(product.brand)}
+            showOriginal={
+              Boolean(
+                product.brand?.name?.toLowerCase().includes("aspera") ||
+                  attrs.badge === "mall" ||
+                  attrs.badge === "original" ||
+                  attrs.asperaOriginal === true,
+              )
+            }
+          />
 
           <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
             <p className="text-xs font-semibold tracking-wide text-muted uppercase">
@@ -263,16 +276,28 @@ export default async function ProductDetailPage({
         productId={product.id}
         canReview={Boolean(actor)}
         seededAverage={seededAverage}
-        seededCount={seededCount}
+        seededCount={seededCount || SAMPLE_REVIEWS.length}
         seededDistribution={ratingDistribution}
-        initialReviews={reviews.map((review) => ({
-          id: review.id,
-          rating: review.rating,
-          title: review.title,
-          body: review.body,
-          createdAt: review.createdAt.toISOString(),
-          authorName: review.authorName,
-        }))}
+        initialReviews={
+          reviews.length > 0
+            ? reviews.map((review) => ({
+                id: review.id,
+                rating: review.rating,
+                title: review.title,
+                body: review.body,
+                createdAt: review.createdAt.toISOString(),
+                authorName: review.authorName,
+              }))
+            : SAMPLE_REVIEWS.map((review) => ({
+                id: `${product.id}-${review.id}`,
+                rating: review.rating,
+                title: review.title,
+                body: review.body,
+                createdAt: review.createdAt,
+                authorName: review.authorName,
+                hasPhotos: review.hasPhotos,
+              }))
+        }
       />
 
       {similarItems.length > 0 ? (

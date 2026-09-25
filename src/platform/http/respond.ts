@@ -37,6 +37,10 @@ import {
 } from "@/modules/orders/states";
 import { FulfilmentValidationError } from "@/modules/fulfilment/service";
 import { FulfilmentTransitionError } from "@/modules/fulfilment/states";
+import {
+  FinanceConflictError,
+  FinanceValidationError,
+} from "@/modules/finance/service";
 import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
 
@@ -114,7 +118,8 @@ export function jsonError(
     error instanceof CatalogueConflictError ||
     error instanceof CartConflictError ||
     error instanceof OrderConflictError ||
-    error instanceof IdempotencyConflictError
+    error instanceof IdempotencyConflictError ||
+    error instanceof FinanceConflictError
   ) {
     return NextResponse.json(
       fail({
@@ -141,7 +146,8 @@ export function jsonError(
     error instanceof OrderTransitionError ||
     error instanceof PaymentTransitionError ||
     error instanceof FulfilmentValidationError ||
-    error instanceof FulfilmentTransitionError
+    error instanceof FulfilmentTransitionError ||
+    error instanceof FinanceValidationError
   ) {
     return NextResponse.json(
       fail({

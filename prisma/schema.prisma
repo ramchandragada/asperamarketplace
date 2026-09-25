@@ -593,6 +593,7 @@ model OrderFulfilmentGroup {
   seller   Seller      @relation(fields: [sellerId], references: [id])
   lines    OrderLine[]
   shipment Shipment?
+  settlementLines SettlementLine[]
 
   @@index([orderId])
   @@index([sellerId, status])
@@ -831,4 +832,162 @@ model Dispute {
   @@index([orderId])
   @@index([sellerId, status])
   @@map("disputes")
+}
+
+enum LedgerAccountType {
+  asset
+  liability
+  revenue
+  expense
+  equity
+}
+
+enum JournalEntryStatus {
+  draft
+  posted
+  reversed
+}
+
+enum SettlementStatus {
+  pending
+  held
+  released
+  paid
+  failed
+}
+
+enum ReconciliationStatus {
+  open
+  investigating
+  resolved
+  written_off
+}
+
+model LedgerAccount {
+  id           String            @id @default(uuid()) @db.Uuid
+  code         String            @unique
+  name         String
+  accountType  LedgerAccountType @map("account_type")
+  currencyCode String            @default("INR") @map("currency_code")
+  active       Boolean           @default(true)
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  lines JournalLine[]
+
+  @@map("ledger_accounts")
+}
+
+model JournalEntry {
+  id              String             @id @default(uuid()) @db.Uuid
+  entryNumber     String             @unique @map("entry_number")
+  status          JournalEntryStatus @default(draft)
+  memo            String
+  correlationId   String             @map("correlation_id")
+  orderId         String?            @map("order_id") @db.Uuid
+  sellerId        String?            @map("seller_id") @db.Uuid
+  sourceEvent     String             @map("source_event")
+  postedAt        DateTime?          @map("posted_at") @db.Timestamptz(6)
+  reversedEntryId String?            @unique @map("reversed_entry_id") @db.Uuid
+  createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  lines         JournalLine[]
+  reversedEntry JournalEntry? @relation("JournalReversal", fields: [reversedEntryId], references: [id])
+  reversingOf   JournalEntry? @relation("JournalReversal")
+
+  @@index([orderId])
+  @@index([sellerId])
+  @@index([status, postedAt])
+  @@map("journal_entries")
+}
+
+model JournalLine {
+  id             String   @id @default(uuid()) @db.Uuid
+  journalEntryId String   @map("journal_entry_id") @db.Uuid
+  accountId      String   @map("account_id") @db.Uuid
+  debitPaise     Int      @default(0) @map("debit_paise")
+  creditPaise    Int      @default(0) @map("credit_paise")
+  sellerId       String?  @map("seller_id") @db.Uuid
+  orderId        String?  @map("order_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  journalEntry JournalEntry  @relation(fields: [journalEntryId], references: [id])
+  account      LedgerAccount @relation(fields: [accountId], references: [id])
+
+  @@index([journalEntryId])
+  @@index([accountId])
+  @@map("journal_lines")
+}
+
+model CommissionRule {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  rateBps     Int      @map("rate_bps")
+  sellerId    String?  @map("seller_id") @db.Uuid
+  active      Boolean  @default(true)
+  description String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([sellerId, active])
+  @@map("commission_rules")
+}
+
+model SettlementBatch {
+  id              String           @id @default(uuid()) @db.Uuid
+  batchNumber     String           @unique @map("batch_number")
+  sellerId        String           @map("seller_id") @db.Uuid
+  status          SettlementStatus @default(pending)
+  periodStart     DateTime         @map("period_start") @db.Timestamptz(6)
+  periodEnd       DateTime         @map("period_end") @db.Timestamptz(6)
+  grossPaise      Int              @map("gross_paise")
+  commissionPaise Int              @map("commission_paise")
+  netPaise        Int              @map("net_paise")
+  holdReason      String?          @map("hold_reason")
+  releasedAt      DateTime?        @map("released_at") @db.Timestamptz(6)
+  paidAt          DateTime?        @map("paid_at") @db.Timestamptz(6)
+  version         Int              @default(1)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  lines SettlementLine[]
+
+  @@index([sellerId, status])
+  @@map("settlement_batches")
+}
+
+model SettlementLine {
+  id                 String   @id @default(uuid()) @db.Uuid
+  batchId            String   @map("batch_id") @db.Uuid
+  orderId            String   @map("order_id") @db.Uuid
+  fulfilmentGroupId  String   @map("fulfilment_group_id") @db.Uuid
+  grossPaise         Int      @map("gross_paise")
+  commissionPaise    Int      @map("commission_paise")
+  netPaise           Int      @map("net_paise")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  batch SettlementBatch @relation(fields: [batchId], references: [id])
+  fulfilmentGroup OrderFulfilmentGroup @relation(fields: [fulfilmentGroupId], references: [id])
+
+  @@unique([fulfilmentGroupId])
+  @@index([batchId])
+  @@index([orderId])
+  @@map("settlement_lines")
+}
+
+model ReconciliationException {
+  id          String               @id @default(uuid()) @db.Uuid
+  kind        String
+  reference   String
+  description String
+  amountPaise Int?                 @map("amount_paise")
+  status      ReconciliationStatus @default(open)
+  resolution  String?
+  createdAt   DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  resolvedAt  DateTime?            @map("resolved_at") @db.Timestamptz(6)
+
+  @@index([status, kind])
+  @@map("reconciliation_exceptions")
 }

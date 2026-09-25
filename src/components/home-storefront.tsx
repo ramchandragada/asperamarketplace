@@ -2,39 +2,78 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+export type HeroBubble = {
+  label: string;
+  href: string;
+  imageUrl: string;
+};
 
 export type HeroSlide = {
   id: string;
   eyebrow: string;
   title: string;
+  subtitle?: string;
   ctaLabel: string;
   href: string;
   imageUrl: string;
   imageAlt: string;
+  /** Left panel wash — teal / gold / magenta campaign tones */
+  tone?: "teal" | "gold" | "magenta" | "orange";
+  bubbles?: HeroBubble[];
+};
+
+const TONE_WASH: Record<NonNullable<HeroSlide["tone"]>, string> = {
+  teal: "from-[#0f3d3d]/95 via-[#1a5c5c]/75 to-transparent",
+  gold: "from-[#5c3d0f]/95 via-[#b8860b]/70 to-transparent",
+  magenta: "from-[#4a1040]/95 via-[#9b1b6f]/70 to-transparent",
+  orange: "from-[#5c2a0f]/95 via-[#e8833a]/65 to-transparent",
 };
 
 export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || paused) return;
     const id = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 4500);
     return () => window.clearInterval(id);
-  }, [slides.length]);
+  }, [slides.length, paused]);
 
   if (slides.length === 0) return null;
   const slide = slides[index] ?? slides[0]!;
 
+  function go(next: number) {
+    setIndex(((next % slides.length) + slides.length) % slides.length);
+  }
+
   return (
-    <section className="relative overflow-hidden bg-accent text-accent-foreground">
-      <div className="relative min-h-[220px] md:min-h-[320px]">
+    <section
+      className="relative overflow-hidden bg-accent text-accent-foreground"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onTouchStart={(event) => {
+        touchStartX.current = event.touches[0]?.clientX ?? null;
+      }}
+      onTouchEnd={(event) => {
+        const start = touchStartX.current;
+        const end = event.changedTouches[0]?.clientX;
+        touchStartX.current = null;
+        if (start == null || end == null) return;
+        const delta = end - start;
+        if (Math.abs(delta) < 48) return;
+        go(delta < 0 ? index + 1 : index - 1);
+      }}
+    >
+      <div className="relative min-h-[280px] md:min-h-[380px] lg:min-h-[420px]">
         {slides.map((entry, i) => (
           <div
             key={entry.id}
-            className={`absolute inset-0 transition-opacity duration-700 ${
+            className={`absolute inset-0 transition-opacity duration-700 ease-out ${
               i === index ? "opacity-100" : "pointer-events-none opacity-0"
             }`}
             aria-hidden={i !== index}
@@ -45,55 +84,129 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               fill
               priority={i === 0}
               sizes="100vw"
-              className="object-cover"
+              className="object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-transparent" />
+            <div
+              className={`absolute inset-0 bg-gradient-to-r ${
+                TONE_WASH[entry.tone ?? "teal"]
+              }`}
+            />
+            <div className="absolute inset-y-0 right-0 hidden w-[48%] bg-gradient-to-l from-black/25 to-transparent md:block" />
           </div>
         ))}
-        <div className="relative container-shell flex min-h-[220px] flex-col justify-end py-8 md:min-h-[320px] md:py-12">
-          <p className="text-xs font-semibold tracking-[0.16em] uppercase opacity-90">
-            {slide.eyebrow}
-          </p>
-          <h1 className="mt-2 max-w-xl font-display text-3xl font-semibold tracking-tight md:text-5xl">
-            {slide.title}
-          </h1>
-          <div className="mt-5">
-            <Link
-              href={slide.href}
-              className="inline-flex rounded-[var(--radius-sm)] bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm"
-            >
-              {slide.ctaLabel}
-            </Link>
+
+        <div className="relative container-shell grid min-h-[280px] items-center gap-6 py-10 md:min-h-[380px] md:grid-cols-[1.15fr_0.85fr] md:py-12 lg:min-h-[420px]">
+          <div className="max-w-xl">
+            <p className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold tracking-[0.14em] uppercase backdrop-blur-sm">
+              <span aria-hidden>✦</span>
+              {slide.eyebrow}
+            </p>
+            <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-balance md:text-5xl lg:text-[3.25rem] lg:leading-[1.1]">
+              {slide.title}
+            </h1>
+            {slide.subtitle ? (
+              <p className="mt-3 max-w-md text-sm text-white/85 md:text-base">
+                {slide.subtitle}
+              </p>
+            ) : null}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Link
+                href={slide.href}
+                className="inline-flex rounded-[var(--radius-sm)] bg-brand-accent px-6 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(232,131,58,0.35)] transition hover:-translate-y-0.5 hover:brightness-105"
+              >
+                {slide.ctaLabel || "Shop Now"}
+              </Link>
+              <Link
+                href="/shop"
+                className="inline-flex rounded-[var(--radius-sm)] border border-white/40 bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm hover:bg-white/20"
+              >
+                Browse all
+              </Link>
+            </div>
           </div>
+
+          {(slide.bubbles?.length ?? 0) > 0 ? (
+            <div className="hidden justify-self-end md:block">
+              <div className="grid grid-cols-2 gap-4 lg:gap-5">
+                {slide.bubbles!.slice(0, 4).map((bubble) => (
+                  <Link
+                    key={bubble.label}
+                    href={bubble.href}
+                    className="group flex w-[7.5rem] flex-col items-center gap-2 text-center lg:w-[8.5rem]"
+                  >
+                    <span className="relative h-[7.5rem] w-[7.5rem] overflow-hidden rounded-full border-[3px] border-white/80 bg-white/20 shadow-[0_10px_28px_rgba(0,0,0,0.28)] transition group-hover:-translate-y-1 group-hover:border-brand-accent lg:h-[8.5rem] lg:w-[8.5rem]">
+                      <Image
+                        src={bubble.imageUrl}
+                        alt=""
+                        fill
+                        sizes="136px"
+                        className="object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    </span>
+                    <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-foreground shadow-sm">
+                      {bubble.label}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
+
+        {/* Mobile bubbles strip */}
+        {(slide.bubbles?.length ?? 0) > 0 ? (
+          <div className="relative border-t border-white/15 bg-black/20 px-3 py-3 backdrop-blur-sm md:hidden">
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              {slide.bubbles!.map((bubble) => (
+                <Link
+                  key={bubble.label}
+                  href={bubble.href}
+                  className="flex w-[4.75rem] shrink-0 flex-col items-center gap-1.5 text-center"
+                >
+                  <span className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-white/70">
+                    <Image
+                      src={bubble.imageUrl}
+                      alt=""
+                      fill
+                      sizes="56px"
+                      className="object-cover"
+                    />
+                  </span>
+                  <span className="text-[10px] font-semibold text-white">
+                    {bubble.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
+
       <button
         type="button"
         aria-label="Previous slide"
-        className="absolute top-1/2 left-3 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-xl text-white hover:bg-black/55 md:flex"
-        onClick={() =>
-          setIndex((prev) => (prev - 1 + slides.length) % slides.length)
-        }
+        className="absolute top-1/2 left-3 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-xl text-white backdrop-blur-sm hover:bg-black/50 md:left-5"
+        onClick={() => go(index - 1)}
       >
         ‹
       </button>
       <button
         type="button"
         aria-label="Next slide"
-        className="absolute top-1/2 right-3 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-xl text-white hover:bg-black/55 md:flex"
-        onClick={() => setIndex((prev) => (prev + 1) % slides.length)}
+        className="absolute top-1/2 right-3 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-xl text-white backdrop-blur-sm hover:bg-black/50 md:right-5"
+        onClick={() => go(index + 1)}
       >
         ›
       </button>
-      <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2 md:bottom-5">
         {slides.map((entry, i) => (
           <button
             key={entry.id}
             type="button"
             aria-label={`Go to slide ${i + 1}`}
             aria-current={i === index}
-            className={`h-2.5 w-2.5 rounded-full ${
-              i === index ? "bg-white" : "bg-white/40"
+            className={`h-2.5 rounded-full transition-all ${
+              i === index ? "w-7 bg-white" : "w-2.5 bg-white/45 hover:bg-white/70"
             }`}
             onClick={() => setIndex(i)}
           />
@@ -102,6 +215,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
     </section>
   );
 }
+
 
 export function TrustSignalBar() {
   const items = [

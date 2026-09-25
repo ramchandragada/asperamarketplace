@@ -1,33 +1,41 @@
 # Security
 
-This note covers Phases 1–2. It is not a completed security review.
+Covers engineering through Phase 10. This is not a completed external security audit and does not authorize production launch while A-20–A-28 remain open.
 
 ## Secrets
 
-The repository is public. `.env.example` lists variable names and descriptions. Live values stay in `.env.local` or the host's environment settings. Git ignores `.env*`, private keys, certificate bundles, service-account files, database dumps, and `/uploads`.
+The repository is public. `.env.example` lists variable names and descriptions. Live values stay in `.env.local` or host environment settings. Git ignores `.env*`, private keys, certificate bundles, service-account files, database dumps, and `/uploads`.
 
-`DATABASE_URL` must stay in host environment settings or a gitignored `.env` file. Seed passwords are fictional and documented in `README.md`.
+`DATABASE_URL` and `MOCK_PAYMENT_WEBHOOK_SECRET` must stay out of Git. Seed passwords are fictional and documented in `README.md`.
 
-## Authentication
+## Authentication and authorization
 
-Phase 2 uses first-party sessions. Passwords are bcrypt-hashed. Session tokens are random and stored only as SHA-256 hashes. Cookies are httpOnly, SameSite=Lax, and Secure in production. Login attempts are logged without passwords. Admin and ownership checks run in server policies. There is no MFA yet.
+First-party sessions: bcrypt passwords, SHA-256 session hashes, httpOnly cookies (Secure in production). Admin and seller ownership checks run in server policies (`src/modules/identity/policy.ts`). MFA and managed IdP remain open.
 
-## KYC documents
+## Money, stock, and webhooks
 
-Uploads are limited to PDF/JPEG/PNG and 5 MB. Files are written under a configurable local root outside Git. Only masked PAN/GSTIN values are stored in PostgreSQL.
+Browser-supplied totals are rejected on mismatch. Inventory mutations write stock movements. Mock payment webhooks require HMAC signatures and reject replays. Ledger posts are server-side only.
+
+## Uploads
+
+KYC uploads limited to PDF/JPEG/PNG and size-capped; stored via local filesystem port. Production needs object storage.
+
+## HTTP headers
+
+`next.config.ts` sets `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`, and a draft `Content-Security-Policy` (still allows `'unsafe-inline'` / `'unsafe-eval'` for Next.js). `X-Powered-By` is disabled.
 
 ## Database
 
-Platform and identity/seller migrations were applied only to non-production `aspera_marketplace_dev`. Production has no database. See `docs/MIGRATIONS.md`.
+Migrations apply to non-production Postgres (local and shared Neon). Do not migrate a true production credential set until A-06 separation and the launch checklist blockers clear. See `docs/MIGRATIONS.md` and `docs/LAUNCH_CHECKLIST.md`.
 
-## Logs
+## Logs and observability
 
-Logs are single-line JSON with redaction for credentials, tokens, card-like numbers, and sensitive field names. Do not log request bodies until an explicit allow-list exists.
+Stdout JSON logs with redaction for credentials, tokens, and sensitive field names. Hosted metrics/traces are not configured yet.
 
-## HTTP
+## Trust and privacy ops
 
-`next.config.ts` sets `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, and a locked-down `Permissions-Policy`. `X-Powered-By` is disabled. A content security policy is not configured yet. `src/proxy.ts` assigns the correlation id and does not authenticate.
+Risk, counterfeit, review moderation, privacy requests, and compliance evidence are operational queues. They do not replace counsel for DPDP or category licences.
 
-## Production
+## Production stance
 
-Do not treat this branch as a production identity system. MFA, managed IdP, hosted object storage, and privacy workflows are still open.
+Do not treat preview or Neon shared URLs as production-hardened. Live payments, real PII, and public launch require closed legal assumptions and a separate production environment.

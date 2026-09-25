@@ -6,8 +6,9 @@ describe("buildHealthData", () => {
     expect(buildHealthData("configured")).toEqual({
       status: "ok",
       service: "aspera-marketplace",
-      phase: "foundations",
+      phase: "hardening",
       database: "configured",
+      migrationsHint: "run pnpm db:migrate on non-prod only",
     });
   });
 

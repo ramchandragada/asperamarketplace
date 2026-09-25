@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { ProductGallery } from "@/components/product-gallery";
 import { ProductReviewsPanel } from "@/components/product-reviews-panel";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -46,19 +47,19 @@ export default async function ProductDetailPage({
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : null;
   const primary = product.variants[0];
-  const initials = product.title.slice(0, 1).toUpperCase();
 
   return (
     <PageShell>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[var(--radius-card)] border border-border bg-gradient-to-br from-accent-soft via-surface to-warning-soft/50 shadow-[var(--shadow-card)]">
-          <span
-            className="absolute inset-0 flex items-center justify-center text-8xl font-semibold text-accent/25"
-            aria-hidden
-          >
-            {initials}
-          </span>
-        </div>
+        <ProductGallery
+          title={product.title}
+          images={product.images.map((image) => ({
+            id: image.id,
+            url: image.url,
+            altText: image.altText,
+            isPrimary: image.isPrimary,
+          }))}
+        />
 
         <div className="flex flex-col gap-5">
           <div>
@@ -131,7 +132,8 @@ export default async function ProductDetailPage({
                             : "Out of stock"}
                         </p>
                         <p className="mt-1 text-xs text-muted">
-                          Delivery fee and ETA confirmed at checkout
+                          Delivery fee and ETA confirmed at checkout · Returns
+                          follow seller policy at fulfilment
                         </p>
                       </div>
                       <AddToCartButton

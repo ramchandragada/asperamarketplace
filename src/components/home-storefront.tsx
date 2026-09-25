@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 function TrustReturnIcon() {
   return (
@@ -50,18 +50,23 @@ function TrustPriceIcon() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M7 8h10l-1 11H8L7 8z"
+        d="M12 3 4.5 7.5v9L12 21l7.5-4.5v-9L12 3Z"
         stroke="#9f2089"
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
       <path
-        d="M9.5 8V7a2.5 2.5 0 0 1 5 0v1"
+        d="M9.5 12.5c0-1.2.9-2 2.2-2h1.1c1.1 0 1.9.7 1.9 1.7 0 .9-.5 1.4-1.5 1.7l-1.7.5c-1 .3-1.5.8-1.5 1.7 0 1 .9 1.7 2.1 1.7h1c1.3 0 2.2-.8 2.2-2"
         stroke="#9f2089"
-        strokeWidth="1.8"
+        strokeWidth="1.6"
         strokeLinecap="round"
       />
-      <circle cx="12" cy="14" r="1.6" fill="#9f2089" />
+      <path
+        d="M12 8.5v1.2M12 16.2V17.5"
+        stroke="#9f2089"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -69,9 +74,18 @@ function TrustPriceIcon() {
 
 /** Meesho web homepage hero: purple app campaign + QR */
 export function MeeshoAppHero() {
-  const qrUrl =
+  const [qrUrl, setQrUrl] = useState(
     "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=" +
-    encodeURIComponent("https://aspera.app/download");
+      encodeURIComponent("/download-app"),
+  );
+
+  useEffect(() => {
+    const target = `${window.location.origin}/download-app`;
+    setQrUrl(
+      "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=" +
+        encodeURIComponent(target),
+    );
+  }, []);
 
   return (
     <section className="relative overflow-hidden bg-[#9f2089] text-white">

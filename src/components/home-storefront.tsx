@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useRef, useSyncExternalStore, type CSSProperties } from "react";
 
 function TrustReturnIcon() {
   return (
@@ -74,18 +74,15 @@ function TrustPriceIcon() {
 
 /** Meesho web homepage hero: purple app campaign + QR */
 export function MeeshoAppHero() {
-  const [qrUrl, setQrUrl] = useState(
-    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=" +
-      encodeURIComponent("/download-app"),
+  const origin = useSyncExternalStore(
+    () => () => {},
+    () => window.location.origin,
+    () => "",
   );
-
-  useEffect(() => {
-    const target = `${window.location.origin}/download-app`;
-    setQrUrl(
-      "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=" +
-        encodeURIComponent(target),
-    );
-  }, []);
+  const downloadTarget = origin ? `${origin}/download-app` : "/download-app";
+  const qrUrl =
+    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=" +
+    encodeURIComponent(downloadTarget);
 
   return (
     <section className="relative overflow-hidden bg-[#9f2089] text-white">

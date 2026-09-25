@@ -411,12 +411,34 @@ export function SiteHeaderClient({
   sellHref: string;
   showAdmin: boolean;
 }) {
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setCompact(window.scrollY > 64);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/95 backdrop-blur-md">
-      <div className="container-shell flex h-[var(--header-height)] items-center gap-3 md:gap-5">
+    <header
+      className={`sticky top-0 z-40 border-b border-border/80 bg-surface/95 backdrop-blur-md transition-[box-shadow] duration-200 ${
+        compact ? "shadow-[var(--shadow-card)]" : ""
+      }`}
+      data-compact={compact ? "true" : "false"}
+    >
+      <div
+        className={`container-shell flex items-center gap-3 transition-[height] duration-200 md:gap-5 ${
+          compact ? "h-12 md:h-14" : "h-[var(--header-height)]"
+        }`}
+      >
         <Link
           href="/"
-          className="font-display shrink-0 text-xl font-bold tracking-tight text-accent md:text-2xl"
+          className={`font-display shrink-0 font-bold tracking-tight text-accent transition-all duration-200 ${
+            compact ? "text-lg md:text-xl" : "text-xl md:text-2xl"
+          }`}
         >
           Aspera
         </Link>
@@ -426,7 +448,9 @@ export function SiteHeaderClient({
         <nav aria-label="Primary" className="ml-auto flex items-center gap-0.5 text-sm sm:gap-1">
           <Link
             href={sellHref}
-            className="hidden rounded-[var(--radius-sm)] px-2.5 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground sm:inline"
+            className={`hidden rounded-[var(--radius-sm)] px-2.5 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground sm:inline ${
+              compact ? "text-xs" : ""
+            }`}
           >
             Become a Seller
           </Link>
@@ -440,7 +464,9 @@ export function SiteHeaderClient({
           ) : null}
           <Link
             href="/download-app"
-            className="hidden items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground lg:inline-flex"
+            className={`hidden items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground lg:inline-flex ${
+              compact ? "lg:hidden" : ""
+            }`}
             title="Download the Aspera app"
           >
             <PhoneAppIcon className="h-4 w-4" />
@@ -468,11 +494,21 @@ export function SiteHeaderClient({
           </Link>
         </nav>
       </div>
-      <div className="container-shell pb-2.5 md:hidden">
+      <div className={`container-shell md:hidden ${compact ? "hidden" : "pb-2.5"}`}>
         <HeaderSearch />
       </div>
-      <CategoryNav />
-      <div className="flex items-center gap-2 border-t border-border/60 px-3 py-2 md:hidden">
+      <div
+        className={`overflow-hidden transition-[max-height,opacity] duration-200 ${
+          compact ? "max-h-0 opacity-0" : "max-h-40 opacity-100"
+        }`}
+      >
+        <CategoryNav />
+      </div>
+      <div
+        className={`flex items-center gap-2 border-t border-border/60 px-3 py-2 md:hidden ${
+          compact ? "hidden" : ""
+        }`}
+      >
         <MobileCategoryDrawer />
         <nav
           aria-label="Mobile category shortcuts"

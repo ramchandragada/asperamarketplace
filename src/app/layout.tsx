@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Source_Serif_4, DM_Sans } from "next/font/google";
+import { BackToTopButton } from "@/components/back-to-top";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ToastHost } from "@/components/toast-host";
@@ -46,9 +47,12 @@ export default function RootLayout({
           Skip to content
         </a>
         <SiteHeader />
-        <div className="flex-1 pb-16 md:pb-0">{children}</div>
+        <div id="content" className="flex-1 pb-16 md:pb-0">
+          {children}
+        </div>
         <SiteFooter />
         <MobileBottomNav />
+        <BackToTopButton />
         <ToastHost />
       </body>
     </html>

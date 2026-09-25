@@ -79,6 +79,8 @@ export function ProductGallery({
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2U4ZjRmNCIvPjwvc3ZnPg=="
               className={`object-cover transition duration-150 ${
                 zoom ? "scale-[1.65]" : "scale-100"
               }`}

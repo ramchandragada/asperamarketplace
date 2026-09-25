@@ -123,11 +123,11 @@ function CategoryNav() {
     >
       <nav
         aria-label="Categories"
-        className="meesho-cat-nav mx-auto flex h-10 max-w-[90rem] items-center gap-0 overflow-x-auto px-4 text-[12px] text-[#333] md:px-6 lg:justify-between"
+        className="meesho-cat-nav mx-auto flex h-10 max-w-[90rem] items-center justify-between gap-0 overflow-x-auto px-4 text-[13px] text-[#333] md:px-6"
       >
         <Link
           href={POPULAR_NAV.href}
-          className="shrink-0 px-1.5 py-2 whitespace-nowrap hover:text-accent lg:px-1"
+          className="shrink-0 px-1 py-2 whitespace-nowrap hover:text-[#9f2089]"
           onMouseEnter={scheduleClose}
         >
           {POPULAR_NAV.label}
@@ -136,8 +136,8 @@ function CategoryNav() {
           <Link
             key={entry.key}
             href={entry.href}
-            className={`shrink-0 px-1.5 py-2 whitespace-nowrap hover:text-accent lg:px-1 ${
-              openKey === entry.key ? "text-accent" : ""
+            className={`shrink-0 px-1 py-2 whitespace-nowrap hover:text-[#9f2089] ${
+              openKey === entry.key ? "text-[#9f2089]" : ""
             }`}
             onMouseEnter={() => open(entry.key)}
             onFocus={() => open(entry.key)}
@@ -281,7 +281,7 @@ function HeaderSearch() {
             autoComplete="off"
             aria-autocomplete="list"
             aria-controls={listId}
-            className="h-11 w-full rounded-[4px] border border-[#cfcfcf] bg-white py-2.5 pr-4 pl-10 text-[14px] text-[#333] outline-none placeholder:text-[#999] focus-visible:border-[#9f2089] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#9f2089]/25"
+            className="h-11 w-full rounded-[4px] border border-[#cfcfcf] bg-white py-2.5 pr-4 pl-10 text-[14px] text-[#333] outline-none placeholder:text-[#9a9a9a] focus-visible:border-[#9f2089] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#9f2089]/25"
           />
         </div>
       </form>
@@ -400,78 +400,95 @@ export function SiteHeaderClient({
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b border-[#eee] bg-white transition-shadow duration-300 ease-out ${
-        compact ? "shadow-[0_1px_4px_rgba(0,0,0,0.08)]" : ""
+      className={`sticky top-0 z-40 border-b border-[#f0f0f0] bg-white ${
+        compact ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : ""
       }`}
       data-compact={compact ? "true" : "false"}
     >
+      {/* Meesho top row: logo | flexible search | supplier/investor/profile/cart */}
       <div
-        className={`container-shell flex items-center gap-4 transition-all duration-300 ease-out md:gap-6 lg:gap-8 ${
-          compact ? "h-14 py-2" : "h-[72px]"
+        className={`mx-auto flex w-full max-w-[90rem] items-center px-4 md:px-6 ${
+          compact ? "h-14 gap-4" : "h-[72px] gap-5 md:gap-6"
         }`}
       >
         <Link
           href="/"
-          className={`shrink-0 font-sans text-[22px] font-bold tracking-tight text-[#9f2089] lowercase transition-all duration-300 ease-out ${
-            compact ? "text-[20px]" : "md:text-[24px]"
+          className={`shrink-0 text-[24px] font-bold leading-none tracking-tight text-[#9f2089] lowercase ${
+            compact ? "text-[20px]" : ""
           }`}
-          style={{ fontFamily: "var(--font-geist-sans), DM Sans, sans-serif" }}
+          style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}
         >
           aspera
         </Link>
-        {/* Meesho: search ~40–45% of header, then gap to right links */}
-        <div className="hidden min-w-0 w-full max-w-[32rem] md:block lg:max-w-[36rem]">
+
+        {/* Search fills remaining space up to the right nav — same as Meesho */}
+        <div className="hidden min-w-0 flex-1 md:block">
           <HeaderSearch />
         </div>
+
         <nav
           aria-label="Primary"
-          className="ml-auto flex shrink-0 items-center gap-0 text-sm"
+          className="ml-auto flex shrink-0 items-center md:ml-0"
         >
           <Link
             href={sellHref}
-            className="hidden px-3 py-1.5 text-[14px] text-[#333] hover:text-[#9f2089] sm:inline"
+            className="hidden px-3 py-1 text-[14px] text-[#333] hover:text-[#9f2089] sm:inline"
+            style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}
           >
             Become a Supplier
           </Link>
-          <span className="hidden h-5 w-px bg-[#e0e0e0] sm:block" aria-hidden />
+          <span
+            className="mx-1 hidden h-5 w-px bg-[#dfdfdf] sm:block"
+            aria-hidden
+          />
           <Link
             href="/about"
-            className="hidden px-3 py-1.5 text-[14px] text-[#333] hover:text-[#9f2089] md:inline"
+            className="hidden px-3 py-1 text-[14px] text-[#333] hover:text-[#9f2089] md:inline"
+            style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}
           >
             Investor Relations
           </Link>
-          <span className="hidden h-5 w-px bg-[#e0e0e0] md:block" aria-hidden />
+          <span
+            className="mx-1 hidden h-5 w-px bg-[#dfdfdf] md:block"
+            aria-hidden
+          />
           {showAdmin ? (
-            <Link
-              href="/admin/sellers"
-              className="hidden px-3 py-1.5 text-[14px] text-[#333] hover:text-[#9f2089] lg:inline"
-            >
-              Admin
-            </Link>
+            <>
+              <Link
+                href="/admin/sellers"
+                className="hidden px-3 py-1 text-[14px] text-[#333] hover:text-[#9f2089] lg:inline"
+              >
+                Admin
+              </Link>
+              <span
+                className="mx-1 hidden h-5 w-px bg-[#dfdfdf] lg:block"
+                aria-hidden
+              />
+            </>
           ) : null}
           <Link
             href={accountHref}
-            className="inline-flex min-w-[3.5rem] flex-col items-center gap-0.5 px-3 py-1 text-[#333] hover:text-[#9f2089]"
+            className="inline-flex min-w-[52px] flex-col items-center gap-0.5 px-2.5 py-1 text-[#333] hover:text-[#9f2089]"
           >
             <UserIcon className="h-5 w-5" />
             <span className="text-[12px] leading-none">Profile</span>
           </Link>
           <Link
             href="/cart"
-            className="relative inline-flex min-w-[3.5rem] flex-col items-center gap-0.5 px-3 py-1 text-[#333] hover:text-[#9f2089]"
+            className="relative inline-flex min-w-[52px] flex-col items-center gap-0.5 px-2.5 py-1 text-[#333] hover:text-[#9f2089]"
             aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
           >
             <BagIcon className="h-5 w-5" />
             <span className="text-[12px] leading-none">Cart</span>
             {cartCount > 0 ? (
-              <span className="absolute top-0 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#9f2089] px-1 text-[10px] font-bold text-white">
+              <span className="absolute top-0 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#9f2089] px-1 text-[10px] font-bold text-white">
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             ) : null}
           </Link>
         </nav>
       </div>
-      <div className={`container-shell md:hidden ${compact ? "hidden" : "pb-2.5"}`}>
+      <div className={`mx-auto w-full max-w-[90rem] px-4 md:hidden md:px-6 ${compact ? "hidden" : "pb-2.5"}`}>
         <HeaderSearch />
       </div>
       <div

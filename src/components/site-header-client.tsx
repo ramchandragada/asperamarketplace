@@ -256,7 +256,7 @@ function HeaderSearch() {
   const showPanel = focused;
 
   return (
-    <div ref={wrapRef} className="relative min-w-0 flex-1">
+    <div ref={wrapRef} className="relative w-full">
       <form
         action="/browse"
         method="get"
@@ -267,8 +267,8 @@ function HeaderSearch() {
           Search products
         </label>
         <div className="relative">
-          <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted">
-            <SearchIcon />
+          <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[#9a9a9a]">
+            <SearchIcon className="h-[18px] w-[18px]" />
           </span>
           <input
             id="global-search"
@@ -281,7 +281,7 @@ function HeaderSearch() {
             autoComplete="off"
             aria-autocomplete="list"
             aria-controls={listId}
-            className="w-full rounded-md border border-[#d4d4d4] bg-white py-2.5 pr-4 pl-10 text-sm outline-none placeholder:text-[#999] focus-visible:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className="h-11 w-full rounded-[4px] border border-[#cfcfcf] bg-white py-2.5 pr-4 pl-10 text-[14px] text-[#333] outline-none placeholder:text-[#999] focus-visible:border-[#9f2089] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#9f2089]/25"
           />
         </div>
       </form>
@@ -400,67 +400,71 @@ export function SiteHeaderClient({
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b border-border/80 bg-surface/95 backdrop-blur-md transition-all duration-300 ease-out ${
-        compact ? "shadow-[var(--shadow-card)]" : ""
+      className={`sticky top-0 z-40 border-b border-[#eee] bg-white transition-shadow duration-300 ease-out ${
+        compact ? "shadow-[0_1px_4px_rgba(0,0,0,0.08)]" : ""
       }`}
       data-compact={compact ? "true" : "false"}
     >
       <div
-        className={`container-shell flex items-center gap-3 transition-all duration-300 ease-out md:gap-5 ${
-          compact ? "h-12 py-2 md:h-14" : "h-[var(--header-height)]"
+        className={`container-shell flex items-center gap-4 transition-all duration-300 ease-out md:gap-6 lg:gap-8 ${
+          compact ? "h-14 py-2" : "h-[72px]"
         }`}
       >
         <Link
           href="/"
-          className={`shrink-0 font-sans text-[1.65rem] font-bold tracking-tight text-[#9f2089] lowercase transition-all duration-300 ease-out ${
-            compact ? "text-xl md:text-[1.45rem]" : "md:text-[1.75rem]"
+          className={`shrink-0 font-sans text-[22px] font-bold tracking-tight text-[#9f2089] lowercase transition-all duration-300 ease-out ${
+            compact ? "text-[20px]" : "md:text-[24px]"
           }`}
           style={{ fontFamily: "var(--font-geist-sans), DM Sans, sans-serif" }}
         >
           aspera
         </Link>
-        <div className="hidden min-w-0 flex-1 md:block">
+        {/* Meesho: fixed-width search (~35–40%), not flex-stretch */}
+        <div className="hidden min-w-0 w-full max-w-[32rem] md:block lg:max-w-[36rem]">
           <HeaderSearch />
         </div>
-        <nav aria-label="Primary" className="ml-auto flex items-center gap-0 text-sm">
+        <nav
+          aria-label="Primary"
+          className="ml-auto flex shrink-0 items-center gap-0 text-sm"
+        >
           <Link
             href={sellHref}
-            className="hidden px-3 py-1.5 text-[13px] text-[#333] hover:text-accent sm:inline"
+            className="hidden px-3 py-1.5 text-[14px] text-[#333] hover:text-[#9f2089] sm:inline"
           >
             Become a Supplier
           </Link>
-          <span className="hidden h-5 w-px bg-border sm:block" aria-hidden />
+          <span className="hidden h-5 w-px bg-[#e0e0e0] sm:block" aria-hidden />
           <Link
             href="/about"
-            className="hidden px-3 py-1.5 text-[13px] text-[#333] hover:text-accent md:inline"
+            className="hidden px-3 py-1.5 text-[14px] text-[#333] hover:text-[#9f2089] md:inline"
           >
             Investor Relations
           </Link>
-          <span className="hidden h-5 w-px bg-border md:block" aria-hidden />
+          <span className="hidden h-5 w-px bg-[#e0e0e0] md:block" aria-hidden />
           {showAdmin ? (
             <Link
               href="/admin/sellers"
-              className="hidden px-3 py-1.5 text-[13px] text-[#333] hover:text-accent lg:inline"
+              className="hidden px-3 py-1.5 text-[14px] text-[#333] hover:text-[#9f2089] lg:inline"
             >
               Admin
             </Link>
           ) : null}
           <Link
             href={accountHref}
-            className="inline-flex min-w-[3.25rem] flex-col items-center gap-0.5 px-2.5 py-1 text-[#333] hover:text-accent"
+            className="inline-flex min-w-[3.5rem] flex-col items-center gap-0.5 px-3 py-1 text-[#333] hover:text-[#9f2089]"
           >
-            <UserIcon className="h-[22px] w-[22px]" />
-            <span className="text-[11px] leading-none">Profile</span>
+            <UserIcon className="h-5 w-5" />
+            <span className="text-[12px] leading-none">Profile</span>
           </Link>
           <Link
             href="/cart"
-            className="relative inline-flex min-w-[3.25rem] flex-col items-center gap-0.5 px-2.5 py-1 text-[#333] hover:text-accent"
+            className="relative inline-flex min-w-[3.5rem] flex-col items-center gap-0.5 px-3 py-1 text-[#333] hover:text-[#9f2089]"
             aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
           >
-            <BagIcon className="h-[22px] w-[22px]" />
-            <span className="text-[11px] leading-none">Cart</span>
+            <BagIcon className="h-5 w-5" />
+            <span className="text-[12px] leading-none">Cart</span>
             {cartCount > 0 ? (
-              <span className="absolute top-0 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
+              <span className="absolute top-0 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#9f2089] px-1 text-[10px] font-bold text-white">
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             ) : null}

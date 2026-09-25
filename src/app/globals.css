@@ -31,8 +31,8 @@
   --shadow-mega: 0 12px 40px rgba(26, 26, 26, 0.12);
   --space-page: 1rem;
   --container: 78rem;
-  --header-height: 4rem;
-  --nav-height: 2.75rem;
+  --header-height: 4.5rem;
+  --nav-height: 2.5rem;
 }
 
 @theme inline {

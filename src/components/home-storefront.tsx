@@ -86,43 +86,53 @@ export function MeeshoAppHero() {
 
   return (
     <section className="relative overflow-hidden bg-[#9f2089] text-white">
+      {/* subtle repeating mark pattern like Meesho */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        aria-hidden
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Ctext x='12' y='48' font-family='Arial Black, sans-serif' font-size='42' font-weight='900' fill='%23000000'%3Ea%3C/text%3E%3C/svg%3E\")",
+          backgroundSize: "72px 72px",
+        }}
+      />
       {/* concentric decorative rings behind models — Meesho signature */}
       <div
-        className="pointer-events-none absolute top-[52%] left-[6%] hidden h-[520px] w-[520px] -translate-y-1/2 lg:block"
+        className="pointer-events-none absolute top-[58%] left-[4%] hidden h-[560px] w-[560px] -translate-y-1/2 lg:block"
         aria-hidden
       >
-        <div className="absolute inset-0 rounded-full border-[22px] border-[#d46bb8]/55" />
-        <div className="absolute inset-[11%] rounded-full border-[22px] border-[#6ec1e0]/50" />
-        <div className="absolute inset-[22%] rounded-full border-[22px] border-[#f4a4c8]/45" />
-        <div className="absolute inset-[33%] rounded-full border-[18px] border-[#ffc14a]/40" />
-        <div className="absolute inset-[44%] rounded-full border-[14px] border-[#e878c0]/35" />
+        <div className="absolute inset-0 rounded-full border-[20px] border-white/55" />
+        <div className="absolute inset-[10%] rounded-full border-[20px] border-[#5ec8e8]/70" />
+        <div className="absolute inset-[20%] rounded-full border-[20px] border-[#f48fc8]/65" />
+        <div className="absolute inset-[30%] rounded-full border-[18px] border-[#ffb84d]/55" />
+        <div className="absolute inset-[40%] rounded-full border-[14px] border-[#e878c0]/45" />
       </div>
 
-      <div className="relative container-shell grid min-h-[280px] items-end gap-4 pt-6 pb-0 md:min-h-[340px] md:grid-cols-[1fr_0.85fr_1fr] md:items-center md:gap-6 md:py-0 lg:min-h-[380px]">
+      <div className="relative container-shell grid min-h-[280px] items-end gap-4 pt-6 pb-0 md:min-h-[360px] md:grid-cols-[1.1fr_0.9fr_1fr] md:items-center md:gap-8 md:py-0 lg:min-h-[400px]">
         {/* Left: arched model portraits */}
         <div className="relative z-[1] flex items-end justify-center gap-0 md:justify-start">
           <div
-            className="relative h-[200px] w-[130px] overflow-hidden bg-[#c45aa8]/30 sm:h-[240px] sm:w-[150px] md:h-[300px] md:w-[180px] lg:h-[340px] lg:w-[200px]"
+            className="relative h-[200px] w-[130px] overflow-hidden bg-[#c45aa8]/25 sm:h-[240px] sm:w-[150px] md:h-[310px] md:w-[185px] lg:h-[350px] lg:w-[205px]"
             style={{ borderRadius: "999px 999px 0 0" }}
           >
             <Image
               src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80"
               alt=""
               fill
-              sizes="200px"
+              sizes="205px"
               className="object-cover object-[center_15%]"
               priority
             />
           </div>
           <div
-            className="relative z-[1] -ml-5 h-[220px] w-[140px] overflow-hidden bg-[#c45aa8]/30 sm:-ml-6 sm:h-[260px] sm:w-[160px] md:-ml-8 md:h-[320px] md:w-[190px] lg:h-[360px] lg:w-[210px]"
+            className="relative z-[1] -ml-5 h-[220px] w-[140px] overflow-hidden bg-[#c45aa8]/25 sm:-ml-6 sm:h-[260px] sm:w-[160px] md:-ml-8 md:h-[330px] md:w-[195px] lg:h-[370px] lg:w-[215px]"
             style={{ borderRadius: "999px 999px 0 0" }}
           >
             <Image
               src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80"
               alt=""
               fill
-              sizes="210px"
+              sizes="215px"
               className="object-cover object-[center_12%]"
               priority
             />
@@ -131,34 +141,54 @@ export function MeeshoAppHero() {
 
         {/* Center: offer + QR */}
         <div className="relative z-[1] flex flex-col items-center self-center px-2 pb-6 text-center md:pb-0">
-          <p className="text-[15px] font-semibold leading-none text-white md:text-base">
+          <p
+            className="text-[15px] font-semibold leading-none text-white md:text-[16px]"
+            style={{
+              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+            }}
+          >
             Upto{" "}
-            <span className="text-[1.75rem] font-black tracking-tight md:text-[2rem]">
+            <span className="text-[1.85rem] font-black tracking-tight text-[#ffe566] md:text-[2.15rem]">
               35% OFF
             </span>
           </p>
-          <p className="mt-1.5 text-[15px] font-medium text-white">
+          <p
+            className="mt-1.5 text-[15px] font-medium text-white md:text-[16px]"
+            style={{
+              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+            }}
+          >
             on your first order
           </p>
-          <p className="mt-0.5 text-[12px] text-white/80">*Only on App</p>
-          <div className="mt-4 rounded-lg bg-white p-2 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+          <p className="mt-0.5 text-[12px] text-white/85">*Only on App</p>
+          <div className="mt-4 rounded-md bg-white p-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={qrUrl}
               alt="Scan to download Aspera app"
-              width={156}
-              height={156}
-              className="h-[140px] w-[140px] md:h-[156px] md:w-[156px]"
+              width={160}
+              height={160}
+              className="h-[148px] w-[148px] md:h-[160px] md:w-[160px]"
             />
           </div>
-          <p className="mt-2.5 text-[13px] font-semibold text-white">
-            Scan now to Download
+          <p
+            className="mt-2.5 text-[13px] font-semibold tracking-wide text-white"
+            style={{
+              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+            }}
+          >
+            Scan now to install
           </p>
         </div>
 
-        {/* Right: tagline + CTA */}
-        <div className="relative z-[1] flex flex-col items-center justify-center gap-5 self-center pb-8 text-center md:items-start md:pb-0 md:pl-2 md:text-left">
-          <h1 className="max-w-[15rem] font-sans text-[1.65rem] leading-[1.2] font-bold text-balance md:max-w-[16rem] md:text-[1.85rem] lg:text-[2.05rem]">
+        {/* Right: tagline + CTA — Meesho uses bold sans, not serif */}
+        <div className="relative z-[1] flex flex-col items-center justify-center gap-5 self-center pb-8 text-center md:items-start md:pb-0 md:pl-4 md:text-left">
+          <h1
+            className="max-w-[16rem] text-[1.75rem] leading-[1.2] font-bold text-balance md:max-w-[17rem] md:text-[2rem] lg:text-[2.25rem]"
+            style={{
+              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+            }}
+          >
             Smart Shopping
             <br />
             Trusted by Millions
@@ -166,6 +196,9 @@ export function MeeshoAppHero() {
           <Link
             href="/browse"
             className="inline-flex rounded-md bg-white px-10 py-3 text-[15px] font-bold text-[#9f2089] shadow-sm transition hover:bg-[#fff5fb]"
+            style={{
+              fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+            }}
           >
             Shop Now
           </Link>

@@ -186,8 +186,24 @@ h2,
   }
 }
 
+@keyframes aspera-deal-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.35);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.2);
+  }
+}
+
 .animate-fade-up {
   animation: aspera-fade-up 0.45s ease-out both;
+}
+
+.animate-deal-pulse {
+  animation: aspera-deal-pulse 1.4s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

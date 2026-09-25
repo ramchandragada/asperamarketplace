@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react"
 import {
   ALL_CATEGORIES_MENU,
   MEGA_MENU,
+  SEARCH_PLACEHOLDER,
   TRENDING_SEARCHES,
   type MegaMenuCategory,
   type MegaMenuColumn,
@@ -45,6 +46,28 @@ function UserIcon({ className = "h-5 w-5" }: { className?: string }) {
       <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.8" />
       <path
         d="M5 19c1.5-3 4-4.5 7-4.5S17.5 16 19 19"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function PhoneAppIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="7"
+        y="2.5"
+        width="10"
+        height="19"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M10 5.5h4M11 18.5h2"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
@@ -131,15 +154,19 @@ function CategoryNav() {
           <Link
             key={entry.key}
             href={entry.href}
-            className={`shrink-0 rounded-[var(--radius-sm)] px-3 py-1.5 whitespace-nowrap ${
+            className={`shrink-0 rounded-[var(--radius-sm)] px-2.5 py-1.5 whitespace-nowrap ${
               openKey === entry.key
                 ? "bg-accent-soft text-accent"
                 : "hover:bg-accent-soft/70"
             }`}
             onMouseEnter={() => open(entry.key)}
             onFocus={() => open(entry.key)}
+            aria-expanded={openKey === entry.key}
           >
             {entry.label}
+            <span className="ml-0.5 text-[10px] text-muted" aria-hidden>
+              ▾
+            </span>
           </Link>
         ))}
       </nav>
@@ -273,7 +300,7 @@ function HeaderSearch() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onFocus={() => setFocused(true)}
-            placeholder="Search for products, brands and more"
+            placeholder={SEARCH_PLACEHOLDER}
             autoComplete="off"
             aria-autocomplete="list"
             aria-controls={listId}
@@ -384,12 +411,34 @@ export function SiteHeaderClient({
   sellHref: string;
   showAdmin: boolean;
 }) {
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setCompact(window.scrollY > 64);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/95 backdrop-blur-md">
-      <div className="container-shell flex h-[var(--header-height)] items-center gap-3 md:gap-5">
+    <header
+      className={`sticky top-0 z-40 border-b border-border/80 bg-surface/95 backdrop-blur-md transition-[box-shadow] duration-200 ${
+        compact ? "shadow-[var(--shadow-card)]" : ""
+      }`}
+      data-compact={compact ? "true" : "false"}
+    >
+      <div
+        className={`container-shell flex items-center gap-3 transition-[height] duration-200 md:gap-5 ${
+          compact ? "h-12 md:h-14" : "h-[var(--header-height)]"
+        }`}
+      >
         <Link
           href="/"
-          className="font-display shrink-0 text-xl font-bold tracking-tight text-accent md:text-2xl"
+          className={`font-display shrink-0 font-bold tracking-tight text-accent transition-all duration-200 ${
+            compact ? "text-lg md:text-xl" : "text-xl md:text-2xl"
+          }`}
         >
           Aspera
         </Link>
@@ -399,7 +448,9 @@ export function SiteHeaderClient({
         <nav aria-label="Primary" className="ml-auto flex items-center gap-0.5 text-sm sm:gap-1">
           <Link
             href={sellHref}
-            className="hidden rounded-[var(--radius-sm)] px-2.5 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground sm:inline"
+            className={`hidden rounded-[var(--radius-sm)] px-2.5 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground sm:inline ${
+              compact ? "text-xs" : ""
+            }`}
           >
             Become a Seller
           </Link>
@@ -411,6 +462,16 @@ export function SiteHeaderClient({
               Admin
             </Link>
           ) : null}
+          <Link
+            href="/download-app"
+            className={`hidden items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground lg:inline-flex ${
+              compact ? "lg:hidden" : ""
+            }`}
+            title="Download the Aspera app"
+          >
+            <PhoneAppIcon className="h-4 w-4" />
+            <span className="text-xs font-medium">Download App</span>
+          </Link>
           <Link
             href={accountHref}
             className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/70 sm:px-2.5"
@@ -433,11 +494,21 @@ export function SiteHeaderClient({
           </Link>
         </nav>
       </div>
-      <div className="container-shell pb-2.5 md:hidden">
+      <div className={`container-shell md:hidden ${compact ? "hidden" : "pb-2.5"}`}>
         <HeaderSearch />
       </div>
-      <CategoryNav />
-      <div className="flex items-center gap-2 border-t border-border/60 px-3 py-2 md:hidden">
+      <div
+        className={`overflow-hidden transition-[max-height,opacity] duration-200 ${
+          compact ? "max-h-0 opacity-0" : "max-h-40 opacity-100"
+        }`}
+      >
+        <CategoryNav />
+      </div>
+      <div
+        className={`flex items-center gap-2 border-t border-border/60 px-3 py-2 md:hidden ${
+          compact ? "hidden" : ""
+        }`}
+      >
         <MobileCategoryDrawer />
         <nav
           aria-label="Mobile category shortcuts"

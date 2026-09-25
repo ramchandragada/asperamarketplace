@@ -16,113 +16,232 @@ function browse(categorySlug: string, q?: string) {
   return `/browse?${params.toString()}`;
 }
 
-/** Storefront mega-menu — links into existing /browse filters. */
+function browseQ(q: string) {
+  return `/browse?${new URLSearchParams({ q }).toString()}`;
+}
+
+/**
+ * Meesho-style gender/occasion mega-menu.
+ * Links map into existing /browse catalogue filters (no catalogue schema change).
+ */
 export const MEGA_MENU: MegaMenuCategory[] = [
   {
-    key: "fashion",
-    label: "Fashion",
-    href: browse("fashion"),
+    key: "women-western",
+    label: "Women Western",
+    href: browse("fashion", "dress"),
     columns: [
       {
-        heading: "Women ethnic",
-        links: [
-          { label: "Kurtas", href: browse("fashion", "kurta") },
-          { label: "Sarees", href: browse("fashion", "saree") },
-          { label: "Dupattas", href: browse("fashion", "dupatta") },
-          { label: "Kurta sets", href: browse("fashion", "set") },
-        ],
-      },
-      {
-        heading: "Women western",
+        heading: "Tops & Tees",
         links: [
           { label: "Tops", href: browse("fashion", "top") },
-          { label: "Dresses", href: browse("fashion", "dress") },
-          { label: "Jeans", href: browse("fashion", "jeans") },
-          { label: "T-shirts", href: browse("fashion", "t-shirt") },
+          { label: "T-shirts", href: browse("fashion", "tee") },
+          { label: "Shirts", href: browse("fashion", "shirt") },
+          { label: "Tunics", href: browse("fashion", "tunic") },
         ],
       },
       {
-        heading: "Men",
+        heading: "Dresses & Jumpsuits",
+        links: [
+          { label: "Dresses", href: browse("fashion", "dress") },
+          { label: "Wrap dresses", href: browse("fashion", "wrap") },
+          { label: "Jumpsuits", href: browse("fashion", "jumpsuit") },
+        ],
+      },
+      {
+        heading: "Bottomwear",
+        links: [
+          { label: "Jeans", href: browse("fashion", "jean") },
+          { label: "Jegging", href: browse("fashion", "jegging") },
+          { label: "Palazzo", href: browse("fashion", "palazzo") },
+          { label: "Skirts", href: browse("fashion", "skirt") },
+        ],
+      },
+      {
+        heading: "Winter & Lounge",
+        links: [
+          { label: "Hoodies", href: browse("fashion", "hoodie") },
+          { label: "Scarves", href: browse("fashion", "scarf") },
+          { label: "Pyjamas", href: browse("fashion", "pyjama") },
+        ],
+      },
+    ],
+  },
+  {
+    key: "kurti-saree-lehenga",
+    label: "Kurti, Saree & Lehenga",
+    href: browse("fashion", "kurta"),
+    columns: [
+      {
+        heading: "Kurtis & Kurtas",
+        links: [
+          { label: "Kurtas", href: browse("fashion", "kurta") },
+          { label: "Kurti sets", href: browse("fashion", "set") },
+          { label: "Handloom kurtas", href: browse("fashion", "handloom") },
+        ],
+      },
+      {
+        heading: "Sarees & Dupattas",
+        links: [
+          { label: "Sarees", href: browse("fashion", "saree") },
+          { label: "Dupattas", href: browse("fashion", "dupatta") },
+          { label: "Blouses", href: browse("fashion", "blouse") },
+        ],
+      },
+      {
+        heading: "Lehengas & Ethnic",
+        links: [
+          { label: "Lehengas", href: browse("fashion", "lehenga") },
+          { label: "Ethnic wear", href: browse("fashion", "ethnic") },
+          { label: "Palazzo sets", href: browse("fashion", "palazzo") },
+        ],
+      },
+      {
+        heading: "Occasion",
+        links: [
+          { label: "Festive", href: browse("fashion", "festive") },
+          { label: "Wedding", href: browse("fashion", "wedding") },
+          { label: "Daily wear", href: browse("fashion", "cotton") },
+        ],
+      },
+    ],
+  },
+  {
+    key: "lingerie",
+    label: "Lingerie",
+    href: browse("fashion", "pyjama"),
+    columns: [
+      {
+        heading: "Innerwear",
+        links: [
+          { label: "Bras", href: browseQ("bra") },
+          { label: "Panties", href: browseQ("panty") },
+          { label: "Camisoles", href: browseQ("camisole") },
+        ],
+      },
+      {
+        heading: "Sleepwear",
+        links: [
+          { label: "Nightwear", href: browse("fashion", "pyjama") },
+          { label: "Pyjama sets", href: browse("fashion", "pyjama") },
+          { label: "Robes", href: browseQ("robe") },
+        ],
+      },
+      {
+        heading: "Shapewear & Socks",
+        links: [
+          { label: "Shapewear", href: browseQ("shapewear") },
+          { label: "Socks", href: browse("bags-footwear", "sock") },
+          { label: "Thermals", href: browseQ("thermal") },
+        ],
+      },
+    ],
+  },
+  {
+    key: "men",
+    label: "Men",
+    href: browse("fashion", "shirt"),
+    columns: [
+      {
+        heading: "Topwear",
         links: [
           { label: "Shirts", href: browse("fashion", "shirt") },
           { label: "T-shirts", href: browse("fashion", "tee") },
+          { label: "Kurtas", href: browse("fashion", "kurta") },
+        ],
+      },
+      {
+        heading: "Bottomwear",
+        links: [
+          { label: "Jeans", href: browse("fashion", "jean") },
           { label: "Trousers", href: browse("fashion", "trouser") },
+          { label: "Shorts", href: browse("sports-fitness", "short") },
+        ],
+      },
+      {
+        heading: "Ethnic & Winter",
+        links: [
           { label: "Ethnic wear", href: browse("fashion", "ethnic") },
+          { label: "Jackets", href: browseQ("jacket") },
+          { label: "Sweatshirts", href: browse("fashion", "hoodie") },
         ],
       },
       {
         heading: "Accessories",
         links: [
-          { label: "Scarves", href: browse("fashion", "scarf") },
           { label: "Belts", href: browse("bags-footwear", "belt") },
-          { label: "Watches", href: browse("electronics-accessories", "watch") },
+          { label: "Wallets", href: browse("bags-footwear", "wallet") },
+          { label: "Caps", href: browseQ("cap") },
         ],
       },
     ],
   },
   {
-    key: "electronics",
-    label: "Electronics",
-    href: browse("electronics-accessories"),
+    key: "kids-toys",
+    label: "Kids & Toys",
+    href: browse("baby-kids"),
     columns: [
       {
-        heading: "Audio",
+        heading: "Baby essentials",
         links: [
-          { label: "Earbuds", href: browse("electronics-accessories", "earbud") },
-          { label: "Headphones", href: browse("electronics-accessories", "headphone") },
-          { label: "Speakers", href: browse("electronics-accessories", "speaker") },
+          { label: "Onesies", href: browse("baby-kids", "onesie") },
+          { label: "Swaddles", href: browse("baby-kids", "swaddle") },
+          { label: "Feeding", href: browse("baby-kids", "bib") },
         ],
       },
       {
-        heading: "Power",
+        heading: "Kids wear",
         links: [
-          { label: "Chargers", href: browse("electronics-accessories", "charger") },
-          { label: "Power banks", href: browse("electronics-accessories", "power") },
-          { label: "Cables", href: browse("mobile-accessories", "cable") },
+          { label: "Hoodies", href: browse("fashion", "kids") },
+          { label: "Raincoats", href: browse("baby-kids", "rain") },
+          { label: "Footwear", href: browse("bags-footwear", "kids") },
         ],
       },
       {
-        heading: "Wearables",
+        heading: "Toys & Fun",
         links: [
-          { label: "Smart watches", href: browse("electronics-accessories", "watch") },
-          { label: "Fitness bands", href: browse("health-wellness", "band") },
+          { label: "Soft toys", href: browse("baby-kids", "plush") },
+          { label: "Stacking toys", href: browse("baby-kids", "toy") },
+          { label: "Books", href: browse("baby-kids", "book") },
         ],
       },
     ],
   },
   {
-    key: "home",
+    key: "home-kitchen",
     label: "Home & Kitchen",
     href: browse("home-kitchen"),
     columns: [
       {
         heading: "Cookware",
         links: [
-          { label: "Pans", href: browse("home-kitchen", "pan") },
-          { label: "Utensils", href: browse("home-kitchen", "utensil") },
-          { label: "Storage", href: browse("home-kitchen", "storage") },
+          { label: "Tawas & pans", href: browse("home-kitchen", "tawa") },
+          { label: "Knives", href: browse("home-kitchen", "knife") },
+          { label: "Spatulas", href: browse("home-kitchen", "spatula") },
+          { label: "Kettles", href: browse("home-kitchen", "kettle") },
         ],
       },
       {
-        heading: "Living",
+        heading: "Storage & Serve",
         links: [
-          { label: "Bedsheets", href: browse("home-kitchen", "bedsheet") },
-          { label: "Curtains", href: browse("home-kitchen", "curtain") },
-          { label: "Organisers", href: browse("home-kitchen", "organiser") },
+          { label: "Containers", href: browse("home-kitchen", "container") },
+          { label: "Tiffin", href: browse("home-kitchen", "tiffin") },
+          { label: "Bowls", href: browse("home-kitchen", "bowl") },
+          { label: "Spice jars", href: browse("home-kitchen", "spice") },
         ],
       },
       {
-        heading: "Cleaning",
+        heading: "Home living",
         links: [
-          { label: "Household", href: browse("household-essentials") },
-          { label: "Laundry", href: browse("household-essentials", "laundry") },
+          { label: "Cushion covers", href: browse("home-kitchen", "cushion") },
+          { label: "Laundry", href: browse("general-merchandise", "laundry") },
+          { label: "Cleaning", href: browse("household-essentials") },
         ],
       },
     ],
   },
   {
-    key: "beauty",
-    label: "Beauty",
+    key: "beauty-health",
+    label: "Beauty & Health",
     href: browse("beauty-personal-care"),
     columns: [
       {
@@ -130,132 +249,134 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         links: [
           { label: "Face wash", href: browse("beauty-personal-care", "face") },
           { label: "Moisturiser", href: browse("beauty-personal-care", "moistur") },
-          { label: "Sunscreen", href: browse("beauty-personal-care", "sun") },
+          { label: "Serum", href: browse("beauty-personal-care", "serum") },
+          { label: "Face mask", href: browse("beauty-personal-care", "mask") },
         ],
       },
       {
         heading: "Hair & body",
         links: [
           { label: "Hair oil", href: browse("beauty-personal-care", "oil") },
+          { label: "Body lotion", href: browse("beauty-personal-care", "lotion") },
           { label: "Soap", href: browse("beauty-personal-care", "soap") },
-          { label: "Lipstick", href: browse("beauty-personal-care", "lip") },
+          { label: "Lip balm", href: browse("beauty-personal-care", "lip") },
+        ],
+      },
+      {
+        heading: "Health & fitness",
+        links: [
+          { label: "Yoga mats", href: browse("health-wellness", "yoga") },
+          { label: "Resistance bands", href: browse("health-wellness", "band") },
+          { label: "Scales", href: browse("health-wellness", "scale") },
+          { label: "Sports gear", href: browse("sports-fitness") },
         ],
       },
     ],
   },
   {
-    key: "health",
-    label: "Health",
-    href: browse("health-wellness"),
+    key: "jewellery-accessories",
+    label: "Jewellery & Accessories",
+    href: browse("fashion", "scarf"),
     columns: [
       {
-        heading: "Wellness",
+        heading: "Jewellery",
         links: [
-          { label: "Supplements", href: browse("health-wellness", "supplement") },
-          { label: "Yoga", href: browse("health-wellness", "yoga") },
-          { label: "Fitness", href: browse("sports-fitness") },
+          { label: "Earrings", href: browseQ("earring") },
+          { label: "Necklaces", href: browseQ("necklace") },
+          { label: "Bangles", href: browseQ("bangle") },
+          { label: "Rings", href: browseQ("ring") },
         ],
       },
-    ],
-  },
-  {
-    key: "baby",
-    label: "Baby & Kids",
-    href: browse("baby-kids"),
-    columns: [
       {
-        heading: "Essentials",
+        heading: "Watches & Wearables",
         links: [
-          { label: "Toys", href: browse("baby-kids", "toy") },
-          { label: "Clothing", href: browse("baby-kids", "cloth") },
-          { label: "Feeding", href: browse("baby-kids", "bottle") },
+          { label: "Watches", href: browse("electronics-accessories", "watch") },
+          { label: "Fitness bands", href: browse("health-wellness", "band") },
         ],
       },
-    ],
-  },
-  {
-    key: "sports",
-    label: "Sports",
-    href: browse("sports-fitness"),
-    columns: [
       {
-        heading: "Training",
+        heading: "Everyday accessories",
         links: [
-          { label: "Dumbbells", href: browse("sports-fitness", "dumbbell") },
-          { label: "Bands", href: browse("sports-fitness", "band") },
-          { label: "Mats", href: browse("health-wellness", "mat") },
+          { label: "Belts", href: browse("bags-footwear", "belt") },
+          { label: "Scarves", href: browse("fashion", "scarf") },
+          { label: "Hair accessories", href: browseQ("hair") },
         ],
       },
     ],
   },
   {
-    key: "stationery",
-    label: "Stationery",
-    href: browse("stationery-office"),
-    columns: [
-      {
-        heading: "Desk",
-        links: [
-          { label: "Notebooks", href: browse("stationery-office", "notebook") },
-          { label: "Pens", href: browse("stationery-office", "pen") },
-          { label: "Organisers", href: browse("stationery-office", "organiser") },
-        ],
-      },
-    ],
-  },
-  {
-    key: "bags",
-    label: "Bags",
+    key: "bags-footwear",
+    label: "Bags & Footwear",
     href: browse("bags-footwear"),
     columns: [
       {
-        heading: "Carry",
+        heading: "Bags",
         links: [
+          { label: "Handbags", href: browse("bags-footwear", "sling") },
           { label: "Backpacks", href: browse("bags-footwear", "backpack") },
-          { label: "Handbags", href: browse("bags-footwear", "handbag") },
-          { label: "Footwear", href: browse("bags-footwear", "shoe") },
+          { label: "Totes", href: browse("bags-footwear", "tote") },
+          { label: "Duffels", href: browse("bags-footwear", "duffel") },
         ],
       },
-    ],
-  },
-  {
-    key: "mobile",
-    label: "Mobile",
-    href: browse("mobile-accessories"),
-    columns: [
       {
-        heading: "Phone",
+        heading: "Footwear",
         links: [
-          { label: "Cases", href: browse("mobile-accessories", "case") },
-          { label: "Chargers", href: browse("mobile-accessories", "charger") },
-          { label: "Screen guards", href: browse("mobile-accessories", "screen") },
+          { label: "Sandals", href: browse("bags-footwear", "sandal") },
+          { label: "Sneakers", href: browse("bags-footwear", "sneaker") },
+          { label: "Slippers", href: browse("bags-footwear", "slipper") },
+          { label: "Running shoes", href: browse("sports-fitness", "shoe") },
+        ],
+      },
+      {
+        heading: "Travel",
+        links: [
+          { label: "Packing cubes", href: browse("bags-footwear", "cube") },
+          { label: "Weekenders", href: browse("bags-footwear", "weekender") },
         ],
       },
     ],
   },
 ];
 
-/** All-categories mega panel: one column per top category (first-column links), max 5. */
+/** All-categories mega panel: one column per top category, max 5 visible + view-all. */
 export function buildAllCategoriesMenu(): {
   href: string;
   columns: MegaMenuColumn[];
 } {
   return {
     href: "/shop",
-    columns: MEGA_MENU.slice(0, 5).map((entry) => ({
-      heading: entry.label,
-      links: entry.columns[0]?.links ?? [],
-    })),
+    columns: [
+      ...MEGA_MENU.slice(0, 5).map((entry) => ({
+        heading: entry.label,
+        links: [
+          ...(entry.columns[0]?.links ?? []).slice(0, 4),
+          { label: `Shop ${entry.label}`, href: entry.href },
+        ],
+      })),
+      {
+        heading: "More categories",
+        links: [
+          ...MEGA_MENU.slice(5).map((entry) => ({
+            label: entry.label,
+            href: entry.href,
+          })),
+          { label: "View all categories →", href: "/shop" },
+        ],
+      },
+    ],
   };
 }
 
 export const ALL_CATEGORIES_MENU = buildAllCategoriesMenu();
 
 export const TRENDING_SEARCHES = [
-  "kurta",
+  "saree",
+  "kurti",
+  "lehenga",
+  "jeans",
   "earbuds",
   "face wash",
-  "yoga mat",
-  "phone case",
-  "bedsheet",
 ];
+
+export const SEARCH_PLACEHOLDER =
+  "Try Saree, Kurti or Search by Product Code";

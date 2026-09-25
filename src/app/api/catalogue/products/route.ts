@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const input = searchProductsSchema.parse({
       q: url.searchParams.get("q") ?? undefined,
       categorySlug: url.searchParams.get("categorySlug") ?? undefined,
+      brandSlug: url.searchParams.get("brandSlug") ?? undefined,
       minPricePaise: url.searchParams.get("minPricePaise") ?? undefined,
       maxPricePaise: url.searchParams.get("maxPricePaise") ?? undefined,
       inStockOnly: url.searchParams.get("inStockOnly") === "true",

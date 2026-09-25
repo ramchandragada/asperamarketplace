@@ -61,6 +61,9 @@ export default async function AccountPage() {
         <Link href="/seller/fulfilment" className="underline">
           Seller fulfilment
         </Link>
+        <Link href="/seller/analytics" className="underline">
+          Seller analytics
+        </Link>
         {actorIsAdmin(actor) ? (
           <>
             <Link href="/admin/sellers" className="underline">
@@ -74,6 +77,9 @@ export default async function AccountPage() {
             </Link>
             <Link href="/admin/trust" className="underline">
               Admin trust & safety
+            </Link>
+            <Link href="/admin/analytics" className="underline">
+              Admin analytics
             </Link>
           </>
         ) : null}

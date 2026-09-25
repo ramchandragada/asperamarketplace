@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
 import { PageShell, SectionHeading } from "@/components/ui/page-shell";
 import {
+  CampaignPromoBanner,
   CategoryCircles,
   HeroCarousel,
   OriginalBrandsSection,
@@ -260,6 +261,37 @@ const BRAND_LOGOS = [
   { id: "aspera-home", name: "Aspera Home", mark: "AH", href: "/browse?q=aspera%20home" },
 ];
 
+const CAMPAIGN_COLLECTIONS = [
+  {
+    id: "trending",
+    label: "Trending Now",
+    href: "/browse?sort=newest&categorySlug=fashion",
+    imageUrl:
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    id: "budget",
+    label: "Budget Buys",
+    href: "/browse?maxPricePaise=49900",
+    imageUrl:
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    id: "top-rated",
+    label: "Top Rated Picks",
+    href: "/browse?minRating=4",
+    imageUrl:
+      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=500&q=80",
+  },
+  {
+    id: "daily",
+    label: "Daily Essentials",
+    href: "/browse?categorySlug=household-essentials",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=500&q=80",
+  },
+];
+
 export default async function Home() {
   const categories = await listActiveCategories();
   const categorySlugs = categories.map((category) => category.slug);
@@ -340,6 +372,7 @@ export default async function Home() {
     <div className="flex flex-col">
       <HeroCarousel slides={HERO_SLIDES} />
       <OriginalBrandsSection cards={ORIGINAL_BRAND_CARDS} logos={BRAND_LOGOS} />
+      <CampaignPromoBanner collections={CAMPAIGN_COLLECTIONS} />
       <TrustSignalBar />
       <CategoryCircles categories={circleCategories} />
       <PromoBanner

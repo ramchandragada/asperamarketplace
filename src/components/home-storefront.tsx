@@ -472,3 +472,80 @@ export function OriginalBrandsSection({
     </section>
   );
 }
+
+export type CampaignCollection = {
+  id: string;
+  label: string;
+  href: string;
+  imageUrl: string;
+};
+
+export function CampaignPromoBanner({
+  collections,
+}: {
+  collections: CampaignCollection[];
+}) {
+  return (
+    <section className="container-shell py-6 md:py-8">
+      <div className="grid overflow-hidden rounded-[var(--radius)] border border-border shadow-sm md:grid-cols-2">
+        {/* App offer — left */}
+        <div className="relative flex min-h-[240px] flex-col justify-center gap-4 overflow-hidden bg-gradient-to-br from-[#ffb347] via-[#e8833a] to-[#d97706] px-6 py-8 text-[#1a2e2e] md:min-h-[280px] md:px-10">
+          <div
+            className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/20 blur-2xl"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 h-28 w-28 rounded-full bg-[#fef08a]/40 blur-xl"
+            aria-hidden
+          />
+          <p className="relative text-xs font-bold tracking-[0.16em] uppercase">
+            App exclusive
+          </p>
+          <h2 className="relative font-display text-3xl font-bold tracking-tight text-balance md:text-4xl">
+            Up to 35% OFF on first order
+          </h2>
+          <p className="relative text-sm font-medium text-[#3f2a14]/90">
+            *Only on App — download Aspera for launch deals and faster checkout.
+          </p>
+          <div className="relative mt-1">
+            <Link
+              href="/download-app"
+              className="inline-flex rounded-[var(--radius-sm)] bg-[#1a5c5c] px-5 py-3 text-sm font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#164c4c]"
+            >
+              Download Now
+            </Link>
+          </div>
+        </div>
+
+        {/* Curated collections — right */}
+        <div className="bg-gradient-to-br from-[#7c1d6f] via-[#9b1b6f] to-[#4c1d95] px-5 py-7 md:px-8 md:py-8">
+          <p className="mb-4 text-xs font-bold tracking-[0.14em] text-white/80 uppercase">
+            Curated for you
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {collections.slice(0, 4).map((collection) => (
+              <Link
+                key={collection.id}
+                href={collection.href}
+                className="group flex flex-col items-center gap-2 text-center"
+              >
+                <span className="relative h-24 w-24 overflow-hidden rounded-2xl border-2 border-white/70 bg-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition group-hover:-translate-y-1 group-hover:border-white sm:h-28 sm:w-28 md:rounded-[1.25rem]">
+                  <Image
+                    src={collection.imageUrl}
+                    alt=""
+                    fill
+                    sizes="112px"
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                </span>
+                <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-[#4a1040] shadow-sm sm:text-xs">
+                  {collection.label}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

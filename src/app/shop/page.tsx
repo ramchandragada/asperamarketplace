@@ -4,6 +4,7 @@ import {
 } from "@/components/catalogue-browse";
 import { PageShell } from "@/components/ui/page-shell";
 import {
+  listActiveBrands,
   listActiveCategories,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
@@ -14,12 +15,21 @@ export const metadata = {
   description: "Browse all products across every category on Aspera Marketplace.",
 };
 
+const SORTS = new Set([
+  "relevance",
+  "newest",
+  "price_asc",
+  "price_desc",
+  "rating",
+]);
+
 export default async function ShopPage({
   searchParams,
 }: {
   searchParams: Promise<{
     q?: string;
     categorySlug?: string;
+    brandSlug?: string;
     sort?: string;
     inStockOnly?: string;
     verifiedSellerOnly?: string;
@@ -32,26 +42,36 @@ export default async function ShopPage({
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const categorySlug = params.categorySlug?.trim() ?? "";
-  const sort =
-    params.sort === "price_asc" || params.sort === "price_desc"
-      ? params.sort
+  const brandSlug = params.brandSlug?.trim() ?? "";
+  const sort = SORTS.has(params.sort ?? "")
+    ? (params.sort as string)
+    : query
+      ? "relevance"
       : "newest";
   const inStockOnly = params.inStockOnly === "true";
   const verifiedSellerOnly = params.verifiedSellerOnly === "true";
+  const minPricePaise = params.minPricePaise
+    ? Number(params.minPricePaise)
+    : undefined;
+  const maxPricePaise = params.maxPricePaise
+    ? Number(params.maxPricePaise)
+    : undefined;
 
-  const [result, categories] = await Promise.all([
+  const [result, categories, brands] = await Promise.all([
     searchApprovedProducts({
       q: query || undefined,
       categorySlug: categorySlug || undefined,
-      sort,
+      brandSlug: brandSlug || undefined,
+      sort: sort as
+        | "relevance"
+        | "newest"
+        | "price_asc"
+        | "price_desc"
+        | "rating",
       inStockOnly,
       verifiedSellerOnly,
-      minPricePaise: params.minPricePaise
-        ? Number(params.minPricePaise)
-        : undefined,
-      maxPricePaise: params.maxPricePaise
-        ? Number(params.maxPricePaise)
-        : undefined,
+      minPricePaise,
+      maxPricePaise,
       minRating: params.minRating ? Number(params.minRating) : undefined,
       minDiscountPercent: params.minDiscountPercent
         ? Number(params.minDiscountPercent)
@@ -60,6 +80,7 @@ export default async function ShopPage({
       pageSize: 24,
     }),
     listActiveCategories(),
+    listActiveBrands(),
   ]);
 
   return (
@@ -73,7 +94,9 @@ export default async function ShopPage({
           name: category.name,
           productCount: category.productCount,
         }))}
+        brands={brands}
         initialCategorySlug={categorySlug}
+        initialBrandSlug={brandSlug}
         initialSort={sort}
         initialInStockOnly={inStockOnly}
         initialVerifiedOnly={verifiedSellerOnly}
@@ -83,6 +106,8 @@ export default async function ShopPage({
             ? Number(params.minDiscountPercent)
             : undefined
         }
+        initialMinPricePaise={minPricePaise}
+        initialMaxPricePaise={maxPricePaise}
         heading="All products"
         browseBasePath="/shop"
       />

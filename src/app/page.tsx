@@ -468,7 +468,7 @@ export default async function Home() {
               title="Deals of the day"
               description="Today's best deals"
               action={
-                <Link href="/shop" className="text-sm font-medium text-accent underline">
+                <Link href="/shop?minDiscountPercent=15" className="text-sm font-medium text-accent underline">
                   See all →
                 </Link>
               }

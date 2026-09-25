@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState, useTransition, type ReactNode } from "react";
+import {
+  FormEvent,
+  useMemo,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 import { ProductCard, type ProductCardModel } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -13,6 +19,7 @@ export type BrowseProduct = ProductCardModel & {
 };
 
 type CategoryOption = { slug: string; name: string; productCount?: number };
+type BrandOption = { slug: string; name: string; productCount?: number };
 
 const PRICE_PRESETS = [
   { key: "u200", label: "Under ₹200", min: 0, max: 200 },
@@ -34,17 +41,34 @@ const DISCOUNT_OPTIONS = [
   { value: 40, label: "40% or more" },
 ] as const;
 
+const SORT_OPTIONS = [
+  { value: "relevance", label: "Relevance" },
+  { value: "newest", label: "Newest first" },
+  { value: "price_asc", label: "Price: low to high" },
+  { value: "price_desc", label: "Price: high to low" },
+  { value: "rating", label: "Customer rating" },
+] as const;
+
+function rupeesFromPaise(paise?: number) {
+  if (paise == null || Number.isNaN(paise)) return "";
+  return String(Math.round(paise / 100));
+}
+
 export function CatalogueBrowse({
   initialItems,
   initialQuery,
   initialTotal,
   categories,
+  brands = [],
   initialCategorySlug = "",
+  initialBrandSlug = "",
   initialSort = "newest",
   initialInStockOnly = false,
   initialVerifiedOnly = false,
   initialMinRating,
   initialMinDiscount,
+  initialMinPricePaise,
+  initialMaxPricePaise,
   heading,
   browseBasePath = "/browse",
 }: {
@@ -52,19 +76,33 @@ export function CatalogueBrowse({
   initialQuery: string;
   initialTotal: number;
   categories: CategoryOption[];
+  brands?: BrandOption[];
   initialCategorySlug?: string;
+  initialBrandSlug?: string;
   initialSort?: string;
   initialInStockOnly?: boolean;
   initialVerifiedOnly?: boolean;
   initialMinRating?: number;
   initialMinDiscount?: number;
+  initialMinPricePaise?: number;
+  initialMaxPricePaise?: number;
   heading?: string;
   browseBasePath?: string;
 }) {
+  const initialMin = rupeesFromPaise(initialMinPricePaise);
+  const initialMax = rupeesFromPaise(initialMaxPricePaise);
+  const matchedPreset =
+    PRICE_PRESETS.find(
+      (preset) =>
+        String(preset.min) === initialMin &&
+        (preset.max == null ? initialMax === "" : String(preset.max) === initialMax),
+    )?.key ?? "";
+
   const [items, setItems] = useState(initialItems);
   const [total, setTotal] = useState(initialTotal);
   const [query, setQuery] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
+  const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
   const [sort, setSort] = useState(initialSort);
   const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
   const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly);
@@ -74,96 +112,84 @@ export function CatalogueBrowse({
   const [minDiscount, setMinDiscount] = useState<number | null>(
     initialMinDiscount ?? null,
   );
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [pricePreset, setPricePreset] = useState("");
+  const [minPrice, setMinPrice] = useState(initialMin);
+  const [maxPrice, setMaxPrice] = useState(initialMax);
+  const [pricePreset, setPricePreset] = useState(matchedPreset);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [brandSearch, setBrandSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
+    brand: true,
     price: true,
     rating: true,
     discount: true,
-    seller: true,
-    availability: true,
+    seller: false,
+    availability: false,
   });
 
   const categoryName =
-    categories.find((entry) => entry.slug === categorySlug)?.name ?? heading ?? "All products";
+    categories.find((entry) => entry.slug === categorySlug)?.name ??
+    heading ??
+    "All products";
+  const brandName =
+    brands.find((entry) => entry.slug === brandSlug)?.name ?? null;
+
+  const filteredCategories = useMemo(() => {
+    const term = categorySearch.trim().toLowerCase();
+    if (!term) return categories;
+    return categories.filter((category) =>
+      category.name.toLowerCase().includes(term),
+    );
+  }, [categories, categorySearch]);
+
+  const filteredBrands = useMemo(() => {
+    const term = brandSearch.trim().toLowerCase();
+    if (!term) return brands;
+    return brands.filter((brand) => brand.name.toLowerCase().includes(term));
+  }, [brands, brandSearch]);
 
   const chips = useMemo(() => {
-    const list: Array<{ key: string; label: string; clear: () => void }> = [];
+    const list: Array<{ key: string; label: string }> = [];
     if (query.trim()) {
-      list.push({
-        key: "q",
-        label: query.trim(),
-        clear: () => setQuery(""),
-      });
+      list.push({ key: "q", label: query.trim() });
     }
     if (categorySlug) {
-      list.push({
-        key: "cat",
-        label: categoryName,
-        clear: () => setCategorySlug(""),
-      });
+      list.push({ key: "cat", label: categoryName });
+    }
+    if (brandSlug && brandName) {
+      list.push({ key: "brand", label: brandName });
     }
     if (pricePreset) {
       const preset = PRICE_PRESETS.find((entry) => entry.key === pricePreset);
-      if (preset) {
-        list.push({
-          key: "price",
-          label: preset.label,
-          clear: () => {
-            setPricePreset("");
-            setMinPrice("");
-            setMaxPrice("");
-          },
-        });
-      }
+      if (preset) list.push({ key: "price", label: preset.label });
     } else if (minPrice || maxPrice) {
       list.push({
         key: "priceCustom",
         label: `₹${minPrice || "0"}–₹${maxPrice || "∞"}`,
-        clear: () => {
-          setMinPrice("");
-          setMaxPrice("");
-        },
       });
     }
     if (minRating != null) {
-      list.push({
-        key: "rating",
-        label: `${minRating}★ & above`,
-        clear: () => setMinRating(null),
-      });
+      list.push({ key: "rating", label: `${minRating}★ & above` });
     }
     if (minDiscount != null) {
-      list.push({
-        key: "discount",
-        label: `${minDiscount}% or more`,
-        clear: () => setMinDiscount(null),
-      });
+      list.push({ key: "discount", label: `${minDiscount}% or more` });
     }
     if (inStockOnly) {
-      list.push({
-        key: "stock",
-        label: "In stock",
-        clear: () => setInStockOnly(false),
-      });
+      list.push({ key: "stock", label: "In stock" });
     }
     if (verifiedOnly) {
-      list.push({
-        key: "verified",
-        label: "Verified sellers",
-        clear: () => setVerifiedOnly(false),
-      });
+      list.push({ key: "verified", label: "Verified sellers" });
     }
     return list;
   }, [
     query,
     categorySlug,
     categoryName,
+    brandSlug,
+    brandName,
     inStockOnly,
     verifiedOnly,
     pricePreset,
@@ -176,6 +202,7 @@ export function CatalogueBrowse({
   async function runSearch(next?: {
     q?: string;
     categorySlug?: string;
+    brandSlug?: string;
     sort?: string;
     inStockOnly?: boolean;
     verifiedOnly?: boolean;
@@ -188,6 +215,7 @@ export function CatalogueBrowse({
     const params = new URLSearchParams();
     const q = (next?.q ?? query).trim();
     const cat = next?.categorySlug ?? categorySlug;
+    const brand = next?.brandSlug ?? brandSlug;
     const sortValue = next?.sort ?? sort;
     const stock = next?.inStockOnly ?? inStockOnly;
     const verified = next?.verifiedOnly ?? verifiedOnly;
@@ -198,6 +226,7 @@ export function CatalogueBrowse({
       next?.minDiscount !== undefined ? next.minDiscount : minDiscount;
     if (q) params.set("q", q);
     if (cat) params.set("categorySlug", cat);
+    if (brand) params.set("brandSlug", brand);
     if (sortValue) params.set("sort", sortValue);
     if (stock) params.set("inStockOnly", "true");
     if (verified) params.set("verifiedSellerOnly", "true");
@@ -241,7 +270,8 @@ export function CatalogueBrowse({
   function clearAll() {
     setQuery("");
     setCategorySlug("");
-    setSort("newest");
+    setBrandSlug("");
+    setSort(initialQuery.trim() ? "relevance" : "newest");
     setInStockOnly(false);
     setVerifiedOnly(false);
     setMinRating(null);
@@ -249,11 +279,14 @@ export function CatalogueBrowse({
     setMinPrice("");
     setMaxPrice("");
     setPricePreset("");
+    setCategorySearch("");
+    setBrandSearch("");
     startTransition(() => {
       void runSearch({
         q: "",
         categorySlug: "",
-        sort: "newest",
+        brandSlug: "",
+        sort: initialQuery.trim() ? "relevance" : "newest",
         inStockOnly: false,
         verifiedOnly: false,
         minPrice: "",
@@ -264,6 +297,48 @@ export function CatalogueBrowse({
     });
   }
 
+  function clearChip(key: string) {
+    const next: Parameters<typeof runSearch>[0] = {};
+    if (key === "q") {
+      setQuery("");
+      next.q = "";
+    }
+    if (key === "cat") {
+      setCategorySlug("");
+      next.categorySlug = "";
+    }
+    if (key === "brand") {
+      setBrandSlug("");
+      next.brandSlug = "";
+    }
+    if (key === "price" || key === "priceCustom") {
+      setPricePreset("");
+      setMinPrice("");
+      setMaxPrice("");
+      next.minPrice = "";
+      next.maxPrice = "";
+    }
+    if (key === "rating") {
+      setMinRating(null);
+      next.minRating = null;
+    }
+    if (key === "discount") {
+      setMinDiscount(null);
+      next.minDiscount = null;
+    }
+    if (key === "stock") {
+      setInStockOnly(false);
+      next.inStockOnly = false;
+    }
+    if (key === "verified") {
+      setVerifiedOnly(false);
+      next.verifiedOnly = false;
+    }
+    startTransition(() => {
+      void runSearch(next);
+    });
+  }
+
   function toggleSection(key: string) {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   }
@@ -271,14 +346,21 @@ export function CatalogueBrowse({
   function onSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     startTransition(() => {
-      void runSearch();
+      void runSearch({
+        sort: query.trim() && sort === "newest" ? "relevance" : sort,
+      });
     });
   }
 
   const filterPanel = (
     <div className="flex flex-col gap-1">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold tracking-wide uppercase">Filters</h2>
+      <div className="mb-2 flex items-baseline justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-bold tracking-wide uppercase">Filters</h2>
+          <p className="mt-0.5 text-xs text-muted">
+            {total} product{total === 1 ? "" : "s"}
+          </p>
+        </div>
         <button
           type="button"
           className="text-xs font-medium text-accent hover:underline"
@@ -293,44 +375,102 @@ export function CatalogueBrowse({
         open={openSections.category !== false}
         onToggle={() => toggleSection("category")}
       >
-        <ul className="space-y-1.5">
-          {categories.map((category) => (
+        <input
+          type="search"
+          value={categorySearch}
+          onChange={(event) => setCategorySearch(event.target.value)}
+          placeholder="Search category"
+          className="mb-2 w-full rounded-[var(--radius-sm)] border border-border bg-background px-2.5 py-1.5 text-sm"
+        />
+        <ul className="max-h-48 space-y-1.5 overflow-y-auto pr-1">
+          <li>
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={!categorySlug}
+                onChange={() => {
+                  setCategorySlug("");
+                  startTransition(() => {
+                    void runSearch({ categorySlug: "" });
+                  });
+                }}
+              />
+              All categories
+            </label>
+          </li>
+          {filteredCategories.map((category) => (
             <li key={category.slug}>
               <label className="flex cursor-pointer items-center gap-2 text-sm">
                 <input
-                  type="radio"
-                  name="category"
+                  type="checkbox"
                   checked={categorySlug === category.slug}
                   onChange={() => {
-                    setCategorySlug(category.slug);
+                    const next =
+                      categorySlug === category.slug ? "" : category.slug;
+                    setCategorySlug(next);
                     startTransition(() => {
-                      void runSearch({ categorySlug: category.slug });
+                      void runSearch({ categorySlug: next });
                     });
                   }}
                 />
-                {category.name}
-                {category.productCount != null
-                  ? ` (${category.productCount})`
-                  : ""}
+                <span className="min-w-0 flex-1 truncate">{category.name}</span>
+                {category.productCount != null ? (
+                  <span className="shrink-0 text-xs text-muted">
+                    {category.productCount}
+                  </span>
+                ) : null}
               </label>
             </li>
           ))}
-          <li>
-            <button
-              type="button"
-              className="text-xs text-accent hover:underline"
-              onClick={() => {
-                setCategorySlug("");
-                startTransition(() => {
-                  void runSearch({ categorySlug: "" });
-                });
-              }}
-            >
-              All categories
-            </button>
-          </li>
+          {filteredCategories.length === 0 ? (
+            <li className="text-xs text-muted">No categories match</li>
+          ) : null}
         </ul>
       </FilterSection>
+
+      {brands.length > 0 ? (
+        <FilterSection
+          title="Brand"
+          open={openSections.brand !== false}
+          onToggle={() => toggleSection("brand")}
+        >
+          <input
+            type="search"
+            value={brandSearch}
+            onChange={(event) => setBrandSearch(event.target.value)}
+            placeholder="Search brand"
+            className="mb-2 w-full rounded-[var(--radius-sm)] border border-border bg-background px-2.5 py-1.5 text-sm"
+          />
+          <ul className="max-h-48 space-y-1.5 overflow-y-auto pr-1">
+            {filteredBrands.map((brand) => (
+              <li key={brand.slug}>
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={brandSlug === brand.slug}
+                    onChange={() => {
+                      const next = brandSlug === brand.slug ? "" : brand.slug;
+                      setBrandSlug(next);
+                      startTransition(() => {
+                        void runSearch({ brandSlug: next });
+                      });
+                    }}
+                  />
+                  <span className="min-w-0 flex-1 truncate">{brand.name}</span>
+                  {brand.productCount != null ? (
+                    <span className="shrink-0 text-xs text-muted">
+                      {brand.productCount}
+                    </span>
+                  ) : null}
+                </label>
+              </li>
+            ))}
+            {filteredBrands.length === 0 ? (
+              <li className="text-xs text-muted">No brands match</li>
+            ) : null}
+          </ul>
+        </FilterSection>
+      ) : null}
 
       <FilterSection
         title="Price range"
@@ -362,8 +502,8 @@ export function CatalogueBrowse({
             </li>
           ))}
         </ul>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <label className="text-xs">
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <label className="text-xs text-muted">
             Min ₹
             <input
               inputMode="decimal"
@@ -372,10 +512,15 @@ export function CatalogueBrowse({
                 setPricePreset("");
                 setMinPrice(event.target.value);
               }}
-              className="mt-1 w-full rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1.5"
+              onBlur={() => {
+                startTransition(() => {
+                  void runSearch({ minPrice, maxPrice });
+                });
+              }}
+              className="mt-1 w-full rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
             />
           </label>
-          <label className="text-xs">
+          <label className="text-xs text-muted">
             Max ₹
             <input
               inputMode="decimal"
@@ -384,14 +529,54 @@ export function CatalogueBrowse({
                 setPricePreset("");
                 setMaxPrice(event.target.value);
               }}
-              className="mt-1 w-full rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1.5"
+              onBlur={() => {
+                startTransition(() => {
+                  void runSearch({ minPrice, maxPrice });
+                });
+              }}
+              className="mt-1 w-full rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
             />
           </label>
         </div>
+        <label className="mt-3 block text-xs text-muted">
+          Max price slider
+          <input
+            type="range"
+            min={0}
+            max={5000}
+            step={50}
+            value={maxPrice.trim() ? Number(maxPrice) || 0 : 5000}
+            onChange={(event) => {
+              const value = event.target.value;
+              setPricePreset("");
+              setMaxPrice(value === "5000" ? "" : value);
+            }}
+            onMouseUp={() => {
+              startTransition(() => {
+                void runSearch({
+                  minPrice,
+                  maxPrice: maxPrice.trim() ? maxPrice : "",
+                });
+              });
+            }}
+            onTouchEnd={() => {
+              startTransition(() => {
+                void runSearch({
+                  minPrice,
+                  maxPrice: maxPrice.trim() ? maxPrice : "",
+                });
+              });
+            }}
+            className="mt-2 w-full accent-[var(--accent)]"
+          />
+          <span className="mt-1 block text-[11px]">
+            {maxPrice.trim() ? `Up to ₹${maxPrice}` : "Any price"}
+          </span>
+        </label>
       </FilterSection>
 
       <FilterSection
-        title="Customer Rating"
+        title="Customer rating"
         open={openSections.rating !== false}
         onToggle={() => toggleSection("rating")}
       >
@@ -414,6 +599,22 @@ export function CatalogueBrowse({
               </label>
             </li>
           ))}
+          {minRating != null ? (
+            <li>
+              <button
+                type="button"
+                className="text-xs text-accent hover:underline"
+                onClick={() => {
+                  setMinRating(null);
+                  startTransition(() => {
+                    void runSearch({ minRating: null });
+                  });
+                }}
+              >
+                Clear rating
+              </button>
+            </li>
+          ) : null}
         </ul>
       </FilterSection>
 
@@ -441,12 +642,28 @@ export function CatalogueBrowse({
               </label>
             </li>
           ))}
+          {minDiscount != null ? (
+            <li>
+              <button
+                type="button"
+                className="text-xs text-accent hover:underline"
+                onClick={() => {
+                  setMinDiscount(null);
+                  startTransition(() => {
+                    void runSearch({ minDiscount: null });
+                  });
+                }}
+              >
+                Clear discount
+              </button>
+            </li>
+          ) : null}
         </ul>
       </FilterSection>
 
       <FilterSection
         title="Seller"
-        open={openSections.seller !== false}
+        open={openSections.seller === true}
         onToggle={() => toggleSection("seller")}
       >
         <label className="flex items-center gap-2 text-sm">
@@ -466,7 +683,7 @@ export function CatalogueBrowse({
 
       <FilterSection
         title="Availability"
-        open={openSections.availability !== false}
+        open={openSections.availability === true}
         onToggle={() => toggleSection("availability")}
       >
         <label className="flex items-center gap-2 text-sm">
@@ -484,8 +701,8 @@ export function CatalogueBrowse({
         </label>
       </FilterSection>
 
-      <Button type="button" className="mt-3" onClick={applyAndClose}>
-        Apply filters
+      <Button type="button" className="mt-3 md:hidden" onClick={applyAndClose}>
+        Show {total} result{total === 1 ? "" : "s"}
       </Button>
     </div>
   );
@@ -498,12 +715,26 @@ export function CatalogueBrowse({
             Home
           </Link>
           <span aria-hidden> › </span>
-          <span className="text-foreground">{categoryName}</span>
+          <Link href={browseBasePath} className="hover:text-accent">
+            Shop
+          </Link>
+          {categorySlug ? (
+            <>
+              <span aria-hidden> › </span>
+              <span className="text-foreground">{categoryName}</span>
+            </>
+          ) : null}
         </nav>
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="font-display text-3xl font-semibold tracking-tight">
-            {query.trim() ? `Results for “${query.trim()}”` : categoryName}
-          </h1>
+          <div>
+            <h1 className="font-display text-3xl font-semibold tracking-tight">
+              {query.trim() ? `Results for “${query.trim()}”` : categoryName}
+            </h1>
+            <p className="mt-1 text-sm text-muted">
+              Showing {items.length === 0 ? 0 : 1}–{items.length} of {total}{" "}
+              products
+            </p>
+          </div>
           <label className="flex items-center gap-2 text-sm">
             <span className="text-muted">Sort by</span>
             <select
@@ -516,29 +747,35 @@ export function CatalogueBrowse({
               }}
               className="rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-1.5"
             >
-              <option value="newest">Newest</option>
-              <option value="price_asc">Price: low to high</option>
-              <option value="price_desc">Price: high to low</option>
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </label>
         </div>
-        <p className="text-sm text-muted">
-          Showing {items.length === 0 ? 0 : 1}–{items.length} of {total} products
-        </p>
       </div>
 
-      <form onSubmit={onSearch} className="flex gap-2 md:hidden">
-        <input
-          name="q"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search products"
-          className="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-2 text-sm"
-        />
-        <Button type="button" variant="secondary" onClick={() => setFiltersOpen(true)}>
+      <div className="flex items-center gap-2 md:hidden">
+        <form onSubmit={onSearch} className="flex min-w-0 flex-1 gap-2">
+          <input
+            name="q"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Try Saree, Kurti or Search by Product Code"
+            className="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-2 text-sm"
+          />
+        </form>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setFiltersOpen(true)}
+        >
           Filter
+          {chips.length > 0 ? ` (${chips.length})` : ""}
         </Button>
-      </form>
+      </div>
 
       {chips.length > 0 ? (
         <div className="flex flex-wrap items-center gap-2">
@@ -547,27 +784,7 @@ export function CatalogueBrowse({
             <button
               key={chip.key}
               type="button"
-              onClick={() => {
-                chip.clear();
-                startTransition(() => {
-                  void runSearch({
-                    q: chip.key === "q" ? "" : query,
-                    categorySlug: chip.key === "cat" ? "" : categorySlug,
-                    inStockOnly: chip.key === "stock" ? false : inStockOnly,
-                    verifiedOnly: chip.key === "verified" ? false : verifiedOnly,
-                    minPrice:
-                      chip.key === "price" || chip.key === "priceCustom"
-                        ? ""
-                        : minPrice,
-                    maxPrice:
-                      chip.key === "price" || chip.key === "priceCustom"
-                        ? ""
-                        : maxPrice,
-                    minRating: chip.key === "rating" ? null : minRating,
-                    minDiscount: chip.key === "discount" ? null : minDiscount,
-                  });
-                });
-              }}
+              onClick={() => clearChip(chip.key)}
               className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2.5 py-1 text-xs hover:border-accent"
             >
               {chip.label} ✕
@@ -592,12 +809,21 @@ export function CatalogueBrowse({
             onClick={() => setFiltersOpen(false)}
           />
           <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-surface p-4 shadow-[var(--shadow-mega)]">
+            <div className="mb-2 flex justify-end">
+              <button
+                type="button"
+                className="text-sm text-muted hover:text-foreground"
+                onClick={() => setFiltersOpen(false)}
+              >
+                Close
+              </button>
+            </div>
             {filterPanel}
           </div>
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside className="hidden lg:block">
           <div className="sticky top-28 rounded-[var(--radius)] border border-border bg-surface p-4">
             {filterPanel}
@@ -658,7 +884,9 @@ function FilterSection({
         aria-expanded={open}
       >
         {title}
-        <span aria-hidden>{open ? "▾" : "▸"}</span>
+        <span aria-hidden className="text-muted">
+          {open ? "▾" : "▸"}
+        </span>
       </button>
       {open ? <div className="mt-2">{children}</div> : null}
     </div>

@@ -54,6 +54,25 @@ export async function listActiveCategories() {
   }));
 }
 
+export async function listActiveBrands() {
+  const brands = await prisma.brand.findMany({
+    orderBy: { name: "asc" },
+    include: {
+      _count: {
+        select: { products: { where: { status: "approved" } } },
+      },
+    },
+  });
+  return brands
+    .filter((brand) => brand._count.products > 0)
+    .map((brand) => ({
+      id: brand.id,
+      slug: brand.slug,
+      name: brand.name,
+      productCount: brand._count.products,
+    }));
+}
+
 export async function ensureGenericCategory() {
   return prisma.category.upsert({
     where: { slug: "general-merchandise" },
@@ -355,7 +374,11 @@ export async function searchApprovedProducts(
         ? Prisma.sql`ORDER BY min_price_paise ASC`
         : sort === "price_desc"
           ? Prisma.sql`ORDER BY min_price_paise DESC`
-          : Prisma.sql`ORDER BY p.published_at DESC NULLS LAST`;
+          : sort === "rating"
+            ? Prisma.sql`ORDER BY COALESCE((p.attributes->>'ratingAverage')::float, 0) DESC, p.published_at DESC NULLS LAST`
+            : sort === "relevance"
+              ? Prisma.sql`ORDER BY ts_rank(to_tsvector('english', p.search_document), plainto_tsquery('english', ${query})) DESC, p.published_at DESC NULLS LAST`
+              : Prisma.sql`ORDER BY p.published_at DESC NULLS LAST`;
 
     const rows = await prisma.$queryRaw<
       Array<{
@@ -385,12 +408,15 @@ export async function searchApprovedProducts(
           MIN(v.mrp_paise) AS min_mrp_paise,
           COALESCE(SUM(GREATEST(i.on_hand - i.reserved, 0)), 0)::int AS available_qty,
           COUNT(*) OVER() AS total_count,
-          p.published_at
+          p.published_at,
+          p.attributes,
+          p.search_document
         FROM products p
         INNER JOIN categories c ON c.id = p.category_id
         INNER JOIN sellers s ON s.id = p.seller_id
         INNER JOIN product_variants v ON v.product_id = p.id AND v.is_active = true
         LEFT JOIN inventory_items i ON i.variant_id = v.id
+        LEFT JOIN brands b ON b.id = p.brand_id
         WHERE p.status = 'approved'
           AND (
             to_tsvector('english', p.search_document) @@ plainto_tsquery('english', ${query})
@@ -399,6 +425,11 @@ export async function searchApprovedProducts(
           ${
             input.categorySlug
               ? Prisma.sql`AND c.slug = ${input.categorySlug}`
+              : Prisma.empty
+          }
+          ${
+            input.brandSlug
+              ? Prisma.sql`AND b.slug = ${input.brandSlug}`
               : Prisma.empty
           }
           ${
@@ -416,7 +447,7 @@ export async function searchApprovedProducts(
               ? Prisma.sql`AND v.selling_price_paise <= ${input.maxPricePaise}`
               : Prisma.empty
           }
-        GROUP BY p.id, p.slug, p.title, p.summary, c.name, s.trade_name, s.legal_name, s.status, p.published_at
+        GROUP BY p.id, p.slug, p.title, p.summary, c.name, s.trade_name, s.legal_name, s.status, p.published_at, p.attributes, p.search_document
         ${input.inStockOnly ? Prisma.sql`HAVING COALESCE(SUM(GREATEST(i.on_hand - i.reserved, 0)), 0) > 0` : Prisma.empty}
         ${orderSql}
         LIMIT ${pageSize} OFFSET ${offset}
@@ -450,6 +481,7 @@ export async function searchApprovedProducts(
     ...(input.categorySlug
       ? { category: { slug: input.categorySlug, isActive: true } }
       : {}),
+    ...(input.brandSlug ? { brand: { slug: input.brandSlug } } : {}),
     ...(input.verifiedSellerOnly ? { seller: { status: "approved" } } : {}),
     variants: {
       some: {
@@ -480,6 +512,13 @@ export async function searchApprovedProducts(
     },
   };
 
+  const needsClientSortOrFilter =
+    input.minRating != null ||
+    input.minDiscountPercent != null ||
+    sort === "price_asc" ||
+    sort === "price_desc" ||
+    sort === "rating";
+
   const orderBy: Prisma.ProductOrderByWithRelationInput = {
     publishedAt: "desc",
   };
@@ -489,14 +528,10 @@ export async function searchApprovedProducts(
     prisma.product.findMany({
       where,
       orderBy,
-      skip:
-        input.minRating != null || input.minDiscountPercent != null
-          ? 0
-          : offset,
-      take:
-        input.minRating != null || input.minDiscountPercent != null
-          ? Math.min(200, pageSize * 8)
-          : pageSize * (sort === "newest" ? 1 : 3),
+      skip: needsClientSortOrFilter ? 0 : offset,
+      take: needsClientSortOrFilter
+        ? Math.min(200, pageSize * 8)
+        : pageSize,
       include: {
         category: true,
         seller: { select: { legalName: true, tradeName: true, status: true } },
@@ -576,18 +611,19 @@ export async function searchApprovedProducts(
     items = [...items].sort((a, b) => a.minPricePaise - b.minPricePaise);
   } else if (sort === "price_desc") {
     items = [...items].sort((a, b) => b.minPricePaise - a.minPricePaise);
+  } else if (sort === "rating") {
+    items = [...items].sort(
+      (a, b) => (b.ratingAverage ?? 0) - (a.ratingAverage ?? 0),
+    );
   }
   // When client-side filters shrink the page, still return filtered slice
   let working = items;
-  if (input.minRating != null || input.minDiscountPercent != null) {
+  if (needsClientSortOrFilter) {
     working = working.slice(offset, offset + pageSize);
   } else {
     working = working.slice(0, pageSize);
   }
-  const filteredTotal =
-    input.minRating != null || input.minDiscountPercent != null
-      ? items.length
-      : total;
+  const filteredTotal = needsClientSortOrFilter ? items.length : total;
 
   return {
     items: await enrichStorefrontCards(working),

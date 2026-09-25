@@ -50,3 +50,7 @@ Vercel previews deploy from each PR branch. Sign into Vercel to open protected p
 After clone/checkout of the tip branch, the same Neon non-prod database and Vercel project stay shared. No machine-local secrets are required beyond copying env from the Vercel project (or using Cursor Cloud Agents which already have them).
 
 See `docs/LAUNCH_CHECKLIST.md` before any production cutover. Legal A-20–A-28 remain open.
+
+## Auto-deploy after each slice
+
+See [DEPLOYMENT_POLICY.md](./DEPLOYMENT_POLICY.md). Preview deploys and Neon non-prod migrate/seed happen after each completed slice without waiting for an explicit deploy request. Production `main` is never auto-merged.

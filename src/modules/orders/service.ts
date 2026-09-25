@@ -23,6 +23,10 @@ import type {
 } from "@/modules/orders/schema";
 import { LocalObjectStorage } from "@/platform/storage/local";
 import path from "node:path";
+import {
+  ensureChartOfAccounts,
+  postOrderPaidLedger,
+} from "@/modules/finance/service";
 
 export class OrderValidationError extends Error {
   readonly code = "VALIDATION_ERROR";
@@ -494,6 +498,8 @@ async function markPaymentSucceeded(
   assertPaymentTransition(payment.status, "succeeded");
   assertOrderTransition(payment.order.status, "paid");
 
+  await ensureChartOfAccounts();
+
   await prisma.$transaction(async (tx) => {
     await tx.paymentAttempt.update({
       where: { id: payment.id, version: payment.version },
@@ -631,6 +637,8 @@ async function markPaymentSucceeded(
         },
       },
     });
+
+    await postOrderPaidLedger(payment.orderId, correlationId, tx);
 
     await tx.paymentWebhookEvent.update({
       where: {

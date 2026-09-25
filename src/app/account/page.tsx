@@ -66,6 +66,9 @@ export default async function AccountPage() {
             <Link href="/admin/products" className="underline">
               Admin product moderation
             </Link>
+            <Link href="/admin/finance" className="underline">
+              Admin finance
+            </Link>
           </>
         ) : null}
         <LogoutButton />

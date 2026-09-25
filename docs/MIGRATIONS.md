@@ -1,5 +1,22 @@
 # Migrations
 
+## Sixth migration
+
+Name: `20260925060800_fulfilment_care`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-fulfilment-care.sql`  
+Tables: `shipments`, `return_requests`, `refunds`, `support_tickets`, `disputes`  
+Enums: `ReturnStatus`, `RefundStatus`, `TicketStatus`, `DisputeStatus`  
+Alters: `OrderStatus` (+`partially_cancelled`, `fulfilled`); fulfilment tracking columns
+
+## Seventh migration
+
+Name: `20260925070000_finance_ledger`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-finance-ledger.sql`  
+Tables: `ledger_accounts`, `journal_entries`, `journal_lines`, `commission_rules`, `settlement_batches`, `settlement_lines`, `reconciliation_exceptions`  
+Enums: `LedgerAccountType`, `JournalEntryStatus`, `SettlementStatus`, `ReconciliationStatus`
+
+Additive only. Mock settlements and double-entry posts on paid orders. No live payout provider.
+
 ## Fifth migration
 
 Name: `20260925060147_payments_orders`  

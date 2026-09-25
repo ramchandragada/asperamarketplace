@@ -3,16 +3,18 @@
 The GitHub repository is the source of truth. Open it in Cursor on any machine:
 
 1. Cursor → Open Repository → `https://github.com/ramchandragada/asperamarketplace`
-2. Check out the latest feature branch (currently Phase 7 tip; after later phases land, prefer the newest):
+2. Check out the latest feature branch (currently Phase 10 tip):
 
 ```bash
 git fetch origin
-git checkout cursor/phase-9-analytics-10f6
+git checkout cursor/phase-10-hardening-launch-10f6
 pnpm install
 ```
 
 3. For local run, copy `.env.example` → `.env` and set `DATABASE_URL` to the shared Neon non-prod URL from the Vercel project (or your own local Postgres).
 4. Run `pnpm db:migrate` then `pnpm dev`.
+
+Alternatively use **Cursor Cloud Agents** on this repo: they already have the environment and can continue from the tip branch without local setup.
 
 ## Branch stack (newest last)
 
@@ -27,7 +29,8 @@ pnpm install
 | 6 Fulfilment/care | `cursor/phase-6-fulfilment-care-10f6` | #7 |
 | 7 Finance | `cursor/phase-7-finance-ledger-10f6` | #8 |
 | 8 Trust/safety | `cursor/phase-8-trust-safety-10f6` | #9 |
-| 9 Analytics | `cursor/phase-9-analytics-10f6` | (this branch) |
+| 9 Analytics | `cursor/phase-9-analytics-10f6` | #10 |
+| 10 Hardening | `cursor/phase-10-hardening-launch-10f6` | (this branch) |
 
 Prefer the newest branch tip when continuing work. Merging PRs in order keeps `main`/Vercel production aligned.
 
@@ -38,3 +41,5 @@ Vercel previews deploy from each PR branch. Sign into Vercel to open protected p
 ## Continue from any Cursor
 
 After clone/checkout of the tip branch, the same Neon non-prod database and Vercel project stay shared. No machine-local secrets are required beyond copying env from the Vercel project (or using Cursor Cloud Agents which already have them).
+
+See `docs/LAUNCH_CHECKLIST.md` before any production cutover. Legal A-20–A-28 remain open.

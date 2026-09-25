@@ -71,7 +71,7 @@ Event taxonomy, dashboards, search analytics, seller health, experiments.
 
 ### Phase 10 — Production hardening
 
-Security review, accessibility review, load test, backup restore drill, observability, launch checklist. Launch still requires open legal decisions in `ASSUMPTIONS.md`.
+Security review notes, accessibility self-review, load smoke script, backup restore drill, observability notes, and launch checklist. Launch still requires open legal decisions in `ASSUMPTIONS.md` (A-20–A-28). Engineering tip branch: `cursor/phase-10-hardening-launch-10f6`.
 
 ## Definition of done for every later slice
 

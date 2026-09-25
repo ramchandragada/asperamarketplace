@@ -3,11 +3,11 @@
 The GitHub repository is the source of truth. Open it in Cursor on any machine:
 
 1. Cursor → Open Repository → `https://github.com/ramchandragada/asperamarketplace`
-2. Check out the latest feature branch (currently Phase 5):
+2. Check out the latest feature branch (currently Phase 6 tip; after later phases land, prefer the newest):
 
 ```bash
 git fetch origin
-git checkout cursor/phase-5-payments-orders-10f6
+git checkout cursor/phase-6-fulfilment-care-10f6
 pnpm install
 ```
 
@@ -24,9 +24,14 @@ pnpm install
 | 3 Catalogue | `cursor/phase-3-catalogue-discovery-10f6` | #4 |
 | 4 Cart/checkout | `cursor/phase-4-cart-checkout-10f6` | #5 |
 | 5 Payments/orders | `cursor/phase-5-payments-orders-10f6` | #6 |
+| 6 Fulfilment/care | `cursor/phase-6-fulfilment-care-10f6` | (this branch) |
 
-Prefer the newest branch tip when continuing work. Merging PRs in order (0→5) keeps `main`/Vercel production aligned.
+Prefer the newest branch tip when continuing work. Merging PRs in order keeps `main`/Vercel production aligned.
 
 ## Preview
 
 Vercel previews deploy from each PR branch. Sign into Vercel to open protected preview URLs.
+
+## Continue from any Cursor
+
+After clone/checkout of the tip branch, the same Neon non-prod database and Vercel project stay shared. No machine-local secrets are required beyond copying env from the Vercel project (or using Cursor Cloud Agents which already have them).

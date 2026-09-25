@@ -2,9 +2,11 @@ import { OrderStatus, PaymentAttemptStatus } from "@prisma/client";
 
 const ORDER_ALLOWED: Record<OrderStatus, OrderStatus[]> = {
   awaiting_payment: ["paid", "payment_failed", "cancelled"],
-  paid: ["cancelled"],
+  paid: ["cancelled", "partially_cancelled", "fulfilled"],
   payment_failed: ["awaiting_payment", "cancelled"],
   cancelled: [],
+  partially_cancelled: ["cancelled", "fulfilled"],
+  fulfilled: [],
 };
 
 const PAYMENT_ALLOWED: Record<PaymentAttemptStatus, PaymentAttemptStatus[]> = {

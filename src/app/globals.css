@@ -133,6 +133,17 @@ h2,
   padding-inline: var(--space-page);
 }
 
+/* Meesho category bar: denser row, no visible scroll chrome */
+.meesho-cat-nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.meesho-cat-nav::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .rail-scroll {
   display: grid;
   grid-auto-flow: column;

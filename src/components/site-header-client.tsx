@@ -123,11 +123,11 @@ function CategoryNav() {
     >
       <nav
         aria-label="Categories"
-        className="container-shell flex h-11 items-center gap-0 overflow-x-auto text-[13px] text-[#333]"
+        className="meesho-cat-nav mx-auto flex h-10 max-w-[90rem] items-center gap-0 overflow-x-auto px-4 text-[12px] text-[#333] md:px-6 lg:justify-between"
       >
         <Link
           href={POPULAR_NAV.href}
-          className="shrink-0 px-2.5 py-2 whitespace-nowrap hover:text-accent"
+          className="shrink-0 px-1.5 py-2 whitespace-nowrap hover:text-accent lg:px-1"
           onMouseEnter={scheduleClose}
         >
           {POPULAR_NAV.label}
@@ -136,7 +136,7 @@ function CategoryNav() {
           <Link
             key={entry.key}
             href={entry.href}
-            className={`shrink-0 px-2.5 py-2 whitespace-nowrap hover:text-accent ${
+            className={`shrink-0 px-1.5 py-2 whitespace-nowrap hover:text-accent lg:px-1 ${
               openKey === entry.key ? "text-accent" : ""
             }`}
             onMouseEnter={() => open(entry.key)}

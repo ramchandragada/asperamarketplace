@@ -481,7 +481,7 @@ export default async function Home() {
         </section>
       </PageShell>
 
-      <div className="border-t border-border bg-background py-8">
+      <div className="border-t border-border bg-background py-8 md:py-10">
         <div className="container-shell">
           <CatalogueBrowse
             initialItems={forYouItems as BrowseProduct[]}
@@ -498,6 +498,7 @@ export default async function Home() {
             browseBasePath="/"
             variant="home"
             enableLoadMore
+            infiniteScroll
             updateUrl={false}
           />
         </div>

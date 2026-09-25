@@ -297,7 +297,10 @@ export function ProductReviewsPanel({
           <ul className="flex flex-col gap-4">
             {visibleReviews.map((review) => {
               const author = review.authorName ?? "Aspera shopper";
-              const initial = author.trim().slice(0, 1).toUpperCase() || "A";
+              const parts = author.trim().split(/\s+/);
+              const initial =
+                ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() ||
+                "A";
               return (
                 <li
                   key={review.id}
@@ -305,7 +308,7 @@ export function ProductReviewsPanel({
                 >
                   <div className="flex items-start gap-3">
                     <span
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent"
                       aria-hidden
                     >
                       {initial}

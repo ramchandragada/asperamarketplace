@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 export function AddToCartButton({
   variantId,
   availableQty,
+  productTitle,
 }: {
   variantId: string;
   availableQty: number;
+  productTitle?: string;
 }) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
@@ -37,7 +39,11 @@ export function AddToCartButton({
     }
     setMessage(body.message ?? "Added");
     void import("@/components/toast-host").then(({ showToast }) => {
-      showToast("Added to cart");
+      showToast(
+        productTitle
+          ? `✓ Added to cart — ${productTitle}`
+          : "✓ Added to cart",
+      );
     });
     router.refresh();
   }

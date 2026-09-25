@@ -456,41 +456,53 @@ function brandLogoStyle(name: string): {
   const key = name.toLowerCase();
   if (key.includes("aspera")) {
     return {
-      className: "font-display text-base font-bold tracking-tight text-accent",
+      className:
+        "text-[13px] font-semibold tracking-tight text-[#1a5c5c]",
+      style: { fontFamily: "var(--font-geist-sans), DM Sans, sans-serif" },
     };
   }
   if (key.includes("coastal") || key.includes("bloom")) {
     return {
-      className: "text-[15px] italic font-semibold text-[#7a4a6e]",
-      style: { fontFamily: "Georgia, 'Times New Roman', serif" },
+      className: "text-[15px] italic font-medium text-[#0e7490]",
+      style: { fontFamily: "var(--font-brand-script), Georgia, cursive" },
     };
   }
   if (key.includes("silicon") || key.includes("bay")) {
     return {
       className:
-        "text-sm font-black uppercase tracking-[0.12em] text-[#1e3a5f]",
-      style: { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" },
+        "text-xs font-black uppercase tracking-[0.14em] text-[#334155]",
+      style: { fontFamily: "var(--font-brand-tech), ui-sans-serif, sans-serif" },
     };
   }
   if (key.includes("narmada") || key.includes("weave")) {
     return {
-      className: "font-display text-[15px] font-semibold text-[#5c3d0f]",
+      className: "text-[14px] font-semibold text-[#14532d]",
+      style: { fontFamily: "var(--font-display), Georgia, serif" },
     };
   }
   if (key.includes("pulse") || key.includes("fit")) {
     return {
-      className: "text-sm font-extrabold tracking-wide text-[#0e8a4f]",
+      className: "text-sm font-extrabold italic tracking-wide text-[#ea580c]",
+      style: { fontFamily: "var(--font-brand-sport), Impact, sans-serif" },
     };
   }
   if (key.includes("lotus")) {
     return {
-      className: "text-[15px] font-semibold text-[#c45a7a]",
-      style: { fontFamily: "Georgia, serif" },
+      className: "text-[14px] font-semibold text-[#db2777]",
+      style: { fontFamily: "var(--font-brand-soft), Georgia, serif" },
     };
   }
   if (key.includes("quill") || key.includes("ink")) {
     return {
-      className: "font-display text-sm font-bold text-[#2d4a3e]",
+      className: "text-sm font-bold text-[#1e293b]",
+      style: { fontFamily: "var(--font-display), 'Times New Roman', serif" },
+    };
+  }
+  if (key.includes("trail")) {
+    return {
+      className:
+        "text-[13px] font-bold uppercase tracking-wider text-[#78350f]",
+      style: { fontFamily: "var(--font-brand-tech), Arial Narrow, sans-serif" },
     };
   }
   return {
@@ -543,7 +555,7 @@ function BrandPartnersRail({
       </div>
       <div
         ref={scrollerRef}
-        className="rail-scroll [grid-auto-columns:minmax(7.5rem,9rem)]"
+        className="rail-scroll [grid-auto-columns:120px]"
       >
         {logos.map((logo) => {
           const style = brandLogoStyle(logo.name);
@@ -551,7 +563,7 @@ function BrandPartnersRail({
             <Link
               key={logo.id}
               href={logo.href}
-              className="flex h-24 flex-col items-center justify-center rounded-[var(--radius-sm)] border border-border bg-white px-3 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-accent/40 hover:shadow-sm"
+              className="flex h-[60px] w-[120px] flex-col items-center justify-center rounded-xl border border-border bg-white px-2 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:border-accent/40 hover:shadow-sm"
             >
               <span
                 className={`line-clamp-2 ${style.className}`}

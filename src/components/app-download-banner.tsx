@@ -16,7 +16,7 @@ function subscribe(onStoreChange: () => void) {
 
 function readDismissed() {
   try {
-    return localStorage.getItem(STORAGE_KEY) === "1";
+    return sessionStorage.getItem(STORAGE_KEY) === "1";
   } catch {
     return false;
   }
@@ -27,7 +27,7 @@ export function AppDownloadBanner() {
 
   function dismiss() {
     try {
-      localStorage.setItem(STORAGE_KEY, "1");
+      sessionStorage.setItem(STORAGE_KEY, "1");
     } catch {
       /* ignore */
     }
@@ -37,16 +37,17 @@ export function AppDownloadBanner() {
   if (dismissed) return null;
 
   return (
-    <div className="relative z-30 border-b border-[#c45a1a]/30 bg-gradient-to-r from-[#e8833a] via-[#f0a05a] to-[#e8833a] text-white">
-      <div className="container-shell flex h-10 items-center justify-between gap-3 text-sm">
+    <div className="relative z-30 h-10 border-b border-[#c4451a]/25 bg-gradient-to-r from-[#ff6b6b] via-[#ee5a24] to-[#ff6b6b] text-white">
+      <div className="container-shell flex h-full items-center justify-between gap-3 text-sm">
         <p className="min-w-0 truncate font-medium">
-          Shop on App to get upto{" "}
-          <span className="font-bold">35% OFF</span> on 1st order
+          <span aria-hidden>📱 </span>
+          Download Aspera App &amp; get up to{" "}
+          <span className="font-bold">35% OFF</span> on your 1st order
         </p>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3">
           <Link
             href="/download-app"
-            className="rounded bg-white px-3 py-1 text-xs font-bold text-[#c45a1a] shadow-sm hover:bg-[#fff8f0]"
+            className="text-xs font-bold underline underline-offset-2 hover:text-white/90"
           >
             Download Now
           </Link>
@@ -56,7 +57,7 @@ export function AppDownloadBanner() {
             className="flex h-7 w-7 items-center justify-center rounded text-white/90 hover:bg-white/15"
             aria-label="Dismiss app banner"
           >
-            ×
+            ✕
           </button>
         </div>
       </div>

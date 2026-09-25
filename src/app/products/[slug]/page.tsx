@@ -6,6 +6,7 @@ import { ProductGallery } from "@/components/product-gallery";
 import { ProductPurchasePanel } from "@/components/product-purchase-panel";
 import { ProductReviewsPanel } from "@/components/product-reviews-panel";
 import { ProductShareBar } from "@/components/product-share";
+import { PdpTrustBadgeRow } from "@/components/pdp-trust-badge-row";
 import { PageShell } from "@/components/ui/page-shell";
 import { SAMPLE_REVIEWS } from "@/lib/sample-reviews";
 import {
@@ -205,15 +206,32 @@ export default async function ProductDetailPage({
               {product.title}
             </h1>
             <p className="mt-2 text-base text-muted">{product.summary}</p>
+            <div className="mt-3">
+              <PdpTrustBadgeRow
+                showMall={Boolean(
+                  product.brand ||
+                    attrs.badge === "mall" ||
+                    attrs.mall === true,
+                )}
+                showOriginal={Boolean(
+                  product.brand?.name?.toLowerCase().includes("aspera") ||
+                    attrs.badge === "original" ||
+                    attrs.asperaOriginal === true,
+                )}
+              />
+            </div>
             {average != null && (reviews.length > 0 || seededCount > 0) ? (
               <p className="mt-3 flex items-center gap-2 text-sm">
                 <span className="inline-flex items-center rounded bg-success px-1.5 py-0.5 font-semibold text-white">
                   ★ {average.toFixed(1)}
                 </span>
                 <span className="text-muted">
-                  {reviews.length > 0
-                    ? `${reviews.length} ratings`
-                    : `${seededCount.toLocaleString("en-IN")} ratings`}
+                  {Math.max(
+                    reviews.length > 0 ? reviews.length : 0,
+                    seededCount || SAMPLE_REVIEWS.length,
+                  ).toLocaleString("en-IN")}{" "}
+                  ratings ·{" "}
+                  {Math.max(reviews.length, SAMPLE_REVIEWS.length)} reviews
                 </span>
               </p>
             ) : null}
@@ -225,15 +243,7 @@ export default async function ProductDetailPage({
           <ProductPurchasePanel
             variants={variants}
             highlights={highlights}
-            showMall={Boolean(product.brand)}
-            showOriginal={
-              Boolean(
-                product.brand?.name?.toLowerCase().includes("aspera") ||
-                  attrs.badge === "mall" ||
-                  attrs.badge === "original" ||
-                  attrs.asperaOriginal === true,
-              )
-            }
+            productTitle={product.title}
           />
 
           <div className="rounded-[var(--radius)] border border-border bg-surface p-4">

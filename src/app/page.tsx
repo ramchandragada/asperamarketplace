@@ -159,6 +159,14 @@ export default async function Home() {
           <SectionHeading
             title="New arrivals"
             description="Just landed on Aspera"
+            action={
+              <Link
+                href="/shop?sort=newest"
+                className="text-sm font-medium text-accent underline"
+              >
+                See all →
+              </Link>
+            }
           />
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
             {newest.items.map((item) => (
@@ -171,6 +179,14 @@ export default async function Home() {
           <SectionHeading
             title="Popular picks"
             description="Best sellers across categories"
+            action={
+              <Link
+                href="/browse?categorySlug=fashion"
+                className="text-sm font-medium text-accent underline"
+              >
+                See all →
+              </Link>
+            }
           />
           <div className="rail-scroll">
             {trending.map((item) => (
@@ -184,6 +200,11 @@ export default async function Home() {
             <SectionHeading
               title="Deals of the day"
               description="Today's best deals"
+              action={
+                <Link href="/shop" className="text-sm font-medium text-accent underline">
+                  See all →
+                </Link>
+              }
             />
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {deals.map((item) => (
@@ -198,8 +219,8 @@ export default async function Home() {
             title="Products for you"
             description="Keep browsing — fresh picks every scroll"
             action={
-              <Link href="/browse" className="text-sm font-medium text-accent underline">
-                See all
+              <Link href="/shop" className="text-sm font-medium text-accent underline">
+                See all →
               </Link>
             }
           />
@@ -210,7 +231,7 @@ export default async function Home() {
           </div>
           <div className="text-center">
             <Link
-              href="/browse"
+              href="/shop"
               className="inline-flex rounded-[var(--radius-sm)] border border-border bg-surface px-5 py-2.5 text-sm font-semibold hover:border-accent hover:text-accent"
             >
               Load more on Shop

@@ -67,41 +67,37 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           </div>
         </div>
       </div>
-      <div className="absolute right-4 bottom-4 left-4 flex items-center justify-between md:right-8 md:left-8">
-        <div className="flex gap-1.5">
-          {slides.map((entry, i) => (
-            <button
-              key={entry.id}
-              type="button"
-              aria-label={`Go to slide ${i + 1}`}
-              aria-current={i === index}
-              className={`h-2 w-2 rounded-full ${
-                i === index ? "bg-white" : "bg-white/40"
-              }`}
-              onClick={() => setIndex(i)}
-            />
-          ))}
-        </div>
-        <div className="hidden gap-2 md:flex">
+      <button
+        type="button"
+        aria-label="Previous slide"
+        className="absolute top-1/2 left-3 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-xl text-white hover:bg-black/55 md:flex"
+        onClick={() =>
+          setIndex((prev) => (prev - 1 + slides.length) % slides.length)
+        }
+      >
+        ‹
+      </button>
+      <button
+        type="button"
+        aria-label="Next slide"
+        className="absolute top-1/2 right-3 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-xl text-white hover:bg-black/55 md:flex"
+        onClick={() => setIndex((prev) => (prev + 1) % slides.length)}
+      >
+        ›
+      </button>
+      <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+        {slides.map((entry, i) => (
           <button
+            key={entry.id}
             type="button"
-            aria-label="Previous slide"
-            className="rounded-full bg-black/35 px-3 py-1 text-sm text-white hover:bg-black/50"
-            onClick={() =>
-              setIndex((prev) => (prev - 1 + slides.length) % slides.length)
-            }
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            aria-label="Next slide"
-            className="rounded-full bg-black/35 px-3 py-1 text-sm text-white hover:bg-black/50"
-            onClick={() => setIndex((prev) => (prev + 1) % slides.length)}
-          >
-            ›
-          </button>
-        </div>
+            aria-label={`Go to slide ${i + 1}`}
+            aria-current={i === index}
+            className={`h-2.5 w-2.5 rounded-full ${
+              i === index ? "bg-white" : "bg-white/40"
+            }`}
+            onClick={() => setIndex(i)}
+          />
+        ))}
       </div>
     </section>
   );

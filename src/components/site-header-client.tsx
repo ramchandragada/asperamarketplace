@@ -203,12 +203,13 @@ function HeaderSearch() {
 
   useEffect(() => {
     const q = query.trim();
-    if (q.length < 2) {
-      setSuggestions([]);
-      return;
-    }
     let cancelled = false;
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
+      if (cancelled) return;
+      if (q.length < 2) {
+        setSuggestions([]);
+        return;
+      }
       void (async () => {
         try {
           const response = await fetch(
@@ -224,10 +225,10 @@ function HeaderSearch() {
           if (!cancelled) setSuggestions([]);
         }
       })();
-    }, 300);
+    }, q.length < 2 ? 0 : 300);
     return () => {
       cancelled = true;
-      clearTimeout(timer);
+      window.clearTimeout(timer);
     };
   }, [query]);
 

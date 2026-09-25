@@ -136,6 +136,7 @@ model User {
   checkoutSessions  CheckoutSession[]
   orders            Order[]
   paymentAttempts   PaymentAttempt[]
+  wishlistItems     WishlistItem[]
 
   @@map("users")
 }
@@ -339,6 +340,7 @@ model Product {
   reviewer  User?            @relation("ProductReviewer", fields: [reviewedByUserId], references: [id])
   variants  ProductVariant[]
   images    ProductImage[]
+  wishlistItems WishlistItem[]
 
   @@index([sellerId])
   @@index([categoryId])
@@ -1098,6 +1100,20 @@ model ProductReview {
   @@index([userId])
   @@index([status])
   @@map("product_reviews")
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("wishlist_items")
 }
 
 model PrivacyRequest {

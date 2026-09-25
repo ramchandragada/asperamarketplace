@@ -33,7 +33,7 @@ export async function SiteHeader() {
       cartCount={count}
       accountHref={actor ? "/account" : "/login"}
       accountLabel={actor ? "Account" : "Account"}
-      sellHref={hasSellerRole || actor ? "/seller" : "/seller/onboarding"}
+      sellHref={hasSellerRole || actor ? "/seller" : "/sell"}
       showAdmin={isAdmin}
     />
   );
@@ -90,12 +90,12 @@ export function SiteFooter() {
           <p className="font-semibold text-foreground">Customer care</p>
           <ul className="mt-2 space-y-1.5 text-muted">
             <li>
-              <Link href="/support" className="hover:text-accent">
+              <Link href="/help" className="hover:text-accent">
                 Help centre
               </Link>
             </li>
             <li>
-              <Link href="/support" className="hover:text-accent">
+              <Link href="/returns" className="hover:text-accent">
                 Return policy
               </Link>
             </li>
@@ -105,7 +105,7 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/support" className="hover:text-accent">
+              <Link href="/shipping" className="hover:text-accent">
                 Shipping info
               </Link>
             </li>
@@ -115,7 +115,7 @@ export function SiteFooter() {
           <p className="font-semibold text-foreground">About Aspera</p>
           <ul className="mt-2 space-y-1.5 text-muted">
             <li>
-              <Link href="/support" className="hover:text-accent">
+              <Link href="/about" className="hover:text-accent">
                 About us
               </Link>
             </li>
@@ -125,7 +125,7 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/support" className="hover:text-accent">
+              <Link href="/press" className="hover:text-accent">
                 Press
               </Link>
             </li>
@@ -135,7 +135,7 @@ export function SiteFooter() {
           <p className="font-semibold text-foreground">Sell on Aspera</p>
           <ul className="mt-2 space-y-1.5 text-muted">
             <li>
-              <Link href="/seller/onboarding" className="hover:text-accent">
+              <Link href="/sell" className="hover:text-accent">
                 Start selling
               </Link>
             </li>
@@ -145,8 +145,13 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/seller/onboarding" className="hover:text-accent">
+              <Link href="/seller-policies" className="hover:text-accent">
                 Seller policies
+              </Link>
+            </li>
+            <li>
+              <Link href="/commission" className="hover:text-accent">
+                Commission structure
               </Link>
             </li>
           </ul>

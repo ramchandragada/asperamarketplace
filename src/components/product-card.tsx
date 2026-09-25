@@ -99,15 +99,26 @@ function WishlistButton({ productId }: { productId: string }) {
   function toggle(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
+    const next = saved
+      ? ids.filter((id) => id !== productId)
+      : [...ids, productId];
     try {
-      const next = saved
-        ? ids.filter((id) => id !== productId)
-        : [...ids, productId];
       localStorage.setItem("aspera.wishlist", JSON.stringify(next));
       window.dispatchEvent(new Event("aspera-wishlist"));
     } catch {
       /* ignore */
     }
+    void import("@/components/toast-host").then(({ showToast }) => {
+      showToast(saved ? "Removed from wishlist" : "Added to wishlist");
+    });
+    void fetch("/api/wishlist", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        productId,
+        action: saved ? "remove" : "add",
+      }),
+    });
   }
 
   return (
@@ -149,7 +160,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
     product.ratingAverage != null && (product.reviewCount ?? 0) > 0;
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-card)] transition hover:shadow-[var(--shadow-soft)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-card)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
       <Link href={`/products/${product.slug}`} className="flex h-full flex-col">
         <div className="relative aspect-square overflow-hidden bg-accent-soft/40">
           <WishlistButton productId={product.id} />

@@ -17,12 +17,14 @@ export function ProductReviewsPanel({
   canReview,
   seededAverage,
   seededCount,
+  seededDistribution,
 }: {
   productId: string;
   initialReviews: Review[];
   canReview: boolean;
   seededAverage?: number | null;
   seededCount?: number;
+  seededDistribution?: Record<string, number> | null;
 }) {
   const [reviews] = useState(initialReviews);
   const [message, setMessage] = useState<string | null>(null);
@@ -30,13 +32,21 @@ export function ProductReviewsPanel({
   const [showForm, setShowForm] = useState(false);
 
   const buckets = useMemo(() => {
-    const counts = [0, 0, 0, 0, 0];
-    for (const review of reviews) {
-      const idx = Math.min(4, Math.max(0, review.rating - 1));
-      counts[idx] = (counts[idx] ?? 0) + 1;
+    if (reviews.length > 0) {
+      const counts = [0, 0, 0, 0, 0];
+      for (const review of reviews) {
+        const idx = Math.min(4, Math.max(0, review.rating - 1));
+        counts[idx] = (counts[idx] ?? 0) + 1;
+      }
+      return counts;
     }
-    return counts;
-  }, [reviews]);
+    if (seededDistribution) {
+      return [1, 2, 3, 4, 5].map(
+        (star) => seededDistribution[String(star)] ?? 0,
+      );
+    }
+    return [0, 0, 0, 0, 0];
+  }, [reviews, seededDistribution]);
 
   const average =
     reviews.length > 0

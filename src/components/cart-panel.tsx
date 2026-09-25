@@ -108,19 +108,20 @@ export function CartPanel({ initialCart }: { initialCart: CartView }) {
               </li>
             ))}
           </ul>
-          <p className="text-lg font-semibold">
-            Merchandise {formatPaise(cart.merchandisePaise)}
-          </p>
-          <p className="text-sm text-muted">
-            Shipping, tax, and coupons are calculated on the checkout review
-            page from server rules. Browser totals are not trusted.
-          </p>
-          <Link
-            href="/checkout"
-            className="inline-flex w-fit rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground"
-          >
-            Proceed to checkout
-          </Link>
+          <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
+            <p className="text-lg font-semibold">
+              Merchandise {formatPaise(cart.merchandisePaise)}
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              Delivery and taxes are confirmed at checkout.
+            </p>
+            <Link
+              href="/checkout"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 font-semibold text-accent-foreground sm:w-fit"
+            >
+              Place order
+            </Link>
+          </div>
         </>
       )}
     </div>

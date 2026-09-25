@@ -37,6 +37,12 @@ export default async function AccountPage() {
         <Link href="/browse" className="underline">
           Browse catalogue
         </Link>
+        <Link href="/cart" className="underline">
+          Cart
+        </Link>
+        <Link href="/checkout" className="underline">
+          Checkout
+        </Link>
         <Link href="/seller/onboarding" className="underline">
           Seller onboarding
         </Link>

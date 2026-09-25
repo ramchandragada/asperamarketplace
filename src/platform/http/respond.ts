@@ -17,6 +17,16 @@ import {
   CatalogueValidationError,
 } from "@/modules/catalogue/service";
 import { ProductTransitionError } from "@/modules/catalogue/helpers";
+import {
+  CartConflictError,
+  CartValidationError,
+  InsufficientStockError,
+} from "@/modules/cart/service";
+import {
+  CouponRejectedError,
+  TotalsMismatchError,
+} from "@/modules/cart/pricing";
+import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
 
 export function getRequestId(request: Request): string {
@@ -90,7 +100,9 @@ export function jsonError(
   if (
     error instanceof IdentityConflictError ||
     error instanceof SellerConflictError ||
-    error instanceof CatalogueConflictError
+    error instanceof CatalogueConflictError ||
+    error instanceof CartConflictError ||
+    error instanceof IdempotencyConflictError
   ) {
     return NextResponse.json(
       fail({
@@ -105,6 +117,10 @@ export function jsonError(
   if (
     error instanceof ValidationError ||
     error instanceof CatalogueValidationError ||
+    error instanceof CartValidationError ||
+    error instanceof InsufficientStockError ||
+    error instanceof CouponRejectedError ||
+    error instanceof TotalsMismatchError ||
     error instanceof StorageValidationError ||
     error instanceof SellerTransitionError ||
     error instanceof ProductTransitionError

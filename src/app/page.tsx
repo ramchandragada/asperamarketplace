@@ -31,11 +31,11 @@ export default async function Home() {
             Aspera Marketplace
           </p>
           <h1 className="text-4xl font-semibold tracking-tight">
-            Catalogue and discovery
+            Cart and checkout
           </h1>
           <p className="max-w-2xl text-lg leading-8 text-muted">
-            Browse moderated seller listings without signing in. Prices and stock
-            are server-owned integers.
+            Browse moderated listings, add them to a server-priced cart, and
+            reserve stock on checkout review. Live payment arrives later.
           </p>
         </header>
         <section
@@ -48,7 +48,7 @@ export default async function Home() {
           <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-muted">Phase</dt>
-              <dd className="font-medium">Catalogue and discovery</dd>
+              <dd className="font-medium">Cart and checkout</dd>
             </div>
             <div>
               <dt className="text-muted">Database</dt>
@@ -71,6 +71,12 @@ export default async function Home() {
               className="inline-flex rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground"
             >
               Browse catalogue
+            </Link>
+            <Link
+              href="/cart"
+              className="inline-flex rounded-lg border border-border px-4 py-2 font-medium"
+            >
+              Cart
             </Link>
             {actor ? (
               <Link

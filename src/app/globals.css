@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  /* Core brand — Aspera teal marketplace */
-  --background: #f8f5f0;
-  --foreground: #1a1a1a;
-  --muted: #555555;
+  /* Meesho-parity storefront tokens (Aspera name retained) */
+  --background: #ffffff;
+  --foreground: #333333;
+  --muted: #666666;
   --text-muted: #999999;
-  --accent: #1a5c5c;
-  --accent-foreground: #f7faf9;
-  --accent-soft: #e8f4f4;
-  --brand-secondary: #2d8a8a;
-  --brand-accent: #e8833a;
+  --accent: #9f2089;
+  --accent-foreground: #ffffff;
+  --accent-soft: #fce8f3;
+  --brand-secondary: #c94dad;
+  --brand-accent: #ff8a1f;
   --surface: #ffffff;
-  --surface-raised: #fffcf8;
+  --surface-raised: #ffffff;
   --border: #e5e5e5;
-  --focus: #2d8a8a;
+  --focus: #9f2089;
   --success: #0e8a4f;
   --success-soft: #dcfce7;
   --warning: #f5a623;
@@ -65,31 +65,22 @@
   --shadow-card: var(--shadow-card);
 }
 
+/* Keep Meesho light-theme brand colors even when OS prefers dark */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #121614;
-    --foreground: #f4f1ec;
-    --muted: #a8b0aa;
-    --text-muted: #7a827c;
-    --accent: #5eead4;
-    --accent-foreground: #042f2e;
-    --accent-soft: #134e4a;
-    --brand-secondary: #2dd4bf;
-    --brand-accent: #fb923c;
-    --surface: #1c221f;
-    --surface-raised: #232a27;
-    --border: #2f3833;
-    --focus: #5eead4;
-    --success: #86efac;
-    --success-soft: #14532d;
-    --warning: #fdba74;
-    --warning-soft: #7c2d12;
-    --danger: #fca5a5;
-    --danger-soft: #7f1d1d;
-    --info: #93c5fd;
-    --info-soft: #1e3a5f;
-    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
-    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.3);
+    --background: #ffffff;
+    --foreground: #333333;
+    --muted: #666666;
+    --text-muted: #999999;
+    --accent: #9f2089;
+    --accent-foreground: #ffffff;
+    --accent-soft: #fce8f3;
+    --brand-secondary: #c94dad;
+    --brand-accent: #ff8a1f;
+    --surface: #ffffff;
+    --surface-raised: #ffffff;
+    --border: #e5e5e5;
+    --focus: #9f2089;
   }
 }
 

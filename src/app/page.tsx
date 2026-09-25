@@ -10,7 +10,7 @@ import { PageShell, SectionHeading } from "@/components/ui/page-shell";
 import {
   CampaignPromoBanner,
   CategoryArches,
-  HeroCarousel,
+  MeeshoAppHero,
   OriginalBrandsSection,
   SellerLogoStrip,
   TrustSignalBar,
@@ -25,169 +25,6 @@ import { discountPercent, slugify } from "@/modules/catalogue/helpers";
 import { MEESHO_ARCH_CATEGORIES } from "@/lib/mega-menu";
 
 export const dynamic = "force-dynamic";
-
-const HERO_BUBBLES = {
-  ethnic: [
-    {
-      label: "Sarees",
-      href: "/browse?categorySlug=fashion&q=saree",
-      imageUrl:
-        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Lehengas",
-      href: "/browse?categorySlug=fashion&q=lehenga",
-      imageUrl:
-        "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Kurtis",
-      href: "/browse?categorySlug=fashion&q=kurta",
-      imageUrl:
-        "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Jewellery",
-      href: "/browse?q=jewellery",
-      imageUrl:
-        "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80",
-    },
-  ],
-  men: [
-    {
-      label: "Menwear",
-      href: "/browse?categorySlug=fashion&q=shirt",
-      imageUrl:
-        "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Footwear",
-      href: "/browse?categorySlug=bags-footwear",
-      imageUrl:
-        "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Watches",
-      href: "/browse?categorySlug=electronics-accessories&q=watch",
-      imageUrl:
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Bags",
-      href: "/browse?categorySlug=bags-footwear&q=backpack",
-      imageUrl:
-        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=400&q=80",
-    },
-  ],
-  home: [
-    {
-      label: "Kitchen",
-      href: "/browse?categorySlug=home-kitchen",
-      imageUrl:
-        "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Decor",
-      href: "/browse?categorySlug=home-kitchen&q=cushion",
-      imageUrl:
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Cleaning",
-      href: "/browse?categorySlug=household-essentials",
-      imageUrl:
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Storage",
-      href: "/browse?categorySlug=home-kitchen&q=container",
-      imageUrl:
-        "https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=400&q=80",
-    },
-  ],
-  beauty: [
-    {
-      label: "Skincare",
-      href: "/browse?categorySlug=beauty-personal-care&q=face",
-      imageUrl:
-        "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Makeup",
-      href: "/browse?categorySlug=beauty-personal-care&q=lip",
-      imageUrl:
-        "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Haircare",
-      href: "/browse?categorySlug=beauty-personal-care&q=oil",
-      imageUrl:
-        "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=400&q=80",
-    },
-    {
-      label: "Wellness",
-      href: "/browse?categorySlug=health-wellness",
-      imageUrl:
-        "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=400&q=80",
-    },
-  ],
-} as const;
-
-const HERO_SLIDES = [
-  {
-    id: "aspera-gold",
-    eyebrow: "Aspera Gold",
-    title: "Festive favourites from ₹299",
-    subtitle:
-      "Sarees, lehengas, kurtis & jewellery — trusted sellers, easy returns.",
-    ctaLabel: "Shop Now",
-    href: "/browse?categorySlug=fashion&q=kurta",
-    imageUrl:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1800&q=80",
-    imageAlt: "Festive ethnic fashion campaign",
-    tone: "gold" as const,
-    bubbles: [...HERO_BUBBLES.ethnic],
-  },
-  {
-    id: "men-edit",
-    eyebrow: "Men's edit",
-    title: "Everyday essentials that work overtime",
-    subtitle: "Shirts, sneakers, watches & bags for the week ahead.",
-    ctaLabel: "Shop Now",
-    href: "/browse?categorySlug=fashion&q=shirt",
-    imageUrl:
-      "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=1800&q=80",
-    imageAlt: "Men fashion and accessories",
-    tone: "teal" as const,
-    bubbles: [...HERO_BUBBLES.men],
-  },
-  {
-    id: "home-refresh",
-    eyebrow: "Home refresh",
-    title: "Upgrade your kitchen & living space",
-    subtitle: "Cookware, storage and décor picks under ₹999.",
-    ctaLabel: "Shop Now",
-    href: "/browse?categorySlug=home-kitchen",
-    imageUrl:
-      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1800&q=80",
-    imageAlt: "Bright modern kitchen lifestyle",
-    tone: "orange" as const,
-    bubbles: [...HERO_BUBBLES.home],
-  },
-  {
-    id: "beauty-glow",
-    eyebrow: "Beauty & wellness",
-    title: "Glow for less — daily care staples",
-    subtitle: "Skincare, makeup and wellness from verified sellers.",
-    ctaLabel: "Shop Now",
-    href: "/browse?categorySlug=beauty-personal-care",
-    imageUrl:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1800&q=80",
-    imageAlt: "Beauty products campaign flat lay",
-    tone: "magenta" as const,
-    bubbles: [...HERO_BUBBLES.beauty],
-  },
-];
 
 const ORIGINAL_BRAND_CARDS = [
   {
@@ -379,13 +216,38 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
-      <HeroCarousel slides={HERO_SLIDES} />
+      <MeeshoAppHero />
       <TrustSignalBar />
       <CategoryArches categories={[...MEESHO_ARCH_CATEGORIES]} />
-      <BankOffersStrip />
-      <AsperaGoldSection />
       <OriginalBrandsSection cards={ORIGINAL_BRAND_CARDS} logos={BRAND_LOGOS} />
+
+      {/* Meesho: Products For You immediately after Original Brands */}
+      <div className="border-t border-[#eee] bg-white py-6 md:py-8">
+        <div className="container-shell">
+          <CatalogueBrowse
+            initialItems={forYouItems as BrowseProduct[]}
+            initialQuery=""
+            initialTotal={forYou.total}
+            categories={categories.map((category) => ({
+              slug: category.slug,
+              name: category.name,
+              productCount: category.productCount,
+            }))}
+            brands={brands}
+            initialSort="relevance"
+            heading="Products For You"
+            browseBasePath="/"
+            variant="home"
+            enableLoadMore
+            infiniteScroll
+            updateUrl={false}
+          />
+        </div>
+      </div>
+
       <CampaignPromoBanner collections={CAMPAIGN_COLLECTIONS} />
+      <AsperaGoldSection />
+      <BankOffersStrip />
       <SellerLogoStrip
         sellers={sellers.map((seller) => {
           const name = seller.tradeName ?? seller.legalName;
@@ -498,29 +360,6 @@ export default async function Home() {
           </div>
         </section>
       </PageShell>
-
-      <div className="border-t border-border bg-background py-8 md:py-10">
-        <div className="container-shell">
-          <CatalogueBrowse
-            initialItems={forYouItems as BrowseProduct[]}
-            initialQuery=""
-            initialTotal={forYou.total}
-            categories={categories.map((category) => ({
-              slug: category.slug,
-              name: category.name,
-              productCount: category.productCount,
-            }))}
-            brands={brands}
-            initialSort="relevance"
-            heading="Products For You"
-            browseBasePath="/"
-            variant="home"
-            enableLoadMore
-            infiniteScroll
-            updateUrl={false}
-          />
-        </div>
-      </div>
     </div>
   );
 }

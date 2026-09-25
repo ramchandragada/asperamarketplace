@@ -2,220 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-
-export type HeroBubble = {
-  label: string;
-  href: string;
-  imageUrl: string;
-};
-
-export type HeroSlide = {
-  id: string;
-  eyebrow: string;
-  title: string;
-  subtitle?: string;
-  ctaLabel: string;
-  href: string;
-  imageUrl: string;
-  imageAlt: string;
-  /** Left panel wash — teal / gold / magenta campaign tones */
-  tone?: "teal" | "gold" | "magenta" | "orange";
-  bubbles?: HeroBubble[];
-};
-
-const TONE_WASH: Record<NonNullable<HeroSlide["tone"]>, string> = {
-  teal: "from-[#0f3d3d]/95 via-[#1a5c5c]/75 to-transparent",
-  gold: "from-[#5c3d0f]/95 via-[#b8860b]/70 to-transparent",
-  magenta: "from-[#4a1040]/95 via-[#9b1b6f]/70 to-transparent",
-  orange: "from-[#5c2a0f]/95 via-[#e8833a]/65 to-transparent",
-};
-
-export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const touchStartX = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (slides.length <= 1 || paused) return;
-    const id = window.setInterval(() => {
-      setIndex((prev) => (prev + 1) % slides.length);
-    }, 4500);
-    return () => window.clearInterval(id);
-  }, [slides.length, paused]);
-
-  if (slides.length === 0) return null;
-  const slide = slides[index] ?? slides[0]!;
-
-  function go(next: number) {
-    setIndex(((next % slides.length) + slides.length) % slides.length);
-  }
-
-  return (
-    <section
-      className="relative overflow-hidden bg-accent text-accent-foreground"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onTouchStart={(event) => {
-        touchStartX.current = event.touches[0]?.clientX ?? null;
-      }}
-      onTouchEnd={(event) => {
-        const start = touchStartX.current;
-        const end = event.changedTouches[0]?.clientX;
-        touchStartX.current = null;
-        if (start == null || end == null) return;
-        const delta = end - start;
-        if (Math.abs(delta) < 48) return;
-        go(delta < 0 ? index + 1 : index - 1);
-      }}
-    >
-      <div className="relative min-h-[280px] md:min-h-[380px] lg:min-h-[420px]">
-        {slides.map((entry, i) => (
-          <div
-            key={entry.id}
-            className={`absolute inset-0 transition-opacity duration-700 ease-out ${
-              i === index ? "opacity-100" : "pointer-events-none opacity-0"
-            }`}
-            aria-hidden={i !== index}
-          >
-            <Image
-              src={entry.imageUrl}
-              alt={entry.imageAlt}
-              fill
-              priority={i === 0}
-              sizes="100vw"
-              className="object-cover object-center"
-            />
-            <div
-              className={`absolute inset-0 bg-gradient-to-r ${
-                TONE_WASH[entry.tone ?? "teal"]
-              }`}
-            />
-            <div className="absolute inset-y-0 right-0 hidden w-[48%] bg-gradient-to-l from-black/25 to-transparent md:block" />
-          </div>
-        ))}
-
-        <div className="relative container-shell grid min-h-[280px] items-center gap-6 py-10 md:min-h-[380px] md:grid-cols-[1.15fr_0.85fr] md:py-12 lg:min-h-[420px]">
-          <div className="max-w-xl">
-            <p className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold tracking-[0.14em] uppercase backdrop-blur-sm">
-              <span aria-hidden>✦</span>
-              {slide.eyebrow}
-            </p>
-            <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-balance md:text-5xl lg:text-[3.25rem] lg:leading-[1.1]">
-              {slide.title}
-            </h1>
-            {slide.subtitle ? (
-              <p className="mt-3 max-w-md text-sm text-white/85 md:text-base">
-                {slide.subtitle}
-              </p>
-            ) : null}
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Link
-                href={slide.href}
-                className="inline-flex rounded-[var(--radius-sm)] bg-brand-accent px-6 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(232,131,58,0.35)] transition hover:-translate-y-0.5 hover:brightness-105"
-              >
-                {slide.ctaLabel || "Shop Now"}
-              </Link>
-              <Link
-                href="/shop"
-                className="inline-flex rounded-[var(--radius-sm)] border border-white/40 bg-white/10 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm hover:bg-white/20"
-              >
-                Browse all
-              </Link>
-            </div>
-          </div>
-
-          {(slide.bubbles?.length ?? 0) > 0 ? (
-            <div className="hidden justify-self-end md:block">
-              <div className="grid grid-cols-2 gap-4 lg:gap-5">
-                {slide.bubbles!.slice(0, 4).map((bubble) => (
-                  <Link
-                    key={bubble.label}
-                    href={bubble.href}
-                    className="group flex w-[7.5rem] flex-col items-center gap-2 text-center lg:w-[8.5rem]"
-                  >
-                    <span className="relative h-[7.5rem] w-[7.5rem] overflow-hidden rounded-full border-[3px] border-white/80 bg-white/20 shadow-[0_10px_28px_rgba(0,0,0,0.28)] transition group-hover:-translate-y-1 group-hover:border-brand-accent lg:h-[8.5rem] lg:w-[8.5rem]">
-                      <Image
-                        src={bubble.imageUrl}
-                        alt=""
-                        fill
-                        sizes="136px"
-                        className="object-cover transition duration-300 group-hover:scale-105"
-                      />
-                    </span>
-                    <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-foreground shadow-sm">
-                      {bubble.label}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        {/* Mobile bubbles strip */}
-        {(slide.bubbles?.length ?? 0) > 0 ? (
-          <div className="relative border-t border-white/15 bg-black/20 px-3 py-3 backdrop-blur-sm md:hidden">
-            <div className="flex gap-3 overflow-x-auto pb-1">
-              {slide.bubbles!.map((bubble) => (
-                <Link
-                  key={bubble.label}
-                  href={bubble.href}
-                  className="flex w-[4.75rem] shrink-0 flex-col items-center gap-1.5 text-center"
-                >
-                  <span className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-white/70">
-                    <Image
-                      src={bubble.imageUrl}
-                      alt=""
-                      fill
-                      sizes="56px"
-                      className="object-cover"
-                    />
-                  </span>
-                  <span className="text-[10px] font-semibold text-white">
-                    {bubble.label}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <button
-        type="button"
-        aria-label="Previous slide"
-        className="absolute top-1/2 left-3 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-xl text-white backdrop-blur-sm hover:bg-black/50 md:left-5"
-        onClick={() => go(index - 1)}
-      >
-        ‹
-      </button>
-      <button
-        type="button"
-        aria-label="Next slide"
-        className="absolute top-1/2 right-3 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-xl text-white backdrop-blur-sm hover:bg-black/50 md:right-5"
-        onClick={() => go(index + 1)}
-      >
-        ›
-      </button>
-      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2 md:bottom-5">
-        {slides.map((entry, i) => (
-          <button
-            key={entry.id}
-            type="button"
-            aria-label={`Go to slide ${i + 1}`}
-            aria-current={i === index}
-            className={`h-2.5 rounded-full transition-all ${
-              i === index ? "w-7 bg-white" : "w-2.5 bg-white/45 hover:bg-white/70"
-            }`}
-            onClick={() => setIndex(i)}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
+import { useRef, type CSSProperties } from "react";
 
 function TrustReturnIcon() {
   return (
@@ -279,6 +66,104 @@ function TrustPriceIcon() {
   );
 }
 
+
+/** Meesho web homepage hero: purple app campaign + QR */
+export function MeeshoAppHero() {
+  const qrUrl =
+    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=" +
+    encodeURIComponent("https://aspera.app/download");
+
+  return (
+    <section className="relative overflow-hidden bg-[#9f2089] text-white">
+      {/* concentric decorative rings behind models — Meesho signature */}
+      <div
+        className="pointer-events-none absolute top-[52%] left-[6%] hidden h-[520px] w-[520px] -translate-y-1/2 lg:block"
+        aria-hidden
+      >
+        <div className="absolute inset-0 rounded-full border-[22px] border-[#d46bb8]/55" />
+        <div className="absolute inset-[11%] rounded-full border-[22px] border-[#6ec1e0]/50" />
+        <div className="absolute inset-[22%] rounded-full border-[22px] border-[#f4a4c8]/45" />
+        <div className="absolute inset-[33%] rounded-full border-[18px] border-[#ffc14a]/40" />
+        <div className="absolute inset-[44%] rounded-full border-[14px] border-[#e878c0]/35" />
+      </div>
+
+      <div className="relative container-shell grid min-h-[280px] items-end gap-4 pt-6 pb-0 md:min-h-[340px] md:grid-cols-[1fr_0.85fr_1fr] md:items-center md:gap-6 md:py-0 lg:min-h-[380px]">
+        {/* Left: arched model portraits */}
+        <div className="relative z-[1] flex items-end justify-center gap-0 md:justify-start">
+          <div
+            className="relative h-[200px] w-[130px] overflow-hidden bg-[#c45aa8]/30 sm:h-[240px] sm:w-[150px] md:h-[300px] md:w-[180px] lg:h-[340px] lg:w-[200px]"
+            style={{ borderRadius: "999px 999px 0 0" }}
+          >
+            <Image
+              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80"
+              alt=""
+              fill
+              sizes="200px"
+              className="object-cover object-[center_15%]"
+              priority
+            />
+          </div>
+          <div
+            className="relative z-[1] -ml-5 h-[220px] w-[140px] overflow-hidden bg-[#c45aa8]/30 sm:-ml-6 sm:h-[260px] sm:w-[160px] md:-ml-8 md:h-[320px] md:w-[190px] lg:h-[360px] lg:w-[210px]"
+            style={{ borderRadius: "999px 999px 0 0" }}
+          >
+            <Image
+              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80"
+              alt=""
+              fill
+              sizes="210px"
+              className="object-cover object-[center_12%]"
+              priority
+            />
+          </div>
+        </div>
+
+        {/* Center: offer + QR */}
+        <div className="relative z-[1] flex flex-col items-center self-center px-2 pb-6 text-center md:pb-0">
+          <p className="text-[15px] font-semibold leading-none text-white md:text-base">
+            Upto{" "}
+            <span className="text-[1.75rem] font-black tracking-tight md:text-[2rem]">
+              35% OFF
+            </span>
+          </p>
+          <p className="mt-1.5 text-[15px] font-medium text-white">
+            on your first order
+          </p>
+          <p className="mt-0.5 text-[12px] text-white/80">*Only on App</p>
+          <div className="mt-4 rounded-lg bg-white p-2 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={qrUrl}
+              alt="Scan to download Aspera app"
+              width={156}
+              height={156}
+              className="h-[140px] w-[140px] md:h-[156px] md:w-[156px]"
+            />
+          </div>
+          <p className="mt-2.5 text-[13px] font-semibold text-white">
+            Scan now to Download
+          </p>
+        </div>
+
+        {/* Right: tagline + CTA */}
+        <div className="relative z-[1] flex flex-col items-center justify-center gap-5 self-center pb-8 text-center md:items-start md:pb-0 md:pl-2 md:text-left">
+          <h1 className="max-w-[15rem] font-sans text-[1.65rem] leading-[1.2] font-bold text-balance md:max-w-[16rem] md:text-[1.85rem] lg:text-[2.05rem]">
+            Smart Shopping
+            <br />
+            Trusted by Millions
+          </h1>
+          <Link
+            href="/browse"
+            className="inline-flex rounded-md bg-white px-10 py-3 text-[15px] font-bold text-[#9f2089] shadow-sm transition hover:bg-[#fff5fb]"
+          >
+            Shop Now
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /** Meesho pink trust strip: return / COD / lowest prices */
 export function TrustSignalBar() {
   const items = [
@@ -287,26 +172,24 @@ export function TrustSignalBar() {
     { label: "Lowest Prices", Icon: TrustPriceIcon },
   ];
   return (
-    <div className="bg-[#fce8f3]">
-      <div className="container-shell py-2.5 md:py-3">
-        <ul className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-y-2 rounded-lg bg-white px-3 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:px-6">
-          {items.map((item, index) => (
-            <li
-              key={item.label}
-              className="flex items-center gap-2 px-3 text-[13px] text-[#333] sm:px-5"
-            >
-              {index > 0 ? (
-                <span
-                  className="mr-2 hidden h-5 w-px bg-[#e5e5e5] sm:block"
-                  aria-hidden
-                />
-              ) : null}
-              <item.Icon />
-              <span className="font-medium">{item.label}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div className="border-b border-[#f5d0e6] bg-[#fdeef6]">
+      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-1 gap-y-2 py-3 text-[13px] text-[#333] md:py-3.5">
+        {items.map((item, index) => (
+          <li
+            key={item.label}
+            className="flex items-center gap-2 px-3 sm:px-6 md:px-8"
+          >
+            {index > 0 ? (
+              <span
+                className="mr-2 hidden h-4 w-px bg-[#e5c4d6] sm:block"
+                aria-hidden
+              />
+            ) : null}
+            <item.Icon />
+            <span className="font-medium">{item.label}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

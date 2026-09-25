@@ -412,7 +412,7 @@ export function SiteHeaderClient({
       >
         <Link
           href="/"
-          className={`shrink-0 font-sans text-[1.65rem] font-bold tracking-tight text-accent lowercase transition-all duration-300 ease-out ${
+          className={`shrink-0 font-sans text-[1.65rem] font-bold tracking-tight text-[#9f2089] lowercase transition-all duration-300 ease-out ${
             compact ? "text-xl md:text-[1.45rem]" : "md:text-[1.75rem]"
           }`}
           style={{ fontFamily: "var(--font-geist-sans), DM Sans, sans-serif" }}

@@ -1,5 +1,12 @@
 # Migrations
 
+## Ninth migration
+
+Name: `20260925090000_analytics`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-analytics.sql`  
+Tables: `analytics_events`, `experiments`  
+Enums: `ExperimentStatus`
+
 ## Eighth migration
 
 Name: `20260925080000_trust_safety`  

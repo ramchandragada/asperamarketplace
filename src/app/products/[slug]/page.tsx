@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { ProductReviewsPanel } from "@/components/product-reviews-panel";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { getPublicProductBySlug } from "@/modules/catalogue/service";
+import { getOptionalActor } from "@/modules/identity/service";
+import { listApprovedReviewsForProduct } from "@/modules/trust/service";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +34,8 @@ export default async function ProductDetailPage({
     notFound();
   }
 
+  const actor = await getOptionalActor();
+  const reviews = await listApprovedReviewsForProduct(product.id);
   const sellerName = product.seller.tradeName ?? product.seller.legalName;
 
   return (
@@ -86,6 +91,17 @@ export default async function ProductDetailPage({
           })}
         </ul>
       </section>
+      <ProductReviewsPanel
+        productId={product.id}
+        canReview={Boolean(actor)}
+        initialReviews={reviews.map((review) => ({
+          id: review.id,
+          rating: review.rating,
+          title: review.title,
+          body: review.body,
+          createdAt: review.createdAt.toISOString(),
+        }))}
+      />
       <p className="text-sm">
         <Link href="/browse" className="underline">
           Back to browse

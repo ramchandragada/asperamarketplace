@@ -88,13 +88,21 @@ export function availableQuantity(onHand: number, reserved: number): number {
   return Math.max(onHand - reserved, 0);
 }
 
-export function computeTax(taxablePaise: number): TaxTrace {
-  const taxPaise = Math.floor((taxablePaise * TAX_POLICY.rateBps) / 10_000);
+export function computeTax(
+  taxablePaise: number,
+  policy: {
+    key: string;
+    version: number;
+    rateBps: number;
+    explanation: string;
+  } = TAX_POLICY,
+): TaxTrace {
+  const taxPaise = Math.floor((taxablePaise * policy.rateBps) / 10_000);
   return {
-    policyKey: TAX_POLICY.key,
-    policyVersion: TAX_POLICY.version,
-    explanation: TAX_POLICY.explanation,
-    rateBps: TAX_POLICY.rateBps,
+    policyKey: policy.key,
+    policyVersion: policy.version,
+    explanation: `${policy.explanation} Requires review by a qualified Indian tax professional before production use.`,
+    rateBps: policy.rateBps,
     taxablePaise,
     taxPaise,
   };
@@ -163,6 +171,12 @@ export function buildCheckoutSnapshot(input: {
   couponCode?: string;
   destinationState: string;
   totalWeightGrams: number;
+  taxPolicy?: {
+    key: string;
+    version: number;
+    rateBps: number;
+    explanation: string;
+  };
 }): CheckoutSnapshot {
   const lines: CheckoutLineSnapshot[] = input.lines.map((line) => ({
     ...line,
@@ -179,7 +193,7 @@ export function buildCheckoutSnapshot(input: {
     weightGrams: input.totalWeightGrams,
     destinationState: input.destinationState,
   });
-  const tax = computeTax(afterDiscount);
+  const tax = computeTax(afterDiscount, input.taxPolicy);
   const totalPaise = afterDiscount + shipping.shippingPaise + tax.taxPaise;
 
   const groupMap = new Map<

@@ -32,7 +32,7 @@ const HERO_BUBBLES = {
       label: "Sarees",
       href: "/browse?categorySlug=fashion&q=saree",
       imageUrl:
-        "https://images.unsplash.com/photo-1610030469983-98e550d85b9a?auto=format&fit=crop&w=400&q=80",
+        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=400&q=80",
     },
     {
       label: "Lehengas",
@@ -44,7 +44,7 @@ const HERO_BUBBLES = {
       label: "Kurtis",
       href: "/browse?categorySlug=fashion&q=kurta",
       imageUrl:
-        "https://images.unsplash.com/photo-1583391733956-375ff8d0a9fc?auto=format&fit=crop&w=400&q=80",
+        "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=400&q=80",
     },
     {
       label: "Jewellery",
@@ -211,7 +211,7 @@ const ORIGINAL_BRAND_CARDS = [
     label: "Makeup",
     href: "/browse?categorySlug=beauty-personal-care&q=lip",
     imageUrl:
-      "https://images.unsplash.com/photo-1586495777744-4413f2103256?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80",
     overlay: "#9f2089",
   },
   {
@@ -280,7 +280,7 @@ const CAMPAIGN_COLLECTIONS = [
     label: "Home",
     href: "/browse?categorySlug=home-kitchen",
     imageUrl:
-      "https://images.unsplash.com/photo-1484101403633-562f8919981f?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "ethnic",

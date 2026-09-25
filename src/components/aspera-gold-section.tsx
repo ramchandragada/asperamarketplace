@@ -23,7 +23,7 @@ const GOLD_CATEGORIES = [
     label: "Sarees",
     href: "/browse?categorySlug=fashion&q=saree",
     imageUrl:
-      "https://images.unsplash.com/photo-1610030469983-98e550d85b9a?auto=format&fit=crop&w=500&q=80",
+      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=500&q=80",
   },
   {
     id: "jewellery",

@@ -25,7 +25,7 @@ const THUMB = {
     "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=120&q=70",
   top: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=120&q=70",
   saree:
-    "https://images.unsplash.com/photo-1610030469983-98e550d85b9a?auto=format&fit=crop&w=120&q=70",
+    "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=120&q=70",
   shirt:
     "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=120&q=70",
   bag: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=120&q=70",
@@ -430,7 +430,7 @@ export const MEESHO_ARCH_CATEGORIES = [
     label: "Ethnic Wear",
     href: browse("fashion", "saree"),
     imageUrl:
-      "https://images.unsplash.com/photo-1610030469983-98e550d85b9a?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "western",
@@ -458,7 +458,7 @@ export const MEESHO_ARCH_CATEGORIES = [
     label: "Home Decor",
     href: browse("home-kitchen", "cushion"),
     imageUrl:
-      "https://images.unsplash.com/photo-1484101403633-562f8919981f?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "beauty",

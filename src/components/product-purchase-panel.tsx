@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { PdpTrustBadgeRow } from "@/components/pdp-trust-badge-row";
 import { formatPaise } from "@/modules/catalogue/helpers";
 
 type VariantView = {
@@ -17,9 +18,13 @@ type VariantView = {
 export function ProductPurchasePanel({
   variants,
   highlights,
+  showMall,
+  showOriginal,
 }: {
   variants: VariantView[];
   highlights: Array<{ label: string; value: string }>;
+  showMall?: boolean;
+  showOriginal?: boolean;
 }) {
   const [selectedId, setSelectedId] = useState(variants[0]?.id ?? "");
   const [pincode, setPincode] = useState("");
@@ -210,6 +215,8 @@ export function ProductPurchasePanel({
           </p>
         )}
       </div>
+
+      <PdpTrustBadgeRow showMall={showMall} showOriginal={showOriginal} />
 
       <div className="hidden gap-3 sm:flex">
         <AddToCartButton

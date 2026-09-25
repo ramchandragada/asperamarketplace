@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
+import {
+  CatalogueBrowse,
+  type BrowseProduct,
+} from "@/components/catalogue-browse";
+import { AsperaGoldSection } from "@/components/aspera-gold-section";
 import { PageShell, SectionHeading } from "@/components/ui/page-shell";
 import {
-  CampaignPromoBanner,
   CategoryCircles,
   HeroCarousel,
   OriginalBrandsSection,
@@ -11,6 +15,7 @@ import {
   TrustSignalBar,
 } from "@/components/home-storefront";
 import {
+  listActiveBrands,
   listActiveCategories,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
@@ -261,42 +266,12 @@ const BRAND_LOGOS = [
   { id: "aspera-home", name: "Aspera Home", mark: "AH", href: "/browse?q=aspera%20home" },
 ];
 
-const CAMPAIGN_COLLECTIONS = [
-  {
-    id: "trending",
-    label: "Trending Now",
-    href: "/browse?sort=newest&categorySlug=fashion",
-    imageUrl:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=500&q=80",
-  },
-  {
-    id: "budget",
-    label: "Budget Buys",
-    href: "/browse?maxPricePaise=49900",
-    imageUrl:
-      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=500&q=80",
-  },
-  {
-    id: "top-rated",
-    label: "Top Rated Picks",
-    href: "/browse?minRating=4",
-    imageUrl:
-      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=500&q=80",
-  },
-  {
-    id: "daily",
-    label: "Daily Essentials",
-    href: "/browse?categorySlug=household-essentials",
-    imageUrl:
-      "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=500&q=80",
-  },
-];
-
 export default async function Home() {
   const categories = await listActiveCategories();
   const categorySlugs = categories.map((category) => category.slug);
 
-  const [newest, trendingPool, dealsPool, forYou, sellers] = await Promise.all([
+  const [newest, trendingPool, dealsPool, forYou, sellers, brands] =
+    await Promise.all([
     searchApprovedProducts({ page: 1, pageSize: 8, sort: "newest" }),
     searchApprovedProducts({
       page: 1,
@@ -305,7 +280,7 @@ export default async function Home() {
       categorySlug: categorySlugs.find((slug) => slug === "fashion") ?? undefined,
     }),
     searchApprovedProducts({ page: 1, pageSize: 40, sort: "newest" }),
-    searchApprovedProducts({ page: 1, pageSize: 24, sort: "newest" }),
+    searchApprovedProducts({ page: 1, pageSize: 24, sort: "relevance" }),
     prisma.seller.findMany({
       where: { status: "approved" },
       take: 12,
@@ -324,6 +299,7 @@ export default async function Home() {
         },
       },
     }),
+    listActiveBrands(),
   ]);
 
   // Diversify trending away from newest household-heavy first page
@@ -383,9 +359,9 @@ export default async function Home() {
   return (
     <div className="flex flex-col">
       <HeroCarousel slides={HERO_SLIDES} />
-      <OriginalBrandsSection cards={ORIGINAL_BRAND_CARDS} logos={BRAND_LOGOS} />
-      <CampaignPromoBanner collections={CAMPAIGN_COLLECTIONS} />
       <TrustSignalBar />
+      <AsperaGoldSection />
+      <OriginalBrandsSection cards={ORIGINAL_BRAND_CARDS} logos={BRAND_LOGOS} />
       <CategoryCircles categories={circleCategories} />
       <PromoBanner
         imageUrl="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80"
@@ -448,7 +424,7 @@ export default async function Home() {
             description="Best sellers across categories"
             action={
               <Link
-                href="/browse?categorySlug=fashion"
+                href="/popular"
                 className="text-sm font-medium text-accent underline"
               >
                 See all →
@@ -468,7 +444,10 @@ export default async function Home() {
               title="Deals of the day"
               description="Today's best deals"
               action={
-                <Link href="/shop?minDiscountPercent=15" className="text-sm font-medium text-accent underline">
+                <Link
+                  href="/shop?minDiscountPercent=15"
+                  className="text-sm font-medium text-accent underline"
+                >
                   See all →
                 </Link>
               }
@@ -480,31 +459,6 @@ export default async function Home() {
             </div>
           </section>
         ) : null}
-
-        <section className="flex flex-col gap-5">
-          <SectionHeading
-            title="Products for you"
-            description="Keep browsing — fresh picks every scroll"
-            action={
-              <Link href="/shop" className="text-sm font-medium text-accent underline">
-                See all →
-              </Link>
-            }
-          />
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {forYouItems.map((item) => (
-              <ProductCard key={item.id} product={item} />
-            ))}
-          </div>
-          <div className="text-center">
-            <Link
-              href="/shop"
-              className="inline-flex rounded-[var(--radius-sm)] border border-border bg-surface px-5 py-2.5 text-sm font-semibold hover:border-accent hover:text-accent"
-            >
-              Load more on Shop
-            </Link>
-          </div>
-        </section>
 
         <section className="rounded-[var(--radius)] border border-border bg-accent-soft p-6 md:p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -526,6 +480,28 @@ export default async function Home() {
           </div>
         </section>
       </PageShell>
+
+      <div className="border-t border-border bg-background py-8">
+        <div className="container-shell">
+          <CatalogueBrowse
+            initialItems={forYouItems as BrowseProduct[]}
+            initialQuery=""
+            initialTotal={forYou.total}
+            categories={categories.map((category) => ({
+              slug: category.slug,
+              name: category.name,
+              productCount: category.productCount,
+            }))}
+            brands={brands}
+            initialSort="relevance"
+            heading="Products For You"
+            browseBasePath="/"
+            variant="home"
+            enableLoadMore
+            updateUrl={false}
+          />
+        </div>
+      </div>
     </div>
   );
 }

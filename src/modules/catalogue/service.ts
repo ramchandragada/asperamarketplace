@@ -704,6 +704,13 @@ async function enrichStorefrontCards<
         (typeof attrs.deliveryFeePaise === "number"
           ? attrs.deliveryFeePaise === 0
           : undefined),
+      deliveryOriginalPaise:
+        typeof attrs.deliveryOriginalPaise === "number"
+          ? attrs.deliveryOriginalPaise
+          : typeof attrs.deliveryFeePaise === "number" &&
+              attrs.deliveryFeePaise > 0
+            ? Math.round((attrs.deliveryFeePaise as number) * 1.15)
+            : null,
       variantCount: item.variantCount ?? product?._count.variants ?? 1,
       badge:
         item.badge !== undefined

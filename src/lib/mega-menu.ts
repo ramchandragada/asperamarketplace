@@ -1,6 +1,6 @@
 export type MegaMenuColumn = {
   heading: string;
-  links: Array<{ label: string; href: string }>;
+  links: Array<{ label: string; href: string; imageUrl?: string }>;
 };
 
 export type MegaMenuCategory = {
@@ -20,6 +20,27 @@ function browseQ(q: string) {
   return `/browse?${new URLSearchParams({ q }).toString()}`;
 }
 
+const THUMB = {
+  dress:
+    "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=120&q=70",
+  top: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=120&q=70",
+  saree:
+    "https://images.unsplash.com/photo-1610030469983-98e550d85b9a?auto=format&fit=crop&w=120&q=70",
+  shirt:
+    "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=120&q=70",
+  bag: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=120&q=70",
+  beauty:
+    "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=120&q=70",
+  home: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=120&q=70",
+  kids: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=120&q=70",
+} as const;
+
+export const POPULAR_NAV = {
+  key: "popular",
+  label: "Popular",
+  href: "/popular",
+} as const;
+
 /**
  * Meesho-style gender/occasion mega-menu.
  * Links map into existing /browse catalogue filters (no catalogue schema change).
@@ -33,18 +54,18 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Tops & Tees",
         links: [
-          { label: "Tops", href: browse("fashion", "top") },
-          { label: "T-shirts", href: browse("fashion", "tee") },
-          { label: "Shirts", href: browse("fashion", "shirt") },
-          { label: "Tunics", href: browse("fashion", "tunic") },
+          { label: "Tops", href: browse("fashion", "top"), imageUrl: THUMB.top },
+          { label: "T-shirts", href: browse("fashion", "tee"), imageUrl: THUMB.top },
+          { label: "Shirts", href: browse("fashion", "shirt"), imageUrl: THUMB.shirt },
+          { label: "Tunics", href: browse("fashion", "tunic"), imageUrl: THUMB.dress },
         ],
       },
       {
         heading: "Dresses & Jumpsuits",
         links: [
-          { label: "Dresses", href: browse("fashion", "dress") },
-          { label: "Wrap dresses", href: browse("fashion", "wrap") },
-          { label: "Jumpsuits", href: browse("fashion", "jumpsuit") },
+          { label: "Dresses", href: browse("fashion", "dress"), imageUrl: THUMB.dress },
+          { label: "Wrap dresses", href: browse("fashion", "wrap"), imageUrl: THUMB.dress },
+          { label: "Jumpsuits", href: browse("fashion", "jumpsuit"), imageUrl: THUMB.dress },
         ],
       },
       {
@@ -74,24 +95,24 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Kurtis & Kurtas",
         links: [
-          { label: "Kurtas", href: browse("fashion", "kurta") },
-          { label: "Kurti sets", href: browse("fashion", "set") },
-          { label: "Handloom kurtas", href: browse("fashion", "handloom") },
+          { label: "Kurtas", href: browse("fashion", "kurta"), imageUrl: THUMB.saree },
+          { label: "Kurti sets", href: browse("fashion", "set"), imageUrl: THUMB.saree },
+          { label: "Handloom kurtas", href: browse("fashion", "handloom"), imageUrl: THUMB.saree },
         ],
       },
       {
         heading: "Sarees & Dupattas",
         links: [
-          { label: "Sarees", href: browse("fashion", "saree") },
-          { label: "Dupattas", href: browse("fashion", "dupatta") },
+          { label: "Sarees", href: browse("fashion", "saree"), imageUrl: THUMB.saree },
+          { label: "Dupattas", href: browse("fashion", "dupatta"), imageUrl: THUMB.saree },
           { label: "Blouses", href: browse("fashion", "blouse") },
         ],
       },
       {
         heading: "Lehengas & Ethnic",
         links: [
-          { label: "Lehengas", href: browse("fashion", "lehenga") },
-          { label: "Ethnic wear", href: browse("fashion", "ethnic") },
+          { label: "Lehengas", href: browse("fashion", "lehenga"), imageUrl: THUMB.dress },
+          { label: "Ethnic wear", href: browse("fashion", "ethnic"), imageUrl: THUMB.saree },
           { label: "Palazzo sets", href: browse("fashion", "palazzo") },
         ],
       },

@@ -5,12 +5,14 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react"
 import {
   ALL_CATEGORIES_MENU,
   MEGA_MENU,
+  POPULAR_NAV,
   SEARCH_PLACEHOLDER,
   TRENDING_SEARCHES,
   type MegaMenuCategory,
   type MegaMenuColumn,
 } from "@/lib/mega-menu";
 import { MobileCategoryDrawer } from "@/components/mobile-category-drawer";
+import Image from "next/image";
 
 function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -96,9 +98,20 @@ function MegaPanel({
                 <li key={link.href + link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted hover:text-accent"
+                    className="flex items-center gap-2 text-sm text-muted hover:text-accent"
                     onClick={onNavigate}
                   >
+                    {link.imageUrl ? (
+                      <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-border bg-accent-soft">
+                        <Image
+                          src={link.imageUrl}
+                          alt=""
+                          fill
+                          sizes="32px"
+                          className="object-cover"
+                        />
+                      </span>
+                    ) : null}
                     {link.label}
                   </Link>
                 </li>
@@ -139,6 +152,13 @@ function CategoryNav() {
         aria-label="Categories"
         className="container-shell flex h-[var(--nav-height)] items-center gap-1 overflow-x-auto text-sm"
       >
+        <Link
+          href={POPULAR_NAV.href}
+          className="shrink-0 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-semibold text-brand-accent hover:bg-accent-soft/70"
+          onMouseEnter={scheduleClose}
+        >
+          {POPULAR_NAV.label}
+        </Link>
         <Link
           href={ALL_CATEGORIES_MENU.href}
           className={`shrink-0 rounded-[var(--radius-sm)] px-3 py-1.5 font-medium ${
@@ -514,6 +534,14 @@ export function SiteHeaderClient({
           aria-label="Mobile category shortcuts"
           className="flex min-w-0 flex-1 gap-2 overflow-x-auto text-xs"
         >
+          {POPULAR_NAV ? (
+            <Link
+              href={POPULAR_NAV.href}
+              className="shrink-0 rounded-full border border-brand-accent/40 bg-brand-accent/10 px-3 py-1.5 font-semibold whitespace-nowrap text-brand-accent"
+            >
+              {POPULAR_NAV.label}
+            </Link>
+          ) : null}
           {MEGA_MENU.map((entry) => (
             <Link
               key={entry.key}

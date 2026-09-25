@@ -71,6 +71,9 @@ export function CatalogueBrowse({
   initialMaxPricePaise,
   heading,
   browseBasePath = "/browse",
+  variant = "page",
+  enableLoadMore = false,
+  updateUrl = true,
 }: {
   initialItems: BrowseProduct[];
   initialQuery: string;
@@ -88,7 +91,12 @@ export function CatalogueBrowse({
   initialMaxPricePaise?: number;
   heading?: string;
   browseBasePath?: string;
+  /** `home` hides breadcrumb and uses Products For You chrome */
+  variant?: "page" | "home";
+  enableLoadMore?: boolean;
+  updateUrl?: boolean;
 }) {
+  const isHome = variant === "home";
   const initialMin = rupeesFromPaise(initialMinPricePaise);
   const initialMax = rupeesFromPaise(initialMaxPricePaise);
   const matchedPreset =
@@ -100,6 +108,8 @@ export function CatalogueBrowse({
 
   const [items, setItems] = useState(initialItems);
   const [total, setTotal] = useState(initialTotal);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [query, setQuery] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
   const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
@@ -210,6 +220,8 @@ export function CatalogueBrowse({
     maxPrice?: string;
     minRating?: number | null;
     minDiscount?: number | null;
+    page?: number;
+    append?: boolean;
   }) {
     setError(null);
     const params = new URLSearchParams();
@@ -224,6 +236,8 @@ export function CatalogueBrowse({
     const rating = next?.minRating !== undefined ? next.minRating : minRating;
     const discount =
       next?.minDiscount !== undefined ? next.minDiscount : minDiscount;
+    const nextPage = next?.page ?? 1;
+    const append = next?.append === true;
     if (q) params.set("q", q);
     if (cat) params.set("categorySlug", cat);
     if (brand) params.set("brandSlug", brand);
@@ -242,22 +256,37 @@ export function CatalogueBrowse({
     if (discount != null) {
       params.set("minDiscountPercent", String(discount));
     }
+    params.set("page", String(nextPage));
     params.set("pageSize", "24");
+
+    if (append) setLoadingMore(true);
 
     const response = await fetch(`/api/catalogue/products?${params.toString()}`);
     const body = (await response.json()) as {
       data?: { items: BrowseProduct[]; total: number };
       message?: string;
     };
+    if (append) setLoadingMore(false);
     if (!response.ok) {
       setError(body.message ?? "Search failed");
       return;
     }
-    setItems(body.data?.items ?? []);
+    const nextItems = body.data?.items ?? [];
+    setItems((prev) => (append ? [...prev, ...nextItems] : nextItems));
     setTotal(body.data?.total ?? 0);
-    const url = new URL(window.location.href);
-    url.search = params.toString();
-    window.history.replaceState({}, "", url.toString());
+    setPage(nextPage);
+    if (updateUrl && !isHome) {
+      const url = new URL(window.location.href);
+      url.search = params.toString();
+      window.history.replaceState({}, "", url.toString());
+    }
+  }
+
+  function loadMore() {
+    if (loadingMore || items.length >= total) return;
+    startTransition(() => {
+      void runSearch({ page: page + 1, append: true });
+    });
   }
 
   function applyAndClose() {
@@ -358,7 +387,7 @@ export function CatalogueBrowse({
         <div>
           <h2 className="text-sm font-bold tracking-wide uppercase">Filters</h2>
           <p className="mt-0.5 text-xs text-muted">
-            {total} product{total === 1 ? "" : "s"}
+            {total >= 1000 ? "1000+ Products" : `${total} product${total === 1 ? "" : "s"}`}
           </p>
         </div>
         <button
@@ -708,44 +737,56 @@ export function CatalogueBrowse({
   );
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className={`flex flex-col gap-5 ${isHome ? "pt-2" : ""}`}>
       <div className="flex flex-col gap-1">
-        <nav aria-label="Breadcrumb" className="text-xs text-muted">
-          <Link href="/" className="hover:text-accent">
-            Home
-          </Link>
-          <span aria-hidden> › </span>
-          <Link href={browseBasePath} className="hover:text-accent">
-            Shop
-          </Link>
-          {categorySlug ? (
-            <>
-              <span aria-hidden> › </span>
-              <span className="text-foreground">{categoryName}</span>
-            </>
-          ) : null}
-        </nav>
+        {!isHome ? (
+          <nav aria-label="Breadcrumb" className="text-xs text-muted">
+            <Link href="/" className="hover:text-accent">
+              Home
+            </Link>
+            <span aria-hidden> › </span>
+            <Link href={browseBasePath} className="hover:text-accent">
+              Shop
+            </Link>
+            {categorySlug ? (
+              <>
+                <span aria-hidden> › </span>
+                <span className="text-foreground">{categoryName}</span>
+              </>
+            ) : null}
+          </nav>
+        ) : null}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight">
-              {query.trim() ? `Results for “${query.trim()}”` : categoryName}
+            <h1
+              className={`font-display font-semibold tracking-tight ${
+                isHome ? "text-2xl md:text-3xl" : "text-3xl"
+              }`}
+            >
+              {isHome
+                ? (heading ?? "Products For You")
+                : query.trim()
+                  ? `Results for “${query.trim()}”`
+                  : categoryName}
             </h1>
             <p className="mt-1 text-sm text-muted">
-              Showing {items.length === 0 ? 0 : 1}–{items.length} of {total}{" "}
-              products
+              {total >= 1000
+                ? "1000+ Products"
+                : `Showing ${items.length === 0 ? 0 : 1}–${items.length} of ${total} products`}
             </p>
           </div>
           <label className="flex items-center gap-2 text-sm">
-            <span className="text-muted">Sort by</span>
+            <span className="text-muted">Sort by:</span>
             <select
               value={sort}
               onChange={(event) => {
                 setSort(event.target.value);
                 startTransition(() => {
-                  void runSearch({ sort: event.target.value });
+                  void runSearch({ sort: event.target.value, page: 1 });
                 });
               }}
-              className="rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-1.5"
+              className="rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-1.5 font-medium"
+              aria-label="Sort by"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -832,25 +873,51 @@ export function CatalogueBrowse({
 
         <div className="flex flex-col gap-4">
           {error ? <p className="text-sm text-danger">{error}</p> : null}
-          {pending ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, index) => (
+          {pending && !loadingMore ? (
+            <div
+              className={`grid grid-cols-2 gap-3 ${
+                isHome
+                  ? "md:grid-cols-3"
+                  : "md:grid-cols-3 xl:grid-cols-4"
+              }`}
+            >
+              {Array.from({ length: 9 }).map((_, index) => (
                 <ProductCardSkeleton key={index} />
               ))}
             </div>
           ) : items.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-              {items.map((item) => (
-                <ProductCard key={item.id} product={item} />
-              ))}
-            </div>
+            <>
+              <div
+                className={`grid grid-cols-2 gap-3 ${
+                  isHome
+                    ? "md:grid-cols-3"
+                    : "md:grid-cols-3 xl:grid-cols-4"
+                }`}
+              >
+                {items.map((item) => (
+                  <ProductCard key={item.id} product={item} />
+                ))}
+              </div>
+              {enableLoadMore && items.length < total ? (
+                <div className="flex justify-center pt-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                  >
+                    {loadingMore ? "Loading…" : "Load more"}
+                  </Button>
+                </div>
+              ) : null}
+            </>
           ) : (
             <EmptyState
               title="No products found"
               description="Try clearing filters or searching a broader term."
               action={
                 <Link
-                  href={browseBasePath}
+                  href={isHome ? "/shop" : browseBasePath}
                   className="text-sm font-medium text-accent underline"
                 >
                   Continue shopping

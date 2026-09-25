@@ -8,10 +8,10 @@ import { AsperaGoldSection } from "@/components/aspera-gold-section";
 import { BankOffersStrip } from "@/components/bank-offers-strip";
 import { PageShell, SectionHeading } from "@/components/ui/page-shell";
 import {
-  CategoryCircles,
+  CampaignPromoBanner,
+  CategoryArches,
   HeroCarousel,
   OriginalBrandsSection,
-  PromoBanner,
   SellerLogoStrip,
   TrustSignalBar,
 } from "@/components/home-storefront";
@@ -21,8 +21,8 @@ import {
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
 import { prisma } from "@/platform/db/prisma";
-import { SEED_CATEGORIES } from "@/modules/catalogue/seed-catalogue-data";
 import { discountPercent, slugify } from "@/modules/catalogue/helpers";
+import { MEESHO_ARCH_CATEGORIES } from "@/lib/mega-menu";
 
 export const dynamic = "force-dynamic";
 
@@ -196,7 +196,7 @@ const ORIGINAL_BRAND_CARDS = [
     href: "/browse?categorySlug=beauty-personal-care",
     imageUrl:
       "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80",
-    overlay: "rgba(26, 92, 92, 0.92)",
+    overlay: "#9f2089",
   },
   {
     id: "electronics",
@@ -204,15 +204,15 @@ const ORIGINAL_BRAND_CARDS = [
     href: "/browse?categorySlug=electronics-accessories",
     imageUrl:
       "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
-    overlay: "rgba(76, 29, 149, 0.9)",
+    overlay: "#9f2089",
   },
   {
     id: "makeup",
     label: "Makeup",
     href: "/browse?categorySlug=beauty-personal-care&q=lip",
     imageUrl:
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80",
-    overlay: "rgba(157, 23, 77, 0.9)",
+      "https://images.unsplash.com/photo-1586495777744-4413f2103256?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
   },
   {
     id: "smart-phones",
@@ -220,7 +220,7 @@ const ORIGINAL_BRAND_CARDS = [
     href: "/browse?categorySlug=mobile-accessories",
     imageUrl:
       "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80",
-    overlay: "rgba(30, 58, 138, 0.92)",
+    overlay: "#9f2089",
   },
   {
     id: "men-perfume",
@@ -228,7 +228,23 @@ const ORIGINAL_BRAND_CARDS = [
     href: "/browse?categorySlug=beauty-personal-care&q=perfume",
     imageUrl:
       "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=600&q=80",
-    overlay: "rgba(120, 53, 15, 0.92)",
+    overlay: "#9f2089",
+  },
+  {
+    id: "bags",
+    label: "Bags",
+    href: "/browse?categorySlug=bags-footwear&q=bag",
+    imageUrl:
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
+  },
+  {
+    id: "footwear",
+    label: "Footwear",
+    href: "/browse?categorySlug=bags-footwear&q=shoe",
+    imageUrl:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
   },
   {
     id: "home-appliances",
@@ -236,35 +252,50 @@ const ORIGINAL_BRAND_CARDS = [
     href: "/browse?categorySlug=home-kitchen",
     imageUrl:
       "https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=600&q=80",
-    overlay: "rgba(232, 131, 58, 0.92)",
+    overlay: "#9f2089",
   },
-  {
-    id: "sports",
-    label: "Sports & Fitness",
-    href: "/browse?categorySlug=sports-fitness",
-    imageUrl:
-      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=600&q=80",
-    overlay: "rgba(15, 118, 110, 0.92)",
-  },
+];
+
+const BRAND_LOGOS = [
+  { id: "mi", name: "Mi", mark: "Mi", href: "/browse?q=mi" },
+  { id: "bata", name: "Bata", mark: "Bata", href: "/browse?q=bata" },
+  { id: "wow", name: "WOW Skin Science", mark: "WOW", href: "/browse?q=wow" },
+  { id: "mamaearth", name: "mamaearth", mark: "ME", href: "/browse?q=mamaearth" },
+  { id: "wildstone", name: "WILD STONE", mark: "WS", href: "/browse?q=wild%20stone" },
+  { id: "plum", name: "plum", mark: "plum", href: "/browse?q=plum" },
+  { id: "nivea", name: "NIVEA", mark: "N", href: "/browse?q=nivea" },
+  { id: "himalaya", name: "Himalaya", mark: "H", href: "/browse?q=himalaya" },
+];
+
+const CAMPAIGN_COLLECTIONS = [
   {
     id: "fashion",
     label: "Fashion",
     href: "/browse?categorySlug=fashion",
     imageUrl:
-      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80",
-    overlay: "rgba(190, 24, 93, 0.9)",
+      "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&w=400&q=80",
   },
-];
-
-const BRAND_LOGOS = [
-  { id: "narmada", name: "Narmada Weave", mark: "NW", href: "/browse?q=narmada" },
-  { id: "coastal", name: "Coastal Bloom", mark: "CB", href: "/browse?q=coastal" },
-  { id: "silicon", name: "Silicon Bay", mark: "SB", href: "/browse?q=silicon" },
-  { id: "pulse", name: "Pulse Fit", mark: "PF", href: "/browse?q=pulse" },
-  { id: "lotus", name: "Little Lotus", mark: "LL", href: "/browse?q=lotus" },
-  { id: "quill", name: "Ink & Quill", mark: "IQ", href: "/browse?q=quill" },
-  { id: "trail", name: "Trailmark", mark: "TM", href: "/browse?q=trailmark" },
-  { id: "aspera-home", name: "Aspera Home", mark: "AH", href: "/browse?q=aspera%20home" },
+  {
+    id: "home",
+    label: "Home",
+    href: "/browse?categorySlug=home-kitchen",
+    imageUrl:
+      "https://images.unsplash.com/photo-1484101403633-562f8919981f?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "ethnic",
+    label: "Ethnic",
+    href: "/browse?categorySlug=fashion&q=kurta",
+    imageUrl:
+      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "kitchen",
+    label: "Kitchen",
+    href: "/browse?categorySlug=home-kitchen&q=kitchen",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=400&q=80",
+  },
 ];
 
 export default async function Home() {
@@ -341,17 +372,6 @@ export default async function Home() {
     .slice(0, 8)
     .map((entry) => entry.item);
 
-  const categoryVisual = Object.fromEntries(
-    SEED_CATEGORIES.map((category) => [category.slug, category.imagePool[0]]),
-  );
-
-  const circleCategories = categories.map((category) => ({
-    id: category.id,
-    slug: category.slug,
-    name: category.name,
-    imageUrl: categoryVisual[category.slug] ?? null,
-  }));
-
   // Stable shuffle for "Products for you" using published order offset
   const forYouItems = [...forYou.items].sort((a, b) =>
     a.id.localeCompare(b.id),
@@ -361,14 +381,11 @@ export default async function Home() {
     <div className="flex flex-col">
       <HeroCarousel slides={HERO_SLIDES} />
       <TrustSignalBar />
+      <CategoryArches categories={[...MEESHO_ARCH_CATEGORIES]} />
       <BankOffersStrip />
-      <CategoryCircles categories={circleCategories} />
       <AsperaGoldSection />
       <OriginalBrandsSection cards={ORIGINAL_BRAND_CARDS} logos={BRAND_LOGOS} />
-      <PromoBanner
-        imageUrl="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80"
-        categories={circleCategories}
-      />
+      <CampaignPromoBanner collections={CAMPAIGN_COLLECTIONS} />
       <SellerLogoStrip
         sellers={sellers.map((seller) => {
           const name = seller.tradeName ?? seller.legalName;

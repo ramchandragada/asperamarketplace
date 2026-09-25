@@ -3,12 +3,10 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import {
-  ALL_CATEGORIES_MENU,
   MEGA_MENU,
   POPULAR_NAV,
   SEARCH_PLACEHOLDER,
   TRENDING_SEARCHES,
-  type MegaMenuCategory,
   type MegaMenuColumn,
 } from "@/lib/mega-menu";
 import { MobileCategoryDrawer } from "@/components/mobile-category-drawer";
@@ -42,47 +40,12 @@ function BagIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
-function HeartIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 20s-6.5-4.2-8.5-8A4.8 4.8 0 0 1 12 7.2 4.8 4.8 0 0 1 20.5 12c-2 3.8-8.5 8-8.5 8Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function UserIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
       <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.8" />
       <path
         d="M5 19c1.5-3 4-4.5 7-4.5S17.5 16 19 19"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function PhoneAppIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect
-        x="7"
-        y="2.5"
-        width="10"
-        height="19"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M10 5.5h4M11 18.5h2"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
@@ -151,56 +114,36 @@ function CategoryNav() {
     closeTimer.current = setTimeout(() => setOpenKey(null), 160);
   }
 
-  const active: MegaMenuCategory | { key: string; columns: MegaMenuColumn[] } | null =
-    openKey === "all"
-      ? { key: "all", columns: ALL_CATEGORIES_MENU.columns }
-      : MEGA_MENU.find((entry) => entry.key === openKey) ?? null;
+  const active = MEGA_MENU.find((entry) => entry.key === openKey) ?? null;
 
   return (
     <div
-      className="relative hidden border-t border-border/80 bg-surface md:block"
+      className="relative hidden border-t border-[#eee] bg-white md:block"
       onMouseLeave={scheduleClose}
     >
       <nav
         aria-label="Categories"
-        className="container-shell flex h-[var(--nav-height)] items-center gap-1 overflow-x-auto text-sm"
+        className="container-shell flex h-11 items-center gap-0 overflow-x-auto text-[13px] text-[#333]"
       >
         <Link
           href={POPULAR_NAV.href}
-          className="inline-flex shrink-0 items-center gap-1 rounded-[var(--radius-sm)] px-2.5 py-1.5 font-bold text-[#e85d04] hover:bg-[#fff4eb]"
+          className="shrink-0 px-2.5 py-2 whitespace-nowrap hover:text-accent"
           onMouseEnter={scheduleClose}
         >
-          <span aria-hidden>🔥</span>
           {POPULAR_NAV.label}
-        </Link>
-        <Link
-          href={ALL_CATEGORIES_MENU.href}
-          className={`shrink-0 rounded-[var(--radius-sm)] px-3 py-1.5 font-medium ${
-            openKey === "all" ? "bg-accent-soft text-accent" : "hover:bg-accent-soft/70"
-          }`}
-          onMouseEnter={() => open("all")}
-          onFocus={() => open("all")}
-          aria-expanded={openKey === "all"}
-        >
-          All Categories ▾
         </Link>
         {MEGA_MENU.map((entry) => (
           <Link
             key={entry.key}
             href={entry.href}
-            className={`shrink-0 rounded-[var(--radius-sm)] px-2.5 py-1.5 whitespace-nowrap ${
-              openKey === entry.key
-                ? "bg-accent-soft text-accent"
-                : "hover:bg-accent-soft/70"
+            className={`shrink-0 px-2.5 py-2 whitespace-nowrap hover:text-accent ${
+              openKey === entry.key ? "text-accent" : ""
             }`}
             onMouseEnter={() => open(entry.key)}
             onFocus={() => open(entry.key)}
             aria-expanded={openKey === entry.key}
           >
             {entry.label}
-            <span className="ml-0.5 text-[10px] text-muted" aria-hidden>
-              ▾
-            </span>
           </Link>
         ))}
       </nav>
@@ -338,7 +281,7 @@ function HeaderSearch() {
             autoComplete="off"
             aria-autocomplete="list"
             aria-controls={listId}
-            className="w-full rounded-full border border-transparent bg-[#f0f4f3] py-2.5 pr-4 pl-10 text-sm outline-none focus-visible:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className="w-full rounded-md border border-[#d4d4d4] bg-white py-2.5 pr-4 pl-10 text-sm outline-none placeholder:text-[#999] focus-visible:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
         </div>
       </form>
@@ -435,7 +378,6 @@ function HeaderSearch() {
 export function SiteHeaderClient({
   cartCount,
   accountHref,
-  accountLabel,
   sellHref,
   showAdmin,
 }: {
@@ -470,65 +412,55 @@ export function SiteHeaderClient({
       >
         <Link
           href="/"
-          className={`font-display shrink-0 font-bold tracking-tight text-accent transition-all duration-300 ease-out ${
-            compact ? "text-lg md:text-xl" : "text-xl md:text-2xl"
+          className={`shrink-0 font-sans text-[1.65rem] font-bold tracking-tight text-accent lowercase transition-all duration-300 ease-out ${
+            compact ? "text-xl md:text-[1.45rem]" : "md:text-[1.75rem]"
           }`}
+          style={{ fontFamily: "var(--font-geist-sans), DM Sans, sans-serif" }}
         >
-          Aspera
+          aspera
         </Link>
         <div className="hidden min-w-0 flex-1 md:block">
           <HeaderSearch />
         </div>
-        <nav aria-label="Primary" className="ml-auto flex items-center gap-0.5 text-sm sm:gap-1">
+        <nav aria-label="Primary" className="ml-auto flex items-center gap-0 text-sm">
           <Link
             href={sellHref}
-            className={`hidden rounded-[var(--radius-sm)] px-2.5 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground sm:inline ${
-              compact ? "text-xs" : ""
-            }`}
+            className="hidden px-3 py-1.5 text-[13px] text-[#333] hover:text-accent sm:inline"
           >
             Become a Supplier
           </Link>
+          <span className="hidden h-5 w-px bg-border sm:block" aria-hidden />
+          <Link
+            href="/about"
+            className="hidden px-3 py-1.5 text-[13px] text-[#333] hover:text-accent md:inline"
+          >
+            Investor Relations
+          </Link>
+          <span className="hidden h-5 w-px bg-border md:block" aria-hidden />
           {showAdmin ? (
             <Link
               href="/admin/sellers"
-              className="hidden rounded-[var(--radius-sm)] px-2.5 py-1.5 hover:bg-accent-soft/70 lg:inline"
+              className="hidden px-3 py-1.5 text-[13px] text-[#333] hover:text-accent lg:inline"
             >
               Admin
             </Link>
           ) : null}
           <Link
-            href="/download-app"
-            className={`hidden items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 text-muted hover:bg-accent-soft/70 hover:text-foreground lg:inline-flex ${
-              compact ? "lg:hidden" : ""
-            }`}
-            title="Download the Aspera app"
-          >
-            <PhoneAppIcon className="h-4 w-4" />
-            <span className="text-xs font-medium">Download App</span>
-          </Link>
-          <Link
-            href="/wishlist"
-            className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/70 sm:px-2.5"
-            aria-label="Wishlist"
-          >
-            <HeartIcon />
-            <span className="hidden lg:inline">Wishlist</span>
-          </Link>
-          <Link
             href={accountHref}
-            className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/70 sm:px-2.5"
+            className="inline-flex min-w-[3.25rem] flex-col items-center gap-0.5 px-2.5 py-1 text-[#333] hover:text-accent"
           >
-            <UserIcon />
-            <span className="hidden sm:inline">{accountLabel}</span>
+            <UserIcon className="h-[22px] w-[22px]" />
+            <span className="text-[11px] leading-none">Profile</span>
           </Link>
           <Link
             href="/cart"
-            className="relative inline-flex items-center justify-center rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/70 sm:px-2.5"
+            className="relative inline-flex min-w-[3.25rem] flex-col items-center gap-0.5 px-2.5 py-1 text-[#333] hover:text-accent"
             aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
           >
-            <BagIcon />
+            <BagIcon className="h-[22px] w-[22px]" />
+            <span className="text-[11px] leading-none">Cart</span>
             {cartCount > 0 ? (
-              <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
+              <span className="absolute top-0 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             ) : null}
@@ -558,9 +490,8 @@ export function SiteHeaderClient({
           {POPULAR_NAV ? (
             <Link
               href={POPULAR_NAV.href}
-              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#e85d04]/40 bg-[#fff4eb] px-3 py-1.5 font-bold whitespace-nowrap text-[#e85d04]"
+              className="shrink-0 rounded-full border border-border bg-white px-3 py-1.5 font-medium whitespace-nowrap text-[#333]"
             >
-              <span aria-hidden>🔥</span>
               {POPULAR_NAV.label}
             </Link>
           ) : null}

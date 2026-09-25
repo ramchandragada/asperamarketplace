@@ -41,6 +41,7 @@ export function CheckoutPanel({
     totalPaise: number;
     reservedUntil: string | null;
   } | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -169,6 +170,34 @@ export function CheckoutPanel({
     }
   }
 
+  async function createOrder() {
+    if (!reserved) {
+      return;
+    }
+    setPending(true);
+    setError(null);
+    setMessage(null);
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        checkoutSessionId: reserved.id,
+        idempotencyKey: `ord-${crypto.randomUUID()}`,
+      }),
+    });
+    const body = (await response.json()) as {
+      data?: { order: { id: string; orderNumber: string } };
+      message?: string;
+    };
+    setPending(false);
+    if (!response.ok || !body.data) {
+      setError(body.message ?? "Could not create order");
+      return;
+    }
+    setOrderId(body.data.order.id);
+    setMessage(`Order ${body.data.order.orderNumber} created`);
+  }
+
   if (initialCart.items.length === 0 && !reserved) {
     return (
       <p className="text-muted">
@@ -197,9 +226,30 @@ export function CheckoutPanel({
               Hold until {new Date(reserved.reservedUntil).toLocaleString()}
             </p>
           ) : null}
+          {!orderId ? (
+            <button
+              type="button"
+              disabled={pending}
+              className="mt-3 rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground disabled:opacity-60"
+              onClick={() => void createOrder()}
+            >
+              Create order
+            </button>
+          ) : (
+            <p className="mt-3 text-sm">
+              Order ready.{" "}
+              <Link href={`/orders/${orderId}`} className="underline">
+                Open order
+              </Link>{" "}
+              or{" "}
+              <Link href="/orders" className="underline">
+                pay with mock
+              </Link>
+              .
+            </p>
+          )}
           <p className="mt-3 text-sm text-muted">
-            Payment is not collected in Phase 4. Phase 5 will attach a mock
-            payment provider to this reserved checkout.
+            Payment uses a signed mock webhook. No live card charges.
           </p>
         </section>
       ) : null}

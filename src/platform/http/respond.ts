@@ -26,6 +26,15 @@ import {
   CouponRejectedError,
   TotalsMismatchError,
 } from "@/modules/cart/pricing";
+import {
+  OrderConflictError,
+  OrderValidationError,
+  WebhookRejectedError,
+} from "@/modules/orders/service";
+import {
+  OrderTransitionError,
+  PaymentTransitionError,
+} from "@/modules/orders/states";
 import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
 
@@ -102,6 +111,7 @@ export function jsonError(
     error instanceof SellerConflictError ||
     error instanceof CatalogueConflictError ||
     error instanceof CartConflictError ||
+    error instanceof OrderConflictError ||
     error instanceof IdempotencyConflictError
   ) {
     return NextResponse.json(
@@ -121,9 +131,13 @@ export function jsonError(
     error instanceof InsufficientStockError ||
     error instanceof CouponRejectedError ||
     error instanceof TotalsMismatchError ||
+    error instanceof OrderValidationError ||
+    error instanceof WebhookRejectedError ||
     error instanceof StorageValidationError ||
     error instanceof SellerTransitionError ||
-    error instanceof ProductTransitionError
+    error instanceof ProductTransitionError ||
+    error instanceof OrderTransitionError ||
+    error instanceof PaymentTransitionError
   ) {
     return NextResponse.json(
       fail({

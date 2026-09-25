@@ -9,6 +9,7 @@ import {
   type MegaMenuCategory,
   type MegaMenuColumn,
 } from "@/lib/mega-menu";
+import { MobileCategoryDrawer } from "@/components/mobile-category-drawer";
 
 function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -436,20 +437,23 @@ export function SiteHeaderClient({
         <HeaderSearch />
       </div>
       <CategoryNav />
-      <nav
-        aria-label="Mobile categories"
-        className="flex gap-2 overflow-x-auto border-t border-border/60 px-3 py-2 text-xs md:hidden"
-      >
-        {MEGA_MENU.map((entry) => (
-          <Link
-            key={entry.key}
-            href={entry.href}
-            className="shrink-0 rounded-full border border-border bg-background px-3 py-1.5 whitespace-nowrap"
-          >
-            {entry.label}
-          </Link>
-        ))}
-      </nav>
+      <div className="flex items-center gap-2 border-t border-border/60 px-3 py-2 md:hidden">
+        <MobileCategoryDrawer />
+        <nav
+          aria-label="Mobile category shortcuts"
+          className="flex min-w-0 flex-1 gap-2 overflow-x-auto text-xs"
+        >
+          {MEGA_MENU.map((entry) => (
+            <Link
+              key={entry.key}
+              href={entry.href}
+              className="shrink-0 rounded-full border border-border bg-background px-3 py-1.5 whitespace-nowrap"
+            >
+              {entry.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }

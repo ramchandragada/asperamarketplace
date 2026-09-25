@@ -3,12 +3,72 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+function HomeIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CategoriesIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="13" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="4" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="13" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M20 20l-3.2-3.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function HeartIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 20s-6.5-4.2-8.5-8A4.8 4.8 0 0 1 12 7.2 4.8 4.8 0 0 1 20.5 12c-2 3.8-8.5 8-8.5 8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M5.5 19c1.4-2.8 3.8-4.2 6.5-4.2S17.1 16.2 18.5 19"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 const items = [
-  { href: "/", label: "Home", icon: "⌂" },
-  { href: "/shop", label: "Categories", icon: "▦" },
-  { href: "/browse", label: "Search", icon: "⌕" },
-  { href: "/wishlist", label: "Wishlist", icon: "♡" },
-  { href: "/account", label: "Account", icon: "☺" },
+  { href: "/", label: "Home", Icon: HomeIcon },
+  { href: "/shop", label: "Categories", Icon: CategoriesIcon },
+  { href: "/browse", label: "Search", Icon: SearchIcon },
+  { href: "/wishlist", label: "Wishlist", Icon: HeartIcon },
+  { href: "/account", label: "Account", Icon: UserIcon },
 ] as const;
 
 export function MobileBottomNav() {
@@ -32,9 +92,7 @@ export function MobileBottomNav() {
                   active ? "text-accent" : "text-muted"
                 }`}
               >
-                <span className="text-lg leading-none" aria-hidden>
-                  {item.icon}
-                </span>
+                <item.Icon />
                 {item.label}
               </Link>
             </li>

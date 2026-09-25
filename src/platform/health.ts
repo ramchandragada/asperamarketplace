@@ -8,16 +8,18 @@ export type DatabaseStatus =
 export type HealthData = {
   status: "ok" | "degraded";
   service: "aspera-marketplace";
-  phase: "foundations";
+  phase: "hardening";
   database: DatabaseStatus;
+  migrationsHint: "run pnpm db:migrate on non-prod only";
 };
 
 export function buildHealthData(database: DatabaseStatus): HealthData {
   return {
     status: database === "unavailable" ? "degraded" : "ok",
     service: "aspera-marketplace",
-    phase: "foundations",
+    phase: "hardening",
     database,
+    migrationsHint: "run pnpm db:migrate on non-prod only",
   };
 }
 

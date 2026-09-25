@@ -66,3 +66,27 @@ export function buildSearchDocument(input: {
 export function formatPaise(paise: number): string {
   return `₹${(paise / 100).toFixed(2)}`;
 }
+
+export function discountPercent(mrp: number, price: number) {
+  if (!mrp || mrp <= price) return null;
+  return Math.round(((mrp - price) / mrp) * 100);
+}
+
+export type ProductCardBadge = "original" | "mall";
+
+/** Meesho-style card badge: house brand vs premium mall brands. */
+export function resolveProductBadge(input: {
+  brandSlug?: string | null;
+  brandName?: string | null;
+  sellerVerified?: boolean;
+}): ProductCardBadge | null {
+  const slug = (input.brandSlug ?? "").toLowerCase();
+  const name = (input.brandName ?? "").toLowerCase();
+  if (slug.startsWith("aspera") || name.includes("aspera")) {
+    return "original";
+  }
+  if (input.sellerVerified && (slug || name)) {
+    return "mall";
+  }
+  return null;
+}

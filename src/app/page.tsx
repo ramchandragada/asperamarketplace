@@ -1,122 +1,365 @@
 import Link from "next/link";
-import { checkDatabaseStatus } from "@/platform/health";
-import { getOptionalActor } from "@/modules/identity/service";
-import { searchApprovedProducts } from "@/modules/catalogue/service";
-import { formatPaise } from "@/modules/catalogue/helpers";
+import { ProductCard } from "@/components/product-card";
+import {
+  CatalogueBrowse,
+  type BrowseProduct,
+} from "@/components/catalogue-browse";
+import { AsperaGoldSection } from "@/components/aspera-gold-section";
+import { BankOffersStrip } from "@/components/bank-offers-strip";
+import { PageShell, SectionHeading } from "@/components/ui/page-shell";
+import {
+  CampaignPromoBanner,
+  CategoryArches,
+  MeeshoAppHero,
+  OriginalBrandsSection,
+  SellerLogoStrip,
+  TrustSignalBar,
+} from "@/components/home-storefront";
+import {
+  listActiveBrands,
+  listActiveCategories,
+  searchApprovedProducts,
+} from "@/modules/catalogue/service";
+import { prisma } from "@/platform/db/prisma";
+import { discountPercent, slugify } from "@/modules/catalogue/helpers";
+import { MEESHO_ARCH_CATEGORIES } from "@/lib/mega-menu";
 
 export const dynamic = "force-dynamic";
 
+const ORIGINAL_BRAND_CARDS = [
+  {
+    id: "personal-care",
+    label: "Personal Care",
+    href: "/browse?categorySlug=beauty-personal-care",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
+  },
+  {
+    id: "electronics",
+    label: "Electronics",
+    href: "/browse?categorySlug=electronics-accessories",
+    imageUrl:
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
+  },
+  {
+    id: "makeup",
+    label: "Makeup",
+    href: "/browse?categorySlug=beauty-personal-care&q=lip",
+    imageUrl:
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
+  },
+  {
+    id: "smart-phones",
+    label: "Smart Phones",
+    href: "/browse?categorySlug=mobile-accessories",
+    imageUrl:
+      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
+  },
+  {
+    id: "men-perfume",
+    label: "Men Perfume",
+    href: "/browse?categorySlug=beauty-personal-care&q=perfume",
+    imageUrl:
+      "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
+  },
+  {
+    id: "bags",
+    label: "Bags",
+    href: "/browse?categorySlug=bags-footwear&q=bag",
+    imageUrl:
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
+  },
+  {
+    id: "footwear",
+    label: "Footwear",
+    href: "/browse?categorySlug=bags-footwear&q=shoe",
+    imageUrl:
+      "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
+  },
+  {
+    id: "home-appliances",
+    label: "Home Essentials",
+    href: "/browse?categorySlug=home-kitchen",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556912173-46c336c7fd55?auto=format&fit=crop&w=600&q=80",
+    overlay: "#9f2089",
+  },
+];
+
+const BRAND_LOGOS = [
+  { id: "mi", name: "Mi", mark: "Mi", href: "/browse?q=mi" },
+  { id: "bata", name: "Bata", mark: "Bata", href: "/browse?q=bata" },
+  { id: "wow", name: "WOW Skin Science", mark: "WOW", href: "/browse?q=wow" },
+  { id: "mamaearth", name: "mamaearth", mark: "ME", href: "/browse?q=mamaearth" },
+  { id: "wildstone", name: "WILD STONE", mark: "WS", href: "/browse?q=wild%20stone" },
+  { id: "plum", name: "plum", mark: "plum", href: "/browse?q=plum" },
+  { id: "nivea", name: "NIVEA", mark: "N", href: "/browse?q=nivea" },
+  { id: "himalaya", name: "Himalaya", mark: "H", href: "/browse?q=himalaya" },
+];
+
+const CAMPAIGN_COLLECTIONS = [
+  {
+    id: "trending",
+    label: "Trending Now",
+    href: "/browse?categorySlug=fashion",
+    imageUrl:
+      "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "budget",
+    label: "Budget Buys",
+    href: "/browse?categorySlug=home-kitchen",
+    imageUrl:
+      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "top-rated",
+    label: "Top Rated Picks",
+    href: "/browse?categorySlug=fashion&q=kurta",
+    imageUrl:
+      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "essentials",
+    label: "Daily Essentials",
+    href: "/browse?categorySlug=home-kitchen&q=kitchen",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=400&q=80",
+  },
+];
+
 export default async function Home() {
-  const database = await checkDatabaseStatus();
-  const actor = await getOptionalActor();
-  const catalogue = await searchApprovedProducts({ page: 1, pageSize: 3 });
-  const databaseLabel =
-    database === "configured"
-      ? "Configured"
-      : database === "unavailable"
-        ? "Unavailable"
-        : "Not configured";
+  const categories = await listActiveCategories();
+  const categorySlugs = categories.map((category) => category.slug);
+
+  const [newest, trendingPool, dealsPool, forYou, sellers, brands] =
+    await Promise.all([
+    searchApprovedProducts({ page: 1, pageSize: 8, sort: "newest" }),
+    searchApprovedProducts({
+      page: 1,
+      pageSize: 12,
+      sort: "newest",
+      categorySlug: categorySlugs.find((slug) => slug === "fashion") ?? undefined,
+    }),
+    searchApprovedProducts({ page: 1, pageSize: 40, sort: "newest" }),
+    searchApprovedProducts({ page: 1, pageSize: 24, sort: "relevance" }),
+    prisma.seller.findMany({
+      where: { status: "approved" },
+      take: 12,
+      orderBy: { tradeName: "asc" },
+      select: {
+        id: true,
+        tradeName: true,
+        legalName: true,
+        _count: {
+          select: { products: { where: { status: "approved" } } },
+        },
+        products: {
+          where: { status: "approved" },
+          select: { attributes: true },
+          take: 48,
+        },
+      },
+    }),
+    listActiveBrands(),
+  ]);
+
+  // Diversify trending away from newest household-heavy first page
+  let trending = trendingPool.items;
+  if (trending.length < 8) {
+    const tech = await searchApprovedProducts({
+      page: 1,
+      pageSize: 12,
+      sort: "newest",
+      categorySlug: "electronics-accessories",
+    });
+    const beauty = await searchApprovedProducts({
+      page: 1,
+      pageSize: 12,
+      sort: "newest",
+      categorySlug: "beauty-personal-care",
+    });
+    const seen = new Set(trending.map((item) => item.id));
+    for (const item of [...tech.items, ...beauty.items, ...dealsPool.items]) {
+      if (!seen.has(item.id)) {
+        trending.push(item);
+        seen.add(item.id);
+      }
+      if (trending.length >= 12) break;
+    }
+  }
+
+  const newestIds = new Set(newest.items.map((item) => item.id));
+  trending = trending.filter((item) => !newestIds.has(item.id)).slice(0, 12);
+
+  const deals = dealsPool.items
+    .map((item) => ({
+      item,
+      discount: discountPercent(item.minMrpPaise ?? 0, item.minPricePaise) ?? 0,
+    }))
+    .filter((entry) => entry.discount >= 15)
+    .sort((a, b) => b.discount - a.discount)
+    .slice(0, 8)
+    .map((entry) => entry.item);
+
+  // Stable shuffle for "Products for you" using published order offset
+  const forYouItems = [...forYou.items].sort((a, b) =>
+    a.id.localeCompare(b.id),
+  );
 
   return (
-    <>
-      <a className="skip-link" href="#content">
-        Skip to content
-      </a>
-      <main
-        id="content"
-        className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-8 px-6 py-16"
-      >
-        <header className="flex flex-col gap-3">
-          <p className="text-sm font-medium tracking-wide text-muted uppercase">
-            Aspera Marketplace
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight">
-            Catalogue and discovery
-          </h1>
-          <p className="max-w-2xl text-lg leading-8 text-muted">
-            Browse moderated seller listings without signing in. Prices and stock
-            are server-owned integers.
-          </p>
-        </header>
-        <section
-          aria-labelledby="status-heading"
-          className="rounded-card border border-border bg-surface p-6"
-        >
-          <h2 id="status-heading" className="text-xl font-semibold">
-            Current status
-          </h2>
-          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-muted">Phase</dt>
-              <dd className="font-medium">Catalogue and discovery</dd>
-            </div>
-            <div>
-              <dt className="text-muted">Database</dt>
-              <dd className="font-medium">{databaseLabel}</dd>
-            </div>
-            <div>
-              <dt className="text-muted">Session</dt>
-              <dd className="font-medium">
-                {actor ? actor.displayName : "Signed out"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted">Public listings</dt>
-              <dd className="font-medium">{catalogue.total}</dd>
-            </div>
-          </dl>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/browse"
-              className="inline-flex rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground"
-            >
-              Browse catalogue
-            </Link>
-            {actor ? (
+    <div className="flex flex-col">
+      <MeeshoAppHero />
+      <TrustSignalBar />
+      <CategoryArches categories={[...MEESHO_ARCH_CATEGORIES]} />
+      <OriginalBrandsSection cards={ORIGINAL_BRAND_CARDS} logos={BRAND_LOGOS} />
+
+      {/* Meesho: Products For You immediately after Original Brands */}
+      <div className="border-t border-[#eee] bg-white py-6 md:py-8">
+        <div className="container-shell">
+          <CatalogueBrowse
+            initialItems={forYouItems as BrowseProduct[]}
+            initialQuery=""
+            initialTotal={forYou.total}
+            categories={categories.map((category) => ({
+              slug: category.slug,
+              name: category.name,
+              productCount: category.productCount,
+            }))}
+            brands={brands}
+            initialSort="relevance"
+            heading="Products For You"
+            browseBasePath="/"
+            variant="home"
+            enableLoadMore
+            infiniteScroll
+            updateUrl={false}
+          />
+        </div>
+      </div>
+
+      <CampaignPromoBanner collections={CAMPAIGN_COLLECTIONS} />
+      <AsperaGoldSection />
+      <BankOffersStrip />
+      <SellerLogoStrip
+        sellers={sellers.map((seller) => {
+          const name = seller.tradeName ?? seller.legalName;
+          const ratings = seller.products
+            .map((product) => {
+              const attrs =
+                product.attributes &&
+                typeof product.attributes === "object" &&
+                !Array.isArray(product.attributes)
+                  ? (product.attributes as Record<string, unknown>)
+                  : {};
+              return typeof attrs.ratingAverage === "number"
+                ? attrs.ratingAverage
+                : null;
+            })
+            .filter((value): value is number => value != null);
+          const ratingAverage =
+            ratings.length > 0
+              ? ratings.reduce((sum, value) => sum + value, 0) / ratings.length
+              : 4.0;
+          return {
+            id: seller.id,
+            name,
+            href: `/shops/${encodeURIComponent(slugify(name))}`,
+            productCount: seller._count.products,
+            ratingAverage: Number(ratingAverage.toFixed(1)),
+          };
+        })}
+      />
+
+      <PageShell className="gap-10 md:gap-12 !pt-4 !pb-4">
+        <section className="flex flex-col gap-4">
+          <SectionHeading
+            title="New arrivals"
+            description="Just landed on Aspera"
+            action={
               <Link
-                href="/account"
-                className="inline-flex rounded-lg border border-border px-4 py-2 font-medium"
+                href="/shop?sort=newest"
+                className="text-sm font-medium text-accent underline"
               >
-                Account
+                See all →
               </Link>
-            ) : (
-              <>
-                <Link
-                  href="/register"
-                  className="inline-flex rounded-lg border border-border px-4 py-2 font-medium"
-                >
-                  Register
-                </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex rounded-lg border border-border px-4 py-2 font-medium"
-                >
-                  Sign in
-                </Link>
-              </>
-            )}
+            }
+          />
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
+            {newest.items.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
           </div>
         </section>
-        {catalogue.items.length > 0 ? (
-          <section aria-labelledby="featured-heading" className="flex flex-col gap-4">
-            <h2 id="featured-heading" className="text-xl font-semibold">
-              Approved listings
-            </h2>
-            <ul className="flex flex-col gap-4">
-              {catalogue.items.map((item) => (
-                <li key={item.id} className="border-b border-border pb-3">
-                  <Link href={`/products/${item.slug}`} className="hover:underline">
-                    <span className="font-medium">{item.title}</span>
-                  </Link>
-                  <p className="text-sm text-muted">
-                    {formatPaise(item.minPricePaise)} · {item.sellerName}
-                  </p>
-                </li>
+
+        <section className="flex flex-col gap-4">
+          <SectionHeading
+            title="Popular picks"
+            description="Best sellers across categories"
+            action={
+              <Link
+                href="/popular"
+                className="text-sm font-medium text-accent underline"
+              >
+                See all →
+              </Link>
+            }
+          />
+          <div className="rail-scroll">
+            {trending.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
+          </div>
+        </section>
+
+        {deals.length > 0 ? (
+          <section className="flex flex-col gap-4">
+            <SectionHeading
+              title="Deals of the day"
+              description="Today's best deals"
+              action={
+                <Link
+                  href="/shop?minDiscountPercent=15"
+                  className="text-sm font-medium text-accent underline"
+                >
+                  See all →
+                </Link>
+              }
+            />
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+              {deals.map((item) => (
+                <ProductCard key={item.id} product={item} />
               ))}
-            </ul>
+            </div>
           </section>
         ) : null}
-      </main>
-    </>
+
+        <section className="rounded-[var(--radius)] border border-border bg-accent-soft p-5 md:p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="font-display text-xl font-semibold md:text-2xl">
+                Become a Supplier
+              </h2>
+              <p className="mt-1 max-w-xl text-sm leading-6 text-muted">
+                Sell across India with verified listings and transparent pricing.
+              </p>
+            </div>
+            <Link
+              href="/seller/onboarding"
+              className="inline-flex rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
+            >
+              Start selling
+            </Link>
+          </div>
+        </section>
+      </PageShell>
+    </div>
   );
 }

@@ -17,6 +17,33 @@ import {
   CatalogueValidationError,
 } from "@/modules/catalogue/service";
 import { ProductTransitionError } from "@/modules/catalogue/helpers";
+import {
+  CartConflictError,
+  CartValidationError,
+  InsufficientStockError,
+} from "@/modules/cart/service";
+import {
+  CouponRejectedError,
+  TotalsMismatchError,
+} from "@/modules/cart/pricing";
+import {
+  OrderConflictError,
+  OrderValidationError,
+  WebhookRejectedError,
+} from "@/modules/orders/service";
+import {
+  OrderTransitionError,
+  PaymentTransitionError,
+} from "@/modules/orders/states";
+import { FulfilmentValidationError } from "@/modules/fulfilment/service";
+import { FulfilmentTransitionError } from "@/modules/fulfilment/states";
+import {
+  FinanceConflictError,
+  FinanceValidationError,
+} from "@/modules/finance/service";
+import { TrustValidationError } from "@/modules/trust/service";
+import { AnalyticsValidationError } from "@/modules/analytics/service";
+import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
 
 export function getRequestId(request: Request): string {
@@ -90,7 +117,11 @@ export function jsonError(
   if (
     error instanceof IdentityConflictError ||
     error instanceof SellerConflictError ||
-    error instanceof CatalogueConflictError
+    error instanceof CatalogueConflictError ||
+    error instanceof CartConflictError ||
+    error instanceof OrderConflictError ||
+    error instanceof IdempotencyConflictError ||
+    error instanceof FinanceConflictError
   ) {
     return NextResponse.json(
       fail({
@@ -105,9 +136,22 @@ export function jsonError(
   if (
     error instanceof ValidationError ||
     error instanceof CatalogueValidationError ||
+    error instanceof CartValidationError ||
+    error instanceof InsufficientStockError ||
+    error instanceof CouponRejectedError ||
+    error instanceof TotalsMismatchError ||
+    error instanceof OrderValidationError ||
+    error instanceof WebhookRejectedError ||
     error instanceof StorageValidationError ||
     error instanceof SellerTransitionError ||
-    error instanceof ProductTransitionError
+    error instanceof ProductTransitionError ||
+    error instanceof OrderTransitionError ||
+    error instanceof PaymentTransitionError ||
+    error instanceof FulfilmentValidationError ||
+    error instanceof FulfilmentTransitionError ||
+    error instanceof FinanceValidationError ||
+    error instanceof TrustValidationError ||
+    error instanceof AnalyticsValidationError
   ) {
     return NextResponse.json(
       fail({

@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../src/modules/identity/crypto";
 import { ROLE_DEFINITIONS } from "../src/modules/identity/roles";
-import { buildSearchDocument } from "../src/modules/catalogue/helpers";
+import { seedMarketplaceCatalogue } from "../src/modules/catalogue/seed-catalogue";
+import { SEED_CATEGORIES, SEED_PRODUCTS } from "../src/modules/catalogue/seed-catalogue-data";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +10,100 @@ const DEV_ADMIN_EMAIL = "admin@aspera.local";
 const DEV_ADMIN_PASSWORD = "AsperaAdminDevOnly1!";
 const DEV_SELLER_EMAIL = "seller@aspera.local";
 const DEV_SELLER_PASSWORD = "AsperaSellerDevOnly1!";
-const DEV_PRODUCT_SLUG = "cotton-tea-towel-set-demo";
+
+async function ensureSeller(input: {
+  email: string;
+  password: string;
+  displayName: string;
+  legalName: string;
+  tradeName: string;
+  adminId: string;
+  sellerRoleId: string;
+}) {
+  const user = await prisma.user.upsert({
+    where: { email: input.email },
+    create: {
+      email: input.email,
+      displayName: input.displayName,
+      passwordHash: await hashPassword(input.password),
+      emailVerifiedAt: new Date(),
+    },
+    update: {},
+  });
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId_scopeKey: {
+        userId: user.id,
+        roleId: input.sellerRoleId,
+        scopeKey: "global",
+      },
+    },
+    create: {
+      userId: user.id,
+      roleId: input.sellerRoleId,
+      scopeKey: "global",
+    },
+    update: {},
+  });
+
+  let seller = await prisma.seller.findFirst({
+    where: { ownerUserId: user.id },
+  });
+  if (!seller) {
+    seller = await prisma.seller.create({
+      data: {
+        ownerUserId: user.id,
+        legalName: input.legalName,
+        tradeName: input.tradeName,
+        status: "approved",
+        contactEmail: input.email,
+        contactPhone: "9876543210",
+        panLast4: "234F",
+        gstinMasked: "29****F1Z5",
+        registeredState: "Karnataka",
+        agreementAcceptedAt: new Date(),
+        submittedAt: new Date(),
+        reviewedAt: new Date(),
+        reviewedByUserId: input.adminId,
+        approvedAt: new Date(),
+        statusReason: "Seeded approved demo seller for catalogue density",
+      },
+    });
+  } else {
+    seller = await prisma.seller.update({
+      where: { id: seller.id },
+      data: {
+        status: "approved",
+        tradeName: input.tradeName,
+        legalName: input.legalName,
+        approvedAt: seller.approvedAt ?? new Date(),
+        reviewedAt: new Date(),
+        reviewedByUserId: input.adminId,
+        statusReason: "Seeded approved demo seller for catalogue density",
+      },
+    });
+  }
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId_scopeKey: {
+        userId: user.id,
+        roleId: input.sellerRoleId,
+        scopeKey: seller.id,
+      },
+    },
+    create: {
+      userId: user.id,
+      roleId: input.sellerRoleId,
+      scopeKey: seller.id,
+      sellerId: seller.id,
+    },
+    update: { sellerId: seller.id },
+  });
+
+  return { user, seller };
+}
 
 async function main() {
   for (const [key, definition] of Object.entries(ROLE_DEFINITIONS)) {
@@ -60,187 +154,195 @@ async function main() {
     update: {},
   });
 
-  const sellerUser = await prisma.user.upsert({
-    where: { email: DEV_SELLER_EMAIL },
-    create: {
-      email: DEV_SELLER_EMAIL,
-      displayName: "Dev Seller",
-      passwordHash: await hashPassword(DEV_SELLER_PASSWORD),
-      emailVerifiedAt: new Date(),
-    },
-    update: {},
+  const home = await ensureSeller({
+    email: DEV_SELLER_EMAIL,
+    password: DEV_SELLER_PASSWORD,
+    displayName: "Home Seller",
+    legalName: "HomeCraft Essentials Private Limited",
+    tradeName: "HomeCraft Essentials",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
   });
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId_scopeKey: {
-        userId: sellerUser.id,
-        roleId: sellerRole.id,
-        scopeKey: "global",
-      },
-    },
-    create: {
-      userId: sellerUser.id,
-      roleId: sellerRole.id,
-      scopeKey: "global",
-    },
-    update: {},
+  const fashion = await ensureSeller({
+    email: "seller.fashion@aspera.local",
+    password: "AsperaFashionDevOnly1!",
+    displayName: "Fashion Seller",
+    legalName: "Priya Boutique Private Limited",
+    tradeName: "Priya's Boutique",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const tech = await ensureSeller({
+    email: "seller.tech@aspera.local",
+    password: "AsperaTechDevOnly1!",
+    displayName: "Tech Seller",
+    legalName: "TechZone India LLP",
+    tradeName: "TechZone India",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const wellness = await ensureSeller({
+    email: "seller.wellness@aspera.local",
+    password: "AsperaWellnessDevOnly1!",
+    displayName: "Wellness Seller",
+    legalName: "GreenLeaf Organics Private Limited",
+    tradeName: "GreenLeaf Organics",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const textile = await ensureSeller({
+    email: "seller.textile@aspera.local",
+    password: "AsperaTextileDevOnly1!",
+    displayName: "Textile Seller",
+    legalName: "Delhi Textile House Private Limited",
+    tradeName: "Delhi Textile House",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const sports = await ensureSeller({
+    email: "seller.sports@aspera.local",
+    password: "AsperaSportsDevOnly1!",
+    displayName: "Sports Seller",
+    legalName: "FitLife Sports Private Limited",
+    tradeName: "FitLife Sports",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const mumbai = await ensureSeller({
+    email: "seller.mumbai@aspera.local",
+    password: "AsperaMumbaiDevOnly1!",
+    displayName: "Mumbai Fashion Seller",
+    legalName: "Mumbai Fashion Studio LLP",
+    tradeName: "Mumbai Fashion Studio",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
+  });
+  const artisan = await ensureSeller({
+    email: "seller.artisan@aspera.local",
+    password: "AsperaArtisanDevOnly1!",
+    displayName: "Artisan Seller",
+    legalName: "Artisan Weaves Company Private Limited",
+    tradeName: "Artisan Weaves Co.",
+    adminId: admin.id,
+    sellerRoleId: sellerRole.id,
   });
 
-  const category = await prisma.category.upsert({
-    where: { slug: "general-merchandise" },
-    create: {
-      slug: "general-merchandise",
-      name: "General merchandise",
-      description:
-        "Configurable seed category. Not a launch-category business decision.",
-      isActive: true,
+  const staffSeeds = [
+    {
+      email: "seller.ops@aspera.local",
+      password: "AsperaOpsDevOnly1!",
+      displayName: "Dev Seller Ops",
+      roleKey: "seller_operations",
     },
-    update: {
-      isActive: true,
-      name: "General merchandise",
+    {
+      email: "seller.finance@aspera.local",
+      password: "AsperaFinanceDevOnly1!",
+      displayName: "Dev Seller Finance",
+      roleKey: "seller_finance",
     },
-  });
+    {
+      email: "seller.support@aspera.local",
+      password: "AsperaSupportDevOnly1!",
+      displayName: "Dev Seller Support",
+      roleKey: "seller_support",
+    },
+  ] as const;
 
-  const brand = await prisma.brand.upsert({
-    where: { slug: "aspera-home" },
-    create: { slug: "aspera-home", name: "Aspera Home" },
-    update: { name: "Aspera Home" },
-  });
-
-  let seller = await prisma.seller.findFirst({
-    where: { ownerUserId: sellerUser.id },
-  });
-  if (!seller) {
-    seller = await prisma.seller.create({
-      data: {
-        ownerUserId: sellerUser.id,
-        legalName: "Aspera Demo Traders Private Limited",
-        tradeName: "Aspera Demo Mart",
-        status: "approved",
-        contactEmail: DEV_SELLER_EMAIL,
-        contactPhone: "9876543210",
-        panLast4: "234F",
-        gstinMasked: "29****F1Z5",
-        registeredState: "Karnataka",
-        agreementAcceptedAt: new Date(),
-        submittedAt: new Date(),
-        reviewedAt: new Date(),
-        reviewedByUserId: admin.id,
-        approvedAt: new Date(),
-        statusReason: "Seeded approved seller for local development",
-      },
+  const staffAccounts: Array<{ email: string; password: string; role: string }> =
+    [];
+  for (const staff of staffSeeds) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { key: staff.roleKey },
     });
-  } else if (seller.status !== "approved") {
-    seller = await prisma.seller.update({
-      where: { id: seller.id },
-      data: {
-        status: "approved",
-        approvedAt: new Date(),
-        reviewedAt: new Date(),
-        reviewedByUserId: admin.id,
-        statusReason: "Seeded approved seller for local development",
+    const user = await prisma.user.upsert({
+      where: { email: staff.email },
+      create: {
+        email: staff.email,
+        displayName: staff.displayName,
+        passwordHash: await hashPassword(staff.password),
+        emailVerifiedAt: new Date(),
       },
+      update: {},
     });
-  }
-
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId_scopeKey: {
-        userId: sellerUser.id,
-        roleId: sellerRole.id,
-        scopeKey: seller.id,
+    await prisma.userRole.upsert({
+      where: {
+        userId_roleId_scopeKey: {
+          userId: user.id,
+          roleId: role.id,
+          scopeKey: home.seller.id,
+        },
       },
-    },
-    create: {
-      userId: sellerUser.id,
-      roleId: sellerRole.id,
-      scopeKey: seller.id,
-      sellerId: seller.id,
-    },
-    update: {
-      sellerId: seller.id,
-    },
-  });
-
-  const searchDocument = buildSearchDocument({
-    title: "Cotton tea towel set",
-    summary: "Pack of three absorbent cotton tea towels for everyday kitchens.",
-    description:
-      "Fictional development listing. Soft cotton towels with hanging loops. Suitable for drying crockery and wiping counters. Seeded for public browse without login.",
-    brandName: brand.name,
-    categoryName: category.name,
-    sku: "TOWEL-SET-01",
-  });
-
-  const existingProduct = await prisma.product.findUnique({
-    where: { slug: DEV_PRODUCT_SLUG },
-    include: { variants: { include: { inventory: true } } },
-  });
-
-  if (!existingProduct) {
-    await prisma.$transaction(async (tx) => {
-      const product = await tx.product.create({
-        data: {
-          sellerId: seller.id,
-          categoryId: category.id,
-          brandId: brand.id,
-          slug: DEV_PRODUCT_SLUG,
-          title: "Cotton tea towel set",
-          summary:
-            "Pack of three absorbent cotton tea towels for everyday kitchens.",
-          description:
-            "Fictional development listing. Soft cotton towels with hanging loops. Suitable for drying crockery and wiping counters. Seeded for public browse without login.",
-          status: "approved",
-          countryOfOrigin: "India",
-          hsnCode: "6302",
-          searchDocument,
-          submittedAt: new Date(),
-          reviewedAt: new Date(),
-          reviewedByUserId: admin.id,
-          publishedAt: new Date(),
-          statusReason: "Seeded approved listing for local discovery",
-        },
-      });
-      const variant = await tx.productVariant.create({
-        data: {
-          productId: product.id,
-          sku: "TOWEL-SET-01",
-          title: "Pack of 3",
-          mrpPaise: 49900,
-          sellingPricePaise: 39900,
-          weightGrams: 450,
-        },
-      });
-      const inventory = await tx.inventoryItem.create({
-        data: {
-          variantId: variant.id,
-          sellerId: seller.id,
-          onHand: 40,
-          reserved: 0,
-          damaged: 0,
-        },
-      });
-      await tx.stockMovement.create({
-        data: {
-          inventoryItemId: inventory.id,
-          movementType: "receive",
-          quantity: 40,
-          reason: "Seed initial stock",
-          actorId: admin.id,
-          correlationId: "seed-catalogue",
-        },
-      });
+      create: {
+        userId: user.id,
+        roleId: role.id,
+        scopeKey: home.seller.id,
+        sellerId: home.seller.id,
+      },
+      update: { sellerId: home.seller.id },
+    });
+    staffAccounts.push({
+      email: staff.email,
+      password: staff.password,
+      role: staff.roleKey,
     });
   }
+
+  const catalogue = await seedMarketplaceCatalogue(prisma, {
+    adminUserId: admin.id,
+    sellers: {
+      home: { id: home.seller.id },
+      fashion: { id: fashion.seller.id },
+      tech: { id: tech.seller.id },
+      wellness: { id: wellness.seller.id },
+      textile: { id: textile.seller.id },
+      sports: { id: sports.seller.id },
+      mumbai: { id: mumbai.seller.id },
+      artisan: { id: artisan.seller.id },
+    },
+  });
+
+  const { ensureDefaultTaxProfiles } = await import("../src/modules/tax/service");
+  await ensureDefaultTaxProfiles();
+
+  const approvedPublic = SEED_PRODUCTS.filter(
+    (product) => (product.status ?? "approved") === "approved",
+  ).length;
 
   console.log(
     JSON.stringify(
       {
         seeded: true,
+        environment: "development-or-preview-only",
         admin: { email: DEV_ADMIN_EMAIL, password: DEV_ADMIN_PASSWORD },
-        seller: { email: DEV_SELLER_EMAIL, password: DEV_SELLER_PASSWORD },
-        publicProductSlug: DEV_PRODUCT_SLUG,
-        note: "Fictional development credentials and listing only",
+        sellers: [
+          { key: "home", email: DEV_SELLER_EMAIL, password: DEV_SELLER_PASSWORD },
+          {
+            key: "fashion",
+            email: "seller.fashion@aspera.local",
+            password: "AsperaFashionDevOnly1!",
+          },
+          {
+            key: "tech",
+            email: "seller.tech@aspera.local",
+            password: "AsperaTechDevOnly1!",
+          },
+          {
+            key: "wellness",
+            email: "seller.wellness@aspera.local",
+            password: "AsperaWellnessDevOnly1!",
+          },
+        ],
+        sellerStaff: staffAccounts,
+        catalogue: {
+          categories: catalogue.categories,
+          productsDefined: catalogue.productsDefined,
+          approvedPublicTarget: approvedPublic,
+          created: catalogue.created,
+          updated: catalogue.updated,
+          perCategory: catalogue.perCategory,
+          categoryNames: SEED_CATEGORIES.map((category) => category.name),
+        },
+        note: "Fictional development credentials and catalogue imagery only. No fake payments or customer reviews.",
       },
       null,
       2,

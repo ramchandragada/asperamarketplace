@@ -145,3 +145,10 @@ Status: accepted
 PAN and GSTIN are validated on input and stored only in masked form (`pan_last4`, `gstin_masked`). KYC files use a storage port with a local filesystem adapter under `uploads/kyc` (configurable via `DOCUMENT_STORAGE_PATH`). An S3-compatible adapter can replace the local adapter without changing seller services.
 
 
+
+## D-019 — Storefront UX shell + seller capability RBAC
+
+Date: 2026-09-25  
+Status: accepted
+
+Post–PR #12 work adds a reusable Tailwind design language (tokens, header/footer, product cards, empty/skeleton states), a commerce homepage and filtered browse experience, and seller staff capabilities (`seller_operations` / `seller_finance` / `seller_support`) enforced in server policies. The seller `/seller` action dashboard reads only real Prisma data. Meesho is a conceptual UX reference only—Aspera branding and layout remain independent. No shadcn package install was required; lightweight `components/ui` primitives follow the same composition style. Live Razorpay and `main` production alignment remain out of scope; A-20–A-28 stay open.

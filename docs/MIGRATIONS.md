@@ -1,5 +1,70 @@
 # Migrations
 
+## Eleventh migration
+
+Name: `20260925120000_product_images`  
+Checkpoint: (catalogue visuals slice)  
+Tables: `product_images`
+
+Stores primary and gallery image URLs for catalogue cards and PDPs. Seeded Unsplash URLs are development/preview imagery only.
+
+## Tenth migration
+
+Name: `20260925100000_tax_profiles`  
+Checkpoint: (continuation slice; schema after Phase 9 analytics)  
+Tables: `tax_profiles`  
+
+Configurable tax policy rows with explanation text. Active profile feeds checkout tax traces. **Not a legal GST engine** — A-21/A-24 remain open.
+
+## Ninth migration
+
+Name: `20260925090000_analytics`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-analytics.sql`  
+Tables: `analytics_events`, `experiments`  
+Enums: `ExperimentStatus`
+
+## Eighth migration
+
+Name: `20260925080000_trust_safety`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-trust-safety.sql`  
+Tables: `risk_cases`, `counterfeit_cases`, `product_reviews`, `privacy_requests`, `compliance_evidence`  
+Enums: `RiskCaseStatus`, `CounterfeitCaseStatus`, `ReviewModerationStatus`, `PrivacyRequestStatus`, `ComplianceEvidenceStatus`
+
+## Sixth migration
+
+Name: `20260925060800_fulfilment_care`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-fulfilment-care.sql`  
+Tables: `shipments`, `return_requests`, `refunds`, `support_tickets`, `disputes`  
+Enums: `ReturnStatus`, `RefundStatus`, `TicketStatus`, `DisputeStatus`  
+Alters: `OrderStatus` (+`partially_cancelled`, `fulfilled`); fulfilment tracking columns
+
+## Seventh migration
+
+Name: `20260925070000_finance_ledger`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-finance-ledger.sql`  
+Tables: `ledger_accounts`, `journal_entries`, `journal_lines`, `commission_rules`, `settlement_batches`, `settlement_lines`, `reconciliation_exceptions`  
+Enums: `LedgerAccountType`, `JournalEntryStatus`, `SettlementStatus`, `ReconciliationStatus`
+
+Additive only. Mock settlements and double-entry posts on paid orders. No live payout provider.
+
+## Fifth migration
+
+Name: `20260925060147_payments_orders`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-payments-orders.sql`  
+Tables: `orders`, `order_fulfilment_groups`, `order_lines`, `payment_attempts`, `payment_webhook_events`, `invoices`, `notification_messages`  
+Enums: `OrderStatus`, `FulfilmentGroupStatus`, `PaymentAttemptStatus`, `InvoiceStatus`
+
+Additive only. Mock payment provider only. No live Razorpay credentials.
+
+## Fourth migration
+
+Name: `20260925040646_cart_checkout`  
+Checkpoint: `docs/schema-checkpoints/2026-09-25-cart-checkout.sql`  
+Tables: `carts`, `cart_items`, `customer_addresses`, `checkout_sessions`  
+Enums: `CartStatus`, `CheckoutStatus`
+
+Additive only. Server-owned checkout snapshots and stock reservations use existing `inventory_items` / `stock_movements` (movement type `reserve`). No live payment tables in this slice.
+
 ## Third migration
 
 Name: `20260924153355_catalogue_discovery` (+ `20260924153407_products_search_gin`)  
@@ -29,28 +94,11 @@ These migrations are for non-production databases. They must not be pointed at p
 
 ## Apply locally
 
-1. Start PostgreSQL 16. Prefer `docker compose up -d` when Docker is available. This environment used a local apt install of PostgreSQL 16 because Docker was not installed.
+1. Start PostgreSQL 16. Prefer `docker compose up -d` when Docker is available.
 2. Copy `.env.example` to `.env` and set `DATABASE_URL` to the non-production database.
 3. Run `pnpm db:migrate` (`prisma migrate deploy`) or `pnpm db:migrate:dev` while editing the schema.
 4. Confirm with `pnpm db:status`.
 
-The local development password in `.env.example` and `docker-compose.yml` is fictional and development-only. Change it for any shared environment.
-
-## Compatibility
-
-The catalogue migration is additive. It creates catalogue and inventory tables and a GIN search index. It does not drop identity or platform tables. Launch category taxonomy remains an open business decision (A-26); seed uses a generic configurable category only.
-
-## Rollback
-
-| Situation | Action |
-| --- | --- |
-| Local disposable database | Drop the database, recreate it, and migrate again. Example: `dropdb aspera_marketplace_dev && createdb -O aspera_dev aspera_marketplace_dev && pnpm db:migrate` |
-| Shared non-production database with no important data | Same as local, after confirming the target is not production |
-| Shared non-production database that must keep other data | Restore from a host backup taken before the migration. Do not hand-edit `_prisma_migrations` |
-| Production | Not authorized for this migration. Production had no marketplace database when this slice shipped |
-
-Prisma does not emit automatic down SQL for this migration. Reversal is restore or recreate, not an in-place reverse script.
-
 ## CI
 
-GitHub Actions starts a PostgreSQL 16 service, runs `pnpm db:migrate`, then typecheck, lint, test, and build. The CI password matches the fictional local compose password and is not a production secret.
+GitHub Actions starts PostgreSQL 16, runs `pnpm db:migrate`, then typecheck, lint, test, and build.

@@ -430,55 +430,55 @@ export const MEESHO_ARCH_CATEGORIES = [
     label: "Ethnic Wear",
     href: browse("fashion", "saree"),
     imageUrl:
-      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "western",
     label: "Western Dresses",
     href: browse("fashion", "dress"),
     imageUrl:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "menswear",
     label: "Menswear",
     href: browse("fashion", "shirt"),
     imageUrl:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "footwear",
     label: "Footwear",
     href: browse("bags-footwear", "sneaker"),
     imageUrl:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "home-decor",
     label: "Home Decor",
     href: browse("home-kitchen", "cushion"),
     imageUrl:
-      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "beauty",
     label: "Beauty",
     href: browse("beauty-personal-care"),
     imageUrl:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "accessories",
     label: "Accessories",
     href: browse("bags-footwear", "sling"),
     imageUrl:
-      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "grocery",
     label: "Grocery",
     href: browse("household-essentials"),
     imageUrl:
-      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1543168256-418811576931?auto=format&fit=crop&w=400&q=80",
   },
 ] as const;

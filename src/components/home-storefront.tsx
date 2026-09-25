@@ -376,27 +376,28 @@ export function CategoryArches({
 }) {
   return (
     <section className="border-b border-[#eee] bg-white">
-      <div className="container-shell py-5 md:py-7">
-        <ul className="flex justify-between gap-2 overflow-x-auto pb-1 md:gap-3">
+      <div className="container-shell py-5 md:py-6">
+        <ul className="meesho-hide-scroll flex justify-between gap-3 overflow-x-auto pb-0.5 md:gap-4">
           {categories.map((category) => (
-            <li key={category.id} className="min-w-[4.75rem] shrink-0 md:min-w-0 md:flex-1">
+            <li
+              key={category.id}
+              className="min-w-[5.25rem] shrink-0 md:min-w-0 md:flex-1"
+            >
               <Link
                 href={category.href}
                 className="group flex flex-col items-center gap-2 text-center"
               >
                 <span
-                  className="relative flex h-[5.5rem] w-[5.5rem] items-end justify-center overflow-hidden bg-[#f3e8ff] transition group-hover:bg-[#ead9ff] sm:h-[6.5rem] sm:w-[6.5rem] md:h-[7.25rem] md:w-[7.25rem]"
-                  style={{
-                    borderRadius: "999px 999px 12px 12px",
-                  }}
+                  className="relative flex h-[5.75rem] w-[5.75rem] items-end justify-center overflow-hidden bg-[#f2eaf8] transition group-hover:bg-[#eadff5] sm:h-[6.75rem] sm:w-[6.75rem] md:h-[7.5rem] md:w-[7.5rem]"
+                  style={{ borderRadius: "999px 999px 14px 14px" }}
                 >
-                  <span className="relative h-[85%] w-[88%]">
+                  <span className="relative mb-1 h-[88%] w-[82%]">
                     <Image
                       src={category.imageUrl}
                       alt=""
                       fill
-                      sizes="116px"
-                      className="object-cover object-top"
+                      sizes="120px"
+                      className="object-contain object-bottom drop-shadow-sm"
                     />
                   </span>
                 </span>
@@ -573,7 +574,7 @@ function brandLogoStyle(name: string): {
   if (key === "mi") {
     return {
       className:
-        "inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#ff6700] text-sm font-bold text-white",
+        "inline-flex h-7 w-7 items-center justify-center rounded-md bg-[#ff6700] text-[11px] font-bold text-white",
     };
   }
   if (key.includes("bata")) {
@@ -605,7 +606,7 @@ function brandLogoStyle(name: string): {
   if (key.includes("nivea")) {
     return {
       className:
-        "inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#0033a0] text-[9px] font-bold tracking-wide text-white",
+        "inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#0033a0] text-[8px] font-bold tracking-wide text-white",
     };
   }
   if (key.includes("himalaya")) {
@@ -673,55 +674,16 @@ function BrandPartnersRail({
 }: {
   logos: Array<{ id: string; name: string; href: string; mark?: string }>;
 }) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
-
-  function scrollBy(direction: -1 | 1) {
-    const node = scrollerRef.current;
-    if (!node) return;
-    node.scrollBy({
-      left: direction * Math.min(280, node.clientWidth * 0.75),
-      behavior: "smooth",
-    });
-  }
-
   return (
-    <div className="rounded-lg bg-[#f3e8ff]/70 px-3 py-4 md:px-4">
-      <div className="mb-3 flex items-end justify-between gap-3">
-        <p className="text-[11px] font-semibold tracking-[0.14em] text-[#666] uppercase">
-          Featured brands
-        </p>
-        {logos.length > 4 ? (
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="Scroll brands left"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-lg shadow-sm hover:border-[#9f2089] hover:text-[#9f2089]"
-              onClick={() => scrollBy(-1)}
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              aria-label="Scroll brands right"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-lg shadow-sm hover:border-[#9f2089] hover:text-[#9f2089]"
-              onClick={() => scrollBy(1)}
-            >
-              ›
-            </button>
-          </div>
-        ) : null}
-      </div>
-      <div
-        ref={scrollerRef}
-        className="rail-scroll [grid-auto-columns:118px]"
-      >
+    <div className="-mx-4 bg-[#f3e8ff] px-4 py-4 md:mx-0 md:rounded-lg md:px-3">
+      <div className="meesho-hide-scroll flex gap-3 overflow-x-auto pb-0.5">
         {logos.map((logo) => {
           const style = brandLogoStyle(logo.name);
           return (
             <Link
               key={logo.id}
               href={logo.href}
-              className="flex h-[58px] w-[118px] flex-col items-center justify-center rounded-md border border-white bg-white px-2 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition hover:shadow-md"
+              className="flex h-11 w-[104px] shrink-0 flex-col items-center justify-center rounded-md bg-white px-2 text-center shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
             >
               <span
                 className={`line-clamp-2 ${style.className}`}
@@ -756,13 +718,13 @@ export function OriginalBrandsSection({
   }
 
   return (
-    <section className="border-b border-[#eee] bg-white py-6 md:py-8">
+    <section className="border-b border-[#eee] bg-white py-5 md:py-7">
       <div className="container-shell flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 text-[1.25rem] font-bold tracking-tight text-[#333] md:text-[1.5rem]">
+          <h2 className="flex items-center gap-2 text-[1.15rem] font-bold tracking-tight text-[#333] md:text-[1.35rem]">
             Original Brands
             <span
-              className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#9f2089] text-[11px] font-bold text-white"
+              className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#9f2089] text-[10px] font-bold text-white"
               aria-label="Verified"
               title="Verified brands"
             >
@@ -780,24 +742,26 @@ export function OriginalBrandsSection({
         <div className="relative">
           <div
             ref={scrollerRef}
-            className="rail-scroll [grid-auto-columns:minmax(8.5rem,9.75rem)] md:[grid-auto-columns:minmax(9.5rem,10.5rem)]"
+            className="meesho-hide-scroll flex gap-3 overflow-x-auto pb-1 md:gap-3.5"
           >
             {cards.map((card) => (
               <Link
                 key={card.id}
                 href={card.href}
-                className="group relative flex h-[11.5rem] flex-col overflow-hidden rounded-xl border border-[#e8dff5] bg-[#ebe4f5] shadow-sm md:h-[13rem]"
+                className="group relative flex h-[11rem] w-[8.75rem] shrink-0 flex-col overflow-hidden rounded-xl bg-[#ebe4f5] md:h-[12.5rem] md:w-[9.75rem]"
               >
-                <span className="relative flex-1">
-                  <Image
-                    src={card.imageUrl}
-                    alt=""
-                    fill
-                    sizes="(max-width: 768px) 156px, 168px"
-                    className="object-contain object-center p-3 transition duration-300 group-hover:scale-105"
-                  />
+                <span className="relative flex flex-1 items-center justify-center px-2 pt-3">
+                  <span className="relative h-full w-full">
+                    <Image
+                      src={card.imageUrl}
+                      alt=""
+                      fill
+                      sizes="156px"
+                      className="object-contain object-center transition duration-300 group-hover:scale-105"
+                    />
+                  </span>
                 </span>
-                <span className="bg-[#9f2089] px-2 py-2.5 text-center text-[13px] font-bold text-white">
+                <span className="bg-[#9f2089] px-2 py-2 text-center text-[12px] font-bold text-white md:text-[13px]">
                   {card.label}
                 </span>
               </Link>
@@ -807,7 +771,7 @@ export function OriginalBrandsSection({
             <button
               type="button"
               aria-label="Scroll original brands right"
-              className="absolute top-1/2 right-0 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-white text-lg text-[#333] shadow-md hover:text-[#9f2089]"
+              className="absolute top-[40%] right-0 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[#eee] bg-white text-lg text-[#333] shadow-md hover:text-[#9f2089]"
               onClick={() => scrollBy(1)}
             >
               ›
@@ -836,46 +800,48 @@ export function CampaignPromoBanner({
 }) {
   return (
     <section className="container-shell py-5 md:py-7">
-      <div className="grid overflow-hidden rounded-xl shadow-md md:grid-cols-[0.95fr_1.55fr]">
-        <div className="relative flex min-h-[220px] flex-col justify-center gap-1 overflow-hidden bg-[#ff8a1f] px-6 py-8 md:min-h-[280px] md:px-8">
-          <p className="text-sm font-semibold text-white">Up to</p>
+      <div className="grid overflow-hidden rounded-xl md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.45fr)]">
+        <div className="relative flex min-h-[240px] flex-col justify-center overflow-hidden bg-[#ff8a1f] px-6 py-8 md:min-h-[300px] md:px-8">
+          <p className="text-sm font-semibold text-white/95">Up to</p>
           <p
-            className="text-[2.75rem] leading-none font-black tracking-tight text-[#5b0a6e] md:text-[3.25rem]"
+            className="mt-1 text-[2.85rem] leading-none font-black tracking-tight text-[#5b0a6e] md:text-[3.4rem]"
             style={{
               textShadow:
-                "2px 2px 0 #ffe566, -1px -1px 0 #ffe566, 1px -1px 0 #ffe566, -1px 1px 0 #ffe566",
+                "3px 3px 0 #ffe566, -2px -2px 0 #ffe566, 2px -2px 0 #ffe566, -2px 2px 0 #ffe566",
             }}
           >
             35% OFF
           </p>
-          <p className="mt-1 text-lg font-bold text-[#5b0a6e]">on first order</p>
-          <p className="mt-3 text-sm font-semibold text-[#5b0a6e]">
+          <p className="mt-2 text-lg font-bold text-[#5b0a6e]">on first order</p>
+          <p className="mt-4 text-sm font-semibold text-[#5b0a6e]">
             *Only on App
           </p>
           <Link
             href="/download-app"
-            className="mt-4 inline-flex w-fit rounded-md bg-[#5b0a6e] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#4a0859]"
+            className="mt-5 inline-flex w-fit rounded-md bg-white px-5 py-2.5 text-sm font-bold text-[#5b0a6e] shadow-sm hover:bg-[#fff8ef]"
           >
-            Download App
+            Download Now
           </Link>
         </div>
 
         <div className="bg-[#9f2089] px-4 py-5 md:px-6 md:py-6">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-3.5">
             {collections.slice(0, 4).map((collection) => (
               <Link
                 key={collection.id}
                 href={collection.href}
-                className="group relative block aspect-[3/4] overflow-hidden rounded-xl border-2 border-[#ffe566] bg-[#fff8dc] shadow-sm"
+                className="group flex flex-col items-center gap-2"
               >
-                <Image
-                  src={collection.imageUrl}
-                  alt=""
-                  fill
-                  sizes="160px"
-                  className="object-cover transition duration-300 group-hover:scale-105"
-                />
-                <span className="absolute inset-x-0 bottom-0 bg-black/45 px-1.5 py-1.5 text-center text-[10px] font-bold text-white sm:text-[11px]">
+                <span className="relative block aspect-[3/4] w-full overflow-hidden rounded-xl border-2 border-[#ffe566] bg-[#fff4c8] shadow-sm">
+                  <Image
+                    src={collection.imageUrl}
+                    alt=""
+                    fill
+                    sizes="160px"
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                </span>
+                <span className="rounded-full bg-white px-2.5 py-1 text-center text-[10px] font-bold text-[#5b0a6e] shadow-sm sm:text-[11px]">
                   {collection.label}
                 </span>
               </Link>

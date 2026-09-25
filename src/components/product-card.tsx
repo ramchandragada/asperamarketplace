@@ -185,9 +185,9 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
   const extraVariants = Math.max((product.variantCount ?? 1) - 1, 0);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden border border-border/80 bg-surface">
+    <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-[#eee] bg-white">
       <Link href={`/products/${product.slug}`} className="flex h-full flex-col">
-        <div className="relative aspect-[3/4] overflow-hidden bg-accent-soft/40">
+        <div className="relative aspect-[3/4] overflow-hidden bg-[#f5f5f5]">
           {product.badge ? <BadgePill badge={product.badge} /> : null}
           <WishlistButton productId={product.id} />
           {showImage ? (
@@ -215,7 +215,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
             </span>
           ) : null}
           {countdown ? (
-            <div className="animate-deal-pulse absolute bottom-2 left-2 z-10 rounded-md bg-danger px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-white">
+            <div className="animate-deal-pulse absolute bottom-2 left-2 z-10 rounded bg-[#f43397] px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-white">
               {countdown}
             </div>
           ) : null}
@@ -226,69 +226,48 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
           ) : null}
         </div>
         <div className="flex flex-1 flex-col gap-1 p-2.5">
-          <h3 className="line-clamp-2 text-[13px] leading-4 font-medium text-foreground">
+          <h3 className="line-clamp-1 text-[13px] leading-4 font-normal text-[#666]">
             {product.title}
           </h3>
           <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <span className="text-[15px] font-bold text-foreground">
+            <span className="text-[16px] font-bold text-[#333]">
               {formatPaise(product.minPricePaise)}
             </span>
             {product.minMrpPaise && product.minMrpPaise > product.minPricePaise ? (
-              <span className="text-xs text-muted line-through">
+              <span className="text-xs text-[#999] line-through">
                 {formatPaise(product.minMrpPaise)}
               </span>
             ) : null}
             {discount ? (
-              <span className="text-[11px] font-semibold text-success">
+              <span className="text-[12px] font-semibold text-[#038d63]">
                 {discount}% off
               </span>
             ) : null}
           </p>
           {hasRating ? (
             <p className="flex items-center gap-1.5 text-xs">
-              <span className="inline-flex items-center gap-0.5 rounded bg-success px-1 py-0.5 text-[11px] font-semibold text-white">
-                ★ {product.ratingAverage!.toFixed(1)}
+              <span className="inline-flex items-center gap-0.5 rounded bg-[#038d63] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                {product.ratingAverage!.toFixed(1)} ★
               </span>
-              <span className="text-[11px] text-muted">
+              <span className="text-[11px] text-[#999]">
                 {(product.reviewCount ?? 0) >= 1000
-                  ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}k`
-                  : `${product.reviewCount}`}
+                  ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}k Reviews`
+                  : `${product.reviewCount} Reviews`}
               </span>
             </p>
           ) : null}
           {freeDelivery ? (
-            <span className="inline-flex w-fit items-center rounded-sm bg-success-soft px-1.5 py-0.5 text-[10px] font-semibold text-success">
+            <span className="text-[11px] font-medium text-[#038d63]">
               Free Delivery
             </span>
           ) : (
-            <p className="flex flex-wrap items-center gap-1 text-[11px] text-muted">
-              <span>Delivery</span>
-              {product.deliveryOriginalPaise != null &&
-              product.deliveryFeePaise != null &&
-              product.deliveryOriginalPaise > product.deliveryFeePaise ? (
-                <>
-                  <span className="line-through">
-                    {formatPaise(product.deliveryOriginalPaise)}
-                  </span>
-                  <span className="font-semibold text-success">
-                    {formatPaise(product.deliveryFeePaise)}
-                  </span>
-                </>
-              ) : (
-                <span className="font-medium text-foreground">
-                  {product.deliveryFeePaise != null
-                    ? formatPaise(product.deliveryFeePaise)
-                    : "₹60"}
-                </span>
-              )}
+            <p className="text-[11px] text-[#888]">
+              Delivery{" "}
+              {product.deliveryFeePaise != null
+                ? formatPaise(product.deliveryFeePaise)
+                : "₹60"}
             </p>
           )}
-          <p className="mt-auto truncate pt-0.5 text-[10px] text-muted">
-            {product.sellerName}
-            {product.sellerVerified ? (
-              <span className="ml-1 font-medium text-accent">✓</span>
-            ) : null}
-          </p>
         </div>
       </Link>
     </article>

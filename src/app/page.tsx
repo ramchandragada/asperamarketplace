@@ -235,7 +235,7 @@ const ORIGINAL_BRAND_CARDS = [
     label: "Bags",
     href: "/browse?categorySlug=bags-footwear&q=bag",
     imageUrl:
-      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=600&q=80",
     overlay: "#9f2089",
   },
   {
@@ -243,7 +243,7 @@ const ORIGINAL_BRAND_CARDS = [
     label: "Footwear",
     href: "/browse?categorySlug=bags-footwear&q=shoe",
     imageUrl:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&w=600&q=80",
     overlay: "#9f2089",
   },
   {
@@ -269,29 +269,29 @@ const BRAND_LOGOS = [
 
 const CAMPAIGN_COLLECTIONS = [
   {
-    id: "fashion",
-    label: "Fashion",
+    id: "trending",
+    label: "Trending Now",
     href: "/browse?categorySlug=fashion",
     imageUrl:
       "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&w=400&q=80",
   },
   {
-    id: "home",
-    label: "Home",
+    id: "budget",
+    label: "Budget Buys",
     href: "/browse?categorySlug=home-kitchen",
     imageUrl:
       "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=400&q=80",
   },
   {
-    id: "ethnic",
-    label: "Ethnic",
+    id: "top-rated",
+    label: "Top Rated Picks",
     href: "/browse?categorySlug=fashion&q=kurta",
     imageUrl:
       "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=400&q=80",
   },
   {
-    id: "kitchen",
-    label: "Kitchen",
+    id: "essentials",
+    label: "Daily Essentials",
     href: "/browse?categorySlug=home-kitchen&q=kitchen",
     imageUrl:
       "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=400&q=80",

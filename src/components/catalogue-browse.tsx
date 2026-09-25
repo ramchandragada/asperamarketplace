@@ -43,9 +43,10 @@ const DISCOUNT_OPTIONS = [
 ] as const;
 
 const GENDER_OPTIONS = [
-  { value: "women", label: "Women", categorySlug: "fashion", q: "" },
+  { value: "boys", label: "Boys", categorySlug: "baby-kids", q: "boy" },
+  { value: "girls", label: "Girls", categorySlug: "baby-kids", q: "girl" },
   { value: "men", label: "Men", categorySlug: "fashion", q: "shirt" },
-  { value: "unisex", label: "Unisex", categorySlug: "bags-footwear", q: "" },
+  { value: "women", label: "Women", categorySlug: "fashion", q: "" },
 ] as const;
 
 const COLOR_OPTIONS = [
@@ -161,6 +162,8 @@ export function CatalogueBrowse({
   const [pricePreset, setPricePreset] = useState(matchedPreset);
   const [categorySearch, setCategorySearch] = useState("");
   const [brandSearch, setBrandSearch] = useState("");
+  const [categoryShowAll, setCategoryShowAll] = useState(false);
+  const [brandShowAll, setBrandShowAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -466,19 +469,42 @@ export function CatalogueBrowse({
   }
 
   const filterPanel = (
-    <div className="flex flex-col gap-1">
-      <div className="mb-2 flex items-baseline justify-between gap-2">
+    <div className="flex flex-col">
+      <label className="mb-3 flex items-center gap-2 border-b border-[#eee] pb-3 text-[13px] text-[#333]">
+        <span className="text-[#666]">Sort by :</span>
+        <select
+          value={sort}
+          onChange={(event) => {
+            setSort(event.target.value);
+            startTransition(() => {
+              void runSearch({ sort: event.target.value, page: 1 });
+            });
+          }}
+          className="min-w-0 flex-1 border-0 bg-transparent text-[13px] font-medium text-[#333] outline-none"
+          aria-label="Sort by"
+        >
+          {SORT_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="mb-1 flex items-baseline justify-between gap-2 pb-2">
         <div>
-          <h2 className="text-[13px] font-extrabold tracking-[0.08em] uppercase">
+          <h2 className="text-[13px] font-bold tracking-[0.06em] text-[#333] uppercase">
             Filters
           </h2>
-          <p className="mt-0.5 text-xs text-muted">
-            {total >= 1000 ? "1000+ Products" : `${total} product${total === 1 ? "" : "s"}`}
+          <p className="mt-0.5 text-xs text-[#888]">
+            {total >= 1000
+              ? "1000+ Products"
+              : `${total} Products`}
           </p>
         </div>
         <button
           type="button"
-          className="text-xs font-medium text-accent hover:underline"
+          className="text-xs font-medium text-[#9f2089] hover:underline"
           onClick={clearAll}
         >
           Clear all
@@ -490,16 +516,24 @@ export function CatalogueBrowse({
         open={openSections.category !== false}
         onToggle={() => toggleSection("category")}
       >
-        <input
-          type="search"
-          value={categorySearch}
-          onChange={(event) => setCategorySearch(event.target.value)}
-          placeholder="Search category"
-          className="mb-2 w-full rounded-[var(--radius-sm)] border border-border bg-background px-2.5 py-1.5 text-sm"
-        />
-        <ul className="max-h-48 space-y-1.5 overflow-y-auto pr-1">
+        <div className="relative mb-2">
+          <span className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-[#999]">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+              <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </span>
+          <input
+            type="search"
+            value={categorySearch}
+            onChange={(event) => setCategorySearch(event.target.value)}
+            placeholder="Search"
+            className="w-full rounded-md border border-[#ddd] bg-white py-1.5 pr-2.5 pl-8 text-[13px] outline-none placeholder:text-[#999] focus:border-[#9f2089]"
+          />
+        </div>
+        <ul className="space-y-2">
           <li>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <label className="flex cursor-pointer items-center gap-2 text-[13px] text-[#333]">
               <input
                 type="checkbox"
                 checked={!categorySlug}
@@ -509,13 +543,17 @@ export function CatalogueBrowse({
                     void runSearch({ categorySlug: "" });
                   });
                 }}
+                className="h-3.5 w-3.5 accent-[#9f2089]"
               />
               All categories
             </label>
           </li>
-          {filteredCategories.map((category) => (
+          {(categoryShowAll
+            ? filteredCategories
+            : filteredCategories.slice(0, 6)
+          ).map((category) => (
             <li key={category.slug}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <label className="flex cursor-pointer items-center gap-2 text-[13px] text-[#333]">
                 <input
                   type="checkbox"
                   checked={categorySlug === category.slug}
@@ -527,20 +565,25 @@ export function CatalogueBrowse({
                       void runSearch({ categorySlug: next });
                     });
                   }}
+                  className="h-3.5 w-3.5 accent-[#9f2089]"
                 />
                 <span className="min-w-0 flex-1 truncate">{category.name}</span>
-                {category.productCount != null ? (
-                  <span className="shrink-0 text-xs text-muted">
-                    {category.productCount}
-                  </span>
-                ) : null}
               </label>
             </li>
           ))}
           {filteredCategories.length === 0 ? (
-            <li className="text-xs text-muted">No categories match</li>
+            <li className="text-xs text-[#888]">No categories match</li>
           ) : null}
         </ul>
+        {filteredCategories.length > 6 ? (
+          <button
+            type="button"
+            className="mt-2 text-[13px] font-medium text-[#9f2089] hover:underline"
+            onClick={() => setCategoryShowAll((value) => !value)}
+          >
+            {categoryShowAll ? "Show Less" : "Show More"}
+          </button>
+        ) : null}
       </FilterSection>
 
       <FilterSection
@@ -548,49 +591,44 @@ export function CatalogueBrowse({
         open={openSections.gender !== false}
         onToggle={() => toggleSection("gender")}
       >
-        <ul className="space-y-1.5">
-          {GENDER_OPTIONS.map((option) => (
-            <li key={option.value}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="gender"
-                  checked={gender === option.value}
-                  onChange={() => {
-                    setGender(option.value);
-                    setCategorySlug(option.categorySlug);
-                    setQuery(option.q);
-                    startTransition(() => {
-                      void runSearch({
-                        categorySlug: option.categorySlug,
-                        q: option.q,
-                      });
-                    });
-                  }}
-                />
-                {option.label}
-              </label>
-            </li>
-          ))}
-          {gender ? (
-            <li>
+        <div className="flex flex-wrap gap-2">
+          {GENDER_OPTIONS.map((option) => {
+            const active = gender === option.value;
+            return (
               <button
+                key={option.value}
                 type="button"
-                className="text-xs text-accent hover:underline"
+                className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
+                  active
+                    ? "border-[#9f2089] bg-[#fce8f3] text-[#9f2089]"
+                    : "border-[#ddd] bg-white text-[#333] hover:border-[#9f2089]"
+                }`}
                 onClick={() => {
-                  setGender("");
-                  setCategorySlug("");
-                  setQuery("");
+                  if (active) {
+                    setGender("");
+                    setCategorySlug("");
+                    setQuery("");
+                    startTransition(() => {
+                      void runSearch({ categorySlug: "", q: "" });
+                    });
+                    return;
+                  }
+                  setGender(option.value);
+                  setCategorySlug(option.categorySlug);
+                  setQuery(option.q);
                   startTransition(() => {
-                    void runSearch({ categorySlug: "", q: "" });
+                    void runSearch({
+                      categorySlug: option.categorySlug,
+                      q: option.q,
+                    });
                   });
                 }}
               >
-                Clear gender
+                {option.label}
               </button>
-            </li>
-          ) : null}
-        </ul>
+            );
+          })}
+        </div>
       </FilterSection>
 
       <FilterSection
@@ -661,37 +699,44 @@ export function CatalogueBrowse({
             type="search"
             value={brandSearch}
             onChange={(event) => setBrandSearch(event.target.value)}
-            placeholder="Search brand"
-            className="mb-2 w-full rounded-[var(--radius-sm)] border border-border bg-background px-2.5 py-1.5 text-sm"
+            placeholder="Search"
+            className="mb-2 w-full rounded-md border border-[#ddd] bg-white px-2.5 py-1.5 text-[13px] outline-none placeholder:text-[#999] focus:border-[#9f2089]"
           />
-          <ul className="max-h-48 space-y-1.5 overflow-y-auto pr-1">
-            {filteredBrands.map((brand) => (
-              <li key={brand.slug}>
-                <label className="flex cursor-pointer items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={brandSlug === brand.slug}
-                    onChange={() => {
-                      const next = brandSlug === brand.slug ? "" : brand.slug;
-                      setBrandSlug(next);
-                      startTransition(() => {
-                        void runSearch({ brandSlug: next });
-                      });
-                    }}
-                  />
-                  <span className="min-w-0 flex-1 truncate">{brand.name}</span>
-                  {brand.productCount != null ? (
-                    <span className="shrink-0 text-xs text-muted">
-                      {brand.productCount}
-                    </span>
-                  ) : null}
-                </label>
-              </li>
-            ))}
+          <ul className="space-y-2">
+            {(brandShowAll ? filteredBrands : filteredBrands.slice(0, 6)).map(
+              (brand) => (
+                <li key={brand.slug}>
+                  <label className="flex cursor-pointer items-center gap-2 text-[13px] text-[#333]">
+                    <input
+                      type="checkbox"
+                      checked={brandSlug === brand.slug}
+                      onChange={() => {
+                        const next = brandSlug === brand.slug ? "" : brand.slug;
+                        setBrandSlug(next);
+                        startTransition(() => {
+                          void runSearch({ brandSlug: next });
+                        });
+                      }}
+                      className="h-3.5 w-3.5 accent-[#9f2089]"
+                    />
+                    <span className="min-w-0 flex-1 truncate">{brand.name}</span>
+                  </label>
+                </li>
+              ),
+            )}
             {filteredBrands.length === 0 ? (
-              <li className="text-xs text-muted">No brands match</li>
+              <li className="text-xs text-[#888]">No brands match</li>
             ) : null}
           </ul>
+          {filteredBrands.length > 6 ? (
+            <button
+              type="button"
+              className="mt-2 text-[13px] font-medium text-[#9f2089] hover:underline"
+              onClick={() => setBrandShowAll((value) => !value)}
+            >
+              {brandShowAll ? "Show Less" : "Show More"}
+            </button>
+          ) : null}
         </FilterSection>
       ) : null}
 
@@ -1058,11 +1103,9 @@ export function CatalogueBrowse({
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <aside className="hidden lg:block">
-          <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-[var(--radius)] border border-border bg-surface p-4">
-            {filterPanel}
-          </div>
+      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="hidden border-r border-[#eee] pr-4 lg:block">
+          <div className="sticky top-24 bg-white py-1">{filterPanel}</div>
         </aside>
 
         <div className="flex flex-col gap-4">
@@ -1152,19 +1195,19 @@ function FilterSection({
   children: ReactNode;
 }) {
   return (
-    <div className="border-b border-border py-3">
+    <div className="border-b border-[#eee] py-3.5">
       <button
         type="button"
-        className="flex w-full items-center justify-between text-sm font-semibold"
+        className="flex w-full items-center justify-between text-[13px] font-semibold text-[#333]"
         onClick={onToggle}
         aria-expanded={open}
       >
         {title}
-        <span aria-hidden className="text-muted">
+        <span aria-hidden className="text-[10px] text-[#888]">
           {open ? "▾" : "▸"}
         </span>
       </button>
-      {open ? <div className="mt-2">{children}</div> : null}
+      {open ? <div className="mt-2.5">{children}</div> : null}
     </div>
   );
 }

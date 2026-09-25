@@ -300,13 +300,7 @@ export default async function ProductDetailPage({
             </h1>
             <p className="mt-2 text-base text-muted">{product.summary}</p>
             <div className="mt-3">
-              <PdpTrustBadgeRow
-                showFeaturedStore={Boolean(
-                  product.brand || attrs.featuredStore === true,
-                )}
-                showBrandPartner={Boolean(product.brand)}
-                showApprovedSeller={sellerVerified}
-              />
+              <PdpTrustBadgeRow sellerApproved={sellerVerified} />
             </div>
             {average != null && reviews.length > 0 ? (
               <p className="mt-3 flex items-center gap-2 text-sm">

@@ -1,17 +1,25 @@
 # Catalogue seed & visuals
 
 Date: 2026-09-25  
-Branch: `cursor/catalogue-seed-visuals-10f6`
+Updated: marketplace-audit truthfulness slice  
 
 ## Purpose
 
-Populate a visually credible India-first catalogue for development/preview only. Does **not** invent live payments, customer reviews, or production PII.
+Populate a visually credible India-first catalogue for **development/preview only**. Does **not** invent live payments, customer reviews, ratings, deal timers, or production PII.
+
+## Truthfulness rules (P0)
+
+- Do **not** seed `ratingAverage`, `reviewCount`, `ratingDistribution`, or `dealEndsAt`.
+- Public ratings come only from moderated `ProductReview` rows.
+- Unsplash URLs are **placeholders** — alt text states this; replace before commercial launch (`docs/IMAGE_PLACEHOLDERS.md`).
+- Attributes may set `demoCatalogue: true` and `mediaPlaceholder: true`.
 
 ## Commands
 
 ```bash
 pnpm db:migrate
 pnpm db:seed
+pnpm db:validate
 ```
 
 Safe on Neon non-production / local Postgres. Do not run against production.
@@ -24,7 +32,7 @@ Safe on Neon non-production / local Postgres. Do not run against production.
 | Products defined | 121 (`SEED_PRODUCTS`) |
 | Minimum per category | 10 |
 | Demo sellers | 4 (home, fashion, tech, wellness) |
-| Images per product | 3 Unsplash URLs |
+| Images per product | 3 Unsplash placeholder URLs |
 
 Public storefront shows **approved** products only. Intentionally non-public: draft desk caddy, draft herbal gummies, submitted knee sleeve.
 

@@ -1,5 +1,10 @@
 import { prisma } from "@/platform/db/prisma";
 import { resolveProductBadge } from "@/modules/catalogue/helpers";
+import {
+  freeDeliveryHintFromPolicy,
+  resolveStorefrontRating,
+} from "@/modules/catalogue/claims";
+import { SHIPPING_POLICY } from "@/modules/cart/pricing";
 
 export async function listWishlistProducts(userId: string) {
   const rows = await prisma.wishlistItem.findMany({
@@ -43,6 +48,17 @@ export async function listWishlistProducts(userId: string) {
           ? (product.attributes as Record<string, unknown>)
           : {};
       const sellerVerified = product.seller.status === "approved";
+      const minPricePaise = prices.length ? Math.min(...prices) : 0;
+      const freeDelivery = freeDeliveryHintFromPolicy({
+        minPricePaise,
+        freeAbovePaise: SHIPPING_POLICY.freeAbovePaise,
+      });
+      const storefrontRating = resolveStorefrontRating({
+        attributeRatingAverage:
+          typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null,
+        attributeReviewCount:
+          typeof attrs.reviewCount === "number" ? attrs.reviewCount : null,
+      });
       return {
         id: product.id,
         slug: product.slug,
@@ -51,30 +67,26 @@ export async function listWishlistProducts(userId: string) {
         categoryName: product.category.name,
         sellerName: product.seller.tradeName ?? product.seller.legalName,
         sellerVerified,
-        minPricePaise: prices.length ? Math.min(...prices) : 0,
+        minPricePaise,
         minMrpPaise: mrps.length ? Math.min(...mrps) : null,
         availableQty,
-        ratingAverage:
-          typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null,
-        reviewCount:
-          typeof attrs.reviewCount === "number" ? attrs.reviewCount : 0,
-        dealEndsAt:
-          typeof attrs.dealEndsAt === "string" ? attrs.dealEndsAt : null,
-        deliveryFeePaise:
-          typeof attrs.deliveryFeePaise === "number"
-            ? attrs.deliveryFeePaise
-            : null,
-        freeDeliveryHint: attrs.deliveryFeePaise === 0,
+        ratingAverage: storefrontRating?.average ?? null,
+        reviewCount: storefrontRating?.count ?? 0,
+        dealEndsAt: null,
+        deliveryFeePaise: null,
+        freeDeliveryHint: freeDelivery,
         variantCount: product.variants.length,
         badge: resolveProductBadge({
           brandSlug: product.brand?.slug,
           brandName: product.brand?.name,
           sellerVerified,
           availableQty,
-          freeDelivery: attrs.deliveryFeePaise === 0,
+          freeDelivery,
         }),
         primaryImageUrl: product.images[0]?.url ?? null,
-        primaryImageAlt: product.images[0]?.altText ?? product.title,
+        primaryImageAlt:
+          product.images[0]?.altText ??
+          `${product.title} (catalogue preview image)`,
       };
     });
 }

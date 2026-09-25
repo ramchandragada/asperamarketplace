@@ -131,6 +131,9 @@ model User {
   reviewedSellers   Seller[]           @relation("SellerReviewer")
   uploadedDocuments KycDocument[]
   reviewedProducts  Product[]          @relation("ProductReviewer")
+  carts             Cart[]
+  addresses         CustomerAddress[]
+  checkoutSessions  CheckoutSession[]
 
   @@map("users")
 }
@@ -355,6 +358,7 @@ model ProductVariant {
 
   product   Product        @relation(fields: [productId], references: [id])
   inventory InventoryItem?
+  cartItems CartItem[]
 
   @@index([productId])
   @@map("product_variants")
@@ -391,4 +395,104 @@ model StockMovement {
 
   @@index([inventoryItemId])
   @@map("stock_movements")
+}
+
+enum CartStatus {
+  open
+  checked_out
+  abandoned
+}
+
+enum CheckoutStatus {
+  draft
+  reserved
+  expired
+  cancelled
+  converted
+}
+
+model Cart {
+  id           String     @id @default(uuid()) @db.Uuid
+  userId       String     @map("user_id") @db.Uuid
+  status       CartStatus @default(open)
+  currencyCode String     @default("INR") @map("currency_code")
+  version      Int        @default(1)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user             User              @relation(fields: [userId], references: [id])
+  items            CartItem[]
+  checkoutSessions CheckoutSession[]
+
+  @@index([userId, status])
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  cartId    String   @map("cart_id") @db.Uuid
+  variantId String   @map("variant_id") @db.Uuid
+  quantity  Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@unique([cartId, variantId])
+  @@index([variantId])
+  @@map("cart_items")
+}
+
+model CustomerAddress {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  label      String   @default("Home")
+  fullName   String   @map("full_name")
+  phone      String
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  postalCode String   @map("postal_code")
+  country    String   @default("IN")
+  isDefault  Boolean  @default(false) @map("is_default")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user             User              @relation(fields: [userId], references: [id])
+  checkoutSessions CheckoutSession[]
+
+  @@index([userId])
+  @@map("customer_addresses")
+}
+
+model CheckoutSession {
+  id                 String         @id @default(uuid()) @db.Uuid
+  userId             String         @map("user_id") @db.Uuid
+  cartId             String         @map("cart_id") @db.Uuid
+  addressId          String         @map("address_id") @db.Uuid
+  status             CheckoutStatus @default(draft)
+  currencyCode       String         @default("INR") @map("currency_code")
+  couponCode         String?        @map("coupon_code")
+  /// Server-owned calculation snapshot. Browser totals are never authoritative.
+  snapshot           Json
+  subtotalPaise      Int            @map("subtotal_paise")
+  discountPaise      Int            @default(0) @map("discount_paise")
+  shippingPaise      Int            @default(0) @map("shipping_paise")
+  taxPaise           Int            @default(0) @map("tax_paise")
+  totalPaise         Int            @map("total_paise")
+  reservedUntil      DateTime?      @map("reserved_until") @db.Timestamptz(6)
+  idempotencyKey     String?        @unique @map("idempotency_key")
+  version            Int            @default(1)
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user    User            @relation(fields: [userId], references: [id])
+  cart    Cart            @relation(fields: [cartId], references: [id])
+  address CustomerAddress @relation(fields: [addressId], references: [id])
+
+  @@index([userId, status])
+  @@index([cartId])
+  @@map("checkout_sessions")
 }

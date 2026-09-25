@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { getPublicProductBySlug } from "@/modules/catalogue/service";
 
@@ -76,6 +77,10 @@ export default async function ProductDetailPage({
                   {available > 0 ? `${available} available` : "Out of stock"}
                 </p>
                 <p className="text-xs text-muted">SKU {variant.sku}</p>
+                <AddToCartButton
+                  variantId={variant.id}
+                  availableQty={available}
+                />
               </li>
             );
           })}
@@ -84,6 +89,10 @@ export default async function ProductDetailPage({
       <p className="text-sm">
         <Link href="/browse" className="underline">
           Back to browse
+        </Link>
+        {" · "}
+        <Link href="/cart" className="underline">
+          Cart
         </Link>
       </p>
     </main>

@@ -1,8 +1,26 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/platform/db/prisma";
 import { TAX_POLICY } from "@/modules/cart/pricing";
 
+async function upsertTaxProfile(
+  args: Prisma.TaxProfileUpsertArgs,
+): Promise<void> {
+  try {
+    await prisma.taxProfile.upsert(args);
+  } catch (error) {
+    // Parallel checkout/integration tests can race on first create.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return;
+    }
+    throw error;
+  }
+}
+
 export async function ensureDefaultTaxProfiles() {
-  await prisma.taxProfile.upsert({
+  await upsertTaxProfile({
     where: { key: TAX_POLICY.key },
     create: {
       key: TAX_POLICY.key,
@@ -22,7 +40,7 @@ export async function ensureDefaultTaxProfiles() {
     },
   });
 
-  await prisma.taxProfile.upsert({
+  await upsertTaxProfile({
     where: { key: "india_exempt_placeholder" },
     create: {
       key: "india_exempt_placeholder",

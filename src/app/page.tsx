@@ -5,6 +5,7 @@ import {
   type BrowseProduct,
 } from "@/components/catalogue-browse";
 import { AsperaGoldSection } from "@/components/aspera-gold-section";
+import { BankOffersStrip } from "@/components/bank-offers-strip";
 import { PageShell, SectionHeading } from "@/components/ui/page-shell";
 import {
   CategoryCircles,
@@ -360,9 +361,10 @@ export default async function Home() {
     <div className="flex flex-col">
       <HeroCarousel slides={HERO_SLIDES} />
       <TrustSignalBar />
+      <BankOffersStrip />
+      <CategoryCircles categories={circleCategories} />
       <AsperaGoldSection />
       <OriginalBrandsSection cards={ORIGINAL_BRAND_CARDS} logos={BRAND_LOGOS} />
-      <CategoryCircles categories={circleCategories} />
       <PromoBanner
         imageUrl="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80"
         categories={circleCategories}
@@ -397,8 +399,8 @@ export default async function Home() {
         })}
       />
 
-      <PageShell className="gap-12 md:gap-14 !pt-4">
-        <section className="flex flex-col gap-5">
+      <PageShell className="gap-10 md:gap-12 !pt-4 !pb-4">
+        <section className="flex flex-col gap-4">
           <SectionHeading
             title="New arrivals"
             description="Just landed on Aspera"
@@ -411,14 +413,14 @@ export default async function Home() {
               </Link>
             }
           />
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
             {newest.items.map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}
           </div>
         </section>
 
-        <section className="flex flex-col gap-5">
+        <section className="flex flex-col gap-4">
           <SectionHeading
             title="Popular picks"
             description="Best sellers across categories"
@@ -439,7 +441,7 @@ export default async function Home() {
         </section>
 
         {deals.length > 0 ? (
-          <section className="flex flex-col gap-5">
+          <section className="flex flex-col gap-4">
             <SectionHeading
               title="Deals of the day"
               description="Today's best deals"
@@ -452,7 +454,7 @@ export default async function Home() {
                 </Link>
               }
             />
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
               {deals.map((item) => (
                 <ProductCard key={item.id} product={item} />
               ))}
@@ -460,15 +462,14 @@ export default async function Home() {
           </section>
         ) : null}
 
-        <section className="rounded-[var(--radius)] border border-border bg-accent-soft p-6 md:p-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <section className="rounded-[var(--radius)] border border-border bg-accent-soft p-5 md:p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="font-display text-2xl font-semibold">
-                Sell on Aspera
+              <h2 className="font-display text-xl font-semibold md:text-2xl">
+                Become a Supplier
               </h2>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
-                Reach shoppers across India with verified listings and transparent
-                pricing.
+              <p className="mt-1 max-w-xl text-sm leading-6 text-muted">
+                Sell across India with verified listings and transparent pricing.
               </p>
             </div>
             <Link

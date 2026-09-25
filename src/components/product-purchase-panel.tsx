@@ -211,6 +211,23 @@ export function ProductPurchasePanel({
             Free Delivery on eligible orders · Cash on Delivery available
           </p>
         )}
+        <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-border pt-3 text-[11px] text-muted">
+          <li className="inline-flex items-center gap-1">
+            <span className="font-semibold text-success">✓</span> 7 Days Return
+          </li>
+          <li className="inline-flex items-center gap-1">
+            <span className="font-semibold text-success">✓</span> COD Available
+          </li>
+          <li className="inline-flex items-center gap-1">
+            <span className="font-semibold text-success">✓</span> Fast Delivery
+          </li>
+        </ul>
+        <a
+          href="#size-chart"
+          className="mt-2 text-xs font-semibold text-accent hover:underline"
+        >
+          Size Chart →
+        </a>
       </div>
 
       <div className="hidden gap-3 sm:flex">

@@ -84,7 +84,7 @@ const COMMUNITY_BLOCKS = [
     title: "More Than Just Shopping",
     body: "Sell to shoppers nationwide with verified listings, transparent fees, and a dedicated seller dashboard. Grow your catalogue on Aspera.",
     href: "/seller/onboarding",
-    cta: "Register as seller",
+    cta: "Become a Supplier",
   },
 ] as const;
 
@@ -316,7 +316,7 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <p className="font-semibold text-foreground">Sell on Aspera</p>
+          <p className="font-semibold text-foreground">Become a Supplier</p>
           <ul className="mt-2 space-y-1.5 text-muted">
             <li>
               <Link href="/sell" className="hover:text-accent">

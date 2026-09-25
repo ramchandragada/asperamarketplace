@@ -185,9 +185,9 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
   const extraVariants = Math.max((product.variantCount ?? 1) - 1, 0);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-card)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+    <article className="group flex h-full flex-col overflow-hidden border border-border/80 bg-surface">
       <Link href={`/products/${product.slug}`} className="flex h-full flex-col">
-        <div className="relative aspect-square overflow-hidden bg-accent-soft/40">
+        <div className="relative aspect-[3/4] overflow-hidden bg-accent-soft/40">
           {product.badge ? <BadgePill badge={product.badge} /> : null}
           <WishlistButton productId={product.id} />
           {showImage ? (
@@ -198,7 +198,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               sizes="(max-width: 768px) 50vw, 25vw"
               placeholder="blur"
               blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2U4ZjRmNCIvPjwvc3ZnPg=="
-              className="object-cover transition duration-300 group-hover:scale-[1.03]"
+              className="object-cover"
               onError={() => setImageFailed(true)}
             />
           ) : (
@@ -210,12 +210,12 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
             </div>
           )}
           {extraVariants > 0 ? (
-            <span className="absolute right-2 bottom-2 z-10 rounded bg-foreground/80 px-1.5 py-0.5 text-[10px] font-semibold text-background backdrop-blur-sm">
+            <span className="absolute right-2 bottom-2 z-10 rounded bg-foreground/80 px-1.5 py-0.5 text-[10px] font-semibold text-background">
               +{extraVariants} More
             </span>
           ) : null}
           {countdown ? (
-            <div className="animate-deal-pulse absolute bottom-2 left-2 z-10 rounded-md bg-danger px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-white shadow-[0_0_0_2px_rgba(211,47,47,0.35)]">
+            <div className="animate-deal-pulse absolute bottom-2 left-2 z-10 rounded-md bg-danger px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-white">
               {countdown}
             </div>
           ) : null}
@@ -225,49 +225,49 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
             </div>
           ) : null}
         </div>
-        <div className="flex flex-1 flex-col gap-1.5 p-2.5">
-          <h3 className="line-clamp-2 text-sm leading-5 font-medium text-foreground">
+        <div className="flex flex-1 flex-col gap-1 p-2.5">
+          <h3 className="line-clamp-2 text-[13px] leading-4 font-medium text-foreground">
             {product.title}
           </h3>
-          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="text-base font-bold text-foreground">
+          <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+            <span className="text-[15px] font-bold text-foreground">
               {formatPaise(product.minPricePaise)}
             </span>
             {product.minMrpPaise && product.minMrpPaise > product.minPricePaise ? (
-              <span className="text-[13px] text-muted line-through">
+              <span className="text-xs text-muted line-through">
                 {formatPaise(product.minMrpPaise)}
               </span>
             ) : null}
             {discount ? (
-              <span className="text-xs font-semibold text-success">
+              <span className="text-[11px] font-semibold text-success">
                 {discount}% off
               </span>
             ) : null}
           </p>
           {hasRating ? (
             <p className="flex items-center gap-1.5 text-xs">
-              <span className="inline-flex items-center gap-0.5 rounded bg-success px-1.5 py-0.5 font-semibold text-white">
+              <span className="inline-flex items-center gap-0.5 rounded bg-success px-1 py-0.5 text-[11px] font-semibold text-white">
                 ★ {product.ratingAverage!.toFixed(1)}
               </span>
-              <span className="text-muted">
+              <span className="text-[11px] text-muted">
                 {(product.reviewCount ?? 0) >= 1000
-                  ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}K reviews`
-                  : `${product.reviewCount} reviews`}
+                  ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}k`
+                  : `${product.reviewCount}`}
               </span>
             </p>
           ) : null}
           {freeDelivery ? (
-            <span className="inline-flex w-fit items-center rounded border border-success/25 bg-success-soft px-1.5 py-0.5 text-[11px] font-semibold text-success">
+            <span className="inline-flex w-fit items-center rounded-sm bg-success-soft px-1.5 py-0.5 text-[10px] font-semibold text-success">
               Free Delivery
             </span>
           ) : (
-            <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+            <p className="flex flex-wrap items-center gap-1 text-[11px] text-muted">
               <span>Delivery</span>
               {product.deliveryOriginalPaise != null &&
               product.deliveryFeePaise != null &&
               product.deliveryOriginalPaise > product.deliveryFeePaise ? (
                 <>
-                  <span className="text-muted line-through">
+                  <span className="line-through">
                     {formatPaise(product.deliveryOriginalPaise)}
                   </span>
                   <span className="font-semibold text-success">
@@ -283,13 +283,12 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               )}
             </p>
           )}
-          {product.sellerVerified ? (
-            <p className="mt-auto pt-0.5 text-[11px] font-medium text-accent">
-              Verified ✓
-            </p>
-          ) : (
-            <span className="mt-auto" />
-          )}
+          <p className="mt-auto truncate pt-0.5 text-[10px] text-muted">
+            {product.sellerName}
+            {product.sellerVerified ? (
+              <span className="ml-1 font-medium text-accent">✓</span>
+            ) : null}
+          </p>
         </div>
       </Link>
     </article>

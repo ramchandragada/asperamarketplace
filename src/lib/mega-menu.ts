@@ -33,6 +33,10 @@ const THUMB = {
     "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=120&q=70",
   home: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=120&q=70",
   kids: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=120&q=70",
+  electronics:
+    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=120&q=70",
+  sports:
+    "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=120&q=70",
 } as const;
 
 export const POPULAR_NAV = {
@@ -42,10 +46,48 @@ export const POPULAR_NAV = {
 } as const;
 
 /**
- * Meesho-style gender/occasion mega-menu.
- * Links map into existing /browse catalogue filters (no catalogue schema change).
+ * Meesho web category IA (labels + order), mapped to Aspera catalogue slugs.
  */
 export const MEGA_MENU: MegaMenuCategory[] = [
+  {
+    key: "women-ethnic",
+    label: "Women Ethnic",
+    href: browse("fashion", "kurta"),
+    columns: [
+      {
+        heading: "Kurtis & Kurtas",
+        links: [
+          { label: "Kurtas", href: browse("fashion", "kurta"), imageUrl: THUMB.saree },
+          { label: "Kurti sets", href: browse("fashion", "set"), imageUrl: THUMB.saree },
+          { label: "Handloom kurtas", href: browse("fashion", "handloom"), imageUrl: THUMB.saree },
+        ],
+      },
+      {
+        heading: "Sarees & Dupattas",
+        links: [
+          { label: "Sarees", href: browse("fashion", "saree"), imageUrl: THUMB.saree },
+          { label: "Dupattas", href: browse("fashion", "dupatta"), imageUrl: THUMB.saree },
+          { label: "Blouses", href: browse("fashion", "blouse") },
+        ],
+      },
+      {
+        heading: "Lehengas & Sets",
+        links: [
+          { label: "Lehengas", href: browse("fashion", "lehenga"), imageUrl: THUMB.dress },
+          { label: "Ethnic wear", href: browse("fashion", "ethnic"), imageUrl: THUMB.saree },
+          { label: "Palazzo sets", href: browse("fashion", "palazzo") },
+        ],
+      },
+      {
+        heading: "Lingerie & Sleepwear",
+        links: [
+          { label: "Nightwear", href: browse("fashion", "pyjama") },
+          { label: "Camisoles", href: browseQ("camisole") },
+          { label: "Shapewear", href: browseQ("shapewear") },
+        ],
+      },
+    ],
+  },
   {
     key: "women-western",
     label: "Women Western",
@@ -57,14 +99,12 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           { label: "Tops", href: browse("fashion", "top"), imageUrl: THUMB.top },
           { label: "T-shirts", href: browse("fashion", "tee"), imageUrl: THUMB.top },
           { label: "Shirts", href: browse("fashion", "shirt"), imageUrl: THUMB.shirt },
-          { label: "Tunics", href: browse("fashion", "tunic"), imageUrl: THUMB.dress },
         ],
       },
       {
         heading: "Dresses & Jumpsuits",
         links: [
           { label: "Dresses", href: browse("fashion", "dress"), imageUrl: THUMB.dress },
-          { label: "Wrap dresses", href: browse("fashion", "wrap"), imageUrl: THUMB.dress },
           { label: "Jumpsuits", href: browse("fashion", "jumpsuit"), imageUrl: THUMB.dress },
         ],
       },
@@ -88,76 +128,6 @@ export const MEGA_MENU: MegaMenuCategory[] = [
     ],
   },
   {
-    key: "kurti-saree-lehenga",
-    label: "Kurti, Saree & Lehenga",
-    href: browse("fashion", "kurta"),
-    columns: [
-      {
-        heading: "Kurtis & Kurtas",
-        links: [
-          { label: "Kurtas", href: browse("fashion", "kurta"), imageUrl: THUMB.saree },
-          { label: "Kurti sets", href: browse("fashion", "set"), imageUrl: THUMB.saree },
-          { label: "Handloom kurtas", href: browse("fashion", "handloom"), imageUrl: THUMB.saree },
-        ],
-      },
-      {
-        heading: "Sarees & Dupattas",
-        links: [
-          { label: "Sarees", href: browse("fashion", "saree"), imageUrl: THUMB.saree },
-          { label: "Dupattas", href: browse("fashion", "dupatta"), imageUrl: THUMB.saree },
-          { label: "Blouses", href: browse("fashion", "blouse") },
-        ],
-      },
-      {
-        heading: "Lehengas & Ethnic",
-        links: [
-          { label: "Lehengas", href: browse("fashion", "lehenga"), imageUrl: THUMB.dress },
-          { label: "Ethnic wear", href: browse("fashion", "ethnic"), imageUrl: THUMB.saree },
-          { label: "Palazzo sets", href: browse("fashion", "palazzo") },
-        ],
-      },
-      {
-        heading: "Occasion",
-        links: [
-          { label: "Festive", href: browse("fashion", "festive") },
-          { label: "Wedding", href: browse("fashion", "wedding") },
-          { label: "Daily wear", href: browse("fashion", "cotton") },
-        ],
-      },
-    ],
-  },
-  {
-    key: "lingerie",
-    label: "Lingerie",
-    href: browse("fashion", "pyjama"),
-    columns: [
-      {
-        heading: "Innerwear",
-        links: [
-          { label: "Bras", href: browseQ("bra") },
-          { label: "Panties", href: browseQ("panty") },
-          { label: "Camisoles", href: browseQ("camisole") },
-        ],
-      },
-      {
-        heading: "Sleepwear",
-        links: [
-          { label: "Nightwear", href: browse("fashion", "pyjama") },
-          { label: "Pyjama sets", href: browse("fashion", "pyjama") },
-          { label: "Robes", href: browseQ("robe") },
-        ],
-      },
-      {
-        heading: "Shapewear & Socks",
-        links: [
-          { label: "Shapewear", href: browseQ("shapewear") },
-          { label: "Socks", href: browse("bags-footwear", "sock") },
-          { label: "Thermals", href: browseQ("thermal") },
-        ],
-      },
-    ],
-  },
-  {
     key: "men",
     label: "Men",
     href: browse("fashion", "shirt"),
@@ -165,7 +135,7 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Topwear",
         links: [
-          { label: "Shirts", href: browse("fashion", "shirt") },
+          { label: "Shirts", href: browse("fashion", "shirt"), imageUrl: THUMB.shirt },
           { label: "T-shirts", href: browse("fashion", "tee") },
           { label: "Kurtas", href: browse("fashion", "kurta") },
         ],
@@ -197,14 +167,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
     ],
   },
   {
-    key: "kids-toys",
-    label: "Kids & Toys",
+    key: "kids",
+    label: "Kids",
     href: browse("baby-kids"),
     columns: [
       {
         heading: "Baby essentials",
         links: [
-          { label: "Onesies", href: browse("baby-kids", "onesie") },
+          { label: "Onesies", href: browse("baby-kids", "onesie"), imageUrl: THUMB.kids },
           { label: "Swaddles", href: browse("baby-kids", "swaddle") },
           { label: "Feeding", href: browse("baby-kids", "bib") },
         ],
@@ -235,9 +205,8 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Cookware",
         links: [
-          { label: "Tawas & pans", href: browse("home-kitchen", "tawa") },
+          { label: "Tawas & pans", href: browse("home-kitchen", "tawa"), imageUrl: THUMB.home },
           { label: "Knives", href: browse("home-kitchen", "knife") },
-          { label: "Spatulas", href: browse("home-kitchen", "spatula") },
           { label: "Kettles", href: browse("home-kitchen", "kettle") },
         ],
       },
@@ -247,7 +216,6 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           { label: "Containers", href: browse("home-kitchen", "container") },
           { label: "Tiffin", href: browse("home-kitchen", "tiffin") },
           { label: "Bowls", href: browse("home-kitchen", "bowl") },
-          { label: "Spice jars", href: browse("home-kitchen", "spice") },
         ],
       },
       {
@@ -268,10 +236,9 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Skincare",
         links: [
-          { label: "Face wash", href: browse("beauty-personal-care", "face") },
+          { label: "Face wash", href: browse("beauty-personal-care", "face"), imageUrl: THUMB.beauty },
           { label: "Moisturiser", href: browse("beauty-personal-care", "moistur") },
           { label: "Serum", href: browse("beauty-personal-care", "serum") },
-          { label: "Face mask", href: browse("beauty-personal-care", "mask") },
         ],
       },
       {
@@ -280,24 +247,21 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           { label: "Hair oil", href: browse("beauty-personal-care", "oil") },
           { label: "Body lotion", href: browse("beauty-personal-care", "lotion") },
           { label: "Soap", href: browse("beauty-personal-care", "soap") },
-          { label: "Lip balm", href: browse("beauty-personal-care", "lip") },
         ],
       },
       {
-        heading: "Health & fitness",
+        heading: "Wellness",
         links: [
           { label: "Yoga mats", href: browse("health-wellness", "yoga") },
-          { label: "Resistance bands", href: browse("health-wellness", "band") },
           { label: "Scales", href: browse("health-wellness", "scale") },
-          { label: "Sports gear", href: browse("sports-fitness") },
         ],
       },
     ],
   },
   {
-    key: "jewellery-accessories",
-    label: "Jewellery & Accessories",
-    href: browse("fashion", "scarf"),
+    key: "jewellery",
+    label: "Jewellery",
+    href: browseQ("earring"),
     columns: [
       {
         heading: "Jewellery",
@@ -309,18 +273,10 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         ],
       },
       {
-        heading: "Watches & Wearables",
+        heading: "Watches",
         links: [
           { label: "Watches", href: browse("electronics-accessories", "watch") },
           { label: "Fitness bands", href: browse("health-wellness", "band") },
-        ],
-      },
-      {
-        heading: "Everyday accessories",
-        links: [
-          { label: "Belts", href: browse("bags-footwear", "belt") },
-          { label: "Scarves", href: browse("fashion", "scarf") },
-          { label: "Hair accessories", href: browseQ("hair") },
         ],
       },
     ],
@@ -333,10 +289,9 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Bags",
         links: [
-          { label: "Handbags", href: browse("bags-footwear", "sling") },
+          { label: "Handbags", href: browse("bags-footwear", "sling"), imageUrl: THUMB.bag },
           { label: "Backpacks", href: browse("bags-footwear", "backpack") },
           { label: "Totes", href: browse("bags-footwear", "tote") },
-          { label: "Duffels", href: browse("bags-footwear", "duffel") },
         ],
       },
       {
@@ -345,14 +300,60 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           { label: "Sandals", href: browse("bags-footwear", "sandal") },
           { label: "Sneakers", href: browse("bags-footwear", "sneaker") },
           { label: "Slippers", href: browse("bags-footwear", "slipper") },
-          { label: "Running shoes", href: browse("sports-fitness", "shoe") },
+        ],
+      },
+    ],
+  },
+  {
+    key: "electronics",
+    label: "Electronics",
+    href: browse("electronics-accessories"),
+    columns: [
+      {
+        heading: "Audio & gadgets",
+        links: [
+          {
+            label: "Earbuds",
+            href: browse("electronics-accessories", "earbud"),
+            imageUrl: THUMB.electronics,
+          },
+          { label: "Headphones", href: browse("electronics-accessories", "headphone") },
+          { label: "Speakers", href: browse("electronics-accessories", "speaker") },
         ],
       },
       {
-        heading: "Travel",
+        heading: "Accessories",
         links: [
-          { label: "Packing cubes", href: browse("bags-footwear", "cube") },
-          { label: "Weekenders", href: browse("bags-footwear", "weekender") },
+          { label: "Chargers", href: browse("electronics-accessories", "charger") },
+          { label: "Cables", href: browse("electronics-accessories", "cable") },
+          { label: "Watches", href: browse("electronics-accessories", "watch") },
+        ],
+      },
+    ],
+  },
+  {
+    key: "sports-fitness",
+    label: "Sports & Fitness",
+    href: browse("sports-fitness"),
+    columns: [
+      {
+        heading: "Fitness",
+        links: [
+          {
+            label: "Yoga mats",
+            href: browse("sports-fitness", "yoga"),
+            imageUrl: THUMB.sports,
+          },
+          { label: "Dumbbells", href: browse("sports-fitness", "dumbbell") },
+          { label: "Resistance bands", href: browse("health-wellness", "band") },
+        ],
+      },
+      {
+        heading: "Sportswear",
+        links: [
+          { label: "Shorts", href: browse("sports-fitness", "short") },
+          { label: "Running shoes", href: browse("sports-fitness", "shoe") },
+          { label: "Socks", href: browse("bags-footwear", "sock") },
         ],
       },
     ],

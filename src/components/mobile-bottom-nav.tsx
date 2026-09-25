@@ -27,24 +27,32 @@ function CategoriesIcon() {
   );
 }
 
-function SearchIcon() {
+function NewIcon() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M20 20l-3.2-3.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M12 3v18M7 8l5-5 5 5M7 16l5 5 5-5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-function HeartIcon() {
+function CartIcon() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M12 20s-6.5-4.2-8.5-8A4.8 4.8 0 0 1 12 7.2 4.8 4.8 0 0 1 20.5 12c-2 3.8-8.5 8-8.5 8Z"
+        d="M6 8h15l-1.5 9H8L6 8Zm0 0L5 4H2"
         stroke="currentColor"
         strokeWidth="1.8"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
+      <circle cx="9" cy="20" r="1.2" fill="currentColor" />
+      <circle cx="17" cy="20" r="1.2" fill="currentColor" />
     </svg>
   );
 }
@@ -63,11 +71,12 @@ function UserIcon() {
   );
 }
 
+/** Meesho-style mobile tabs: Home · Categories · New · Cart · Account */
 const items = [
   { href: "/", label: "Home", Icon: HomeIcon },
   { href: "/shop", label: "Categories", Icon: CategoriesIcon },
-  { href: "/browse", label: "Search", Icon: SearchIcon },
-  { href: "/wishlist", label: "Wishlist", Icon: HeartIcon },
+  { href: "/shop?sort=newest", label: "New", Icon: NewIcon, match: "/shop" },
+  { href: "/cart", label: "Cart", Icon: CartIcon },
   { href: "/account", label: "Account", Icon: UserIcon },
 ] as const;
 
@@ -83,9 +92,11 @@ export function MobileBottomNav() {
           const active =
             item.href === "/"
               ? pathname === "/"
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              : item.href.startsWith("/shop?")
+                ? pathname.startsWith("/shop")
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
-            <li key={item.href}>
+            <li key={item.label}>
               <Link
                 href={item.href}
                 className={`flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-[var(--radius-sm)] text-[10px] font-medium ${

@@ -42,6 +42,19 @@ function BagIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+function HeartIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 20s-6.5-4.2-8.5-8A4.8 4.8 0 0 1 12 7.2 4.8 4.8 0 0 1 20.5 12c-2 3.8-8.5 8-8.5 8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function UserIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -325,7 +338,7 @@ function HeaderSearch() {
             autoComplete="off"
             aria-autocomplete="list"
             aria-controls={listId}
-            className="w-full rounded-[var(--radius-sm)] border border-border bg-background py-2.5 pr-4 pl-10 text-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className="w-full rounded-full border border-transparent bg-[#f0f4f3] py-2.5 pr-4 pl-10 text-sm outline-none focus-visible:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           />
         </div>
       </form>
@@ -473,7 +486,7 @@ export function SiteHeaderClient({
               compact ? "text-xs" : ""
             }`}
           >
-            Become a Seller
+            Become a Supplier
           </Link>
           {showAdmin ? (
             <Link
@@ -494,6 +507,14 @@ export function SiteHeaderClient({
             <span className="text-xs font-medium">Download App</span>
           </Link>
           <Link
+            href="/wishlist"
+            className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/70 sm:px-2.5"
+            aria-label="Wishlist"
+          >
+            <HeartIcon />
+            <span className="hidden lg:inline">Wishlist</span>
+          </Link>
+          <Link
             href={accountHref}
             className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/70 sm:px-2.5"
           >
@@ -502,13 +523,12 @@ export function SiteHeaderClient({
           </Link>
           <Link
             href="/cart"
-            className="relative inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/70 sm:px-2.5"
+            className="relative inline-flex items-center justify-center rounded-[var(--radius-sm)] px-2 py-1.5 hover:bg-accent-soft/70 sm:px-2.5"
             aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
           >
             <BagIcon />
-            <span className="hidden sm:inline">Cart</span>
             {cartCount > 0 ? (
-              <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground sm:static sm:ml-0.5">
+              <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             ) : null}

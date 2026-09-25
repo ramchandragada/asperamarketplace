@@ -48,6 +48,26 @@ const GENDER_OPTIONS = [
   { value: "unisex", label: "Unisex", categorySlug: "bags-footwear", q: "" },
 ] as const;
 
+const COLOR_OPTIONS = [
+  "Black",
+  "White",
+  "Blue",
+  "Red",
+  "Green",
+  "Pink",
+  "Yellow",
+  "Beige",
+] as const;
+
+const FABRIC_OPTIONS = [
+  "Cotton",
+  "Silk",
+  "Rayon",
+  "Polyester",
+  "Linen",
+  "Wool",
+] as const;
+
 const SORT_OPTIONS = [
   { value: "relevance", label: "Relevance" },
   { value: "newest", label: "Newest first" },
@@ -125,6 +145,8 @@ export function CatalogueBrowse({
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
   const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
   const [gender, setGender] = useState<string>("");
+  const [color, setColor] = useState<string>("");
+  const [fabric, setFabric] = useState<string>("");
   const [sort, setSort] = useState(initialSort);
   const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
   const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly);
@@ -146,6 +168,8 @@ export function CatalogueBrowse({
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
     gender: true,
+    color: false,
+    fabric: false,
     brand: true,
     price: true,
     rating: true,
@@ -211,6 +235,8 @@ export function CatalogueBrowse({
       const option = GENDER_OPTIONS.find((entry) => entry.value === gender);
       if (option) list.push({ key: "gender", label: option.label });
     }
+    if (color) list.push({ key: "color", label: color });
+    if (fabric) list.push({ key: "fabric", label: fabric });
     return list;
   }, [
     query,
@@ -226,6 +252,8 @@ export function CatalogueBrowse({
     minRating,
     minDiscount,
     gender,
+    color,
+    fabric,
   ]);
 
   async function runSearch(next?: {
@@ -347,6 +375,8 @@ export function CatalogueBrowse({
     setCategorySearch("");
     setBrandSearch("");
     setGender("");
+    setColor("");
+    setFabric("");
     startTransition(() => {
       void runSearch({
         q: "",
@@ -383,6 +413,16 @@ export function CatalogueBrowse({
       setQuery("");
       next.categorySlug = "";
       next.q = "";
+    }
+    if (key === "color") {
+      setColor("");
+      next.q = fabric || "";
+      setQuery(fabric || "");
+    }
+    if (key === "fabric") {
+      setFabric("");
+      next.q = color || "";
+      setQuery(color || "");
     }
     if (key === "price" || key === "priceCustom") {
       setPricePreset("");
@@ -429,7 +469,9 @@ export function CatalogueBrowse({
     <div className="flex flex-col gap-1">
       <div className="mb-2 flex items-baseline justify-between gap-2">
         <div>
-          <h2 className="text-sm font-bold tracking-wide uppercase">Filters</h2>
+          <h2 className="text-[13px] font-extrabold tracking-[0.08em] uppercase">
+            Filters
+          </h2>
           <p className="mt-0.5 text-xs text-muted">
             {total >= 1000 ? "1000+ Products" : `${total} product${total === 1 ? "" : "s"}`}
           </p>
@@ -548,6 +590,64 @@ export function CatalogueBrowse({
               </button>
             </li>
           ) : null}
+        </ul>
+      </FilterSection>
+
+      <FilterSection
+        title="Color"
+        open={openSections.color === true}
+        onToggle={() => toggleSection("color")}
+      >
+        <ul className="space-y-1.5">
+          {COLOR_OPTIONS.map((option) => (
+            <li key={option}>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="color"
+                  checked={color === option}
+                  onChange={() => {
+                    setColor(option);
+                    const nextQ = [option, fabric].filter(Boolean).join(" ");
+                    setQuery(nextQ);
+                    startTransition(() => {
+                      void runSearch({ q: nextQ });
+                    });
+                  }}
+                />
+                {option}
+              </label>
+            </li>
+          ))}
+        </ul>
+      </FilterSection>
+
+      <FilterSection
+        title="Fabric"
+        open={openSections.fabric === true}
+        onToggle={() => toggleSection("fabric")}
+      >
+        <ul className="space-y-1.5">
+          {FABRIC_OPTIONS.map((option) => (
+            <li key={option}>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="fabric"
+                  checked={fabric === option}
+                  onChange={() => {
+                    setFabric(option);
+                    const nextQ = [color, option].filter(Boolean).join(" ");
+                    setQuery(nextQ);
+                    startTransition(() => {
+                      void runSearch({ q: nextQ });
+                    });
+                  }}
+                />
+                {option}
+              </label>
+            </li>
+          ))}
         </ul>
       </FilterSection>
 

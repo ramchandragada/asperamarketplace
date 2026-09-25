@@ -23,7 +23,7 @@ function readDismissed() {
 }
 
 export function AppDownloadBanner() {
-  const dismissed = useSyncExternalStore(subscribe, readDismissed, () => true);
+  const dismissed = useSyncExternalStore(subscribe, readDismissed, () => false);
 
   function dismiss() {
     try {

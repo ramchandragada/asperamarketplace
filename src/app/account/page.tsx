@@ -46,11 +46,17 @@ export default async function AccountPage() {
         <Link href="/orders" className="underline">
           Orders
         </Link>
+        <Link href="/support" className="underline">
+          Support / returns
+        </Link>
         <Link href="/seller/onboarding" className="underline">
           Seller onboarding
         </Link>
         <Link href="/seller/catalogue" className="underline">
           Seller catalogue
+        </Link>
+        <Link href="/seller/fulfilment" className="underline">
+          Seller fulfilment
         </Link>
         {actorIsAdmin(actor) ? (
           <>

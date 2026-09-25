@@ -35,6 +35,8 @@ import {
   OrderTransitionError,
   PaymentTransitionError,
 } from "@/modules/orders/states";
+import { FulfilmentValidationError } from "@/modules/fulfilment/service";
+import { FulfilmentTransitionError } from "@/modules/fulfilment/states";
 import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
 
@@ -137,7 +139,9 @@ export function jsonError(
     error instanceof SellerTransitionError ||
     error instanceof ProductTransitionError ||
     error instanceof OrderTransitionError ||
-    error instanceof PaymentTransitionError
+    error instanceof PaymentTransitionError ||
+    error instanceof FulfilmentValidationError ||
+    error instanceof FulfilmentTransitionError
   ) {
     return NextResponse.json(
       fail({

@@ -507,6 +507,8 @@ enum OrderStatus {
   paid
   payment_failed
   cancelled
+  partially_cancelled
+  fulfilled
 }
 
 enum FulfilmentGroupStatus {
@@ -559,6 +561,10 @@ model Order {
   groups          OrderFulfilmentGroup[]
   payments        PaymentAttempt[]
   invoices        Invoice[]
+  returnRequests  ReturnRequest[]
+  refunds         Refund[]
+  tickets         SupportTicket[]
+  disputes        Dispute[]
 
   @@index([userId, status])
   @@index([status])
@@ -566,20 +572,27 @@ model Order {
 }
 
 model OrderFulfilmentGroup {
-  id           String                @id @default(uuid()) @db.Uuid
-  orderId      String                @map("order_id") @db.Uuid
-  sellerId     String                @map("seller_id") @db.Uuid
-  status       FulfilmentGroupStatus @default(pending)
-  lineTotalPaise Int                 @map("line_total_paise")
-  shippingPaise  Int                 @default(0) @map("shipping_paise")
-  statusReason String?               @map("status_reason")
-  version      Int                   @default(1)
-  createdAt    DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String                @id @default(uuid()) @db.Uuid
+  orderId        String                @map("order_id") @db.Uuid
+  sellerId       String                @map("seller_id") @db.Uuid
+  status         FulfilmentGroupStatus @default(pending)
+  lineTotalPaise Int                   @map("line_total_paise")
+  shippingPaise  Int                   @default(0) @map("shipping_paise")
+  statusReason   String?               @map("status_reason")
+  carrier        String?
+  trackingNumber String?               @map("tracking_number")
+  trackingUrl    String?               @map("tracking_url")
+  shippedAt      DateTime?             @map("shipped_at") @db.Timestamptz(6)
+  deliveredAt    DateTime?             @map("delivered_at") @db.Timestamptz(6)
+  cancelledAt    DateTime?             @map("cancelled_at") @db.Timestamptz(6)
+  version        Int                   @default(1)
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  order  Order       @relation(fields: [orderId], references: [id])
-  seller Seller      @relation(fields: [sellerId], references: [id])
-  lines  OrderLine[]
+  order    Order       @relation(fields: [orderId], references: [id])
+  seller   Seller      @relation(fields: [sellerId], references: [id])
+  lines    OrderLine[]
+  shipment Shipment?
 
   @@index([orderId])
   @@index([sellerId, status])
@@ -693,4 +706,129 @@ model NotificationMessage {
 
   @@index([status, createdAt])
   @@map("notification_messages")
+}
+
+enum ReturnStatus {
+  requested
+  approved
+  rejected
+  received
+  closed
+}
+
+enum RefundStatus {
+  pending
+  succeeded
+  failed
+}
+
+enum TicketStatus {
+  open
+  in_progress
+  resolved
+  closed
+}
+
+enum DisputeStatus {
+  opened
+  under_review
+  resolved
+  closed
+}
+
+model Shipment {
+  id                 String   @id @default(uuid()) @db.Uuid
+  fulfilmentGroupId  String   @unique @map("fulfilment_group_id") @db.Uuid
+  carrier            String
+  trackingNumber     String   @map("tracking_number")
+  trackingUrl        String?  @map("tracking_url")
+  labelStorageKey    String?  @map("label_storage_key")
+  status             String   @default("created")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  fulfilmentGroup OrderFulfilmentGroup @relation(fields: [fulfilmentGroupId], references: [id])
+
+  @@map("shipments")
+}
+
+model ReturnRequest {
+  id          String       @id @default(uuid()) @db.Uuid
+  orderId     String       @map("order_id") @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
+  sellerId    String       @map("seller_id") @db.Uuid
+  status      ReturnStatus @default(requested)
+  reason      String
+  quantity    Int          @default(1)
+  orderLineId String?      @map("order_line_id") @db.Uuid
+  statusReason String?     @map("status_reason")
+  version     Int          @default(1)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order  Order  @relation(fields: [orderId], references: [id])
+  refund Refund?
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([sellerId, status])
+  @@map("return_requests")
+}
+
+model Refund {
+  id              String       @id @default(uuid()) @db.Uuid
+  orderId         String       @map("order_id") @db.Uuid
+  returnRequestId String?      @unique @map("return_request_id") @db.Uuid
+  amountPaise     Int          @map("amount_paise")
+  status          RefundStatus @default(pending)
+  provider        String       @default("mock")
+  providerReference String?    @map("provider_reference")
+  reason          String
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  completedAt     DateTime?    @map("completed_at") @db.Timestamptz(6)
+
+  order         Order          @relation(fields: [orderId], references: [id])
+  returnRequest ReturnRequest? @relation(fields: [returnRequestId], references: [id])
+
+  @@index([orderId])
+  @@map("refunds")
+}
+
+model SupportTicket {
+  id          String       @id @default(uuid()) @db.Uuid
+  orderId     String?      @map("order_id") @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
+  subject     String
+  body        String
+  status      TicketStatus @default(open)
+  priority    String       @default("normal")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  resolvedAt  DateTime?    @map("resolved_at") @db.Timestamptz(6)
+
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@index([userId, status])
+  @@index([orderId])
+  @@map("support_tickets")
+}
+
+model Dispute {
+  id          String        @id @default(uuid()) @db.Uuid
+  orderId     String        @map("order_id") @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  sellerId    String        @map("seller_id") @db.Uuid
+  reason      String
+  status      DisputeStatus @default(opened)
+  resolution  String?
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  resolvedAt  DateTime?     @map("resolved_at") @db.Timestamptz(6)
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([sellerId, status])
+  @@map("disputes")
 }

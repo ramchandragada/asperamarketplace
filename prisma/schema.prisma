@@ -134,6 +134,8 @@ model User {
   carts             Cart[]
   addresses         CustomerAddress[]
   checkoutSessions  CheckoutSession[]
+  orders            Order[]
+  paymentAttempts   PaymentAttempt[]
 
   @@map("users")
 }
@@ -227,6 +229,7 @@ model Seller {
   userRoles   UserRole[]
   products    Product[]
   inventory   InventoryItem[]
+  fulfilmentGroups OrderFulfilmentGroup[]
 
   @@index([status])
   @@index([ownerUserId])
@@ -462,6 +465,7 @@ model CustomerAddress {
 
   user             User              @relation(fields: [userId], references: [id])
   checkoutSessions CheckoutSession[]
+  orders           Order[]
 
   @@index([userId])
   @@map("customer_addresses")
@@ -491,8 +495,202 @@ model CheckoutSession {
   user    User            @relation(fields: [userId], references: [id])
   cart    Cart            @relation(fields: [cartId], references: [id])
   address CustomerAddress @relation(fields: [addressId], references: [id])
+  order   Order?
 
   @@index([userId, status])
   @@index([cartId])
   @@map("checkout_sessions")
+}
+
+enum OrderStatus {
+  awaiting_payment
+  paid
+  payment_failed
+  cancelled
+}
+
+enum FulfilmentGroupStatus {
+  pending
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum PaymentAttemptStatus {
+  created
+  pending
+  succeeded
+  failed
+  cancelled
+}
+
+enum InvoiceStatus {
+  draft
+  issued
+  voided
+}
+
+model Order {
+  id                String      @id @default(uuid()) @db.Uuid
+  orderNumber       String      @unique @map("order_number")
+  userId            String      @map("user_id") @db.Uuid
+  checkoutSessionId String      @unique @map("checkout_session_id") @db.Uuid
+  addressId         String      @map("address_id") @db.Uuid
+  status            OrderStatus
+  currencyCode      String      @default("INR") @map("currency_code")
+  snapshot          Json
+  subtotalPaise     Int         @map("subtotal_paise")
+  discountPaise     Int         @default(0) @map("discount_paise")
+  shippingPaise     Int         @default(0) @map("shipping_paise")
+  taxPaise          Int         @default(0) @map("tax_paise")
+  totalPaise        Int         @map("total_paise")
+  statusReason      String?     @map("status_reason")
+  paidAt            DateTime?   @map("paid_at") @db.Timestamptz(6)
+  cancelledAt       DateTime?   @map("cancelled_at") @db.Timestamptz(6)
+  version           Int         @default(1)
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user            User                   @relation(fields: [userId], references: [id])
+  checkoutSession CheckoutSession        @relation(fields: [checkoutSessionId], references: [id])
+  address         CustomerAddress        @relation(fields: [addressId], references: [id])
+  lines           OrderLine[]
+  groups          OrderFulfilmentGroup[]
+  payments        PaymentAttempt[]
+  invoices        Invoice[]
+
+  @@index([userId, status])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderFulfilmentGroup {
+  id           String                @id @default(uuid()) @db.Uuid
+  orderId      String                @map("order_id") @db.Uuid
+  sellerId     String                @map("seller_id") @db.Uuid
+  status       FulfilmentGroupStatus @default(pending)
+  lineTotalPaise Int                 @map("line_total_paise")
+  shippingPaise  Int                 @default(0) @map("shipping_paise")
+  statusReason String?               @map("status_reason")
+  version      Int                   @default(1)
+  createdAt    DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order  Order       @relation(fields: [orderId], references: [id])
+  seller Seller      @relation(fields: [sellerId], references: [id])
+  lines  OrderLine[]
+
+  @@index([orderId])
+  @@index([sellerId, status])
+  @@map("order_fulfilment_groups")
+}
+
+model OrderLine {
+  id                String   @id @default(uuid()) @db.Uuid
+  orderId           String   @map("order_id") @db.Uuid
+  fulfilmentGroupId String   @map("fulfilment_group_id") @db.Uuid
+  sellerId          String   @map("seller_id") @db.Uuid
+  productId         String   @map("product_id") @db.Uuid
+  variantId         String   @map("variant_id") @db.Uuid
+  productTitle      String   @map("product_title")
+  variantTitle      String   @map("variant_title")
+  sku               String
+  quantity          Int
+  unitPricePaise    Int      @map("unit_price_paise")
+  lineTotalPaise    Int      @map("line_total_paise")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  order           Order                @relation(fields: [orderId], references: [id])
+  fulfilmentGroup OrderFulfilmentGroup @relation(fields: [fulfilmentGroupId], references: [id])
+
+  @@index([orderId])
+  @@index([fulfilmentGroupId])
+  @@map("order_lines")
+}
+
+model PaymentAttempt {
+  id                String               @id @default(uuid()) @db.Uuid
+  orderId           String               @map("order_id") @db.Uuid
+  userId            String               @map("user_id") @db.Uuid
+  provider          String               @default("mock")
+  providerReference String               @unique @map("provider_reference")
+  status            PaymentAttemptStatus
+  amountPaise       Int                  @map("amount_paise")
+  currencyCode      String               @default("INR") @map("currency_code")
+  clientSecret      String?              @map("client_secret")
+  failureReason     String?              @map("failure_reason")
+  idempotencyKey    String               @unique @map("idempotency_key")
+  rawCreateResponse Json?                @map("raw_create_response")
+  paidAt            DateTime?            @map("paid_at") @db.Timestamptz(6)
+  failedAt          DateTime?            @map("failed_at") @db.Timestamptz(6)
+  version           Int                  @default(1)
+  createdAt         DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order    Order                 @relation(fields: [orderId], references: [id])
+  user     User                  @relation(fields: [userId], references: [id])
+  webhooks PaymentWebhookEvent[]
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+  @@map("payment_attempts")
+}
+
+model PaymentWebhookEvent {
+  id               String   @id @default(uuid()) @db.Uuid
+  provider         String
+  providerEventId  String   @map("provider_event_id")
+  paymentAttemptId String?  @map("payment_attempt_id") @db.Uuid
+  eventType        String   @map("event_type")
+  payloadHash      String   @map("payload_hash")
+  signatureValid   Boolean  @map("signature_valid")
+  processed        Boolean  @default(false)
+  processingError  String?  @map("processing_error")
+  rawPayload       Json     @map("raw_payload")
+  receivedAt       DateTime @default(now()) @map("received_at") @db.Timestamptz(6)
+  processedAt      DateTime? @map("processed_at") @db.Timestamptz(6)
+
+  paymentAttempt PaymentAttempt? @relation(fields: [paymentAttemptId], references: [id])
+
+  @@unique([provider, providerEventId])
+  @@index([paymentAttemptId])
+  @@map("payment_webhook_events")
+}
+
+model Invoice {
+  id            String        @id @default(uuid()) @db.Uuid
+  orderId       String        @map("order_id") @db.Uuid
+  invoiceNumber String        @unique @map("invoice_number")
+  status        InvoiceStatus @default(draft)
+  currencyCode  String        @default("INR") @map("currency_code")
+  totalPaise    Int           @map("total_paise")
+  /// Structured invoice body. Not a legally reviewed tax invoice (A-21/A-24 open).
+  document      Json
+  storageKey    String?       @map("storage_key")
+  issuedAt      DateTime?     @map("issued_at") @db.Timestamptz(6)
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@map("invoices")
+}
+
+model NotificationMessage {
+  id           String   @id @default(uuid()) @db.Uuid
+  channel      String
+  recipient    String
+  templateKey  String   @map("template_key")
+  payload      Json
+  status       String   @default("pending")
+  providerRef  String?  @map("provider_ref")
+  errorMessage String?  @map("error_message")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  sentAt       DateTime? @map("sent_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt])
+  @@map("notification_messages")
 }

@@ -1,56 +1,54 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SellerFulfilmentPanel } from "@/components/seller-fulfilment-panel";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getOptionalActor } from "@/modules/identity/service";
 import {
   listReturnsForSeller,
   listSellerFulfilment,
 } from "@/modules/fulfilment/service";
-import { prisma } from "@/platform/db/prisma";
+import { resolveSellerForActor } from "@/modules/seller/access";
+import { actorHasSellerCapability } from "@/modules/identity/policy";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Seller fulfilment · Aspera Marketplace" };
 
 export default async function SellerFulfilmentPage() {
   const actor = await getOptionalActor();
-  if (!actor) {
-    redirect("/login");
-  }
+  if (!actor) redirect("/login");
 
-  const seller = await prisma.seller.findFirst({
-    where: {
-      ownerUserId: actor.userId,
-      status: "approved",
-    },
-    orderBy: { createdAt: "asc" },
-  });
+  const canFulfil = await resolveSellerForActor(actor, "fulfilment.write");
+  const canReturns = await resolveSellerForActor(actor, "returns.review");
+  const seller = canFulfil ?? canReturns;
 
   if (!seller) {
     return (
-      <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-6 px-6 py-16">
-        <h1 className="text-3xl font-semibold">Seller fulfilment</h1>
-        <p className="text-muted">
-          An approved seller profile is required before fulfilling orders.
-        </p>
-        <Link href="/seller/onboarding" className="underline">
-          Go to seller onboarding
-        </Link>
-      </main>
+      <EmptyState
+        title="Orders access unavailable"
+        description="Requires seller operations/owner for fulfilment, or support role for returns."
+        action={
+          <Link href="/seller" className="text-sm underline">
+            Dashboard
+          </Link>
+        }
+      />
     );
   }
 
-  const [groups, returns] = await Promise.all([
-    listSellerFulfilment(actor, seller.id),
-    listReturnsForSeller(actor, seller.id),
-  ]);
+  const groups = actorHasSellerCapability(actor, seller.id, "fulfilment.write") ||
+  seller.ownerUserId === actor.userId
+    ? await listSellerFulfilment(actor, seller.id)
+    : [];
+  const returns =
+    actorHasSellerCapability(actor, seller.id, "returns.review") ||
+    seller.ownerUserId === actor.userId
+      ? await listReturnsForSeller(actor, seller.id)
+      : [];
 
   return (
-    <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-6 px-6 py-16">
+    <div className="flex flex-col gap-6">
       <div>
-        <p className="text-sm font-medium tracking-wide text-muted uppercase">
-          Seller
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold">Fulfilment</h1>
+        <h1 className="text-3xl font-semibold">Orders & returns</h1>
         <p className="mt-2 text-muted">
           Process, ship, deliver, or cancel paid groups for{" "}
           {seller.tradeName ?? seller.legalName}. Mock logistics only.
@@ -61,15 +59,6 @@ export default async function SellerFulfilmentPage() {
         initialGroups={groups}
         initialReturns={returns}
       />
-      <p className="text-sm">
-        <Link href="/seller/catalogue" className="underline">
-          Catalogue
-        </Link>
-        {" · "}
-        <Link href="/account" className="underline">
-          Account
-        </Link>
-      </p>
-    </main>
+    </div>
   );
 }

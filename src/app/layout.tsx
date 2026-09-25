@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Source_Serif_4, DM_Sans } from "next/font/google";
+import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Source_Serif_4({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const sans = DM_Sans({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Aspera Marketplace",
-  description: "Application foundation for the Aspera Marketplace service.",
+  description:
+    "India-first multi-vendor marketplace with verified sellers, transparent pricing, and responsible commerce.",
 };
 
 export default function RootLayout({
@@ -25,9 +28,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${sans.variable} ${display.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="flex min-h-full flex-col font-sans">
+        <a className="skip-link" href="#content">
+          Skip to content
+        </a>
+        <SiteHeader />
+        <div className="flex-1">{children}</div>
+        <SiteFooter />
+      </body>
     </html>
   );
 }

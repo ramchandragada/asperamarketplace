@@ -2,8 +2,8 @@ import { prisma } from "@/platform/db/prisma";
 import type { Prisma } from "@prisma/client";
 import {
   actorIsAdmin,
-  actorOwnsSeller,
   AuthorizationError,
+  requireSellerCapability,
   type Actor,
 } from "@/modules/identity/policy";
 import type {
@@ -92,8 +92,11 @@ export async function platformDashboard(actor: Actor) {
 }
 
 export async function sellerHealth(actor: Actor, sellerId: string) {
-  if (!actorOwnsSeller(actor, sellerId) && !actorIsAdmin(actor)) {
-    throw new AuthorizationError("Seller ownership required");
+  const seller = await prisma.seller.findUnique({ where: { id: sellerId } });
+  if (
+    !(seller?.ownerUserId === actor.userId || actorIsAdmin(actor))
+  ) {
+    requireSellerCapability(actor, sellerId, "analytics.read");
   }
   const [groups, products, returns, payouts] = await Promise.all([
     prisma.orderFulfilmentGroup.groupBy({

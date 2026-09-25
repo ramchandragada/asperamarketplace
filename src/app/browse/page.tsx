@@ -1,10 +1,12 @@
-import Link from "next/link";
 import {
   CatalogueBrowse,
   type BrowseProduct,
 } from "@/components/catalogue-browse";
-import { getOptionalActor } from "@/modules/identity/service";
-import { searchApprovedProducts } from "@/modules/catalogue/service";
+import { PageShell } from "@/components/ui/page-shell";
+import {
+  listActiveCategories,
+  searchApprovedProducts,
+} from "@/modules/catalogue/service";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Browse · Aspera Marketplace" };
@@ -12,58 +14,70 @@ export const metadata = { title: "Browse · Aspera Marketplace" };
 export default async function BrowsePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    categorySlug?: string;
+    sort?: string;
+    inStockOnly?: string;
+    verifiedSellerOnly?: string;
+    minPricePaise?: string;
+    maxPricePaise?: string;
+  }>;
 }) {
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
-  const result = await searchApprovedProducts({
-    q: query || undefined,
-    page: 1,
-    pageSize: 12,
-  });
-  const actor = await getOptionalActor();
+  const categorySlug = params.categorySlug?.trim() ?? "";
+  const sort =
+    params.sort === "price_asc" || params.sort === "price_desc"
+      ? params.sort
+      : "newest";
+  const inStockOnly = params.inStockOnly === "true";
+  const verifiedSellerOnly = params.verifiedSellerOnly === "true";
+
+  const [result, categories] = await Promise.all([
+    searchApprovedProducts({
+      q: query || undefined,
+      categorySlug: categorySlug || undefined,
+      sort,
+      inStockOnly,
+      verifiedSellerOnly,
+      minPricePaise: params.minPricePaise
+        ? Number(params.minPricePaise)
+        : undefined,
+      maxPricePaise: params.maxPricePaise
+        ? Number(params.maxPricePaise)
+        : undefined,
+      page: 1,
+      pageSize: 24,
+    }),
+    listActiveCategories(),
+  ]);
 
   return (
-    <>
-      <a className="skip-link" href="#content">
-        Skip to content
-      </a>
-      <main
-        id="content"
-        className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-8 px-6 py-16"
-      >
-        <header className="flex flex-col gap-3">
-          <p className="text-sm font-medium tracking-wide text-muted uppercase">
-            Aspera Marketplace
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight">
-            Browse approved listings
-          </h1>
-          <p className="max-w-2xl text-lg leading-8 text-muted">
-            Public discovery over moderated catalogue data. Prices and stock come
-            from the server in paise and units — not from the browser.
-          </p>
-        </header>
-        <CatalogueBrowse
-          initialItems={result.items as BrowseProduct[]}
-          initialQuery={query}
-          initialTotal={result.total}
-        />
-        <nav className="flex flex-wrap gap-4 text-sm">
-          <Link href="/" className="underline">
-            Home
-          </Link>
-          {actor ? (
-            <Link href="/account" className="underline">
-              Account
-            </Link>
-          ) : (
-            <Link href="/login" className="underline">
-              Sign in
-            </Link>
-          )}
-        </nav>
-      </main>
-    </>
+    <PageShell>
+      <header className="flex flex-col gap-3">
+        <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
+          Discover
+        </p>
+        <h1 className="text-4xl font-semibold tracking-tight">Browse Aspera</h1>
+        <p className="max-w-2xl text-base leading-7 text-muted">
+          Filter by category, price, stock, and verified sellers. Totals and
+          availability come from the server—never from the browser.
+        </p>
+      </header>
+      <CatalogueBrowse
+        initialItems={result.items as BrowseProduct[]}
+        initialQuery={query}
+        initialTotal={result.total}
+        categories={categories.map((category) => ({
+          slug: category.slug,
+          name: category.name,
+        }))}
+        initialCategorySlug={categorySlug}
+        initialSort={sort}
+        initialInStockOnly={inStockOnly}
+        initialVerifiedOnly={verifiedSellerOnly}
+      />
+    </PageShell>
   );
 }

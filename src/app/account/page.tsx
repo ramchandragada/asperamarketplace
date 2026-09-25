@@ -52,6 +52,9 @@ export default async function AccountPage() {
         <Link href="/privacy" className="underline">
           Privacy requests
         </Link>
+        <Link href="/seller" className="underline">
+          Seller dashboard
+        </Link>
         <Link href="/seller/onboarding" className="underline">
           Seller onboarding
         </Link>

@@ -162,6 +162,66 @@ async function main() {
     },
   });
 
+  const staffSeeds = [
+    {
+      email: "seller.ops@aspera.local",
+      password: "AsperaOpsDevOnly1!",
+      displayName: "Dev Seller Ops",
+      roleKey: "seller_operations",
+    },
+    {
+      email: "seller.finance@aspera.local",
+      password: "AsperaFinanceDevOnly1!",
+      displayName: "Dev Seller Finance",
+      roleKey: "seller_finance",
+    },
+    {
+      email: "seller.support@aspera.local",
+      password: "AsperaSupportDevOnly1!",
+      displayName: "Dev Seller Support",
+      roleKey: "seller_support",
+    },
+  ] as const;
+
+  const staffAccounts: Array<{ email: string; password: string; role: string }> =
+    [];
+  for (const staff of staffSeeds) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { key: staff.roleKey },
+    });
+    const user = await prisma.user.upsert({
+      where: { email: staff.email },
+      create: {
+        email: staff.email,
+        displayName: staff.displayName,
+        passwordHash: await hashPassword(staff.password),
+        emailVerifiedAt: new Date(),
+      },
+      update: {},
+    });
+    await prisma.userRole.upsert({
+      where: {
+        userId_roleId_scopeKey: {
+          userId: user.id,
+          roleId: role.id,
+          scopeKey: seller.id,
+        },
+      },
+      create: {
+        userId: user.id,
+        roleId: role.id,
+        scopeKey: seller.id,
+        sellerId: seller.id,
+      },
+      update: { sellerId: seller.id },
+    });
+    staffAccounts.push({
+      email: staff.email,
+      password: staff.password,
+      role: staff.roleKey,
+    });
+  }
+
   const searchDocument = buildSearchDocument({
     title: "Cotton tea towel set",
     summary: "Pack of three absorbent cotton tea towels for everyday kitchens.",
@@ -480,6 +540,7 @@ async function main() {
         seeded: true,
         admin: { email: DEV_ADMIN_EMAIL, password: DEV_ADMIN_PASSWORD },
         seller: { email: DEV_SELLER_EMAIL, password: DEV_SELLER_PASSWORD },
+        sellerStaff: staffAccounts,
         publicProductSlug: DEV_PRODUCT_SLUG,
         extraSeedListings: seedCatalogue.length,
         note: "Fictional development credentials and listings only",

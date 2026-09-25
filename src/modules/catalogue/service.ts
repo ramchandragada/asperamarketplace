@@ -1,8 +1,10 @@
 import { Prisma } from "@prisma/client";
+import { z } from "zod";
 import { prisma } from "@/platform/db/prisma";
 import {
   AuthorizationError,
   actorIsAdmin,
+  requireSellerCapability,
   type Actor,
 } from "@/modules/identity/policy";
 import {
@@ -10,23 +12,24 @@ import {
   buildSearchDocument,
   slugify,
 } from "@/modules/catalogue/helpers";
-import type {
-  CreateProductInput,
-  ReviewProductInput,
-  SearchProductsInput,
-  SubmitProductInput,
+import {
+  searchProductsSchema,
+  type CreateProductInput,
+  type ReviewProductInput,
+  type SubmitProductInput,
 } from "@/modules/catalogue/schema";
 
 async function requireApprovedSellerOwnership(actor: Actor, sellerId: string) {
   const seller = await prisma.seller.findUniqueOrThrow({
     where: { id: sellerId },
   });
-  if (seller.ownerUserId !== actor.userId && !actorIsAdmin(actor)) {
-    throw new AuthorizationError("Only the seller owner can manage this catalogue");
-  }
   if (seller.status !== "approved") {
     throw new AuthorizationError("Only approved sellers can manage listings");
   }
+  if (seller.ownerUserId === actor.userId || actorIsAdmin(actor)) {
+    return seller;
+  }
+  requireSellerCapability(actor, sellerId, "catalogue.write");
   return seller;
 }
 
@@ -321,13 +324,24 @@ export async function getPublicProductBySlug(slug: string) {
   });
 }
 
-export async function searchApprovedProducts(input: SearchProductsInput) {
+export async function searchApprovedProducts(
+  raw: z.input<typeof searchProductsSchema>,
+) {
+  const input = searchProductsSchema.parse(raw);
   const page = input.page;
   const pageSize = input.pageSize;
   const offset = (page - 1) * pageSize;
   const query = input.q?.trim() ?? "";
+  const sort = input.sort ?? "newest";
 
   if (query) {
+    const orderSql =
+      sort === "price_asc"
+        ? Prisma.sql`ORDER BY min_price_paise ASC`
+        : sort === "price_desc"
+          ? Prisma.sql`ORDER BY min_price_paise DESC`
+          : Prisma.sql`ORDER BY p.published_at DESC NULLS LAST`;
+
     const rows = await prisma.$queryRaw<
       Array<{
         id: string;
@@ -336,7 +350,9 @@ export async function searchApprovedProducts(input: SearchProductsInput) {
         summary: string;
         category_name: string;
         seller_name: string;
+        seller_status: string;
         min_price_paise: number;
+        min_mrp_paise: number;
         available_qty: number;
         total_count: bigint;
       }>
@@ -349,9 +365,12 @@ export async function searchApprovedProducts(input: SearchProductsInput) {
           p.summary,
           c.name AS category_name,
           COALESCE(s.trade_name, s.legal_name) AS seller_name,
+          s.status::text AS seller_status,
           MIN(v.selling_price_paise) AS min_price_paise,
+          MIN(v.mrp_paise) AS min_mrp_paise,
           COALESCE(SUM(GREATEST(i.on_hand - i.reserved, 0)), 0)::int AS available_qty,
-          COUNT(*) OVER() AS total_count
+          COUNT(*) OVER() AS total_count,
+          p.published_at
         FROM products p
         INNER JOIN categories c ON c.id = p.category_id
         INNER JOIN sellers s ON s.id = p.seller_id
@@ -368,6 +387,11 @@ export async function searchApprovedProducts(input: SearchProductsInput) {
               : Prisma.empty
           }
           ${
+            input.verifiedSellerOnly
+              ? Prisma.sql`AND s.status = 'approved'`
+              : Prisma.empty
+          }
+          ${
             input.minPricePaise !== undefined
               ? Prisma.sql`AND v.selling_price_paise >= ${input.minPricePaise}`
               : Prisma.empty
@@ -377,8 +401,9 @@ export async function searchApprovedProducts(input: SearchProductsInput) {
               ? Prisma.sql`AND v.selling_price_paise <= ${input.maxPricePaise}`
               : Prisma.empty
           }
-        GROUP BY p.id, p.slug, p.title, p.summary, c.name, s.trade_name, s.legal_name, p.published_at
-        ORDER BY p.published_at DESC NULLS LAST
+        GROUP BY p.id, p.slug, p.title, p.summary, c.name, s.trade_name, s.legal_name, s.status, p.published_at
+        ${input.inStockOnly ? Prisma.sql`HAVING COALESCE(SUM(GREATEST(i.on_hand - i.reserved, 0)), 0) > 0` : Prisma.empty}
+        ${orderSql}
         LIMIT ${pageSize} OFFSET ${offset}
       )
       SELECT * FROM ranked
@@ -393,7 +418,9 @@ export async function searchApprovedProducts(input: SearchProductsInput) {
         summary: row.summary,
         categoryName: row.category_name,
         sellerName: row.seller_name,
+        sellerVerified: row.seller_status === "approved",
         minPricePaise: row.min_price_paise,
+        minMrpPaise: row.min_mrp_paise,
         availableQty: row.available_qty,
       })),
       page,
@@ -407,6 +434,7 @@ export async function searchApprovedProducts(input: SearchProductsInput) {
     ...(input.categorySlug
       ? { category: { slug: input.categorySlug, isActive: true } }
       : {}),
+    ...(input.verifiedSellerOnly ? { seller: { status: "approved" } } : {}),
     variants: {
       some: {
         isActive: true,
@@ -422,20 +450,34 @@ export async function searchApprovedProducts(input: SearchProductsInput) {
               },
             }
           : {}),
+        ...(input.inStockOnly
+          ? {
+              inventory: {
+                is: {
+                  // available = onHand - reserved; approximate with onHand > 0
+                  onHand: { gt: 0 },
+                },
+              },
+            }
+          : {}),
       },
     },
+  };
+
+  const orderBy: Prisma.ProductOrderByWithRelationInput = {
+    publishedAt: "desc",
   };
 
   const [total, products] = await Promise.all([
     prisma.product.count({ where }),
     prisma.product.findMany({
       where,
-      orderBy: { publishedAt: "desc" },
+      orderBy,
       skip: offset,
-      take: pageSize,
+      take: pageSize * (sort === "newest" ? 1 : 3),
       include: {
         category: true,
-        seller: { select: { legalName: true, tradeName: true } },
+        seller: { select: { legalName: true, tradeName: true, status: true } },
         variants: {
           where: { isActive: true },
           include: { inventory: true },
@@ -444,25 +486,40 @@ export async function searchApprovedProducts(input: SearchProductsInput) {
     }),
   ]);
 
+  let items = products.map((product) => {
+    const prices = product.variants.map((variant) => variant.sellingPricePaise);
+    const mrps = product.variants.map((variant) => variant.mrpPaise);
+    const availableQty = product.variants.reduce((sum, variant) => {
+      const onHand = variant.inventory?.onHand ?? 0;
+      const reserved = variant.inventory?.reserved ?? 0;
+      return sum + Math.max(onHand - reserved, 0);
+    }, 0);
+    return {
+      id: product.id,
+      slug: product.slug,
+      title: product.title,
+      summary: product.summary,
+      categoryName: product.category.name,
+      sellerName: product.seller.tradeName ?? product.seller.legalName,
+      sellerVerified: product.seller.status === "approved",
+      minPricePaise: Math.min(...prices),
+      minMrpPaise: Math.min(...mrps),
+      availableQty,
+    };
+  });
+
+  if (input.inStockOnly) {
+    items = items.filter((item) => item.availableQty > 0);
+  }
+  if (sort === "price_asc") {
+    items = [...items].sort((a, b) => a.minPricePaise - b.minPricePaise);
+  } else if (sort === "price_desc") {
+    items = [...items].sort((a, b) => b.minPricePaise - a.minPricePaise);
+  }
+  items = items.slice(0, pageSize);
+
   return {
-    items: products.map((product) => {
-      const prices = product.variants.map((variant) => variant.sellingPricePaise);
-      const availableQty = product.variants.reduce((sum, variant) => {
-        const onHand = variant.inventory?.onHand ?? 0;
-        const reserved = variant.inventory?.reserved ?? 0;
-        return sum + Math.max(onHand - reserved, 0);
-      }, 0);
-      return {
-        id: product.id,
-        slug: product.slug,
-        title: product.title,
-        summary: product.summary,
-        categoryName: product.category.name,
-        sellerName: product.seller.tradeName ?? product.seller.legalName,
-        minPricePaise: Math.min(...prices),
-        availableQty,
-      };
-    }),
+    items,
     page,
     pageSize,
     total,

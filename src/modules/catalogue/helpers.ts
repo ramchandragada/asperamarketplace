@@ -72,21 +72,48 @@ export function discountPercent(mrp: number, price: number) {
   return Math.round(((mrp - price) / mrp) * 100);
 }
 
-export type ProductCardBadge = "original" | "mall";
+export type ProductCardBadge =
+  | "new"
+  | "best-value"
+  | "free-delivery"
+  | "low-stock"
+  | "featured";
 
-/** Meesho-style card badge: house brand vs premium mall brands. */
+/**
+ * Real-state badges only. No Mall / Aspera Original / Verified claims
+ * without a documented programme.
+ */
 export function resolveProductBadge(input: {
   brandSlug?: string | null;
   brandName?: string | null;
   sellerVerified?: boolean;
+  availableQty?: number | null;
+  createdAt?: Date | string | null;
+  freeDelivery?: boolean;
+  discountPercent?: number | null;
+  featured?: boolean;
 }): ProductCardBadge | null {
-  const slug = (input.brandSlug ?? "").toLowerCase();
-  const name = (input.brandName ?? "").toLowerCase();
-  if (slug.startsWith("aspera") || name.includes("aspera")) {
-    return "original";
+  if (input.featured) return "featured";
+  if (
+    input.availableQty != null &&
+    input.availableQty > 0 &&
+    input.availableQty <= 5
+  ) {
+    return "low-stock";
   }
-  if (input.sellerVerified && (slug || name)) {
-    return "mall";
+  if (input.freeDelivery) return "free-delivery";
+  if (input.discountPercent != null && input.discountPercent >= 30) {
+    return "best-value";
+  }
+  if (input.createdAt) {
+    const created =
+      input.createdAt instanceof Date
+        ? input.createdAt
+        : new Date(input.createdAt);
+    const ageMs = Date.now() - created.getTime();
+    if (!Number.isNaN(ageMs) && ageMs >= 0 && ageMs < 14 * 24 * 60 * 60 * 1000) {
+      return "new";
+    }
   }
   return null;
 }

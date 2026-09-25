@@ -147,7 +147,7 @@ function CategoryNav() {
     >
       <nav
         aria-label="Categories"
-        className="hide-scroll mx-auto flex h-12 max-w-[90rem] items-center justify-start gap-3 overflow-x-auto px-4 text-[14px] text-foreground md:px-6 lg:justify-between lg:gap-0"
+        className="hide-scroll mx-auto flex h-12 max-w-[80rem] items-center justify-start gap-3 overflow-x-auto px-4 text-[14px] font-medium text-foreground md:px-8 lg:justify-between lg:gap-0"
       >
         {MEGA_MENU.map((entry) => (
           <Link
@@ -417,81 +417,77 @@ export function SiteHeaderClient({
   }, []);
 
   return (
+    <>
+      <div className="bg-accent text-accent-foreground">
+        <p className="mx-auto flex h-8 max-w-[80rem] items-center justify-center px-4 text-center text-[12px] font-medium tracking-wide md:h-9 md:px-8 md:text-[13px]">
+          Free delivery on eligible orders · Easy returns · Secure checkout
+        </p>
+      </div>
     <header
-      className={`sticky top-0 z-40 border-b border-[#E3E8E8] bg-white ${
+      className={`sticky top-0 z-40 border-b border-border bg-surface ${
         compact ? "shadow-[0_1px_3px_rgba(18,59,74,0.08)]" : ""
       }`}
       data-compact={compact ? "true" : "false"}
     >
       <div
-        className={`mx-auto flex w-full max-w-[90rem] items-center gap-4 px-4 md:gap-6 md:px-6 ${
+        className={`mx-auto flex w-full max-w-[80rem] items-center gap-4 px-4 md:gap-6 md:px-8 ${
           compact ? "h-14" : "h-[72px]"
         }`}
       >
         <Link
           href="/"
-          className="shrink-0 font-bold text-[22px] leading-none tracking-tight text-accent md:text-[24px]"
+          className="shrink-0 font-bold text-[22px] leading-none tracking-tight text-accent md:w-[148px] md:text-[24px]"
         >
           Aspera
         </Link>
 
         <div className="hidden min-w-0 flex-1 md:block">
-          <div className="mx-auto w-full max-w-[36rem]">
+          <div className="mx-auto w-full max-w-[36rem] lg:max-w-[37.5rem]">
             <HeaderSearch />
           </div>
         </div>
 
         <nav
           aria-label="Primary"
-          className="ml-auto flex shrink-0 items-center gap-0.5 md:gap-1"
+          className="ml-auto flex shrink-0 items-center gap-0 md:gap-6"
         >
           <Link
             href={sellHref}
-            className="hidden px-2.5 py-1 text-[14px] text-foreground hover:text-accent sm:inline"
+            className="hidden min-h-11 items-center px-1 text-[14px] font-medium text-foreground hover:text-accent sm:inline-flex"
           >
             Become a seller
           </Link>
-          <span
-            className="mx-0.5 hidden h-5 w-px bg-[#E3E8E8] sm:block"
-            aria-hidden
-          />
           {showAdmin ? (
-            <>
-              <Link
-                href="/admin/sellers"
-                className="hidden px-2.5 py-1 text-[14px] text-foreground hover:text-accent lg:inline"
-              >
-                Admin
-              </Link>
-              <span
-                className="mx-0.5 hidden h-5 w-px bg-[#E3E8E8] lg:block"
-                aria-hidden
-              />
-            </>
+            <Link
+              href="/admin/sellers"
+              className="hidden min-h-11 items-center px-1 text-[14px] font-medium text-foreground hover:text-accent lg:inline-flex"
+            >
+              Admin
+            </Link>
           ) : null}
           <Link
             href={accountHref}
-            className="inline-flex min-w-[52px] flex-col items-center gap-0.5 px-2 py-1 text-foreground hover:text-accent"
+            className="inline-flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-1 text-foreground hover:text-accent"
           >
             <UserIcon className="h-5 w-5" />
             <span className="text-[12px] leading-none">{accountLabel}</span>
           </Link>
           <Link
             href="/orders"
-            className="hidden min-w-[52px] flex-col items-center gap-0.5 px-2 py-1 text-foreground hover:text-accent sm:inline-flex"
+            className="hidden min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-1 text-foreground hover:text-accent sm:inline-flex"
           >
             <OrdersIcon className="h-5 w-5" />
             <span className="text-[12px] leading-none">Orders</span>
           </Link>
           <Link
             href="/cart"
-            className="relative inline-flex min-w-[52px] flex-col items-center gap-0.5 px-2 py-1 text-foreground hover:text-accent"
+            className="relative inline-flex min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-1 text-foreground hover:text-accent"
             aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
           >
             <BagIcon className="h-5 w-5" />
             <span className="text-[12px] leading-none">Cart</span>
             {cartCount > 0 ? (
-              <span className="absolute top-0 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
+              <span className="absolute top-0.5 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-accent px-1 text-[10px] font-bold text-white">
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             ) : null}
@@ -500,7 +496,7 @@ export function SiteHeaderClient({
       </div>
 
       <div
-        className={`mx-auto w-full max-w-[90rem] px-4 md:hidden md:px-6 ${
+        className={`mx-auto w-full max-w-[80rem] px-4 md:hidden md:px-8 ${
           compact ? "hidden" : "pb-2.5"
         }`}
       >
@@ -516,7 +512,7 @@ export function SiteHeaderClient({
       </div>
 
       <div
-        className={`flex items-center gap-2 border-t border-[#E3E8E8] px-3 py-2 md:hidden ${
+        className={`flex items-center gap-2 border-t border-border px-3 py-2 md:hidden ${
           compact ? "hidden" : ""
         }`}
       >
@@ -529,7 +525,7 @@ export function SiteHeaderClient({
             <Link
               key={entry.key}
               href={entry.href}
-              className="shrink-0 rounded-full border border-border bg-background px-3 py-1.5 whitespace-nowrap hover:border-accent hover:text-accent"
+              className="inline-flex min-h-11 shrink-0 items-center rounded-lg border border-border bg-background px-3 text-[13px] font-medium whitespace-nowrap hover:border-accent hover:text-accent"
             >
               {entry.label}
             </Link>
@@ -537,5 +533,6 @@ export function SiteHeaderClient({
         </nav>
       </div>
     </header>
+    </>
   );
 }

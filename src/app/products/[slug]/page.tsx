@@ -8,7 +8,6 @@ import { ProductReviewsPanel } from "@/components/product-reviews-panel";
 import { ProductShareBar } from "@/components/product-share";
 import { PdpTrustBadgeRow } from "@/components/pdp-trust-badge-row";
 import { PageShell } from "@/components/ui/page-shell";
-import { SAMPLE_REVIEWS } from "@/lib/sample-reviews";
 import {
   getPublicProductBySlug,
   searchApprovedProducts,
@@ -26,11 +25,29 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const product = await getPublicProductBySlug(slug);
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+    "https://asperamarketplace.vercel.app";
+  if (!product) {
+    return { title: "Product · Aspera Marketplace" };
+  }
+  const image = product.images.find((img) => img.isPrimary)?.url ?? product.images[0]?.url;
   return {
-    title: product
-      ? `${product.title} · Aspera Marketplace`
-      : "Product · Aspera Marketplace",
-    description: product?.summary,
+    title: `${product.title} | Aspera Marketplace`,
+    description: product.summary ?? product.description?.slice(0, 160),
+    alternates: { canonical: `${siteUrl}/products/${product.slug}` },
+    openGraph: {
+      title: `${product.title} | Aspera Marketplace`,
+      description: product.summary ?? undefined,
+      url: `${siteUrl}/products/${product.slug}`,
+      type: "website",
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.title} | Aspera Marketplace`,
+      description: product.summary ?? undefined,
+    },
   };
 }
 
@@ -86,14 +103,10 @@ export default async function ProductDetailPage({
   const sellerName = product.seller.tradeName ?? product.seller.legalName;
   const sellerVerified = product.seller.status === "approved";
   const attrs = readAttrs(product.attributes);
-  const seededAverage =
-    typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null;
-  const seededCount =
-    typeof attrs.reviewCount === "number" ? attrs.reviewCount : 0;
   const average =
     reviews.length > 0
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-      : seededAverage;
+      : null;
 
   const highlightsRaw =
     attrs.highlights &&
@@ -116,10 +129,15 @@ export default async function ProductDetailPage({
     value,
   }));
   const ratingDistribution =
-    attrs.ratingDistribution &&
-    typeof attrs.ratingDistribution === "object" &&
-    !Array.isArray(attrs.ratingDistribution)
-      ? (attrs.ratingDistribution as Record<string, number>)
+    reviews.length > 0
+      ? reviews.reduce(
+          (acc, review) => {
+            const key = String(review.rating);
+            acc[key] = (acc[key] ?? 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>,
+        )
       : null;
 
   const similarItems = similar.items
@@ -152,8 +170,83 @@ export default async function ProductDetailPage({
     };
   });
 
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+    "https://asperamarketplace.vercel.app";
+  const lowestPrice = Math.min(
+    ...variants.map((v) => v.sellingPricePaise),
+    Number.POSITIVE_INFINITY,
+  );
+  const inStock = variants.some((v) => v.availableQty > 0);
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.summary ?? product.description,
+    image: product.images.map((img) => img.url).filter(Boolean),
+    sku: variants[0]?.sku,
+    brand: product.brand
+      ? { "@type": "Brand", name: product.brand.name }
+      : undefined,
+    offers: {
+      "@type": "Offer",
+      url: `${siteUrl}/products/${product.slug}`,
+      priceCurrency: "INR",
+      price: Number.isFinite(lowestPrice)
+        ? (lowestPrice / 100).toFixed(2)
+        : undefined,
+      availability: inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      seller: {
+        "@type": "Organization",
+        name: sellerName,
+      },
+    },
+    ...(average != null && reviews.length > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: average.toFixed(1),
+            reviewCount: reviews.length,
+          },
+        }
+      : {}),
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/` },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Shop",
+        item: `${siteUrl}/shop`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.category.name,
+        item: `${siteUrl}/browse?categorySlug=${encodeURIComponent(product.category.slug)}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: product.title,
+        item: `${siteUrl}/products/${product.slug}`,
+      },
+    ],
+  };
+
   return (
     <PageShell className="pb-24 sm:pb-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([productJsonLd, breadcrumbJsonLd]),
+        }}
+      />
       <nav aria-label="Breadcrumb" className="text-xs text-muted">
         <ol className="flex flex-wrap items-center gap-1">
           <li>
@@ -208,30 +301,21 @@ export default async function ProductDetailPage({
             <p className="mt-2 text-base text-muted">{product.summary}</p>
             <div className="mt-3">
               <PdpTrustBadgeRow
-                showMall={Boolean(
-                  product.brand ||
-                    attrs.badge === "mall" ||
-                    attrs.mall === true,
+                showFeaturedStore={Boolean(
+                  product.brand || attrs.featuredStore === true,
                 )}
-                showOriginal={Boolean(
-                  product.brand?.name?.toLowerCase().includes("aspera") ||
-                    attrs.badge === "original" ||
-                    attrs.asperaOriginal === true,
-                )}
+                showBrandPartner={Boolean(product.brand)}
+                showApprovedSeller={sellerVerified}
               />
             </div>
-            {average != null && (reviews.length > 0 || seededCount > 0) ? (
+            {average != null && reviews.length > 0 ? (
               <p className="mt-3 flex items-center gap-2 text-sm">
                 <span className="inline-flex items-center rounded bg-success px-1.5 py-0.5 font-semibold text-white">
                   ★ {average.toFixed(1)}
                 </span>
                 <span className="text-muted">
-                  {Math.max(
-                    reviews.length > 0 ? reviews.length : 0,
-                    seededCount || SAMPLE_REVIEWS.length,
-                  ).toLocaleString("en-IN")}{" "}
-                  ratings ·{" "}
-                  {Math.max(reviews.length, SAMPLE_REVIEWS.length)} reviews
+                  {reviews.length.toLocaleString("en-IN")} ratings ·{" "}
+                  {reviews.length} reviews
                 </span>
               </p>
             ) : null}
@@ -285,29 +369,17 @@ export default async function ProductDetailPage({
       <ProductReviewsPanel
         productId={product.id}
         canReview={Boolean(actor)}
-        seededAverage={seededAverage}
-        seededCount={seededCount || SAMPLE_REVIEWS.length}
+        seededAverage={reviews.length > 0 ? average : null}
+        seededCount={reviews.length}
         seededDistribution={ratingDistribution}
-        initialReviews={
-          reviews.length > 0
-            ? reviews.map((review) => ({
-                id: review.id,
-                rating: review.rating,
-                title: review.title,
-                body: review.body,
-                createdAt: review.createdAt.toISOString(),
-                authorName: review.authorName,
-              }))
-            : SAMPLE_REVIEWS.map((review) => ({
-                id: `${product.id}-${review.id}`,
-                rating: review.rating,
-                title: review.title,
-                body: review.body,
-                createdAt: review.createdAt,
-                authorName: review.authorName,
-                hasPhotos: review.hasPhotos,
-              }))
-        }
+        initialReviews={reviews.map((review) => ({
+          id: review.id,
+          rating: review.rating,
+          title: review.title,
+          body: review.body,
+          createdAt: review.createdAt.toISOString(),
+          authorName: review.authorName,
+        }))}
       />
 
       {similarItems.length > 0 ? (

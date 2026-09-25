@@ -10,8 +10,10 @@ import {
 import {
   assertProductTransition,
   buildSearchDocument,
+  discountPercent,
   resolveProductBadge,
   slugify,
+  type ProductCardBadge,
 } from "@/modules/catalogue/helpers";
 import {
   searchProductsSchema,
@@ -594,6 +596,13 @@ export async function searchApprovedProducts(
         brandSlug: product.brand?.slug,
         brandName: product.brand?.name,
         sellerVerified,
+        availableQty,
+        freeDelivery: deliveryFeePaise === 0,
+        discountPercent: discountPercent(
+          Math.min(...mrps),
+          Math.min(...prices),
+        ),
+        createdAt: product.createdAt,
       }),
       primaryImageUrl: product.images[0]?.url ?? null,
       primaryImageAlt: product.images[0]?.altText ?? product.title,
@@ -651,8 +660,11 @@ async function enrichStorefrontCards<
     deliveryFeePaise?: number | null;
     freeDeliveryHint?: boolean;
     variantCount?: number;
-    badge?: "original" | "mall" | null;
+    badge?: ProductCardBadge | null;
     sellerVerified?: boolean;
+    availableQty?: number;
+    minPricePaise?: number;
+    minMrpPaise?: number | null;
   },
 >(items: T[]) {
   if (items.length === 0) return items;
@@ -667,6 +679,7 @@ async function enrichStorefrontCards<
     where: { id: { in: items.map((item) => item.id) } },
     select: {
       id: true,
+      createdAt: true,
       attributes: true,
       brand: { select: { slug: true, name: true } },
       seller: { select: { status: true } },
@@ -683,6 +696,14 @@ async function enrichStorefrontCards<
         : {};
     const sellerVerified =
       item.sellerVerified ?? product?.seller.status === "approved";
+    const freeDelivery =
+      item.freeDeliveryHint === true ||
+      (typeof attrs.deliveryFeePaise === "number" &&
+        attrs.deliveryFeePaise === 0);
+    const disc =
+      item.minMrpPaise != null && item.minPricePaise != null
+        ? discountPercent(item.minMrpPaise, item.minPricePaise)
+        : null;
     return {
       ...item,
       ratingAverage:
@@ -719,6 +740,10 @@ async function enrichStorefrontCards<
               brandSlug: product?.brand?.slug,
               brandName: product?.brand?.name,
               sellerVerified,
+              availableQty: item.availableQty,
+              freeDelivery,
+              discountPercent: disc,
+              createdAt: product?.createdAt,
             }),
     };
   });

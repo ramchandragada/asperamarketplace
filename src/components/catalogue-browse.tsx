@@ -504,7 +504,7 @@ export function CatalogueBrowse({
         </div>
         <button
           type="button"
-          className="text-xs font-medium text-[#9f2089] hover:underline"
+          className="text-xs font-medium text-accent hover:underline"
           onClick={clearAll}
         >
           Clear all
@@ -528,7 +528,7 @@ export function CatalogueBrowse({
             value={categorySearch}
             onChange={(event) => setCategorySearch(event.target.value)}
             placeholder="Search"
-            className="w-full rounded-md border border-[#ddd] bg-white py-1.5 pr-2.5 pl-8 text-[13px] outline-none placeholder:text-[#999] focus:border-[#9f2089]"
+            className="w-full rounded-md border border-[#ddd] bg-white py-1.5 pr-2.5 pl-8 text-[13px] outline-none placeholder:text-[#999] focus:border-accent"
           />
         </div>
         <ul className="space-y-2">
@@ -543,7 +543,7 @@ export function CatalogueBrowse({
                     void runSearch({ categorySlug: "" });
                   });
                 }}
-                className="h-3.5 w-3.5 accent-[#9f2089]"
+                className="h-3.5 w-3.5 accent-[var(--accent)]"
               />
               All categories
             </label>
@@ -565,7 +565,7 @@ export function CatalogueBrowse({
                       void runSearch({ categorySlug: next });
                     });
                   }}
-                  className="h-3.5 w-3.5 accent-[#9f2089]"
+                  className="h-3.5 w-3.5 accent-[var(--accent)]"
                 />
                 <span className="min-w-0 flex-1 truncate">{category.name}</span>
               </label>
@@ -578,7 +578,7 @@ export function CatalogueBrowse({
         {filteredCategories.length > 6 ? (
           <button
             type="button"
-            className="mt-2 text-[13px] font-medium text-[#9f2089] hover:underline"
+            className="mt-2 text-[13px] font-medium text-accent hover:underline"
             onClick={() => setCategoryShowAll((value) => !value)}
           >
             {categoryShowAll ? "Show Less" : "Show More"}
@@ -600,8 +600,8 @@ export function CatalogueBrowse({
                 type="button"
                 className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
                   active
-                    ? "border-[#9f2089] bg-[#fce8f3] text-[#9f2089]"
-                    : "border-[#ddd] bg-white text-[#333] hover:border-[#9f2089]"
+                    ? "border-accent bg-accent-soft text-accent"
+                    : "border-[#ddd] bg-white text-[#333] hover:border-accent"
                 }`}
                 onClick={() => {
                   if (active) {
@@ -700,7 +700,7 @@ export function CatalogueBrowse({
             value={brandSearch}
             onChange={(event) => setBrandSearch(event.target.value)}
             placeholder="Search"
-            className="mb-2 w-full rounded-md border border-[#ddd] bg-white px-2.5 py-1.5 text-[13px] outline-none placeholder:text-[#999] focus:border-[#9f2089]"
+            className="mb-2 w-full rounded-md border border-[#ddd] bg-white px-2.5 py-1.5 text-[13px] outline-none placeholder:text-[#999] focus:border-accent"
           />
           <ul className="space-y-2">
             {(brandShowAll ? filteredBrands : filteredBrands.slice(0, 6)).map(
@@ -717,7 +717,7 @@ export function CatalogueBrowse({
                           void runSearch({ brandSlug: next });
                         });
                       }}
-                      className="h-3.5 w-3.5 accent-[#9f2089]"
+                      className="h-3.5 w-3.5 accent-[var(--accent)]"
                     />
                     <span className="min-w-0 flex-1 truncate">{brand.name}</span>
                   </label>
@@ -731,7 +731,7 @@ export function CatalogueBrowse({
           {filteredBrands.length > 6 ? (
             <button
               type="button"
-              className="mt-2 text-[13px] font-medium text-[#9f2089] hover:underline"
+              className="mt-2 text-[13px] font-medium text-accent hover:underline"
               onClick={() => setBrandShowAll((value) => !value)}
             >
               {brandShowAll ? "Show Less" : "Show More"}

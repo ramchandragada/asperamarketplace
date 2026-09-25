@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore, type MouseEvent } from "react";
+import { useState, useSyncExternalStore, type MouseEvent } from "react";
 import {
   discountPercent,
   formatPaise,
@@ -24,8 +24,8 @@ export type ProductCardModel = {
   reviewCount?: number;
   freeDeliveryHint?: boolean;
   deliveryFeePaise?: number | null;
-  /** Original delivery fee before discount (paise) */
   deliveryOriginalPaise?: number | null;
+  /** Ignored — fake countdowns are not rendered without a real campaign model */
   dealEndsAt?: string | null;
   primaryImageUrl?: string | null;
   primaryImageAlt?: string | null;
@@ -34,43 +34,6 @@ export type ProductCardModel = {
 };
 
 export { discountPercent };
-
-function formatCountdown(end: number) {
-  const diff = end - Date.now();
-  if (diff <= 0) return null;
-  const hours = Math.floor(diff / 3_600_000);
-  const minutes = Math.floor((diff % 3_600_000) / 60_000);
-  const seconds = Math.floor((diff % 60_000) / 1000);
-  return `${String(hours).padStart(2, "0")}h:${String(minutes).padStart(2, "0")}m:${String(seconds).padStart(2, "0")}s`;
-}
-
-function useCountdown(iso: string | null | undefined) {
-  const [label, setLabel] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const end = iso ? new Date(iso).getTime() : Number.NaN;
-
-    const tick = () => {
-      if (cancelled) return;
-      if (!iso || Number.isNaN(end)) {
-        setLabel(null);
-        return;
-      }
-      setLabel(formatCountdown(end));
-    };
-
-    const frame = window.requestAnimationFrame(tick);
-    const id = window.setInterval(tick, 1000);
-    return () => {
-      cancelled = true;
-      window.cancelAnimationFrame(frame);
-      window.clearInterval(id);
-    };
-  }, [iso]);
-
-  return label;
-}
 
 function subscribeWishlist(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -117,7 +80,7 @@ function WishlistButton({ productId }: { productId: string }) {
       /* ignore */
     }
     void import("@/components/toast-host").then(({ showToast }) => {
-      showToast(saved ? "♥ Removed from wishlist" : "♥ Added to wishlist");
+      showToast(saved ? "Removed from wishlist" : "Added to wishlist");
     });
     void fetch("/api/wishlist", {
       method: "POST",
@@ -133,7 +96,7 @@ function WishlistButton({ productId }: { productId: string }) {
     <button
       type="button"
       onClick={toggle}
-      className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface/95 text-muted shadow-sm backdrop-blur-sm transition hover:scale-105 hover:text-danger"
+      className="absolute top-2 right-2 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-surface/95 text-muted shadow-sm transition hover:text-danger"
       aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
       aria-pressed={saved}
     >
@@ -150,18 +113,18 @@ function WishlistButton({ productId }: { productId: string }) {
   );
 }
 
+const BADGE_LABELS: Record<ProductCardBadge, string> = {
+  new: "New",
+  "best-value": "Best value",
+  "free-delivery": "Free delivery",
+  "low-stock": "Low stock",
+  featured: "Featured",
+};
+
 function BadgePill({ badge }: { badge: ProductCardBadge }) {
-  if (badge === "original") {
-    return (
-      <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 rounded bg-[#1a5c5c] px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white shadow-sm">
-        Aspera Original
-        <span aria-hidden>✓</span>
-      </span>
-    );
-  }
   return (
-    <span className="absolute top-2 left-2 z-10 inline-flex items-center rounded bg-[#1e3a5f] px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white shadow-sm">
-      Mall
+    <span className="absolute top-2 left-2 z-10 inline-flex items-center rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent-foreground shadow-sm">
+      {BADGE_LABELS[badge]}
     </span>
   );
 }
@@ -175,19 +138,21 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
   const initials = product.title.slice(0, 1).toUpperCase();
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(product.primaryImageUrl) && !imageFailed;
-  const countdown = useCountdown(product.dealEndsAt);
   const freeDelivery =
     product.freeDeliveryHint === true ||
     product.deliveryFeePaise === 0 ||
     product.minPricePaise >= 99_900;
   const hasRating =
     product.ratingAverage != null && (product.reviewCount ?? 0) > 0;
-  const extraVariants = Math.max((product.variantCount ?? 1) - 1, 0);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-[#eee] bg-white">
-      <Link href={`/products/${product.slug}`} className="flex h-full flex-col">
-        <div className="relative aspect-[3/4] overflow-hidden bg-[#f5f5f5]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]">
+      <Link
+        href={`/products/${product.slug}`}
+        className="flex h-full flex-col"
+        aria-label={`${product.title}, ${formatPaise(product.minPricePaise)}`}
+      >
+        <div className="relative aspect-square overflow-hidden bg-accent-soft md:aspect-square">
           {product.badge ? <BadgePill badge={product.badge} /> : null}
           <WishlistButton productId={product.id} />
           {showImage ? (
@@ -195,61 +160,56 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               src={product.primaryImageUrl as string}
               alt={product.primaryImageAlt ?? product.title}
               fill
-              sizes="(max-width: 768px) 50vw, 25vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 224px"
               placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2U4ZjRmNCIvPjwvc3ZnPg=="
-              className="object-cover"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2U4ZWVmMCIvPjwvc3ZnPg=="
+              className="object-contain p-2"
+              loading="lazy"
               onError={() => setImageFailed(true)}
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-5xl font-semibold text-accent/30" aria-hidden>
+            <div className="absolute inset-0 flex items-center justify-center bg-accent-soft">
+              <span
+                className="text-4xl font-semibold text-accent/25"
+                aria-hidden
+              >
                 {initials}
               </span>
-              <span className="sr-only">No product image available</span>
+              <span className="sr-only">{product.title}</span>
             </div>
           )}
-          {extraVariants > 0 ? (
-            <span className="absolute right-2 bottom-2 z-10 rounded bg-foreground/80 px-1.5 py-0.5 text-[10px] font-semibold text-background">
-              +{extraVariants} More
-            </span>
-          ) : null}
-          {countdown ? (
-            <div className="animate-deal-pulse absolute bottom-2 left-2 z-10 rounded bg-[#f43397] px-2 py-1 font-mono text-[11px] font-bold tracking-wide text-white">
-              {countdown}
-            </div>
-          ) : null}
           {!inStock ? (
             <div className="absolute inset-x-0 bottom-0 z-10 bg-foreground/70 px-2 py-1 text-center text-xs text-background">
               Out of stock
             </div>
           ) : null}
         </div>
-        <div className="flex flex-1 flex-col gap-1 p-2.5">
-          <h3 className="line-clamp-1 text-[13px] leading-4 font-normal text-[#666]">
+        <div className="flex flex-1 flex-col gap-1 p-3 md:p-4">
+          <h3 className="line-clamp-2 text-[15px] leading-[21px] font-semibold text-foreground">
             {product.title}
           </h3>
           <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <span className="text-[16px] font-bold text-[#333]">
+            <span className="text-[20px] leading-[26px] font-bold text-foreground">
               {formatPaise(product.minPricePaise)}
             </span>
-            {product.minMrpPaise && product.minMrpPaise > product.minPricePaise ? (
-              <span className="text-xs text-[#999] line-through">
+            {product.minMrpPaise &&
+            product.minMrpPaise > product.minPricePaise ? (
+              <span className="text-[12px] leading-[18px] text-muted line-through">
                 {formatPaise(product.minMrpPaise)}
               </span>
             ) : null}
             {discount ? (
-              <span className="text-[12px] font-semibold text-[#038d63]">
+              <span className="text-[12px] leading-[18px] font-semibold text-success">
                 {discount}% off
               </span>
             ) : null}
           </p>
           {hasRating ? (
             <p className="flex items-center gap-1.5 text-xs">
-              <span className="inline-flex items-center gap-0.5 rounded bg-[#038d63] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+              <span className="inline-flex items-center gap-0.5 rounded bg-success px-1.5 py-0.5 text-[11px] font-semibold text-white">
                 {product.ratingAverage!.toFixed(1)} ★
               </span>
-              <span className="text-[11px] text-[#999]">
+              <span className="text-[11px] text-muted">
                 {(product.reviewCount ?? 0) >= 1000
                   ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}k Reviews`
                   : `${product.reviewCount} Reviews`}
@@ -257,17 +217,21 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
             </p>
           ) : null}
           {freeDelivery ? (
-            <span className="text-[11px] font-medium text-[#038d63]">
-              Free Delivery
+            <span className="text-[12px] font-medium text-success">
+              Free delivery
             </span>
           ) : (
-            <p className="text-[11px] text-[#888]">
+            <p className="text-[12px] text-muted">
               Delivery{" "}
               {product.deliveryFeePaise != null
                 ? formatPaise(product.deliveryFeePaise)
-                : "₹60"}
+                : "from ₹40"}
             </p>
           )}
+          <p className="mt-auto pt-1 text-[12px] text-muted">
+            {product.sellerVerified ? "Featured store · " : ""}
+            {product.sellerName}
+          </p>
         </div>
       </Link>
     </article>

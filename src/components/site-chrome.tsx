@@ -223,19 +223,30 @@ export function SiteFooter() {
             Aspera Marketplace
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
-            India&apos;s trusted multi-vendor marketplace for quality products at
-            the best prices.
+            A multi-vendor marketplace for everyday shopping from independent
+            Indian sellers — clear pricing, easy discovery, and secure checkout.
           </p>
-          <p className="mt-4 text-xs font-semibold tracking-wide text-foreground uppercase">
-            Follow us
-          </p>
-          <ul className="mt-2 flex flex-wrap gap-3 text-muted">
-            {["Instagram", "Facebook", "Twitter", "YouTube"].map((network) => (
-              <li key={network}>
-                <span className="hover:text-accent">{network}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-4 space-y-1 text-xs text-muted">
+            <p>
+              Support:{" "}
+              <a
+                href="mailto:support@asperamarketplace.example"
+                className="font-medium text-accent hover:underline"
+              >
+                support@asperamarketplace.example
+              </a>
+            </p>
+            <p>
+              Phone:{" "}
+              <a
+                href="tel:+910000000000"
+                className="font-medium text-accent hover:underline"
+              >
+                +91 00000 00000
+              </a>{" "}
+              <span className="text-muted">(demo contact)</span>
+            </p>
+          </div>
         </div>
         <div>
           <p className="font-semibold text-foreground">Shop</p>
@@ -288,6 +299,16 @@ export function SiteFooter() {
                 Shipping info
               </Link>
             </li>
+            <li>
+              <Link href="/support" className="hover:text-accent">
+                Contact support
+              </Link>
+            </li>
+            <li>
+              <Link href="/help" className="hover:text-accent">
+                Grievance officer
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
@@ -309,8 +330,8 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/download-app" className="hover:text-accent">
-                Download app
+              <Link href="/careers" className="hover:text-accent">
+                Careers
               </Link>
             </li>
           </ul>
@@ -443,7 +464,13 @@ export function SiteFooter() {
 
       <div className="border-t border-border">
         <div className="container-shell flex flex-col gap-2 py-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {year} Aspera Marketplace. All rights reserved.</p>
+          <div className="space-y-1">
+            <p>© {year} Aspera Marketplace. All rights reserved.</p>
+            <p>
+              Registered entity (demo): Aspera Marketplace Private Limited ·
+              India
+            </p>
+          </div>
           <p className="flex flex-wrap gap-3">
             <Link href="/support" className="hover:text-foreground">
               Terms
@@ -453,6 +480,9 @@ export function SiteFooter() {
             </Link>
             <Link href="/shipping" className="hover:text-foreground">
               Shipping policy
+            </Link>
+            <Link href="/returns" className="hover:text-foreground">
+              Returns
             </Link>
           </p>
         </div>

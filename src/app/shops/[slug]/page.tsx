@@ -105,6 +105,8 @@ export default async function PublicSellerShopPage({
         brandSlug: product.brand?.slug,
         brandName: product.brand?.name,
         sellerVerified,
+        availableQty,
+        freeDelivery: attrs.deliveryFeePaise === 0,
       }),
       primaryImageUrl: product.images[0]?.url ?? null,
       primaryImageAlt: product.images[0]?.altText ?? product.title,

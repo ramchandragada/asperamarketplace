@@ -1,64 +1,41 @@
 import type { Metadata } from "next";
-import {
-  Source_Serif_4,
-  DM_Sans,
-  Caveat,
-  Bebas_Neue,
-  Nunito,
-} from "next/font/google";
+import { Inter } from "next/font/google";
 import { BackToTopButton } from "@/components/back-to-top";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ToastHost } from "@/components/toast-host";
 import "./globals.css";
 
-const display = Source_Serif_4({
-  variable: "--font-display",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  display: "swap",
 });
 
-const sans = DM_Sans({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const brandScript = Caveat({
-  variable: "--font-brand-script",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-const brandSport = Bebas_Neue({
-  variable: "--font-brand-sport",
-  subsets: ["latin"],
-  weight: "400",
-});
-
-const brandSoft = Nunito({
-  variable: "--font-brand-soft",
-  subsets: ["latin"],
-  weight: ["600", "700"],
-});
-
-const brandTech = DM_Sans({
-  variable: "--font-brand-tech",
-  subsets: ["latin"],
-  weight: ["700", "800"],
-});
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+  "https://asperamarketplace.vercel.app";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Aspera Marketplace — India's Trusted Multi-Vendor Marketplace",
+    default: "Aspera Marketplace — Discover More. Choose Better.",
     template: "%s · Aspera Marketplace",
   },
   description:
-    "India-first multi-vendor marketplace with verified sellers, transparent pricing, and responsible commerce.",
+    "Shop products from independent Indian sellers with clear pricing, easy discovery, transparent delivery, and secure checkout.",
   openGraph: {
-    title: "Aspera Marketplace",
+    title: "Aspera Marketplace — Discover More. Choose Better.",
     description:
-      "Shop quality products from verified Indian sellers at the best prices.",
+      "Shop products from independent Indian sellers with clear pricing, easy discovery, transparent delivery, and secure checkout.",
     type: "website",
+    siteName: "Aspera Marketplace",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Aspera Marketplace — Discover More. Choose Better.",
+    description:
+      "Shop products from independent Indian sellers with clear pricing and secure checkout.",
   },
 };
 
@@ -68,10 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${sans.variable} ${display.variable} ${brandScript.variable} ${brandSport.variable} ${brandSoft.variable} ${brandTech.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         <a className="skip-link" href="#content">
           Skip to content

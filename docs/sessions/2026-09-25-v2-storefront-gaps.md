@@ -18,6 +18,7 @@ Base: `cursor/meesho-ux-overhaul-10f6`
 - Redistributed listings across textile / sports / mumbai / artisan sellers
 - SVG icons on mobile bottom nav; accordion category drawer on small screens
 - Softened checkout placeholder copy
+- Public `/privacy` and `/support` pages (auth tools gated with sign-in CTA)
 
 ## Notes
 - Public seller shop lives at `/shops/[slug]` (not under `/seller/*` dashboard layout)

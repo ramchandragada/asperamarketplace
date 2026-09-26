@@ -32,7 +32,7 @@
   --shadow-card: 0 1px 2px rgba(23, 33, 38, 0.04), 0 6px 16px rgba(23, 33, 38, 0.05);
   --shadow-mega: 0 12px 36px rgba(23, 33, 38, 0.12);
   --space-page: 1rem;
-  --container: 80rem; /* 1280px */
+  --container: 90rem; /* 1440px — wider storefront canvas */
   --header-height: 4.5rem;
   --nav-height: 3rem;
 }

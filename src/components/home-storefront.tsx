@@ -83,76 +83,54 @@ export function AnnouncementStrip() {
   );
 }
 
-/** Original Aspera hero — two-column merchandising, not a Meesho campaign twin */
+/** Original Aspera hero — full-bleed edge-to-edge merchandising plane */
 export function AsperaHero() {
   return (
-    <section className="container-shell py-5 md:py-8">
-      <div className="grid min-h-[360px] overflow-hidden rounded-2xl border border-border bg-surface md:min-h-[400px] md:grid-cols-2">
-        <div className="flex flex-col justify-center gap-4 px-6 py-8 md:gap-5 md:px-10 md:py-12">
-          <p className="text-[13px] font-medium tracking-wide text-brand-accent">
-            Curated shopping for everyday India
-          </p>
-          <h1 className="max-w-md text-[32px] leading-[40px] font-bold tracking-tight text-foreground md:text-[40px] md:leading-[48px]">
-            Discover more. Choose better.
-          </h1>
-          <p className="max-w-md text-[14px] leading-[21px] text-muted">
-            Products from independent sellers, clear pricing, and simple
-            delivery.
-          </p>
-          <div className="mt-1 flex flex-wrap gap-3">
-            <Link
-              href="/browse"
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 text-[14px] font-semibold text-accent-foreground transition hover:bg-[var(--accent-hover)]"
-            >
-              Explore products
-            </Link>
-            <Link
-              href="/sell"
-              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border bg-surface px-5 text-[14px] font-semibold text-foreground transition hover:border-accent hover:text-accent"
-            >
-              Start selling
-            </Link>
-          </div>
-        </div>
-        <div className="relative min-h-[220px] bg-[linear-gradient(145deg,#123b4a_0%,#1a4d5e_45%,#e66a3d_100%)] md:min-h-full">
-          <div className="absolute inset-0 grid grid-cols-2 gap-3 p-5 md:gap-4 md:p-8">
-            <div className="relative col-span-1 row-span-2 overflow-hidden rounded-xl bg-white/10">
-              <Image
-                src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=800&q=80"
-                alt="Fashion and everyday apparel"
-                fill
-                sizes="(max-width: 768px) 50vw, 280px"
-                className="object-cover"
-                priority
-              />
-            </div>
-            <div className="relative overflow-hidden rounded-xl bg-white/10">
-              <Image
-                src="https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=600&q=80"
-                alt="Home and kitchen essentials"
-                fill
-                sizes="(max-width: 768px) 40vw, 200px"
-                className="object-cover"
-                priority
-              />
-            </div>
-            <div className="relative overflow-hidden rounded-xl bg-white/10">
-              <Image
-                src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80"
-                alt="Electronics and accessories"
-                fill
-                sizes="(max-width: 768px) 40vw, 200px"
-                className="object-cover"
-              />
-            </div>
-          </div>
+    <section className="relative w-full overflow-hidden bg-accent">
+      {/* Dominant full-bleed visual */}
+      <div className="absolute inset-0" aria-hidden>
+        <Image
+          src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2000&q=80"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[center_30%] opacity-55"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(18,59,74,0.96)_0%,rgba(18,59,74,0.82)_42%,rgba(18,59,74,0.35)_72%,rgba(230,106,61,0.28)_100%)]" />
+      </div>
+
+      <div className="relative container-shell flex min-h-[min(72vw,28rem)] flex-col justify-center py-12 md:min-h-[26rem] md:py-16 lg:min-h-[28rem]">
+        <p className="font-display text-[28px] font-bold tracking-tight text-white md:text-[36px]">
+          Aspera
+        </p>
+        <h1 className="mt-3 max-w-xl text-[28px] leading-[34px] font-bold tracking-tight text-white md:mt-4 md:text-[40px] md:leading-[48px]">
+          Discover more. Choose better.
+        </h1>
+        <p className="mt-3 max-w-md text-[15px] leading-[22px] text-white/85 md:text-[16px] md:leading-[24px]">
+          Clear pricing, independent sellers, and simple delivery for everyday
+          India.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/browse"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-white px-6 text-[14px] font-semibold text-accent transition hover:bg-accent-soft"
+          >
+            Shop now
+          </Link>
+          <Link
+            href="/sell"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/40 bg-white/10 px-6 text-[14px] font-semibold text-white backdrop-blur-sm transition hover:border-white hover:bg-white/20"
+          >
+            Start selling
+          </Link>
         </div>
       </div>
     </section>
   );
 }
 
-/** Trust strip using Aspera accent colours — honest service messages only */
+/** Trust strip — full-bleed service bar under the hero */
 export function TrustSignalBar() {
   const items = [
     { label: "Easy returns on eligible orders", Icon: TrustReturnIcon },
@@ -160,21 +138,21 @@ export function TrustSignalBar() {
     { label: "Clear prices before you buy", Icon: TrustPriceIcon },
   ];
   return (
-    <div className="border-y border-border bg-accent-soft">
-      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-1 gap-y-2 py-3 text-[13px] text-foreground md:py-3.5">
+    <div className="w-full border-b border-border bg-accent-soft">
+      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-1 gap-y-2 py-3.5 text-[13px] text-foreground md:justify-between md:py-4 lg:max-w-none lg:px-10">
         {items.map((item, index) => (
           <li
             key={item.label}
-            className="flex items-center gap-2 px-3 text-accent sm:px-6 md:px-8"
+            className="flex items-center gap-2 px-3 text-accent sm:px-4 md:px-2"
           >
             {index > 0 ? (
               <span
-                className="mr-2 hidden h-4 w-px bg-border sm:block"
+                className="mr-2 hidden h-4 w-px bg-border sm:block md:hidden"
                 aria-hidden
               />
             ) : null}
             <item.Icon />
-            <span className="font-medium text-foreground">{item.label}</span>
+            <span className="font-medium">{item.label}</span>
           </li>
         ))}
       </ul>

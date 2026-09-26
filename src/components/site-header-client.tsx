@@ -9,7 +9,6 @@ import {
   type MegaMenuColumn,
 } from "@/lib/mega-menu";
 import { MobileCategoryDrawer } from "@/components/mobile-category-drawer";
-import Image from "next/image";
 
 function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -87,32 +86,24 @@ function MegaPanel({
 }) {
   return (
     <div className="absolute inset-x-0 top-full z-50 border-b border-[#E3E8E8] bg-white shadow-[var(--shadow-mega)]">
-      <div className="grid w-full gap-6 px-4 py-5 sm:grid-cols-2 md:grid-cols-3 md:px-6 lg:grid-cols-5 lg:px-8 xl:px-10">
+      <div
+        className="flex w-full gap-8 overflow-x-auto px-4 py-6 md:gap-10 md:px-6 lg:px-8 xl:gap-12 xl:px-10"
+        style={{ scrollbarWidth: "thin" }}
+      >
         {columns.map((column) => (
-          <div key={column.heading}>
-            <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
+          <div key={column.heading} className="min-w-[9.5rem] shrink-0">
+            <p className="text-[13px] leading-none font-bold text-accent">
               {column.heading}
             </p>
-            <ul className="mt-2 space-y-1.5">
-              {column.links.map((link) => (
-                <li key={link.href + link.label}>
+            <ul className="mt-3 space-y-2.5">
+              {column.links.map((item) => (
+                <li key={item.href + item.label}>
                   <Link
-                    href={link.href}
-                    className="flex items-center gap-2 text-sm text-muted hover:text-accent"
+                    href={item.href}
+                    className="block text-[13px] leading-snug text-[#666] hover:text-accent"
                     onClick={onNavigate}
                   >
-                    {link.imageUrl ? (
-                      <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-border bg-accent-soft">
-                        <Image
-                          src={link.imageUrl}
-                          alt=""
-                          fill
-                          sizes="32px"
-                          className="object-cover"
-                        />
-                      </span>
-                    ) : null}
-                    {link.label}
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -147,22 +138,27 @@ function CategoryNav() {
     >
       <nav
         aria-label="Categories"
-        className="hide-scroll flex h-12 w-full items-center justify-between gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:gap-0 lg:px-8 xl:px-10 xl:text-[14px]"
+        className="hide-scroll flex h-12 w-full items-stretch justify-between gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:gap-0 lg:px-8 xl:px-10 xl:text-[14px]"
       >
-        {MEGA_MENU.map((entry) => (
-          <Link
-            key={entry.key}
-            href={entry.href}
-            className={`shrink-0 px-1.5 py-2 whitespace-nowrap hover:text-accent xl:px-2 ${
-              openKey === entry.key ? "text-accent" : ""
-            }`}
-            onMouseEnter={() => open(entry.key)}
-            onFocus={() => open(entry.key)}
-            aria-expanded={openKey === entry.key}
-          >
-            {entry.label}
-          </Link>
-        ))}
+        {MEGA_MENU.map((entry) => {
+          const isActive = openKey === entry.key;
+          return (
+            <Link
+              key={entry.key}
+              href={entry.href}
+              className={`inline-flex shrink-0 items-center border-b-[3px] px-1.5 whitespace-nowrap transition-colors hover:text-accent xl:px-2 ${
+                isActive
+                  ? "border-accent font-semibold text-accent"
+                  : "border-transparent"
+              }`}
+              onMouseEnter={() => open(entry.key)}
+              onFocus={() => open(entry.key)}
+              aria-expanded={isActive}
+            >
+              {entry.label}
+            </Link>
+          );
+        })}
       </nav>
       {active ? (
         <div onMouseEnter={() => open(active.key)}>

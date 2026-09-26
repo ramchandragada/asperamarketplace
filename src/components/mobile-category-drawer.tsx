@@ -123,18 +123,18 @@ export function MobileCategoryDrawer() {
                           </Link>
                           {category.columns.map((column) => (
                             <div key={column.heading}>
-                              <p className="text-[11px] font-semibold tracking-wide text-muted uppercase">
+                              <p className="text-[12px] font-bold text-accent">
                                 {column.heading}
                               </p>
                               <ul className="mt-1.5 space-y-1">
-                                {column.links.map((link) => (
-                                  <li key={link.href + link.label}>
+                                {column.links.map((item) => (
+                                  <li key={item.href + item.label}>
                                     <Link
-                                      href={link.href}
+                                      href={item.href}
                                       className="block py-1 text-sm text-foreground"
                                       onClick={() => setOpen(false)}
                                     >
-                                      {link.label}
+                                      {item.label}
                                     </Link>
                                   </li>
                                 ))}

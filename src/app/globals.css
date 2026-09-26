@@ -216,6 +216,25 @@ h2,
   }
 }
 
+/* Category tiles — larger squares, fewer across the viewport */
+.product-loop-rail--category {
+  grid-auto-columns: minmax(7.5rem, 7.5rem);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 640px) {
+  .product-loop-rail--category {
+    grid-auto-columns: minmax(9rem, 9rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-loop-rail--category {
+    grid-auto-columns: minmax(10rem, 10rem);
+  }
+}
+
 .category-scroll {
   display: grid;
   grid-auto-flow: column;

@@ -248,6 +248,8 @@ export function ShopByCategory({
     imageUrl: string;
   }>;
 }) {
+  const tiles = categories.slice(0, 8);
+
   return (
     <section className="border-b border-border bg-surface">
       <div className="container-shell py-8 md:py-12">
@@ -262,29 +264,30 @@ export function ShopByCategory({
             View all
           </Link>
         </div>
-        <ul className="hide-scroll grid grid-cols-4 gap-3 overflow-x-auto pb-1 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-10 md:gap-4">
-          {categories.map((category) => (
-            <li key={category.id} className="min-w-[4.75rem]">
-              <Link
-                href={category.href}
-                className="group flex flex-col items-center gap-2 text-center"
-              >
-                <span className="relative h-[5.5rem] w-[5.5rem] overflow-hidden rounded-xl border border-border bg-accent-soft transition group-hover:border-accent group-hover:shadow-sm sm:h-[6.5rem] sm:w-[6.5rem] md:h-[7.5rem] md:w-[7.5rem]">
-                  <Image
-                    src={category.imageUrl}
-                    alt=""
-                    fill
-                    sizes="120px"
-                    className="object-cover object-center"
-                  />
-                </span>
-                <span className="text-[14px] font-medium text-foreground">
-                  {category.label}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <ProductLoopRail
+          items={tiles}
+          label="Shop by category"
+          variant="category"
+          renderItem={(category) => (
+            <Link
+              href={category.href}
+              className="group flex flex-col items-center gap-2.5 text-center"
+            >
+              <span className="relative aspect-square w-full overflow-hidden rounded-xl border border-border bg-accent-soft transition group-hover:border-accent group-hover:shadow-sm">
+                <Image
+                  src={category.imageUrl}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 120px, 160px"
+                  className="object-cover object-center"
+                />
+              </span>
+              <span className="text-[14px] font-medium text-foreground md:text-[15px]">
+                {category.label}
+              </span>
+            </Link>
+          )}
+        />
       </div>
     </section>
   );

@@ -14,10 +14,13 @@ export function ProductLoopRail<T extends LoopItem>({
   items,
   renderItem,
   label = "Product carousel",
+  variant = "wide",
 }: {
   items: T[];
   renderItem: (item: T) => ReactNode;
   label?: string;
+  /** `wide` for product/seller cards; `category` for larger square tiles */
+  variant?: "wide" | "category";
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const loopingRef = useRef(false);
@@ -92,7 +95,9 @@ export function ProductLoopRail<T extends LoopItem>({
       role="region"
       aria-label={label}
       tabIndex={0}
-      className="product-loop-rail hide-scroll touch-pan-x"
+      className={`product-loop-rail hide-scroll touch-pan-x ${
+        variant === "category" ? "product-loop-rail--category" : ""
+      }`}
     >
       {loopItems.map(({ item, key }) => (
         <div key={key} className="product-loop-rail__card">

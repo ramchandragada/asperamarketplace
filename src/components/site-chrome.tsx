@@ -4,19 +4,27 @@ import { actorIsAdmin } from "@/modules/identity/policy";
 import { prisma } from "@/platform/db/prisma";
 import { SiteHeaderClient } from "@/components/site-header-client";
 import { MEGA_MENU } from "@/lib/mega-menu";
+import { readGuestCartToken } from "@/modules/cart/guest";
 
-async function cartCount(userId: string | undefined) {
-  if (!userId) return 0;
-  const cart = await prisma.cart.findFirst({
-    where: { userId, status: "open" },
-    include: { items: true },
-  });
+async function cartCount(userId: string | undefined, guestToken: string | null) {
+  const cart = userId
+    ? await prisma.cart.findFirst({
+        where: { userId, status: "open" },
+        include: { items: true },
+      })
+    : guestToken
+      ? await prisma.cart.findFirst({
+          where: { guestToken, status: "open" },
+          include: { items: true },
+        })
+      : null;
   return cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 }
 
 export async function SiteHeader() {
   const actor = await getOptionalActor();
-  const count = await cartCount(actor?.userId);
+  const guestToken = actor ? null : await readGuestCartToken();
+  const count = await cartCount(actor?.userId, guestToken);
   const isAdmin = actor ? actorIsAdmin(actor) : false;
   const hasSellerRole =
     actor?.roles.some((role) =>
@@ -93,27 +101,27 @@ const ONLINE_SHOPPING_GROUPS = [
   {
     heading: "Women Ethnicwear",
     links: [
-      { label: "Kurtas", href: "/browse?categorySlug=fashion&q=kurta" },
-      { label: "Sarees", href: "/browse?categorySlug=fashion&q=saree" },
-      { label: "Lehengas", href: "/browse?categorySlug=fashion&q=lehenga" },
-      { label: "Dupattas", href: "/browse?categorySlug=fashion&q=dupatta" },
-      { label: "Palazzo", href: "/browse?categorySlug=fashion&q=palazzo" },
+      { label: "Kurtas", href: "/browse?categorySlug=fashion&audience=women&q=kurta" },
+      { label: "Sarees", href: "/browse?categorySlug=fashion&audience=women&q=saree" },
+      { label: "Lehengas", href: "/browse?categorySlug=fashion&audience=women&q=lehenga" },
+      { label: "Dupattas", href: "/browse?categorySlug=fashion&audience=women&q=dupatta" },
+      { label: "Palazzo", href: "/browse?categorySlug=fashion&audience=women&q=palazzo" },
     ],
   },
   {
     heading: "Women Western Wear",
     links: [
-      { label: "Dresses", href: "/browse?categorySlug=fashion&q=dress" },
-      { label: "Tops", href: "/browse?categorySlug=fashion&q=top" },
-      { label: "T-shirts", href: "/browse?categorySlug=fashion&q=tee" },
-      { label: "Jeans", href: "/browse?categorySlug=fashion&q=jean" },
-      { label: "Jegging", href: "/browse?categorySlug=fashion&q=jegging" },
+      { label: "Dresses", href: "/browse?categorySlug=fashion&audience=women&q=dress" },
+      { label: "Tops", href: "/browse?categorySlug=fashion&audience=women&q=top" },
+      { label: "T-shirts", href: "/browse?categorySlug=fashion&audience=women&q=tee" },
+      { label: "Jeans", href: "/browse?categorySlug=fashion&audience=women&q=jean" },
+      { label: "Jegging", href: "/browse?categorySlug=fashion&audience=women&q=jegging" },
     ],
   },
   {
     heading: "Women Accessories",
     links: [
-      { label: "Scarves", href: "/browse?categorySlug=fashion&q=scarf" },
+      { label: "Scarves", href: "/browse?categorySlug=fashion&audience=women&q=scarf" },
       { label: "Handbags", href: "/browse?categorySlug=bags-footwear&q=sling" },
       { label: "Earrings", href: "/browse?q=earring" },
       { label: "Belts", href: "/browse?categorySlug=bags-footwear&q=belt" },
@@ -130,17 +138,17 @@ const ONLINE_SHOPPING_GROUPS = [
   {
     heading: "Men Western Wear",
     links: [
-      { label: "Shirts", href: "/browse?categorySlug=fashion&q=shirt" },
-      { label: "T-shirts", href: "/browse?categorySlug=fashion&q=tee" },
-      { label: "Jeans", href: "/browse?categorySlug=fashion&q=jean" },
-      { label: "Trousers", href: "/browse?categorySlug=fashion&q=trouser" },
+      { label: "Shirts", href: "/browse?categorySlug=fashion&audience=men&q=shirt" },
+      { label: "T-shirts", href: "/browse?categorySlug=fashion&audience=men&q=tee" },
+      { label: "Jeans", href: "/browse?categorySlug=fashion&audience=men&q=jean" },
+      { label: "Trousers", href: "/browse?categorySlug=fashion&audience=men&q=trouser" },
     ],
   },
   {
     heading: "Men Ethnicwear",
     links: [
-      { label: "Kurtas", href: "/browse?categorySlug=fashion&q=kurta" },
-      { label: "Ethnic wear", href: "/browse?categorySlug=fashion&q=ethnic" },
+      { label: "Kurtas", href: "/browse?categorySlug=fashion&audience=men&q=kurta" },
+      { label: "Ethnic wear", href: "/browse?categorySlug=fashion&audience=men&q=ethnic" },
     ],
   },
   {
@@ -162,18 +170,18 @@ const ONLINE_SHOPPING_GROUPS = [
   {
     heading: "Kids",
     links: [
-      { label: "Kids hoodies", href: "/browse?categorySlug=fashion&q=kids" },
-      { label: "Onesies", href: "/browse?categorySlug=baby-kids&q=onesie" },
-      { label: "Toys", href: "/browse?categorySlug=baby-kids&q=toy" },
-      { label: "Kids footwear", href: "/browse?categorySlug=bags-footwear&q=kids" },
+      { label: "Kids hoodies", href: "/browse?categorySlug=baby-kids&audience=kids&q=hoodie" },
+      { label: "Onesies", href: "/browse?categorySlug=baby-kids&audience=kids&q=onesie" },
+      { label: "Toys", href: "/browse?categorySlug=baby-kids&audience=kids&q=toy" },
+      { label: "Kids footwear", href: "/browse?categorySlug=bags-footwear&audience=kids&q=sneaker" },
     ],
   },
   {
     heading: "Baby",
     links: [
-      { label: "Swaddles", href: "/browse?categorySlug=baby-kids&q=swaddle" },
-      { label: "Feeding", href: "/browse?categorySlug=baby-kids&q=bib" },
-      { label: "Soft toys", href: "/browse?categorySlug=baby-kids&q=plush" },
+      { label: "Swaddles", href: "/browse?categorySlug=baby-kids&audience=kids&q=swaddle" },
+      { label: "Feeding", href: "/browse?categorySlug=baby-kids&audience=kids&q=bib" },
+      { label: "Soft toys", href: "/browse?categorySlug=baby-kids&audience=kids&q=plush" },
     ],
   },
   {

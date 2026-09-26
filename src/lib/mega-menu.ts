@@ -10,9 +10,13 @@ export type MegaMenuCategory = {
   columns: MegaMenuColumn[];
 };
 
-function browse(categorySlug: string, q?: string) {
+function browse(
+  categorySlug: string,
+  opts?: { q?: string; audience?: "women" | "men" | "kids" },
+) {
   const params = new URLSearchParams({ categorySlug });
-  if (q) params.set("q", q);
+  if (opts?.q) params.set("q", opts.q);
+  if (opts?.audience) params.set("audience", opts.audience);
   return `/browse?${params.toString()}`;
 }
 
@@ -63,29 +67,29 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   {
     key: "women",
     label: "Women",
-    href: browse("fashion"),
+    href: browse("fashion", { audience: "women" }),
     columns: [
       {
         heading: "Ethnic & festive",
         links: [
-          { label: "Kurtas & sets", href: browse("fashion", "kurta"), imageUrl: THUMB.fashion },
-          { label: "Sarees", href: browse("fashion", "saree"), imageUrl: THUMB.fashion },
-          { label: "Lehengas", href: browse("fashion", "lehenga"), imageUrl: THUMB.fashion },
+          { label: "Kurtas & sets", href: browse("fashion", { audience: "women", q: "kurta" }), imageUrl: THUMB.fashion },
+          { label: "Sarees", href: browse("fashion", { audience: "women", q: "saree" }), imageUrl: THUMB.fashion },
+          { label: "Lehengas", href: browse("fashion", { audience: "women", q: "lehenga" }), imageUrl: THUMB.fashion },
         ],
       },
       {
         heading: "Everyday wear",
         links: [
-          { label: "Dresses", href: browse("fashion", "dress"), imageUrl: THUMB.fashion },
-          { label: "Tops", href: browse("fashion", "top"), imageUrl: THUMB.fashion },
-          { label: "Bottoms", href: browse("fashion", "pant") },
+          { label: "Dresses", href: browse("fashion", { audience: "women", q: "dress" }), imageUrl: THUMB.fashion },
+          { label: "Tops", href: browse("fashion", { audience: "women", q: "top" }), imageUrl: THUMB.fashion },
+          { label: "Bottoms", href: browse("fashion", { audience: "women", q: "pant" }) },
         ],
       },
       {
         heading: "Collections",
         links: [
-          { label: "Under ₹599", href: "/browse?categorySlug=fashion&maxPricePaise=59900" },
-          { label: "New in fashion", href: "/shop?categorySlug=fashion&sort=newest" },
+          { label: "Under ₹599", href: "/browse?categorySlug=fashion&audience=women&maxPricePaise=59900" },
+          { label: "New in fashion", href: "/shop?categorySlug=fashion&audience=women&sort=newest" },
         ],
       },
     ],
@@ -93,21 +97,21 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   {
     key: "men",
     label: "Men",
-    href: browse("fashion", "shirt"),
+    href: browse("fashion", { audience: "men" }),
     columns: [
       {
         heading: "Apparel",
         links: [
-          { label: "Shirts", href: browse("fashion", "shirt"), imageUrl: THUMB.men },
-          { label: "T-shirts", href: browse("fashion", "tee"), imageUrl: THUMB.men },
-          { label: "Ethnic wear", href: browse("fashion", "kurta"), imageUrl: THUMB.men },
+          { label: "Shirts", href: browse("fashion", { audience: "men", q: "shirt" }), imageUrl: THUMB.men },
+          { label: "T-shirts", href: browse("fashion", { audience: "men", q: "tee" }), imageUrl: THUMB.men },
+          { label: "Ethnic wear", href: browse("fashion", { audience: "men", q: "kurta" }), imageUrl: THUMB.men },
         ],
       },
       {
         heading: "Accessories",
         links: [
-          { label: "Watches", href: browse("electronics-accessories", "watch"), imageUrl: THUMB.electronics },
-          { label: "Bags", href: browse("bags-footwear", "bag"), imageUrl: THUMB.bag },
+          { label: "Watches", href: browse("electronics-accessories", { q: "watch" }), imageUrl: THUMB.electronics },
+          { label: "Bags", href: browse("bags-footwear", { q: "bag" }), imageUrl: THUMB.bag },
         ],
       },
     ],
@@ -115,14 +119,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   {
     key: "kids",
     label: "Kids",
-    href: browse("baby-kids"),
+    href: browse("baby-kids", { audience: "kids" }),
     columns: [
       {
         heading: "Kids & baby",
         links: [
-          { label: "Toys", href: browse("baby-kids", "toy"), imageUrl: THUMB.kids },
-          { label: "Clothing", href: browse("baby-kids", "cloth"), imageUrl: THUMB.kids },
-          { label: "Care essentials", href: browse("baby-kids"), imageUrl: THUMB.kids },
+          { label: "Toys", href: browse("baby-kids", { audience: "kids", q: "toy" }), imageUrl: THUMB.kids },
+          { label: "Clothing", href: browse("baby-kids", { audience: "kids", q: "hoodie" }), imageUrl: THUMB.kids },
+          { label: "Care essentials", href: browse("baby-kids", { audience: "kids" }), imageUrl: THUMB.kids },
         ],
       },
     ],
@@ -135,9 +139,9 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Personal care",
         links: [
-          { label: "Skincare", href: browse("beauty-personal-care", "face"), imageUrl: THUMB.beauty },
-          { label: "Makeup", href: browse("beauty-personal-care", "lip"), imageUrl: THUMB.beauty },
-          { label: "Haircare", href: browse("beauty-personal-care", "oil"), imageUrl: THUMB.beauty },
+          { label: "Skincare", href: browse("beauty-personal-care", { q: "face" }), imageUrl: THUMB.beauty },
+          { label: "Makeup", href: browse("beauty-personal-care", { q: "lip" }), imageUrl: THUMB.beauty },
+          { label: "Haircare", href: browse("beauty-personal-care", { q: "oil" }), imageUrl: THUMB.beauty },
         ],
       },
     ],
@@ -150,9 +154,9 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Home & kitchen",
         links: [
-          { label: "Kitchen", href: browse("home-kitchen", "kitchen"), imageUrl: THUMB.home },
-          { label: "Decor", href: browse("home-kitchen", "decor"), imageUrl: THUMB.home },
-          { label: "Storage", href: browse("home-kitchen", "storage"), imageUrl: THUMB.home },
+          { label: "Kitchen", href: browse("home-kitchen", { q: "kitchen" }), imageUrl: THUMB.home },
+          { label: "Decor", href: browse("home-kitchen", { q: "decor" }), imageUrl: THUMB.home },
+          { label: "Storage", href: browse("home-kitchen", { q: "storage" }), imageUrl: THUMB.home },
           { label: "Household", href: browse("household-essentials"), imageUrl: THUMB.home },
         ],
       },
@@ -166,9 +170,9 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Gadgets",
         links: [
-          { label: "Audio", href: browse("electronics-accessories", "ear"), imageUrl: THUMB.electronics },
+          { label: "Audio", href: browse("electronics-accessories", { q: "ear" }), imageUrl: THUMB.electronics },
           { label: "Mobile accessories", href: browse("mobile-accessories"), imageUrl: THUMB.electronics },
-          { label: "Wearables", href: browse("electronics-accessories", "watch"), imageUrl: THUMB.electronics },
+          { label: "Wearables", href: browse("electronics-accessories", { q: "watch" }), imageUrl: THUMB.electronics },
         ],
       },
     ],
@@ -176,14 +180,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   {
     key: "footwear",
     label: "Footwear",
-    href: browse("bags-footwear", "shoe"),
+    href: browse("bags-footwear", { q: "shoe" }),
     columns: [
       {
         heading: "Shoes",
         links: [
-          { label: "Sneakers", href: browse("bags-footwear", "sneaker"), imageUrl: THUMB.footwear },
-          { label: "Sandals", href: browse("bags-footwear", "sandal"), imageUrl: THUMB.footwear },
-          { label: "Formal", href: browse("bags-footwear", "formal"), imageUrl: THUMB.footwear },
+          { label: "Sneakers", href: browse("bags-footwear", { q: "sneaker" }), imageUrl: THUMB.footwear },
+          { label: "Sandals", href: browse("bags-footwear", { q: "sandal" }), imageUrl: THUMB.footwear },
+          { label: "Formal", href: browse("bags-footwear", { q: "formal" }), imageUrl: THUMB.footwear },
         ],
       },
     ],
@@ -191,14 +195,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   {
     key: "bags",
     label: "Bags",
-    href: browse("bags-footwear", "bag"),
+    href: browse("bags-footwear", { q: "bag" }),
     columns: [
       {
         heading: "Bags",
         links: [
-          { label: "Backpacks", href: browse("bags-footwear", "backpack"), imageUrl: THUMB.bag },
-          { label: "Handbags", href: browse("bags-footwear", "handbag"), imageUrl: THUMB.bag },
-          { label: "Travel", href: browse("bags-footwear", "travel"), imageUrl: THUMB.bag },
+          { label: "Backpacks", href: browse("bags-footwear", { q: "backpack" }), imageUrl: THUMB.bag },
+          { label: "Handbags", href: browse("bags-footwear", { q: "handbag" }), imageUrl: THUMB.bag },
+          { label: "Travel", href: browse("bags-footwear", { q: "travel" }), imageUrl: THUMB.bag },
         ],
       },
     ],
@@ -206,14 +210,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   {
     key: "jewellery",
     label: "Jewellery",
-    href: browse("fashion", "jewellery"),
+    href: browse("fashion", { audience: "women", q: "jewellery" }),
     columns: [
       {
         heading: "Jewellery",
         links: [
-          { label: "Earrings", href: browse("fashion", "earring"), imageUrl: THUMB.jewellery },
-          { label: "Necklaces", href: browse("fashion", "necklace"), imageUrl: THUMB.jewellery },
-          { label: "Bangles", href: browse("fashion", "bangle"), imageUrl: THUMB.jewellery },
+          { label: "Earrings", href: browse("fashion", { audience: "women", q: "earring" }), imageUrl: THUMB.jewellery },
+          { label: "Necklaces", href: browse("fashion", { audience: "women", q: "necklace" }), imageUrl: THUMB.jewellery },
+          { label: "Bangles", href: browse("fashion", { audience: "women", q: "bangle" }), imageUrl: THUMB.jewellery },
         ],
       },
     ],
@@ -227,7 +231,7 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         heading: "Daily needs",
         links: [
           { label: "Pantry", href: browse("household-essentials"), imageUrl: THUMB.grocery },
-          { label: "Cleaning", href: browse("household-essentials", "clean"), imageUrl: THUMB.grocery },
+          { label: "Cleaning", href: browse("household-essentials", { q: "clean" }), imageUrl: THUMB.grocery },
         ],
       },
     ],
@@ -241,7 +245,7 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         heading: "Sports & fitness",
         links: [
           { label: "Fitness gear", href: browse("sports-fitness"), imageUrl: THUMB.sports },
-          { label: "Yoga", href: browse("sports-fitness", "yoga"), imageUrl: THUMB.sports },
+          { label: "Yoga", href: browse("sports-fitness", { q: "yoga" }), imageUrl: THUMB.sports },
         ],
       },
     ],
@@ -268,7 +272,7 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Office & study",
         links: [
-          { label: "Notebooks", href: browse("stationery-office", "note"), imageUrl: THUMB.stationery },
+          { label: "Notebooks", href: browse("stationery-office", { q: "note" }), imageUrl: THUMB.stationery },
           { label: "Desk essentials", href: browse("stationery-office"), imageUrl: THUMB.stationery },
         ],
       },
@@ -277,12 +281,12 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   {
     key: "automotive",
     label: "Automotive",
-    href: browse("electronics-accessories", "car"),
+    href: browse("electronics-accessories", { q: "car" }),
     columns: [
       {
         heading: "Car & bike",
         links: [
-          { label: "Accessories", href: browse("electronics-accessories", "car"), imageUrl: THUMB.auto },
+          { label: "Accessories", href: browse("electronics-accessories", { q: "car" }), imageUrl: THUMB.auto },
         ],
       },
     ],
@@ -290,12 +294,12 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   {
     key: "pet-supplies",
     label: "Pet Supplies",
-    href: browse("household-essentials", "pet"),
+    href: browse("household-essentials", { q: "pet" }),
     columns: [
       {
         heading: "Pets",
         links: [
-          { label: "Pet care", href: browse("household-essentials", "pet"), imageUrl: THUMB.pet },
+          { label: "Pet care", href: browse("household-essentials", { q: "pet" }), imageUrl: THUMB.pet },
         ],
       },
     ],
@@ -307,21 +311,21 @@ export const ASPERA_CATEGORY_TILES = [
   {
     id: "women",
     label: "Women",
-    href: browse("fashion"),
+    href: browse("fashion", { audience: "women" }),
     imageUrl:
       "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "men",
     label: "Men",
-    href: browse("fashion", "shirt"),
+    href: browse("fashion", { audience: "men" }),
     imageUrl:
       "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "kids",
     label: "Kids",
-    href: browse("baby-kids"),
+    href: browse("baby-kids", { audience: "kids" }),
     imageUrl:
       "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=400&q=80",
   },
@@ -349,21 +353,21 @@ export const ASPERA_CATEGORY_TILES = [
   {
     id: "footwear",
     label: "Footwear",
-    href: browse("bags-footwear", "shoe"),
+    href: browse("bags-footwear", { q: "shoe" }),
     imageUrl:
       "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "bags",
     label: "Bags",
-    href: browse("bags-footwear", "bag"),
+    href: browse("bags-footwear", { q: "bag" }),
     imageUrl:
       "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "jewellery",
     label: "Jewellery",
-    href: browse("fashion", "jewellery"),
+    href: browse("fashion", { audience: "women", q: "jewellery" }),
     imageUrl:
       "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80",
   },

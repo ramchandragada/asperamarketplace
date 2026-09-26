@@ -385,7 +385,17 @@ export async function searchApprovedProducts(
           : sort === "rating"
             ? Prisma.sql`ORDER BY p.published_at DESC NULLS LAST`
             : sort === "relevance"
-              ? Prisma.sql`ORDER BY ts_rank(to_tsvector('english', p.search_document), plainto_tsquery('english', ${query})) DESC, p.published_at DESC NULLS LAST`
+              ? Prisma.sql`ORDER BY
+                  CASE WHEN p.title ILIKE ${"%" + query + "%"} THEN 2
+                       WHEN p.summary ILIKE ${"%" + query + "%"} THEN 1
+                       ELSE 0 END DESC,
+                  ts_rank(
+                    setweight(to_tsvector('english', p.title), 'A') ||
+                    setweight(to_tsvector('english', coalesce(p.summary, '')), 'B') ||
+                    setweight(to_tsvector('english', coalesce(c.name, '')), 'C'),
+                    plainto_tsquery('english', ${query})
+                  ) DESC,
+                  p.published_at DESC NULLS LAST`
               : Prisma.sql`ORDER BY p.published_at DESC NULLS LAST`;
 
     const rows = await prisma.$queryRaw<
@@ -427,8 +437,20 @@ export async function searchApprovedProducts(
         LEFT JOIN brands b ON b.id = p.brand_id
         WHERE p.status = 'approved'
           AND (
-            to_tsvector('english', p.search_document) @@ plainto_tsquery('english', ${query})
+            -- Match title/summary/category tightly so long descriptions do not
+            -- pull unrelated listings (e.g. sandals for "dress").
+            to_tsvector(
+              'english',
+              concat_ws(
+                ' ',
+                p.title,
+                coalesce(p.summary, ''),
+                coalesce(c.name, ''),
+                coalesce(b.name, '')
+              )
+            ) @@ plainto_tsquery('english', ${query})
             OR p.title ILIKE ${"%" + query + "%"}
+            OR p.summary ILIKE ${"%" + query + "%"}
           )
           ${
             input.categorySlug
@@ -438,6 +460,11 @@ export async function searchApprovedProducts(
           ${
             input.brandSlug
               ? Prisma.sql`AND b.slug = ${input.brandSlug}`
+              : Prisma.empty
+          }
+          ${
+            input.audience
+              ? Prisma.sql`AND p.attributes->>'audience' = ${input.audience}`
               : Prisma.empty
           }
           ${
@@ -490,6 +517,14 @@ export async function searchApprovedProducts(
       ? { category: { slug: input.categorySlug, isActive: true } }
       : {}),
     ...(input.brandSlug ? { brand: { slug: input.brandSlug } } : {}),
+    ...(input.audience
+      ? {
+          attributes: {
+            path: ["audience"],
+            equals: input.audience,
+          },
+        }
+      : {}),
     ...(input.verifiedSellerOnly ? { seller: { status: "approved" } } : {}),
     variants: {
       some: {

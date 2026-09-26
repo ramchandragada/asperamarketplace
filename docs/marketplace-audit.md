@@ -245,3 +245,19 @@ Implemented on `cursor/marketplace-audit-truth-10f6`:
 | Scripts | `db:validate`, stub `test:e2e` |
 
 **Re-seed required** on preview DBs to clear legacy attribute metrics from JSON (display already ignores them).
+
+---
+
+## 16. Storefront conversion fixes (2026-09-26)
+
+Claude Code live-audit follow-ups on `cursor/storefront-conversion-fixes-10f6`:
+
+| Finding | Fix |
+| --- | --- |
+| Women/Men/Kids nav → generic Fashion mix | `audience` on seed attributes + browse/search filter; mega-menu/tiles pass `audience=` |
+| Kids hoodie in Fashion | Moved to `baby-kids` with `audience: kids` |
+| Mismatched product images (e.g. wrap dress) | Slug-keyed `PRODUCT_IMAGE_OVERRIDES` wired through seed |
+| Cart forced sign-in | Guest cart via nullable `userId` + `guest_token` cookie; login deferred to checkout |
+| Search “dress” hits sandals | Match title/summary/category (not full description); title-weighted relevance rank |
+
+**Re-seed + migrate** required on preview/prod DBs for audience attributes, image overrides, and guest cart columns.

@@ -1,5 +1,6 @@
 import { prisma } from "@/platform/db/prisma";
 import type { Actor } from "@/modules/identity/policy";
+import type { CartIdentity } from "@/modules/cart/guest";
 import {
   availableQuantity,
   buildCheckoutSnapshot,
@@ -45,17 +46,30 @@ export class InsufficientStockError extends Error {
   }
 }
 
-async function getOrCreateOpenCart(userId: string) {
+async function getOrCreateOpenCart(identity: CartIdentity) {
+  if (identity.type === "user") {
+    const existing = await prisma.cart.findFirst({
+      where: { userId: identity.userId, status: "open" },
+      orderBy: { createdAt: "desc" },
+    });
+    if (existing) return existing;
+    return prisma.cart.create({
+      data: { userId: identity.userId, status: "open" },
+    });
+  }
+
   const existing = await prisma.cart.findFirst({
-    where: { userId, status: "open" },
+    where: { guestToken: identity.guestToken, status: "open" },
     orderBy: { createdAt: "desc" },
   });
-  if (existing) {
-    return existing;
-  }
+  if (existing) return existing;
   return prisma.cart.create({
-    data: { userId, status: "open" },
+    data: { guestToken: identity.guestToken, status: "open" },
   });
+}
+
+function actorIdForAudit(identity: CartIdentity) {
+  return identity.type === "user" ? identity.userId : null;
 }
 
 function serializeCart(
@@ -154,8 +168,8 @@ const cartInclude = {
   },
 };
 
-export async function getCartForActor(actor: Actor) {
-  const cart = await getOrCreateOpenCart(actor.userId);
+export async function getCartForIdentity(identity: CartIdentity) {
+  const cart = await getOrCreateOpenCart(identity);
   const full = await prisma.cart.findUniqueOrThrow({
     where: { id: cart.id },
     include: cartInclude,
@@ -163,8 +177,25 @@ export async function getCartForActor(actor: Actor) {
   return serializeCart(full);
 }
 
+export async function getCartForActor(actor: Actor) {
+  return getCartForIdentity({ type: "user", userId: actor.userId });
+}
+
+/** Empty cart view for guests before first mutation (no DB write). */
+export function emptyCartView() {
+  return {
+    id: "",
+    status: "open" as const,
+    version: 0,
+    currencyCode: "INR",
+    merchandisePaise: 0,
+    itemCount: 0,
+    items: [] as ReturnType<typeof serializeCart>["items"],
+  };
+}
+
 export async function addCartItem(
-  actor: Actor,
+  identity: CartIdentity,
   input: AddCartItemInput,
   correlationId: string,
 ) {
@@ -191,7 +222,7 @@ export async function addCartItem(
     );
   }
 
-  const cart = await getOrCreateOpenCart(actor.userId);
+  const cart = await getOrCreateOpenCart(identity);
   const existing = await prisma.cartItem.findUnique({
     where: {
       cartId_variantId: { cartId: cart.id, variantId: input.variantId },
@@ -225,7 +256,7 @@ export async function addCartItem(
     });
     await tx.auditLog.create({
       data: {
-        actorId: actor.userId,
+        actorId: actorIdForAudit(identity),
         action: "cart.item_added",
         targetType: "cart",
         targetId: cart.id,
@@ -233,6 +264,7 @@ export async function addCartItem(
           variantId: input.variantId,
           quantity: nextQty,
           unitPricePaise: variant.sellingPricePaise,
+          identity: identity.type,
         },
         reason: "Customer added item to cart",
         correlationId,
@@ -240,15 +272,15 @@ export async function addCartItem(
     });
   });
 
-  return getCartForActor(actor);
+  return getCartForIdentity(identity);
 }
 
 export async function updateCartItem(
-  actor: Actor,
+  identity: CartIdentity,
   input: UpdateCartItemInput,
   correlationId: string,
 ) {
-  const cart = await getOrCreateOpenCart(actor.userId);
+  const cart = await getOrCreateOpenCart(identity);
   const item = await prisma.cartItem.findUnique({
     where: {
       cartId_variantId: { cartId: cart.id, variantId: input.variantId },
@@ -268,7 +300,7 @@ export async function updateCartItem(
       });
       await tx.auditLog.create({
         data: {
-          actorId: actor.userId,
+          actorId: actorIdForAudit(identity),
           action: "cart.item_removed",
           targetType: "cart",
           targetId: cart.id,
@@ -278,7 +310,7 @@ export async function updateCartItem(
         },
       });
     });
-    return getCartForActor(actor);
+    return getCartForIdentity(identity);
   }
 
   const available = availableQuantity(
@@ -302,7 +334,7 @@ export async function updateCartItem(
     });
     await tx.auditLog.create({
       data: {
-        actorId: actor.userId,
+        actorId: actorIdForAudit(identity),
         action: "cart.item_updated",
         targetType: "cart",
         targetId: cart.id,
@@ -314,7 +346,73 @@ export async function updateCartItem(
     });
   });
 
-  return getCartForActor(actor);
+  return getCartForIdentity(identity);
+}
+
+/**
+ * Move guest cart lines into the signed-in user's open cart, then close the guest cart.
+ */
+export async function mergeGuestCartIntoUser(
+  guestToken: string,
+  userId: string,
+  correlationId: string,
+) {
+  const guestCart = await prisma.cart.findFirst({
+    where: { guestToken, status: "open" },
+    include: { items: true },
+  });
+  if (!guestCart || guestCart.items.length === 0) {
+    return;
+  }
+
+  const userCart = await getOrCreateOpenCart({ type: "user", userId });
+
+  await prisma.$transaction(async (tx) => {
+    for (const line of guestCart.items) {
+      const existing = await tx.cartItem.findUnique({
+        where: {
+          cartId_variantId: {
+            cartId: userCart.id,
+            variantId: line.variantId,
+          },
+        },
+      });
+      if (existing) {
+        await tx.cartItem.update({
+          where: { id: existing.id },
+          data: { quantity: existing.quantity + line.quantity },
+        });
+      } else {
+        await tx.cartItem.create({
+          data: {
+            cartId: userCart.id,
+            variantId: line.variantId,
+            quantity: line.quantity,
+          },
+        });
+      }
+    }
+    await tx.cartItem.deleteMany({ where: { cartId: guestCart.id } });
+    await tx.cart.update({
+      where: { id: guestCart.id },
+      data: { status: "abandoned" },
+    });
+    await tx.cart.update({
+      where: { id: userCart.id },
+      data: { version: { increment: 1 } },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId: userId,
+        action: "cart.guest_merged",
+        targetType: "cart",
+        targetId: userCart.id,
+        afterState: { guestCartId: guestCart.id, lines: guestCart.items.length },
+        reason: "Merged guest cart after sign-in",
+        correlationId,
+      },
+    });
+  });
 }
 
 export async function listAddresses(actor: Actor) {

@@ -5,6 +5,12 @@ import {
 } from "@/modules/identity/service";
 import { registerSchema } from "@/modules/identity/schema";
 import { getRequestId, jsonError, jsonOk, requestMeta } from "@/platform/http/respond";
+import {
+  clearGuestCartCookie,
+  GUEST_CART_COOKIE,
+} from "@/modules/cart/guest";
+import { mergeGuestCartIntoUser } from "@/modules/cart/service";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +22,14 @@ export async function POST(request: Request) {
       ...requestMeta(request),
       correlationId: requestId,
     });
+
+    const jar = await cookies();
+    const guestToken = jar.get(GUEST_CART_COOKIE)?.value;
+    if (guestToken) {
+      await mergeGuestCartIntoUser(guestToken, session.userId, requestId);
+      await clearGuestCartCookie();
+    }
+
     const response = jsonOk(
       {
         userId: session.userId,

@@ -434,18 +434,21 @@ enum CheckoutStatus {
 
 model Cart {
   id           String     @id @default(uuid()) @db.Uuid
-  userId       String     @map("user_id") @db.Uuid
+  userId       String?    @map("user_id") @db.Uuid
+  /// Opaque guest cart token (cookie). Mutually exclusive with userId for open carts.
+  guestToken   String?    @unique @map("guest_token")
   status       CartStatus @default(open)
   currencyCode String     @default("INR") @map("currency_code")
   version      Int        @default(1)
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user             User              @relation(fields: [userId], references: [id])
+  user             User?             @relation(fields: [userId], references: [id])
   items            CartItem[]
   checkoutSessions CheckoutSession[]
 
   @@index([userId, status])
+  @@index([guestToken, status])
   @@map("carts")
 }
 

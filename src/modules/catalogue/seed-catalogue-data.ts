@@ -25,6 +25,8 @@ export type SeedProductDef = {
   weightGrams: number;
   hsnCode: string;
   status?: "approved" | "draft" | "submitted";
+  /** Storefront audience segment for fashion/kids nav filters */
+  audience?: "women" | "men" | "kids" | "unisex";
 };
 
 /** Curated Unsplash photo IDs for preview catalogue imagery. */
@@ -213,16 +215,15 @@ export const SEED_PRODUCTS: SeedProductDef[] = [
     { slug: "general-merch-draft-organiser", title: "Draft desk caddy (unpublished)", summary: "Draft listing used to test seller moderation queues.", description: "Multi-compartment desk caddy awaiting catalogue approval. Holds pens, clips, and sticky notes within arm’s reach. Not yet visible on the public storefront.", brandSlug: "ink-and-quill", sellerKey: "home", sku: "DRF-CAD-01", mrpPaise: 79900, sellingPricePaise: 59900, onHand: 10, weightGrams: 400, hsnCode: "3926", status: "draft" },
   ]),
   ...productsFor("fashion", [
-    { slug: "handloom-cotton-kurta", title: "Handloom cotton kurta", summary: "Breathable mid-length kurta with side slits.", description: "Breathable mid-length handloom cotton kurta with side slits for easy movement. Soft fabric suited to warm weather and festive casual days. Pair with jeans, churidars, or palazzos.", brandSlug: "narmada-weave", sellerKey: "textile", sku: "KUR-HL-M", mrpPaise: 189900, sellingPricePaise: 149900, onHand: 28, weightGrams: 320, hsnCode: "6205" },
-    { slug: "linen-blend-shirt", title: "Linen-blend casual shirt", summary: "Relaxed fit shirt with coconut buttons.", description: "Relaxed-fit linen-blend shirt with coconut buttons and an easy-iron finish. Ideal for office Fridays and weekend brunches. Layers well under light jackets in cooler evenings.", brandSlug: "narmada-weave", sellerKey: "mumbai", sku: "SHT-LN-01", mrpPaise: 219900, sellingPricePaise: 179900, onHand: 22, weightGrams: 280, hsnCode: "6205" },
-    { slug: "everyday-cotton-tee-pack", title: "Everyday cotton tee pack", summary: "Pack of three solid crew-neck tees.", description: "Pack of three solid crew-neck tees in mid-weight jersey. Soft handfeel that holds shape after washes. Everyday essentials for layering, lounging, or gym-to-errands days.", brandSlug: "narmada-weave", sellerKey: "fashion", sku: "TEE-3PK", mrpPaise: 129900, sellingPricePaise: 99900, onHand: 80, weightGrams: 450, hsnCode: "6109" },
-    { slug: "block-print-dupatta", title: "Block-print cotton dupatta", summary: "Lightweight dupatta with vegetable-dye motifs.", description: "Lightweight cotton dupatta with vegetable-dye inspired block motifs. Drapes softly over kurtas and dresses without bulk. An easy way to refresh ethnic looks across seasons.", brandSlug: "narmada-weave", sellerKey: "textile", sku: "DUP-BP-01", mrpPaise: 89900, sellingPricePaise: 69900, onHand: 35, weightGrams: 180, hsnCode: "6214" },
-    { slug: "stretch-denim-jegging", title: "Stretch denim jegging", summary: "High-rise jegging with soft stretch denim.", description: "High-rise jegging in soft stretch denim for all-day comfort. Machine-washable everyday bottomwear that moves with you. Pair with kurtis, tunics, or casual tees.", brandSlug: "narmada-weave", sellerKey: "fashion", sku: "JEG-STR-01", mrpPaise: 159900, sellingPricePaise: 129900, onHand: 40, weightGrams: 420, hsnCode: "6204" },
-    { slug: "embroidered-cotton-palazzo", title: "Embroidered cotton palazzo", summary: "Flared palazzo with ankle embroidery.", description: "Flared cotton palazzo with delicate ankle embroidery. Comfortable for festive casual wear and long days out. Breathable fabric that pairs with short kurtas or crop tops.", brandSlug: "narmada-weave", sellerKey: "textile", sku: "PAL-EMB-01", mrpPaise: 149900, sellingPricePaise: 119900, onHand: 26, weightGrams: 380, hsnCode: "6204" },
-    { slug: "wool-blend-scarf", title: "Wool-blend winter scarf", summary: "Soft scarf for cool evenings and AC offices.", description: "Soft wool-blend scarf for cool evenings and air-conditioned offices. Neutral tones that layer easily over coats and kurtas. Lightweight warmth without the bulk of a shawl.", brandSlug: "narmada-weave", sellerKey: "artisan", sku: "SCF-WL-01", mrpPaise: 99900, sellingPricePaise: 79900, onHand: 50, weightGrams: 210, hsnCode: "6117" },
-    { slug: "cotton-pyjama-set", title: "Cotton pyjama set", summary: "Breathable nightwear set with piping detail.", description: "Breathable cotton nightwear set with neat piping detail. Soft top-and-pant duo for humid Indian summers. Easy to wash and comfortable for nightly rest.", brandSlug: "narmada-weave", sellerKey: "fashion", sku: "PYJ-CT-01", mrpPaise: 139900, sellingPricePaise: 109900, onHand: 2, weightGrams: 400, hsnCode: "6108" },
-    { slug: "rayon-wrap-dress", title: "Rayon wrap dress", summary: "Midi wrap dress with tie waist.", description: "Lightweight rayon wrap dress perfect for everyday wear. Features a flattering A-line silhouette with adjustable tie-waist. Machine-washable, travel-friendly fabric that resists wrinkles.", brandSlug: "narmada-weave", sellerKey: "mumbai", sku: "DRS-WR-01", mrpPaise: 249900, sellingPricePaise: 199900, onHand: 16, weightGrams: 360, hsnCode: "6204" },
-    { slug: "kids-printed-hoodie", title: "Kids printed hoodie", summary: "Soft fleece hoodie with kangaroo pocket.", description: "Soft fleece hoodie with a kangaroo pocket in a unisex kids fit. Warm enough for school mornings and park evenings. Easy pull-on style that kids can manage themselves.", brandSlug: "little-lotus", sellerKey: "mumbai", sku: "HD-KD-01", mrpPaise: 119900, sellingPricePaise: 89900, onHand: 45, weightGrams: 340, hsnCode: "6110" },
+    { slug: "handloom-cotton-kurta", title: "Handloom cotton kurta", summary: "Breathable mid-length kurta with side slits.", description: "Breathable mid-length handloom cotton kurta with side slits for easy movement. Soft fabric suited to warm weather and festive casual days. Pair with jeans, churidars, or trousers.", brandSlug: "narmada-weave", sellerKey: "textile", sku: "KUR-HL-M", mrpPaise: 189900, sellingPricePaise: 149900, onHand: 28, weightGrams: 320, hsnCode: "6205", audience: "men" },
+    { slug: "linen-blend-shirt", title: "Linen-blend casual shirt", summary: "Relaxed fit shirt with coconut buttons.", description: "Relaxed-fit linen-blend shirt with coconut buttons and an easy-iron finish. Ideal for office Fridays and weekend brunches. Layers well under light jackets in cooler evenings.", brandSlug: "narmada-weave", sellerKey: "mumbai", sku: "SHT-LN-01", mrpPaise: 219900, sellingPricePaise: 179900, onHand: 22, weightGrams: 280, hsnCode: "6205", audience: "men" },
+    { slug: "everyday-cotton-tee-pack", title: "Everyday cotton tee pack", summary: "Pack of three solid crew-neck tees.", description: "Pack of three solid crew-neck tees in mid-weight jersey. Soft handfeel that holds shape after washes. Everyday essentials for layering, lounging, or gym-to-errands days.", brandSlug: "narmada-weave", sellerKey: "fashion", sku: "TEE-3PK", mrpPaise: 129900, sellingPricePaise: 99900, onHand: 80, weightGrams: 450, hsnCode: "6109", audience: "men" },
+    { slug: "block-print-dupatta", title: "Block-print cotton dupatta", summary: "Lightweight dupatta with vegetable-dye motifs.", description: "Lightweight cotton dupatta with vegetable-dye inspired block motifs. Drapes softly over kurtas and festive outfits without bulk. An easy way to refresh ethnic looks across seasons.", brandSlug: "narmada-weave", sellerKey: "textile", sku: "DUP-BP-01", mrpPaise: 89900, sellingPricePaise: 69900, onHand: 35, weightGrams: 180, hsnCode: "6214", audience: "women" },
+    { slug: "stretch-denim-jegging", title: "Stretch denim jegging", summary: "High-rise jegging with soft stretch denim.", description: "High-rise jegging in soft stretch denim for all-day comfort. Machine-washable everyday bottomwear that moves with you. Pair with kurtis, tunics, or casual tees.", brandSlug: "narmada-weave", sellerKey: "fashion", sku: "JEG-STR-01", mrpPaise: 159900, sellingPricePaise: 129900, onHand: 40, weightGrams: 420, hsnCode: "6204", audience: "women" },
+    { slug: "embroidered-cotton-palazzo", title: "Embroidered cotton palazzo", summary: "Flared palazzo with ankle embroidery.", description: "Flared cotton palazzo with delicate ankle embroidery. Comfortable for festive casual wear and long days out. Breathable fabric that pairs with short kurtas or crop tops.", brandSlug: "narmada-weave", sellerKey: "textile", sku: "PAL-EMB-01", mrpPaise: 149900, sellingPricePaise: 119900, onHand: 26, weightGrams: 380, hsnCode: "6204", audience: "women" },
+    { slug: "wool-blend-scarf", title: "Wool-blend winter scarf", summary: "Soft scarf for cool evenings and AC offices.", description: "Soft wool-blend scarf for cool evenings and air-conditioned offices. Neutral tones that layer easily over coats and kurtas. Lightweight warmth without the bulk of a shawl.", brandSlug: "narmada-weave", sellerKey: "artisan", sku: "SCF-WL-01", mrpPaise: 99900, sellingPricePaise: 79900, onHand: 50, weightGrams: 210, hsnCode: "6117", audience: "women" },
+    { slug: "cotton-pyjama-set", title: "Cotton pyjama set", summary: "Breathable nightwear set with piping detail.", description: "Breathable cotton nightwear set with neat piping detail. Soft top-and-pant duo for humid Indian summers. Easy to wash and comfortable for nightly rest.", brandSlug: "narmada-weave", sellerKey: "fashion", sku: "PYJ-CT-01", mrpPaise: 139900, sellingPricePaise: 109900, onHand: 2, weightGrams: 400, hsnCode: "6108", audience: "women" },
+    { slug: "rayon-wrap-dress", title: "Rayon wrap dress", summary: "Midi wrap dress with tie waist.", description: "Lightweight rayon wrap dress perfect for everyday wear. Features a flattering A-line silhouette with adjustable tie-waist. Machine-washable, travel-friendly fabric that resists wrinkles.", brandSlug: "narmada-weave", sellerKey: "mumbai", sku: "DRS-WR-01", mrpPaise: 249900, sellingPricePaise: 199900, onHand: 16, weightGrams: 360, hsnCode: "6204", audience: "women" },
   ]),
   ...productsFor("beauty-personal-care", [
     { slug: "herbal-face-wash-oily-skin", title: "Herbal face wash for oily skin", summary: "Gel cleanser with neem and tea tree extracts.", description: "Gel cleanser with neem and tea tree extracts for oily and combination skin. Rinses clean without stripping moisture. A refreshing daily step before moisturiser.", brandSlug: "coastal-bloom", sellerKey: "wellness", sku: "FW-OL-100", mrpPaise: 34900, sellingPricePaise: 29900, onHand: 90, weightGrams: 120, hsnCode: "3304" },
@@ -286,16 +287,17 @@ export const SEED_PRODUCTS: SeedProductDef[] = [
     { slug: "cork-yoga-mat-strap", title: "Cork yoga mat with strap", summary: "Natural cork top mat with cotton carry strap.", description: "Natural cork-top yoga mat with a cotton carry strap. Grippy surface that improves as you practise. Extra-stable feel for hot rooms and barefoot flows.", brandSlug: "pulse-fit", sellerKey: "sports", sku: "YG-CORK", mrpPaise: 249900, sellingPricePaise: 199900, onHand: 18, weightGrams: 1300, hsnCode: "9506" },
   ]),
   ...productsFor("baby-kids", [
-    { slug: "organic-cotton-onesie", title: "Organic cotton onesie", summary: "Snap-button onesie for newborns.", description: "Snap-button organic cotton onesie for newborns. Soft jersey gentle on sensitive skin. Easy nappy changes with secure snaps along the inseam.", brandSlug: "little-lotus", sellerKey: "fashion", sku: "ONE-NB", mrpPaise: 79900, sellingPricePaise: 59900, onHand: 40, weightGrams: 120, hsnCode: "6111" },
-    { slug: "silicone-bib-catcher", title: "Silicone bib with catcher", summary: "Wipe-clean bib for weaning.", description: "Wipe-clean silicone bib with a food catcher for weaning. Adjustable neck that grows with your little one. Soft enough for daily mealtimes and travel high chairs.", brandSlug: "little-lotus", sellerKey: "home", sku: "BIB-SL", mrpPaise: 49900, sellingPricePaise: 39900, onHand: 65, weightGrams: 90, hsnCode: "3924" },
-    { slug: "wooden-stacking-rings", title: "Wooden stacking rings", summary: "Classic stacking toy with smooth finish.", description: "Classic wooden stacking rings with a smooth painted finish. Encourages colour recognition and hand coordination. A timeless toddler toy for play mats and shelves.", brandSlug: "little-lotus", sellerKey: "home", sku: "TOY-RG", mrpPaise: 89900, sellingPricePaise: 69900, onHand: 30, weightGrams: 400, hsnCode: "9503" },
-    { slug: "kids-stainless-bottle", title: "Kids stainless bottle 400 ml", summary: "Leak-resistant bottle with straw lid.", description: "Leak-resistant 400 ml stainless bottle with a straw lid. School-bag friendly size for water and diluted juices. Durable build that survives daily drops.", brandSlug: "little-lotus", sellerKey: "home", sku: "BTL-KD", mrpPaise: 79900, sellingPricePaise: 64900, onHand: 50, weightGrams: 220, hsnCode: "7323" },
-    { slug: "muslin-swaddle-set", title: "Muslin swaddle set", summary: "Set of three breathable swaddles.", description: "Set of three breathable muslin swaddles for sleep and tummy time. Soft cotton that layers without overheating. Multi-use cloths for nursing covers and pram shade.", brandSlug: "little-lotus", sellerKey: "fashion", sku: "SWA-3", mrpPaise: 129900, sellingPricePaise: 99900, onHand: 28, weightGrams: 300, hsnCode: "6301" },
-    { slug: "soft-book-crinkle", title: "Crinkle soft book", summary: "Fabric book with high-contrast pages.", description: "Fabric book with high-contrast pages and gentle crinkle sounds. Engaging for tummy-time and seated play. Soft edges safe for little hands.", brandSlug: "little-lotus", sellerKey: "home", sku: "BOOK-CR", mrpPaise: 59900, sellingPricePaise: 44900, onHand: 45, weightGrams: 80, hsnCode: "9503" },
-    { slug: "kids-raincoat-packable", title: "Packable kids raincoat", summary: "Lightweight raincoat with pouch.", description: "Lightweight kids raincoat that packs into its own pouch. Essential monsoon cover for school runs. Easy zip front kids can manage with help.", brandSlug: "little-lotus", sellerKey: "fashion", sku: "RAIN-KD", mrpPaise: 119900, sellingPricePaise: 89900, onHand: 20, weightGrams: 250, hsnCode: "6201" },
-    { slug: "baby-nail-care-kit", title: "Baby nail care kit", summary: "Rounded clippers and file in case.", description: "Rounded baby clippers and file in a protective case. Gentle grooming tools sized for tiny nails. Compact kit for home and travel diaper bags.", brandSlug: "little-lotus", sellerKey: "wellness", sku: "NAIL-BB", mrpPaise: 39900, sellingPricePaise: 29900, onHand: 70, weightGrams: 50, hsnCode: "8214" },
-    { slug: "plush-elephant-soft-toy", title: "Plush elephant soft toy", summary: "Embroidered-eye plush for cuddles.", description: "Embroidered-eye plush elephant for cuddles and naps. Soft body with a machine-washable cover story parents trust. Friendly size for cribs and toddler beds.", brandSlug: "little-lotus", sellerKey: "home", sku: "PLUSH-EL", mrpPaise: 99900, sellingPricePaise: 79900, onHand: 35, weightGrams: 280, hsnCode: "9503" },
-    { slug: "kids-tableware-set", title: "Kids bamboo tableware set", summary: "Plate, bowl, and spoon set.", description: "Bamboo-feel plate, bowl, and spoon set with sectioned plate. Helps picky eaters keep foods apart. Lightweight pieces for first self-feeding adventures.", brandSlug: "little-lotus", sellerKey: "home", sku: "TBW-KD", mrpPaise: 89900, sellingPricePaise: 69900, onHand: 3, weightGrams: 320, hsnCode: "4419" },
+    { slug: "kids-printed-hoodie", title: "Kids printed hoodie", summary: "Soft fleece hoodie with kangaroo pocket.", description: "Soft fleece hoodie with a kangaroo pocket in a unisex kids fit. Warm enough for school mornings and park evenings. Easy pull-on style that kids can manage themselves.", brandSlug: "little-lotus", sellerKey: "mumbai", sku: "HD-KD-01", mrpPaise: 119900, sellingPricePaise: 89900, onHand: 45, weightGrams: 340, hsnCode: "6110", audience: "kids" },
+    { slug: "organic-cotton-onesie", title: "Organic cotton onesie", summary: "Snap-button onesie for newborns.", description: "Snap-button organic cotton onesie for newborns. Soft jersey gentle on sensitive skin. Easy nappy changes with secure snaps along the inseam.", brandSlug: "little-lotus", sellerKey: "fashion", sku: "ONE-NB", mrpPaise: 79900, sellingPricePaise: 59900, onHand: 40, weightGrams: 120, hsnCode: "6111", audience: "kids" },
+    { slug: "silicone-bib-catcher", title: "Silicone bib with catcher", summary: "Wipe-clean bib for weaning.", description: "Wipe-clean silicone bib with a food catcher for weaning. Adjustable neck that grows with your little one. Soft enough for daily mealtimes and travel high chairs.", brandSlug: "little-lotus", sellerKey: "home", sku: "BIB-SL", mrpPaise: 49900, sellingPricePaise: 39900, onHand: 65, weightGrams: 90, hsnCode: "3924", audience: "kids" },
+    { slug: "wooden-stacking-rings", title: "Wooden stacking rings", summary: "Classic stacking toy with smooth finish.", description: "Classic wooden stacking rings with a smooth painted finish. Encourages colour recognition and hand coordination. A timeless toddler toy for play mats and shelves.", brandSlug: "little-lotus", sellerKey: "home", sku: "TOY-RG", mrpPaise: 89900, sellingPricePaise: 69900, onHand: 30, weightGrams: 400, hsnCode: "9503", audience: "kids" },
+    { slug: "kids-stainless-bottle", title: "Kids stainless bottle 400 ml", summary: "Leak-resistant bottle with straw lid.", description: "Leak-resistant 400 ml stainless bottle with a straw lid. School-bag friendly size for water and diluted juices. Durable build that survives daily drops.", brandSlug: "little-lotus", sellerKey: "home", sku: "BTL-KD", mrpPaise: 79900, sellingPricePaise: 64900, onHand: 50, weightGrams: 220, hsnCode: "7323", audience: "kids" },
+    { slug: "muslin-swaddle-set", title: "Muslin swaddle set", summary: "Set of three breathable swaddles.", description: "Set of three breathable muslin swaddles for sleep and tummy time. Soft cotton that layers without overheating. Multi-use cloths for nursing covers and pram shade.", brandSlug: "little-lotus", sellerKey: "fashion", sku: "SWA-3", mrpPaise: 129900, sellingPricePaise: 99900, onHand: 28, weightGrams: 300, hsnCode: "6301", audience: "kids" },
+    { slug: "soft-book-crinkle", title: "Crinkle soft book", summary: "Fabric book with high-contrast pages.", description: "Fabric book with high-contrast pages and gentle crinkle sounds. Engaging for tummy-time and seated play. Soft edges safe for little hands.", brandSlug: "little-lotus", sellerKey: "home", sku: "BOOK-CR", mrpPaise: 59900, sellingPricePaise: 44900, onHand: 45, weightGrams: 80, hsnCode: "9503", audience: "kids" },
+    { slug: "kids-raincoat-packable", title: "Packable kids raincoat", summary: "Lightweight raincoat with pouch.", description: "Lightweight kids raincoat that packs into its own pouch. Essential monsoon cover for school runs. Easy zip front kids can manage with help.", brandSlug: "little-lotus", sellerKey: "fashion", sku: "RAIN-KD", mrpPaise: 119900, sellingPricePaise: 89900, onHand: 20, weightGrams: 250, hsnCode: "6201", audience: "kids" },
+    { slug: "baby-nail-care-kit", title: "Baby nail care kit", summary: "Rounded clippers and file in case.", description: "Rounded baby clippers and file in a protective case. Gentle grooming tools sized for tiny nails. Compact kit for home and travel diaper bags.", brandSlug: "little-lotus", sellerKey: "wellness", sku: "NAIL-BB", mrpPaise: 39900, sellingPricePaise: 29900, onHand: 70, weightGrams: 50, hsnCode: "8214", audience: "kids" },
+    { slug: "plush-elephant-soft-toy", title: "Plush elephant soft toy", summary: "Embroidered-eye plush for cuddles.", description: "Embroidered-eye plush elephant for cuddles and naps. Soft body with a machine-washable cover story parents trust. Friendly size for cribs and toddler beds.", brandSlug: "little-lotus", sellerKey: "home", sku: "PLUSH-EL", mrpPaise: 99900, sellingPricePaise: 79900, onHand: 35, weightGrams: 280, hsnCode: "9503", audience: "kids" },
+    { slug: "kids-tableware-set", title: "Kids bamboo tableware set", summary: "Plate, bowl, and spoon set.", description: "Bamboo-feel plate, bowl, and spoon set with sectioned plate. Helps picky eaters keep foods apart. Lightweight pieces for first self-feeding adventures.", brandSlug: "little-lotus", sellerKey: "home", sku: "TBW-KD", mrpPaise: 89900, sellingPricePaise: 69900, onHand: 3, weightGrams: 320, hsnCode: "4419", audience: "kids" },
   ]),
   ...productsFor("stationery-office", [
     { slug: "dotted-notebook-a5", title: "Dotted notebook A5", summary: "192-page dotted journal with elastic band.", description: "192-page A5 dotted journal with an elastic band closure. Ivory paper that works with pens and pencils. Ideal for notes, planners, and creative sketches.", brandSlug: "ink-and-quill", sellerKey: "home", sku: "NB-A5-D", mrpPaise: 49900, sellingPricePaise: 39900, onHand: 80, weightGrams: 280, hsnCode: "4820" },
@@ -325,13 +327,13 @@ export const SEED_PRODUCTS: SeedProductDef[] = [
   ...productsFor("bags-footwear", [
     { slug: "leatherette-sling-bag", title: "Leatherette sling bag", summary: "Crossbody sling with adjustable strap.", description: "Crossbody leatherette sling with an adjustable strap. Compact everyday city bag for phone, wallet, and keys. Soft structure that sits close without bulk.", brandSlug: "trailmark", sellerKey: "mumbai", sku: "SLG-LT", mrpPaise: 149900, sellingPricePaise: 119900, onHand: 32, weightGrams: 350, hsnCode: "4202" },
     { slug: "canvas-backpack-laptop", title: "Canvas laptop backpack", summary: "Padded 15-inch sleeve backpack.", description: "Canvas backpack with a padded 15-inch laptop sleeve. Water-resistant base for rainy commute days. Organised pockets for chargers, bottles, and notebooks.", brandSlug: "trailmark", sellerKey: "mumbai", sku: "BP-CV", mrpPaise: 249900, sellingPricePaise: 199900, onHand: 20, weightGrams: 700, hsnCode: "4202" },
-    { slug: "kolhapuri-style-sandals", title: "Kolhapuri-style sandals", summary: "Hand-finish inspired flat sandals.", description: "Hand-finish inspired flat sandals for everyday ethnic wear. Comfortable sole for markets and festive daytime outings. Classic look that pairs with kurtas and dresses.", brandSlug: "narmada-weave", sellerKey: "artisan", sku: "SND-KH", mrpPaise: 129900, sellingPricePaise: 99900, onHand: 28, weightGrams: 400, hsnCode: "6403" },
+    { slug: "kolhapuri-style-sandals", title: "Kolhapuri-style sandals", summary: "Hand-finish inspired flat sandals.", description: "Hand-finish inspired flat sandals for everyday ethnic wear. Comfortable sole for markets and festive daytime outings. Classic look that pairs with kurtas and festive ethnic sets.", brandSlug: "narmada-weave", sellerKey: "artisan", sku: "SND-KH", mrpPaise: 129900, sellingPricePaise: 99900, onHand: 28, weightGrams: 400, hsnCode: "6403" },
     { slug: "memory-foam-slippers", title: "Memory foam house slippers", summary: "Closed-toe slippers with soft sole.", description: "Closed-toe house slippers with memory-foam cushioning. Soft indoor comfort after long workdays. Easy slip-on style for bedrooms and balconies.", brandSlug: "aspera-home", sellerKey: "home", sku: "SLP-MF", mrpPaise: 89900, sellingPricePaise: 69900, onHand: 45, weightGrams: 300, hsnCode: "6404" },
     { slug: "weekender-duffel", title: "Weekender duffel", summary: "Soft-sided duffel for short trips.", description: "Soft-sided weekender duffel with a shoe compartment. Packs outfits for short trips without a hard suitcase. Comfortable shoulder carry for trains and cabs.", brandSlug: "trailmark", sellerKey: "mumbai", sku: "DFL-WK", mrpPaise: 299900, sellingPricePaise: 249900, onHand: 14, weightGrams: 800, hsnCode: "4202" },
     { slug: "canvas-tote-market", title: "Heavy canvas market tote", summary: "Open tote with interior pocket.", description: "Heavy canvas open tote with an interior pocket. Sturdy enough for groceries, books, and market hauls. Washes well and softens with use.", brandSlug: "narmada-weave", sellerKey: "fashion", sku: "TOTE-HV", mrpPaise: 79900, sellingPricePaise: 59900, onHand: 60, weightGrams: 280, hsnCode: "4202" },
     { slug: "running-socks-3pack", title: "Running socks 3-pack", summary: "Cushioned ankle socks with arch support.", description: "Cushioned ankle running socks with arch support in a three-pack. Moisture-wicking comfort for daily training. Stay-put cuffs that do not slide mid-run.", brandSlug: "trailmark", sellerKey: "fashion", sku: "SOX-3", mrpPaise: 69900, sellingPricePaise: 49900, onHand: 100, weightGrams: 120, hsnCode: "6115" },
     { slug: "formal-belt-reversible", title: "Reversible formal belt", summary: "Black/brown reversible belt with boxed buckle.", description: "Black and brown reversible formal belt with a boxed buckle. One belt covering two office outfits. Smooth finish that pairs with formals and smart casuals.", brandSlug: "narmada-weave", sellerKey: "textile", sku: "BLT-RV", mrpPaise: 99900, sellingPricePaise: 79900, onHand: 40, weightGrams: 150, hsnCode: "4203" },
-    { slug: "kids-velcro-sneakers", title: "Kids velcro sneakers", summary: "Easy-on sneakers for school days.", description: "Easy-on velcro sneakers for school days. Breathable upper that keeps little feet comfortable. Secure fit kids can fasten with minimal help.", brandSlug: "little-lotus", sellerKey: "fashion", sku: "SNK-KD", mrpPaise: 149900, sellingPricePaise: 119900, onHand: 22, weightGrams: 320, hsnCode: "6404" },
+    { slug: "kids-velcro-sneakers", title: "Kids velcro sneakers", summary: "Easy-on sneakers for school days.", description: "Easy-on velcro sneakers for school days. Breathable upper that keeps little feet comfortable. Secure fit kids can fasten with minimal help.", brandSlug: "little-lotus", sellerKey: "fashion", sku: "SNK-KD", mrpPaise: 149900, sellingPricePaise: 119900, onHand: 22, weightGrams: 320, hsnCode: "6404", audience: "kids" },
     { slug: "travel-packing-cubes", title: "Travel packing cubes set", summary: "Set of four cubes for organised packing.", description: "Set of four packing cubes with mesh tops for organised travel. Separate clothes by day or category in any suitcase. Compress soft items for more bag space.", brandSlug: "trailmark", sellerKey: "fashion", sku: "CUBE-4", mrpPaise: 129900, sellingPricePaise: 99900, onHand: 2, weightGrams: 280, hsnCode: "4202" },
   ]),
   ...productsFor("household-essentials", [
@@ -352,15 +354,115 @@ export function imagesForProduct(
   categorySlug: string,
   title: string,
   index: number,
+  slug?: string,
 ): Array<{ url: string; altText: string; sortOrder: number; isPrimary: boolean }> {
+  const override = slug ? PRODUCT_IMAGE_OVERRIDES[slug] : undefined;
+  if (override && override.length >= 1) {
+    return override.map((url, i) => ({
+      url,
+      altText: `${title} — product preview image`,
+      sortOrder: i,
+      isPrimary: i === 0,
+    }));
+  }
+
   const category = SEED_CATEGORIES.find((entry) => entry.slug === categorySlug);
   const pool = category?.imagePool ?? SEED_CATEGORIES[0]!.imagePool;
-  const primary = pool[index % pool.length]!;
-  const secondary = pool[(index + 1) % pool.length]!;
-  const tertiary = pool[(index + 2) % pool.length]!;
+  // Stable hash from slug/title so adjacent products do not share the same trio
+  const seedKey = slug ?? title;
+  let hash = 0;
+  for (let i = 0; i < seedKey.length; i += 1) {
+    hash = (hash * 31 + seedKey.charCodeAt(i)) >>> 0;
+  }
+  const base = (hash + index) % pool.length;
+  const primary = pool[base]!;
+  const secondary = pool[(base + 1) % pool.length]!;
+  const tertiary = pool[(base + 2) % pool.length]!;
   return [
-    { url: primary, altText: `${title} — development placeholder image (not product photography)`, sortOrder: 0, isPrimary: true },
-    { url: secondary, altText: `${title} — development placeholder image (not product photography)`, sortOrder: 1, isPrimary: false },
-    { url: tertiary, altText: `${title} — development placeholder image (not product photography)`, sortOrder: 2, isPrimary: false },
+    {
+      url: primary,
+      altText: `${title} — development placeholder image (not product photography)`,
+      sortOrder: 0,
+      isPrimary: true,
+    },
+    {
+      url: secondary,
+      altText: `${title} — development placeholder image (not product photography)`,
+      sortOrder: 1,
+      isPrimary: false,
+    },
+    {
+      url: tertiary,
+      altText: `${title} — development placeholder image (not product photography)`,
+      sortOrder: 2,
+      isPrimary: false,
+    },
   ];
 }
+
+/**
+ * Product-specific preview imagery — keyed by slug so listings do not share
+ * unrelated category-pool photos. Still Unsplash placeholders for development.
+ */
+const PRODUCT_IMAGE_OVERRIDES: Record<string, string[]> = {
+  "rayon-wrap-dress": [
+    U("photo-1595777457583-95e059d581b8"),
+    U("photo-1515372039744-b8f02a3ae446"),
+    U("photo-1572804013309-59a88b7e92f1"),
+  ],
+  "handloom-cotton-kurta": [
+    U("photo-1594938298603-c8148c4dae35"),
+    U("photo-1602810318383-e386cc2a3ccf"),
+    U("photo-1620795860405-d649df95a2ac"),
+  ],
+  "linen-blend-shirt": [
+    U("photo-1596755094514-f87e34085b2c"),
+    U("photo-1602810316498-ab67cf68c8ba"),
+    U("photo-1598033129183-c4f50c736f10"),
+  ],
+  "stretch-denim-jegging": [
+    U("photo-1541099649105-f69ad21f3246"),
+    U("photo-1475178626620-a4d074967337"),
+    U("photo-1582418702048-5c7806f587cc"),
+  ],
+  "embroidered-cotton-palazzo": [
+    U("photo-1583391733956-3750e0ff4e8b"),
+    U("photo-1594938298603-c8148c4dae35"),
+    U("photo-1610030469983-98e550d6193c"),
+  ],
+  "cotton-pyjama-set": [
+    U("photo-1618354691373-d851c5c3a990"),
+    U("photo-1556905055-8f358a7a47b2"),
+    U("photo-1576564683990-b5b8e886e5df"),
+  ],
+  "wool-blend-scarf": [
+    U("photo-1520903920243-00d872a2d1c9"),
+    U("photo-1601924999987-9e68c2e5c5e0"),
+    U("photo-1602810316498-ab67cf68c8ba"),
+  ],
+  "kids-printed-hoodie": [
+    U("photo-1515488042361-ee00e0ddd4e4"),
+    U("photo-1503919545889-aef636e10ad0"),
+    U("photo-1503454537195-1dcabb73ffb9"),
+  ],
+  "organic-cotton-onesie": [
+    U("photo-1515488042361-ee00e0ddd4e4"),
+    U("photo-1522771930-78848d9293e8"),
+    U("photo-1503454537195-1dcabb73ffb9"),
+  ],
+  "kolhapuri-style-sandals": [
+    U("photo-1543163521-1bfcec4bb8ae"),
+    U("photo-1603808033192-082d6919d3e1"),
+    U("photo-1560343090-f0409e92791a"),
+  ],
+  "block-print-dupatta": [
+    U("photo-1610030469983-98e550d6193c"),
+    U("photo-1594938298603-c8148c4dae35"),
+    U("photo-1583391733956-3750e0ff4e8b"),
+  ],
+  "everyday-cotton-tee-pack": [
+    U("photo-1521572163474-6864f9cf17ab"),
+    U("photo-1583743814966-8936f5b7be1a"),
+    U("photo-1576564683990-b5b8e886e5df"),
+  ],
+};

@@ -30,7 +30,7 @@ export function AddToCartButton({
     const body = (await response.json()) as { message?: string; code?: string };
     setPending(false);
     if (response.status === 401) {
-      router.push("/login");
+      router.push(`/login?next=${encodeURIComponent("/cart")}`);
       return;
     }
     if (!response.ok) {

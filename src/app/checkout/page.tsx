@@ -10,7 +10,7 @@ export const metadata = { title: "Checkout · Aspera Marketplace" };
 export default async function CheckoutPage() {
   const actor = await getOptionalActor();
   if (!actor) {
-    redirect("/login");
+    redirect("/login?next=/checkout");
   }
   const [cart, addresses] = await Promise.all([
     getCartForActor(actor),

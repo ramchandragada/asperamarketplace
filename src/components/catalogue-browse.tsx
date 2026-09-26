@@ -43,10 +43,34 @@ const DISCOUNT_OPTIONS = [
 ] as const;
 
 const GENDER_OPTIONS = [
-  { value: "boys", label: "Boys", categorySlug: "baby-kids", q: "boy" },
-  { value: "girls", label: "Girls", categorySlug: "baby-kids", q: "girl" },
-  { value: "men", label: "Men", categorySlug: "fashion", q: "shirt" },
-  { value: "women", label: "Women", categorySlug: "fashion", q: "" },
+  {
+    value: "boys",
+    label: "Boys",
+    categorySlug: "baby-kids",
+    audience: "kids",
+    q: "boy",
+  },
+  {
+    value: "girls",
+    label: "Girls",
+    categorySlug: "baby-kids",
+    audience: "kids",
+    q: "girl",
+  },
+  {
+    value: "men",
+    label: "Men",
+    categorySlug: "fashion",
+    audience: "men",
+    q: "",
+  },
+  {
+    value: "women",
+    label: "Women",
+    categorySlug: "fashion",
+    audience: "women",
+    q: "",
+  },
 ] as const;
 
 const COLOR_OPTIONS = [
@@ -90,6 +114,7 @@ export function CatalogueBrowse({
   brands = [],
   initialCategorySlug = "",
   initialBrandSlug = "",
+  initialAudience = "",
   initialSort = "newest",
   initialInStockOnly = false,
   initialVerifiedOnly = false,
@@ -111,6 +136,7 @@ export function CatalogueBrowse({
   brands?: BrandOption[];
   initialCategorySlug?: string;
   initialBrandSlug?: string;
+  initialAudience?: string;
   initialSort?: string;
   initialInStockOnly?: boolean;
   initialVerifiedOnly?: boolean;
@@ -145,7 +171,13 @@ export function CatalogueBrowse({
   const [query, setQuery] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
   const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
-  const [gender, setGender] = useState<string>("");
+  const [audience, setAudience] = useState(initialAudience);
+  const [gender, setGender] = useState<string>(() => {
+    if (initialAudience === "women") return "women";
+    if (initialAudience === "men") return "men";
+    if (initialAudience === "kids") return "";
+    return "";
+  });
   const [color, setColor] = useState<string>("");
   const [fabric, setFabric] = useState<string>("");
   const [sort, setSort] = useState(initialSort);
@@ -207,6 +239,19 @@ export function CatalogueBrowse({
     if (query.trim()) {
       list.push({ key: "q", label: query.trim() });
     }
+    if (audience) {
+      list.push({
+        key: "audience",
+        label:
+          audience === "women"
+            ? "Women"
+            : audience === "men"
+              ? "Men"
+              : audience === "kids"
+                ? "Kids"
+                : audience,
+      });
+    }
     if (categorySlug) {
       list.push({ key: "cat", label: categoryName });
     }
@@ -234,7 +279,7 @@ export function CatalogueBrowse({
     if (verifiedOnly) {
       list.push({ key: "verified", label: "Verified sellers" });
     }
-    if (gender) {
+    if (gender && !audience) {
       const option = GENDER_OPTIONS.find((entry) => entry.value === gender);
       if (option) list.push({ key: "gender", label: option.label });
     }
@@ -243,6 +288,7 @@ export function CatalogueBrowse({
     return list;
   }, [
     query,
+    audience,
     categorySlug,
     categoryName,
     brandSlug,
@@ -263,6 +309,7 @@ export function CatalogueBrowse({
     q?: string;
     categorySlug?: string;
     brandSlug?: string;
+    audience?: string;
     sort?: string;
     inStockOnly?: boolean;
     verifiedOnly?: boolean;
@@ -278,6 +325,8 @@ export function CatalogueBrowse({
     const q = (next?.q ?? query).trim();
     const cat = next?.categorySlug ?? categorySlug;
     const brand = next?.brandSlug ?? brandSlug;
+    const audienceValue =
+      next?.audience !== undefined ? next.audience : audience;
     const sortValue = next?.sort ?? sort;
     const stock = next?.inStockOnly ?? inStockOnly;
     const verified = next?.verifiedOnly ?? verifiedOnly;
@@ -291,6 +340,7 @@ export function CatalogueBrowse({
     if (q) params.set("q", q);
     if (cat) params.set("categorySlug", cat);
     if (brand) params.set("brandSlug", brand);
+    if (audienceValue) params.set("audience", audienceValue);
     if (sortValue) params.set("sort", sortValue);
     if (stock) params.set("inStockOnly", "true");
     if (verified) params.set("verifiedSellerOnly", "true");
@@ -367,6 +417,7 @@ export function CatalogueBrowse({
     setQuery("");
     setCategorySlug("");
     setBrandSlug("");
+    setAudience("");
     setSort(initialQuery.trim() ? "relevance" : "newest");
     setInStockOnly(false);
     setVerifiedOnly(false);
@@ -385,6 +436,7 @@ export function CatalogueBrowse({
         q: "",
         categorySlug: "",
         brandSlug: "",
+        audience: "",
         sort: initialQuery.trim() ? "relevance" : "newest",
         inStockOnly: false,
         verifiedOnly: false,
@@ -406,16 +458,18 @@ export function CatalogueBrowse({
       setCategorySlug("");
       next.categorySlug = "";
     }
-    if (key === "brand") {
-      setBrandSlug("");
-      next.brandSlug = "";
-    }
-    if (key === "gender") {
+    if (key === "audience" || key === "gender") {
+      setAudience("");
       setGender("");
       setCategorySlug("");
       setQuery("");
+      next.audience = "";
       next.categorySlug = "";
       next.q = "";
+    }
+    if (key === "brand") {
+      setBrandSlug("");
+      next.brandSlug = "";
     }
     if (key === "color") {
       setColor("");
@@ -606,20 +660,27 @@ export function CatalogueBrowse({
                 onClick={() => {
                   if (active) {
                     setGender("");
+                    setAudience("");
                     setCategorySlug("");
                     setQuery("");
                     startTransition(() => {
-                      void runSearch({ categorySlug: "", q: "" });
+                      void runSearch({
+                        categorySlug: "",
+                        q: "",
+                        audience: "",
+                      });
                     });
                     return;
                   }
                   setGender(option.value);
+                  setAudience(option.audience);
                   setCategorySlug(option.categorySlug);
                   setQuery(option.q);
                   startTransition(() => {
                     void runSearch({
                       categorySlug: option.categorySlug,
                       q: option.q,
+                      audience: option.audience,
                     });
                   });
                 }}

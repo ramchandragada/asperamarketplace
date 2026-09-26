@@ -8,10 +8,12 @@ export async function GET(request: Request) {
   const requestId = getRequestId(request);
   try {
     const url = new URL(request.url);
+    const audienceRaw = url.searchParams.get("audience") ?? undefined;
     const input = searchProductsSchema.parse({
       q: url.searchParams.get("q") ?? undefined,
       categorySlug: url.searchParams.get("categorySlug") ?? undefined,
       brandSlug: url.searchParams.get("brandSlug") ?? undefined,
+      audience: audienceRaw || undefined,
       minPricePaise: url.searchParams.get("minPricePaise") ?? undefined,
       maxPricePaise: url.searchParams.get("maxPricePaise") ?? undefined,
       inStockOnly: url.searchParams.get("inStockOnly") === "true",

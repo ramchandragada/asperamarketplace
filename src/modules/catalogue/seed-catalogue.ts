@@ -57,6 +57,7 @@ function storefrontAttributes(item: (typeof SEED_PRODUCTS)[number]) {
     mediaNote:
       "Development Unsplash placeholders — replace with licensed product photography before commercial launch.",
     highlights,
+    ...(item.audience ? { audience: item.audience } : {}),
   };
 }
 
@@ -259,6 +260,7 @@ export async function seedMarketplaceCatalogue(
           item.categorySlug,
           item.title,
           index,
+          item.slug,
         )) {
           await tx.productImage.create({
             data: {
@@ -368,12 +370,13 @@ export async function seedMarketplaceCatalogue(
         }
       }
 
-      // Refresh images so category pools stay aligned with titles
+      // Refresh images so category pools / slug overrides stay aligned with titles
       await prisma.productImage.deleteMany({ where: { productId: existing.id } });
       for (const image of imagesForProduct(
         item.categorySlug,
         item.title,
         index,
+        item.slug,
       )) {
         await prisma.productImage.create({
           data: {

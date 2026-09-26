@@ -86,41 +86,43 @@ export function AnnouncementStrip() {
 /** Original Aspera hero — full-bleed edge-to-edge merchandising plane */
 export function AsperaHero() {
   return (
-    <section className="relative w-full overflow-hidden bg-accent">
-      {/* Dominant full-bleed visual */}
+    <section className="relative w-full overflow-hidden bg-[#0f2f3a]">
+      {/* Dominant full-bleed visual — vivid fashion hero */}
       <div className="absolute inset-0" aria-hidden>
         <Image
-          src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2000&q=80"
+          src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2400&q=85"
           alt=""
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_30%] opacity-55"
+          className="object-cover object-[68%_center] scale-[1.02] md:object-[72%_22%]"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(18,59,74,0.96)_0%,rgba(18,59,74,0.82)_42%,rgba(18,59,74,0.35)_72%,rgba(230,106,61,0.28)_100%)]" />
+        {/* Readability veil — keeps brand copy crisp without muting the image */}
+        <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(15,47,58,0.88)_0%,rgba(15,47,58,0.55)_38%,rgba(15,47,58,0.12)_62%,rgba(15,47,58,0.05)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(90%_80%_at_78%_40%,rgba(230,106,61,0.18)_0%,transparent_55%)]" />
       </div>
 
-      <div className="relative container-shell flex min-h-[min(72vw,28rem)] flex-col justify-center py-12 md:min-h-[26rem] md:py-16 lg:min-h-[28rem]">
-        <p className="font-display text-[28px] font-bold tracking-tight text-white md:text-[36px]">
+      <div className="relative container-shell flex min-h-[min(78vw,30rem)] flex-col justify-center py-12 md:min-h-[28rem] md:py-16 lg:min-h-[32rem]">
+        <p className="font-display text-[28px] font-bold tracking-tight text-white drop-shadow-sm md:text-[36px]">
           Aspera
         </p>
-        <h1 className="mt-3 max-w-xl text-[28px] leading-[34px] font-bold tracking-tight text-white md:mt-4 md:text-[40px] md:leading-[48px]">
+        <h1 className="mt-3 max-w-xl text-[28px] leading-[34px] font-bold tracking-tight text-white drop-shadow-sm md:mt-4 md:text-[42px] md:leading-[50px]">
           Discover more. Choose better.
         </h1>
-        <p className="mt-3 max-w-md text-[15px] leading-[22px] text-white/85 md:text-[16px] md:leading-[24px]">
+        <p className="mt-3 max-w-md text-[15px] leading-[22px] text-white/90 md:text-[16px] md:leading-[24px]">
           Clear pricing, independent sellers, and simple delivery for everyday
           India.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href="/browse"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-white px-6 text-[14px] font-semibold text-accent transition hover:bg-accent-soft"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-white px-6 text-[14px] font-semibold text-accent shadow-sm transition hover:bg-accent-soft"
           >
             Shop now
           </Link>
           <Link
             href="/sell"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/40 bg-white/10 px-6 text-[14px] font-semibold text-white backdrop-blur-sm transition hover:border-white hover:bg-white/20"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/50 bg-white/15 px-6 text-[14px] font-semibold text-white backdrop-blur-sm transition hover:border-white hover:bg-white/25"
           >
             Start selling
           </Link>
@@ -305,21 +307,21 @@ export function CampaignTiles({ tiles }: { tiles: CampaignTile[] }) {
           <li key={tile.id}>
             <Link
               href={tile.href}
-              className="group relative flex h-[220px] overflow-hidden rounded-2xl border border-border md:h-[260px]"
+              className="group relative flex h-[240px] overflow-hidden rounded-2xl md:h-[300px]"
             >
               <Image
                 src={tile.imageUrl}
                 alt=""
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
-                className="object-cover transition duration-300 group-hover:scale-[1.03]"
+                className="object-cover object-center transition duration-500 group-hover:scale-[1.05]"
               />
-              <span className="absolute inset-0 bg-gradient-to-t from-[#123b4a]/85 via-[#123b4a]/25 to-transparent" />
-              <span className="absolute inset-x-0 bottom-0 p-5 text-white">
-                <span className="block text-[18px] font-bold leading-6">
+              <span className="absolute inset-0 bg-[linear-gradient(180deg,transparent_35%,rgba(15,47,58,0.78)_100%)]" />
+              <span className="absolute inset-x-0 bottom-0 p-5 text-white md:p-6">
+                <span className="block text-[20px] font-bold leading-6 tracking-tight md:text-[22px]">
                   {tile.title}
                 </span>
-                <span className="mt-1 block text-[13px] text-white/85">
+                <span className="mt-1.5 block text-[13px] text-white/90 md:text-[14px]">
                   {tile.subtitle}
                 </span>
               </span>

@@ -167,7 +167,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               sizes="(max-width: 640px) 70vw, (max-width: 1024px) 33vw, 304px"
               placeholder="blur"
               blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2U4ZWVmMCIvPjwvc3ZnPg=="
-              className="object-contain p-2"
+              className="object-cover object-center"
               loading="lazy"
               onError={() => setImageFailed(true)}
             />

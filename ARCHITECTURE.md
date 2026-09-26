@@ -1,6 +1,6 @@
 # Architecture proposal
 
-Status: Phase 1 foundations are implemented. Domain modules, hosted Postgres, and provider adapters remain proposed.
+Status: Phase 1 foundations and Phase 2 identity/seller onboarding are implemented. Catalogue, payments, and hosted Postgres remain proposed.
 
 ## System shape
 

@@ -1,35 +1,54 @@
 # Aspera Marketplace
 
-India-first multi-vendor marketplace. The repository currently contains the Phase 1 foundation: a Next.js shell, platform database tables, a health check, structured logs, and planning documents. Catalogue, checkout, and payments are not implemented.
+India-first multi-vendor marketplace. Tip branch: `cursor/meesho-ux-overhaul-10f6` (storefront UX overhaul stacked on catalogue seed / PR #14). Production launch remains blocked on open legal items A-20–A-28 in `ASSUMPTIONS.md`.
 
 Source of truth: https://github.com/ramchandragada/asperamarketplace
 
-The linked Vercel project is `asperamarketplace` on team `ramchandragadas-projects`. Production still deploys `main`. Until this foundation is merged, https://asperamarketplace.vercel.app serves the empty initial commit. Railway is not connected.
+## Work from any Cursor install
+
+See [docs/CONTINUE-FROM-ANY-CURSOR.md](docs/CONTINUE-FROM-ANY-CURSOR.md): open this GitHub repo in Cursor (Desktop or Cloud Agent), checkout the tip branch, migrate Neon/local non-prod, run `pnpm dev`.
 
 ## Requirements
 
 - Node.js 24.21.0 (`.nvmrc`)
 - pnpm 10.33.3
-- PostgreSQL 16 for local development
+- PostgreSQL 16 for local development (or shared Neon non-prod from the Vercel project)
 
 ## Local setup
 
 ```bash
-# Database: Docker when available
-docker compose up -d
-
-# Or install PostgreSQL 16 and create database aspera_marketplace_dev
-# owned by role aspera_dev.
-
-cp .env.example .env
-# Set DATABASE_URL to the non-production database. Never use production.
-
+docker compose up -d   # or local Postgres 16 / Neon non-prod URL
+cp .env.example .env   # set DATABASE_URL to non-production only
 pnpm install
 pnpm db:migrate
+pnpm db:seed
 pnpm dev
 ```
 
-The app listens on http://localhost:3000. `GET /api/health` returns the service and database status.
+App: http://localhost:3000
+
+### Development credentials (fictional only)
+
+| Account | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@aspera.local` | `AsperaAdminDevOnly1!` |
+| Seller owner (home) | `seller@aspera.local` | `AsperaSellerDevOnly1!` |
+| Seller fashion | `seller.fashion@aspera.local` | `AsperaFashionDevOnly1!` |
+| Seller tech | `seller.tech@aspera.local` | `AsperaTechDevOnly1!` |
+| Seller wellness | `seller.wellness@aspera.local` | `AsperaWellnessDevOnly1!` |
+| Seller ops | `seller.ops@aspera.local` | `AsperaOpsDevOnly1!` |
+| Seller finance | `seller.finance@aspera.local` | `AsperaFinanceDevOnly1!` |
+| Seller support | `seller.support@aspera.local` | `AsperaSupportDevOnly1!` |
+
+Catalogue seed: **12 categories**, **≥10 products each** (see `docs/CATALOGUE_SEED.md`). Run `pnpm db:migrate && pnpm db:seed` on non-production only.
+
+### Useful routes
+
+- `/`, `/browse`, `/products/[slug]`, `/cart`, `/checkout`, `/orders`
+- `/seller` (action dashboard), `/seller/catalogue`, `/seller/fulfilment`, `/seller/finance`, `/seller/compliance`, `/seller/profile`, `/seller/analytics`, `/seller/onboarding`
+- `/support`, `/privacy`
+- `/admin/sellers`, `/admin/products`, `/admin/finance`, `/admin/trust`, `/admin/analytics`
+- `/api/health`
 
 ## Checks
 
@@ -40,21 +59,20 @@ pnpm test
 pnpm build
 ```
 
-GitHub Actions runs migrate, then those checks, against a PostgreSQL 16 service.
+## Docs
 
-## Read before changing the code
-
-- [PROJECT_AUDIT.md](PROJECT_AUDIT.md) — the empty starting point
-- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) — what is done and the next phase
+- [docs/UX_REDESIGN_AUDIT.md](docs/UX_REDESIGN_AUDIT.md)
+- [docs/CONTINUE-FROM-ANY-CURSOR.md](docs/CONTINUE-FROM-ANY-CURSOR.md)
+- [docs/CONTINUATION_AUDIT_PR12.md](docs/CONTINUATION_AUDIT_PR12.md)
+- [COMPLIANCE_REGISTER.md](COMPLIANCE_REGISTER.md)
+- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [DECISIONS.md](DECISIONS.md)
 - [ASSUMPTIONS.md](ASSUMPTIONS.md)
 - [RISK_REGISTER.md](RISK_REGISTER.md)
-- [docs/MIGRATIONS.md](docs/MIGRATIONS.md)
-- [API.md](API.md)
-- [TESTING.md](TESTING.md)
 - [SECURITY.md](SECURITY.md)
-- [RUNBOOK.md](RUNBOOK.md)
-- [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
+- [TESTING.md](TESTING.md)
 
-Phase 1 is complete. The next phase is identity and seller onboarding.
+`asperamarketplace.vercel.app` tracks `main` (still initial README only) and returns 404 until stacked PRs are deliberately merged. Use the PR preview for demos.
+
+Launch is not cleared until A-20–A-28 are decided and the launch checklist is green.

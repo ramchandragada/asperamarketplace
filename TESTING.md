@@ -2,25 +2,23 @@
 
 ## Automated
 
-`pnpm test` runs Vitest on `src/**/*.test.ts`. Foundation coverage:
+`pnpm test` covers:
 
-- API success and failure envelopes
-- Request id acceptance and replacement
-- Log redaction of credentials, tokens, and card-like numbers
-- Configuration defaults and rejection of an unknown log level without echoing the value
-- Health payload status for configured and unavailable databases
-- Integration: database connectivity and a transactional feature-flag write with audit log and outbox event, when `DATABASE_URL` is set
+- API envelope, request ids, log redaction, config, health
+- Password hashing and PAN/GSTIN masking
+- Seller status transitions
+- Local document storage validation
+- Platform transactional writes
+- Full seller onboarding: register → draft → upload → submit → admin approve, with audit and outbox assertions
 
-`pnpm typecheck`, `pnpm lint`, and `pnpm build` are required with the tests. GitHub Actions migrates a PostgreSQL 16 service, then runs the same checks.
+## Manual smoke, Phase 2
 
-## Local smoke, Phase 1 complete
-
-Against `pnpm start --port 3000` with the local non-production database:
-
-- `GET /` returned HTTP 200 and showed database Configured.
-- `GET /api/health` returned HTTP 200 with `database: configured`.
-- Integration tests wrote and cleaned up a temporary feature flag, audit row, and outbox event.
+1. `pnpm db:seed`
+2. `pnpm start`
+3. Sign in as `seller@aspera.local` / `AsperaSellerDevOnly1!`
+4. Create a seller draft and confirm `/api/auth/me` is authenticated
+5. Sign in as `admin@aspera.local` / `AsperaAdminDevOnly1!` and open `/admin/sellers`
 
 ## Not covered yet
 
-There is no browser end-to-end suite, authentication test, payment test, or production migration drill. Those arrive with later phases.
+Browser E2E, MFA, password reset, hosted object storage, and production IdP federation.

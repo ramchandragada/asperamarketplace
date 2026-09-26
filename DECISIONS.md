@@ -130,3 +130,25 @@ Status: accepted
 
 The first migration creates `audit_logs`, `idempotency_records`, `outbox_events`, `feature_flags`, and `platform_settings`. Domain tables for sellers, catalogue, orders, and money wait for the slice that implements them. A schema checkpoint was committed before `prisma migrate`.
 
+## D-017 — First-party credential auth for Phase 2
+
+Date: 2026-09-24  
+Status: accepted
+
+Phase 2 uses email/password accounts, bcrypt password hashes, and opaque httpOnly session cookies stored as SHA-256 hashes. This avoids blocking on an external identity provider while A-25 (data ownership / processors) remains open. A managed IdP such as Clerk can replace the credential store later behind the same session/actor boundary. Roles are enforced in server policies, not only in the UI.
+
+## D-018 — Masked KYC identifiers and local document storage
+
+Date: 2026-09-24  
+Status: accepted
+
+PAN and GSTIN are validated on input and stored only in masked form (`pan_last4`, `gstin_masked`). KYC files use a storage port with a local filesystem adapter under `uploads/kyc` (configurable via `DOCUMENT_STORAGE_PATH`). An S3-compatible adapter can replace the local adapter without changing seller services.
+
+
+
+## D-019 — Storefront UX shell + seller capability RBAC
+
+Date: 2026-09-25  
+Status: accepted
+
+Post–PR #12 work adds a reusable Tailwind design language (tokens, header/footer, product cards, empty/skeleton states), a commerce homepage and filtered browse experience, and seller staff capabilities (`seller_operations` / `seller_finance` / `seller_support`) enforced in server policies. The seller `/seller` action dashboard reads only real Prisma data. Meesho is a conceptual UX reference only—Aspera branding and layout remain independent. No shadcn package install was required; lightweight `components/ui` primitives follow the same composition style. Live Razorpay and `main` production alignment remain out of scope; A-20–A-28 stay open.

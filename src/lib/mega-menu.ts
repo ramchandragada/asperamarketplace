@@ -746,63 +746,74 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   },
 ];
 
-/** Homepage shop-by-category tiles — eight primary lanes with imagery. */
+/**
+ * Homepage shop-by-category tiles — product-forward imagery on soft light
+ * backgrounds (studio / shallow-DOF style), paired with tile soft-blur chrome.
+ */
 export const ASPERA_CATEGORY_TILES = [
   {
     id: "women",
     label: "Women",
     href: browse("fashion", { audience: "women" }),
     imageUrl:
-      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=480&q=80",
+    bgTint: "#F3F0EE",
   },
   {
     id: "men",
     label: "Men",
     href: browse("fashion", { audience: "men" }),
     imageUrl:
-      "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=480&q=80",
+    bgTint: "#EEF2F5",
   },
   {
     id: "kids",
     label: "Kids",
     href: browse("baby-kids", { audience: "kids" }),
     imageUrl:
-      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=480&q=80",
+    bgTint: "#F4F1F8",
   },
   {
     id: "beauty",
     label: "Beauty",
     href: browse("beauty-personal-care"),
     imageUrl:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=480&q=80",
+    bgTint: "#F7F1EA",
   },
   {
     id: "home",
     label: "Home",
     href: browse("home-kitchen"),
     imageUrl:
-      "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=480&q=80",
+    bgTint: "#F0F3F1",
   },
   {
     id: "electronics",
     label: "Electronics",
     href: browse("electronics-accessories"),
     imageUrl:
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=480&q=80",
+    bgTint: "#EEF3F7",
   },
   {
     id: "footwear",
     label: "Footwear",
     href: browse("bags-footwear", { q: "shoe" }),
     imageUrl:
-      "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=480&q=80",
+    bgTint: "#F5F0F2",
   },
   {
     id: "bags",
     label: "Bags",
     href: browse("bags-footwear", { q: "bag" }),
     imageUrl:
-      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=480&q=80",
+    bgTint: "#F6F0EE",
   },
 ] as const;
 
@@ -812,6 +823,7 @@ export const MEESHO_ARCH_CATEGORIES = ASPERA_CATEGORY_TILES.map((tile) => ({
   label: tile.label,
   href: tile.href,
   imageUrl: tile.imageUrl,
+  bgTint: tile.bgTint,
 }));
 
 export const ALL_CATEGORIES_MENU = {

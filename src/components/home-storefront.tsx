@@ -83,46 +83,44 @@ export function AnnouncementStrip() {
   );
 }
 
-/** Original Aspera hero — full-bleed edge-to-edge merchandising plane */
+/** Aspera hero — sober, bright, simple full-bleed merchandising plane */
 export function AsperaHero() {
   return (
-    <section className="relative w-full overflow-hidden bg-[#0f2f3a]">
-      {/* Dominant full-bleed visual — vivid fashion hero */}
+    <section className="relative w-full overflow-hidden border-b border-border bg-[#F3F6F7]">
       <div className="absolute inset-0" aria-hidden>
         <Image
-          src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2400&q=85"
+          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2400&q=85"
           alt=""
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[68%_center] scale-[1.02] md:object-[72%_22%]"
+          className="object-cover object-[70%_40%] opacity-90 md:object-[75%_35%]"
         />
-        {/* Readability veil — keeps brand copy crisp without muting the image */}
-        <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(15,47,58,0.88)_0%,rgba(15,47,58,0.55)_38%,rgba(15,47,58,0.12)_62%,rgba(15,47,58,0.05)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(90%_80%_at_78%_40%,rgba(230,106,61,0.18)_0%,transparent_55%)]" />
+        {/* Soft bright veil — readable copy without a dark wash */}
+        <div className="absolute inset-0 bg-[linear-gradient(105deg,#F7FAFB_0%,rgba(247,250,251,0.94)_34%,rgba(247,250,251,0.55)_52%,rgba(247,250,251,0.12)_72%,transparent_100%)]" />
       </div>
 
-      <div className="relative container-shell flex min-h-[min(78vw,30rem)] flex-col justify-center py-12 md:min-h-[28rem] md:py-16 lg:min-h-[32rem]">
-        <p className="font-display text-[28px] font-bold tracking-tight text-white drop-shadow-sm md:text-[36px]">
+      <div className="relative container-shell flex min-h-[min(72vw,26rem)] flex-col justify-center py-12 md:min-h-[24rem] md:py-14 lg:min-h-[26rem]">
+        <p className="font-display text-[28px] font-bold tracking-tight text-accent md:text-[34px]">
           Aspera
         </p>
-        <h1 className="mt-3 max-w-xl text-[28px] leading-[34px] font-bold tracking-tight text-white drop-shadow-sm md:mt-4 md:text-[42px] md:leading-[50px]">
+        <h1 className="mt-3 max-w-lg text-[28px] leading-[34px] font-bold tracking-tight text-foreground md:mt-4 md:text-[40px] md:leading-[48px]">
           Discover more. Choose better.
         </h1>
-        <p className="mt-3 max-w-md text-[15px] leading-[22px] text-white/90 md:text-[16px] md:leading-[24px]">
+        <p className="mt-3 max-w-md text-[15px] leading-[22px] text-muted md:text-[16px] md:leading-[24px]">
           Clear pricing, independent sellers, and simple delivery for everyday
           India.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href="/browse"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-white px-6 text-[14px] font-semibold text-accent shadow-sm transition hover:bg-accent-soft"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-6 text-[14px] font-semibold text-accent-foreground transition hover:bg-accent-hover"
           >
             Shop now
           </Link>
           <Link
             href="/sell"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/50 bg-white/15 px-6 text-[14px] font-semibold text-white backdrop-blur-sm transition hover:border-white hover:bg-white/25"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border bg-white/80 px-6 text-[14px] font-semibold text-foreground backdrop-blur-sm transition hover:border-accent hover:text-accent"
           >
             Start selling
           </Link>

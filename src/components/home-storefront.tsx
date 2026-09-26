@@ -215,7 +215,7 @@ export function CategoryCircles({
   );
 }
 
-/** Square category tiles — original Aspera shop-by-category */
+/** Square category tiles — product prominent on soft light blurred wash */
 export function ShopByCategory({
   categories,
 }: {
@@ -224,6 +224,7 @@ export function ShopByCategory({
     label: string;
     href: string;
     imageUrl: string;
+    bgTint?: string;
   }>;
 }) {
   const tiles = categories.slice(0, 8);
@@ -251,13 +252,26 @@ export function ShopByCategory({
               href={category.href}
               className="group flex flex-col items-center gap-2.5 text-center"
             >
-              <span className="relative aspect-square w-full overflow-hidden rounded-xl border border-border bg-accent-soft transition group-hover:border-accent group-hover:shadow-sm">
+              <span
+                className="relative aspect-square w-full overflow-hidden rounded-xl border border-[#E8ECED] transition group-hover:border-accent group-hover:shadow-sm"
+                style={{ backgroundColor: category.bgTint ?? "#F3F5F6" }}
+              >
+                {/* Soft single-tone wash from the product photo */}
                 <Image
                   src={category.imageUrl}
                   alt=""
                   fill
                   sizes="(max-width: 640px) 120px, 160px"
-                  className="object-cover object-center"
+                  aria-hidden
+                  className="scale-[1.55] object-cover object-center opacity-55 blur-2xl"
+                />
+                {/* Sharp product, framed on the light wash */}
+                <Image
+                  src={category.imageUrl}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 120px, 160px"
+                  className="object-contain object-center p-3 md:p-4"
                 />
               </span>
               <span className="text-[14px] font-medium text-foreground md:text-[15px]">

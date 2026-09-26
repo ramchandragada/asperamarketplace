@@ -92,13 +92,15 @@ function MegaPanel({
       >
         {columns.map((column) => (
           <div key={column.heading} className="min-w-[9.5rem] shrink-0">
-            <p className="text-[13px] font-bold text-accent">{column.heading}</p>
+            <p className="text-[13px] leading-none font-bold text-accent">
+              {column.heading}
+            </p>
             <ul className="mt-3 space-y-2.5">
               {column.links.map((item) => (
                 <li key={item.href + item.label}>
                   <Link
                     href={item.href}
-                    className="block text-[13px] leading-snug text-[#333] hover:text-accent"
+                    className="block text-[13px] leading-snug text-[#666] hover:text-accent"
                     onClick={onNavigate}
                   >
                     {item.label}
@@ -136,7 +138,7 @@ function CategoryNav() {
     >
       <nav
         aria-label="Categories"
-        className="hide-scroll flex h-12 w-full items-center justify-between gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:gap-0 lg:px-8 xl:px-10 xl:text-[14px]"
+        className="hide-scroll flex h-12 w-full items-stretch justify-between gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:gap-0 lg:px-8 xl:px-10 xl:text-[14px]"
       >
         {MEGA_MENU.map((entry) => {
           const isActive = openKey === entry.key;
@@ -144,20 +146,16 @@ function CategoryNav() {
             <Link
               key={entry.key}
               href={entry.href}
-              className={`relative shrink-0 px-1.5 py-3 whitespace-nowrap transition-colors hover:text-accent xl:px-2 ${
-                isActive ? "font-semibold text-accent" : ""
+              className={`inline-flex shrink-0 items-center border-b-[3px] px-1.5 whitespace-nowrap transition-colors hover:text-accent xl:px-2 ${
+                isActive
+                  ? "border-accent font-semibold text-accent"
+                  : "border-transparent"
               }`}
               onMouseEnter={() => open(entry.key)}
               onFocus={() => open(entry.key)}
               aria-expanded={isActive}
             >
               {entry.label}
-              {isActive ? (
-                <span
-                  aria-hidden
-                  className="absolute inset-x-1.5 bottom-0 h-[3px] rounded-t-sm bg-accent xl:inset-x-2"
-                />
-              ) : null}
             </Link>
           );
         })}

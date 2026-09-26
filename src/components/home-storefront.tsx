@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, type CSSProperties } from "react";
+import { type CSSProperties } from "react";
+import { ProductLoopRail } from "@/components/product-loop-rail";
 
 function TrustReturnIcon() {
   return (
@@ -395,68 +396,33 @@ export type SellerCardData = {
 };
 
 export function FeaturedSellers({ sellers }: { sellers: SellerCardData[] }) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
-
   if (sellers.length === 0) return null;
-
-  function scrollBy(direction: -1 | 1) {
-    const node = scrollerRef.current;
-    if (!node) return;
-    const amount = Math.min(320, node.clientWidth * 0.8);
-    node.scrollBy({ left: direction * amount, behavior: "smooth" });
-  }
 
   return (
     <section className="container-shell flex flex-col gap-4 py-8 md:py-12">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-[24px] leading-[32px] font-bold tracking-tight">
-            Featured sellers
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            Independent shops with approved catalogues
-          </p>
-        </div>
-        {sellers.length > 3 ? (
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="Scroll sellers left"
-              className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface text-lg text-foreground hover:border-accent hover:text-accent"
-              onClick={() => scrollBy(-1)}
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              aria-label="Scroll sellers right"
-              className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface text-lg text-foreground hover:border-accent hover:text-accent"
-              onClick={() => scrollBy(1)}
-            >
-              ›
-            </button>
-          </div>
-        ) : null}
+      <div>
+        <h2 className="text-[24px] leading-[32px] font-bold tracking-tight">
+          Featured sellers
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          Independent shops with approved catalogues
+        </p>
       </div>
 
-      <div
-        ref={scrollerRef}
-        className="rail-scroll [grid-auto-columns:minmax(11rem,13rem)]"
-      >
-        {sellers.map((seller) => {
+      <ProductLoopRail
+        items={sellers}
+        label="Featured sellers"
+        renderItem={(seller) => {
           const style = brandLogoStyle();
           return (
-            <article
-              key={seller.id}
-              className="flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]"
-            >
-              <div className="relative flex h-28 items-center justify-center bg-accent-soft">
+            <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]">
+              <div className="relative flex h-40 items-center justify-center bg-accent-soft sm:h-44">
                 {seller.imageUrl ? (
                   <Image
                     src={seller.imageUrl}
                     alt=""
                     fill
-                    sizes="208px"
+                    sizes="(max-width: 640px) 72vw, 304px"
                     className="object-cover"
                   />
                 ) : (
@@ -468,12 +434,12 @@ export function FeaturedSellers({ sellers }: { sellers: SellerCardData[] }) {
                   </span>
                 )}
               </div>
-              <div className="flex flex-1 flex-col gap-1 p-3">
-                <h3 className="line-clamp-1 text-[15px] font-semibold">
+              <div className="flex flex-1 flex-col gap-1.5 p-4">
+                <h3 className="line-clamp-1 text-[16px] font-semibold">
                   {seller.name}
                 </h3>
                 {seller.categoryLabel ? (
-                  <p className="text-xs text-muted">{seller.categoryLabel}</p>
+                  <p className="text-sm text-muted">{seller.categoryLabel}</p>
                 ) : null}
                 <p className="text-xs text-muted">
                   {seller.productCount} products
@@ -481,15 +447,15 @@ export function FeaturedSellers({ sellers }: { sellers: SellerCardData[] }) {
                 </p>
                 <Link
                   href={seller.href}
-                  className="mt-2 inline-flex min-h-10 items-center justify-center rounded-lg border border-border text-[13px] font-semibold text-accent hover:border-accent"
+                  className="mt-auto inline-flex min-h-11 items-center justify-center rounded-lg border border-border text-[13px] font-semibold text-accent hover:border-accent"
                 >
                   Visit store
                 </Link>
               </div>
             </article>
           );
-        })}
-      </div>
+        }}
+      />
     </section>
   );
 }

@@ -133,7 +133,7 @@ export default async function Home() {
     }),
     prisma.seller.findMany({
       where: { status: "approved" },
-      take: 10,
+      take: 14,
       orderBy: { tradeName: "asc" },
       select: {
         id: true,

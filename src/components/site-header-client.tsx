@@ -87,7 +87,7 @@ function MegaPanel({
 }) {
   return (
     <div className="absolute inset-x-0 top-full z-50 border-b border-[#E3E8E8] bg-white shadow-[var(--shadow-mega)]">
-      <div className="container-shell grid gap-6 py-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid w-full gap-6 px-4 py-5 sm:grid-cols-2 md:grid-cols-3 md:px-6 lg:grid-cols-5 lg:px-8 xl:px-10">
         {columns.map((column) => (
           <div key={column.heading}>
             <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
@@ -142,18 +142,18 @@ function CategoryNav() {
 
   return (
     <div
-      className="relative hidden border-t border-[#E3E8E8] bg-white md:block"
+      className="relative hidden w-full border-t border-[#E3E8E8] bg-white md:block"
       onMouseLeave={scheduleClose}
     >
       <nav
         aria-label="Categories"
-        className="hide-scroll mx-auto flex h-12 max-w-[80rem] items-center justify-start gap-3 overflow-x-auto px-4 text-[14px] font-medium text-foreground md:px-8 lg:justify-between lg:gap-0"
+        className="hide-scroll flex h-12 w-full items-center justify-between gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:gap-0 lg:px-8 xl:px-10 xl:text-[14px]"
       >
         {MEGA_MENU.map((entry) => (
           <Link
             key={entry.key}
             href={entry.href}
-            className={`shrink-0 px-1.5 py-2 whitespace-nowrap hover:text-accent ${
+            className={`shrink-0 px-1.5 py-2 whitespace-nowrap hover:text-accent xl:px-2 ${
               openKey === entry.key ? "text-accent" : ""
             }`}
             onMouseEnter={() => open(entry.key)}
@@ -430,38 +430,36 @@ export function SiteHeaderClient({
 
   return (
     <>
-      <div className="bg-accent text-accent-foreground">
-        <p className="mx-auto flex h-8 max-w-[80rem] items-center justify-center px-4 text-center text-[12px] font-medium tracking-wide md:h-9 md:px-8 md:text-[13px]">
+      <div className="w-full bg-accent text-accent-foreground">
+        <p className="flex h-8 w-full items-center justify-center px-4 text-center text-[12px] font-medium tracking-wide md:h-9 md:px-8 md:text-[13px]">
           Free delivery on eligible orders · Easy returns · Secure checkout
         </p>
       </div>
     <header
-      className={`sticky top-0 z-40 border-b border-border bg-surface ${
+      className={`sticky top-0 z-40 w-full border-b border-border bg-surface ${
         compact ? "shadow-[0_1px_3px_rgba(18,59,74,0.08)]" : ""
       }`}
       data-compact={compact ? "true" : "false"}
     >
       <div
-        className={`mx-auto flex w-full max-w-[80rem] items-center gap-4 px-4 md:gap-6 md:px-8 ${
+        className={`flex w-full items-center gap-4 px-4 md:gap-6 md:px-6 lg:px-8 xl:px-10 ${
           compact ? "h-14" : "h-[72px]"
         }`}
       >
         <Link
           href="/"
-          className="shrink-0 font-bold text-[22px] leading-none tracking-tight text-accent md:w-[148px] md:text-[24px]"
+          className="shrink-0 font-bold text-[22px] leading-none tracking-tight text-accent md:text-[24px]"
         >
           Aspera
         </Link>
 
         <div className="hidden min-w-0 flex-1 md:block">
-          <div className="mx-auto w-full max-w-[36rem] lg:max-w-[37.5rem]">
-            <HeaderSearch />
-          </div>
+          <HeaderSearch />
         </div>
 
         <nav
           aria-label="Primary"
-          className="ml-auto flex shrink-0 items-center gap-0 md:gap-6"
+          className="ml-auto flex shrink-0 items-center gap-0 md:gap-5 lg:gap-6"
         >
           <Link
             href={sellHref}
@@ -508,7 +506,7 @@ export function SiteHeaderClient({
       </div>
 
       <div
-        className={`mx-auto w-full max-w-[80rem] px-4 md:hidden md:px-8 ${
+        className={`w-full px-4 md:hidden md:px-6 ${
           compact ? "hidden" : "pb-2.5"
         }`}
       >
@@ -521,7 +519,7 @@ export function SiteHeaderClient({
       <CategoryNav />
 
       <div
-        className={`flex items-center gap-2 border-t border-border px-3 py-2 md:hidden ${
+        className={`flex w-full items-center gap-2 border-t border-border px-3 py-2 md:hidden ${
           compact ? "hidden" : ""
         }`}
       >

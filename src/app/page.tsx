@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
+import { ProductLoopRail } from "@/components/product-loop-rail";
 import { PageShell, SectionHeading } from "@/components/ui/page-shell";
 import {
   AsperaHero,
@@ -104,7 +105,7 @@ export default async function Home() {
     }),
     searchApprovedProducts({
       page: 1,
-      pageSize: 16,
+      pageSize: 24,
       sort: "newest",
       inStockOnly: true,
       categorySlug: categorySlugSet.has("fashion") ? "fashion" : undefined,
@@ -174,11 +175,11 @@ export default async function Home() {
     return out;
   }
 
-  let trending = takeUnique(trendingPool.items, 10);
-  if (trending.length < 8) {
+  let trending = takeUnique(trendingPool.items, 18);
+  if (trending.length < 12) {
     const extra = await searchApprovedProducts({
       page: 1,
-      pageSize: 20,
+      pageSize: 28,
       sort: "relevance",
       inStockOnly: true,
     });
@@ -186,7 +187,7 @@ export default async function Home() {
       ...trending,
       ...takeUnique(
         extra.items.filter((item) => !usedIds.has(item.id)),
-        10 - trending.length,
+        18 - trending.length,
       ),
     ];
   }
@@ -220,11 +221,11 @@ export default async function Home() {
               </Link>
             }
           />
-          <div className="rail-scroll [grid-auto-columns:minmax(10rem,14rem)] md:[grid-auto-columns:minmax(12rem,14rem)]">
-            {trending.map((item) => (
-              <ProductCard key={item.id} product={item} />
-            ))}
-          </div>
+          <ProductLoopRail
+            items={trending}
+            label="Trending products"
+            renderItem={(item) => <ProductCard product={item} />}
+          />
         </section>
       ) : null}
 

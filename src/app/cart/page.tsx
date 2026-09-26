@@ -15,7 +15,9 @@ export default async function CartPage() {
   const actor = await getOptionalActor();
   const guestToken = actor ? null : await readGuestCartToken();
 
-  let cart = emptyCartView();
+  let cart: Awaited<ReturnType<typeof getCartForIdentity>> | ReturnType<
+    typeof emptyCartView
+  > = emptyCartView();
   if (actor) {
     cart = await getCartForIdentity({ type: "user", userId: actor.userId });
   } else if (guestToken) {

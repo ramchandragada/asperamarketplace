@@ -133,12 +133,14 @@ function serializeCart(
     (sum, item) => sum + item.lineTotalPaise,
     0,
   );
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   return {
     id: cart.id,
     status: cart.status,
     version: cart.version,
     currencyCode: cart.currencyCode,
     merchandisePaise,
+    itemCount,
     items,
   };
 }
@@ -194,11 +196,19 @@ export function emptyCartView() {
   };
 }
 
+function toCartIdentity(input: CartIdentity | Actor): CartIdentity {
+  if ("type" in input && (input.type === "user" || input.type === "guest")) {
+    return input;
+  }
+  return { type: "user", userId: input.userId };
+}
+
 export async function addCartItem(
-  identity: CartIdentity,
+  identityOrActor: CartIdentity | Actor,
   input: AddCartItemInput,
   correlationId: string,
 ) {
+  const identity = toCartIdentity(identityOrActor);
   const variant = await prisma.productVariant.findUnique({
     where: { id: input.variantId },
     include: {
@@ -276,10 +286,11 @@ export async function addCartItem(
 }
 
 export async function updateCartItem(
-  identity: CartIdentity,
+  identityOrActor: CartIdentity | Actor,
   input: UpdateCartItemInput,
   correlationId: string,
 ) {
+  const identity = toCartIdentity(identityOrActor);
   const cart = await getOrCreateOpenCart(identity);
   const item = await prisma.cartItem.findUnique({
     where: {
@@ -544,7 +555,10 @@ export async function previewCheckout(
   if (!address) {
     throw new CartValidationError("Address not found");
   }
-  const cart = await getOrCreateOpenCart(actor.userId);
+  const cart = await getOrCreateOpenCart({
+    type: "user",
+    userId: actor.userId,
+  });
   const priced = await loadPricedLines(cart.id);
   const taxPolicy = await resolveActiveTaxPolicy();
   const snapshot = buildCheckoutSnapshot({
@@ -603,7 +617,10 @@ export async function confirmCheckout(
     throw new CartValidationError("Address not found");
   }
 
-  const openCart = await getOrCreateOpenCart(actor.userId);
+  const openCart = await getOrCreateOpenCart({
+    type: "user",
+    userId: actor.userId,
+  });
   if (openCart.version !== input.expectedCartVersion) {
     throw new CartConflictError(
       "Cart was updated. Reload and review totals before confirming.",

@@ -747,73 +747,65 @@ export const MEGA_MENU: MegaMenuCategory[] = [
 ];
 
 /**
- * Homepage shop-by-category tiles — product-forward imagery on soft light
- * backgrounds (studio / shallow-DOF style), paired with tile soft-blur chrome.
+ * Homepage shop-by-category tiles — cut-out product heroes on soft pastels.
+ * Images live in /public/category-tiles (transparent PNGs).
  */
 export const ASPERA_CATEGORY_TILES = [
   {
     id: "women",
     label: "Women",
     href: browse("fashion", { audience: "women" }),
-    imageUrl:
-      "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=480&q=80",
-    bgTint: "#F3F0EE",
+    imageUrl: "/category-tiles/women.png",
+    bgTint: "#F6EFEA",
   },
   {
     id: "men",
     label: "Men",
     href: browse("fashion", { audience: "men" }),
-    imageUrl:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=480&q=80",
-    bgTint: "#EEF2F5",
+    imageUrl: "/category-tiles/men.png",
+    bgTint: "#E9EEF3",
   },
   {
     id: "kids",
     label: "Kids",
     href: browse("baby-kids", { audience: "kids" }),
-    imageUrl:
-      "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=480&q=80",
-    bgTint: "#F4F1F8",
+    imageUrl: "/category-tiles/kids.png",
+    bgTint: "#F3EEF8",
   },
   {
     id: "beauty",
     label: "Beauty",
     href: browse("beauty-personal-care"),
-    imageUrl:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=480&q=80",
-    bgTint: "#F7F1EA",
+    imageUrl: "/category-tiles/beauty.png",
+    bgTint: "#F8EFE6",
   },
   {
     id: "home",
     label: "Home",
     href: browse("home-kitchen"),
-    imageUrl:
-      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=480&q=80",
-    bgTint: "#F0F3F1",
+    imageUrl: "/category-tiles/home.png",
+    bgTint: "#EAF3EF",
   },
   {
     id: "electronics",
     label: "Electronics",
     href: browse("electronics-accessories"),
-    imageUrl:
-      "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=480&q=80",
-    bgTint: "#EEF3F7",
+    imageUrl: "/category-tiles/electronics.png",
+    bgTint: "#E8EEF4",
   },
   {
     id: "footwear",
     label: "Footwear",
     href: browse("bags-footwear", { q: "shoe" }),
-    imageUrl:
-      "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=480&q=80",
-    bgTint: "#F5F0F2",
+    imageUrl: "/category-tiles/footwear.png",
+    bgTint: "#F4ECF0",
   },
   {
     id: "bags",
     label: "Bags",
     href: browse("bags-footwear", { q: "bag" }),
-    imageUrl:
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=480&q=80",
-    bgTint: "#F6F0EE",
+    imageUrl: "/category-tiles/bags.png",
+    bgTint: "#F6ECE8",
   },
 ] as const;
 

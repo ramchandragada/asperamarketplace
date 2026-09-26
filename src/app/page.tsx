@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
-import { ProductLoopRail } from "@/components/product-loop-rail";
+import { TrendingProductsRail } from "@/components/trending-products-rail";
 import { PageShell, SectionHeading } from "@/components/ui/page-shell";
 import {
   AsperaHero,
@@ -221,11 +221,7 @@ export default async function Home() {
               </Link>
             }
           />
-          <ProductLoopRail
-            items={trending}
-            label="Trending products"
-            renderItem={(item) => <ProductCard product={item} />}
-          />
+          <TrendingProductsRail products={trending} />
         </section>
       ) : null}
 

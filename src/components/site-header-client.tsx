@@ -392,6 +392,10 @@ function HeaderSearch() {
   );
 }
 
+/** Enter compact after this scroll; exit only after scrolling back well below. */
+const COMPACT_ENTER_Y = 96;
+const COMPACT_EXIT_Y = 32;
+
 export function SiteHeaderClient({
   cartCount,
   accountHref,
@@ -406,10 +410,18 @@ export function SiteHeaderClient({
   showAdmin: boolean;
 }) {
   const [compact, setCompact] = useState(false);
+  const compactRef = useRef(false);
 
   useEffect(() => {
     function onScroll() {
-      setCompact(window.scrollY > 100);
+      const y = window.scrollY;
+      // Hysteresis stops the sticky header height from oscillating around a
+      // single threshold (height change → scrollY shift → flicker loop).
+      const next =
+        compactRef.current ? y > COMPACT_EXIT_Y : y > COMPACT_ENTER_Y;
+      if (next === compactRef.current) return;
+      compactRef.current = next;
+      setCompact(next);
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -503,13 +515,10 @@ export function SiteHeaderClient({
         <HeaderSearch />
       </div>
 
-      <div
-        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
-          compact ? "max-h-0 opacity-0" : "max-h-40 opacity-100"
-        }`}
-      >
-        <CategoryNav />
-      </div>
+      {/* Keep category rail mounted and full-height — collapsing it with
+          max-height/opacity on scroll changed sticky header size and fought
+          scrollY, which made the bar flicker. */}
+      <CategoryNav />
 
       <div
         className={`flex items-center gap-2 border-t border-border px-3 py-2 md:hidden ${

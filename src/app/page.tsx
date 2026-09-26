@@ -28,7 +28,7 @@ const CAMPAIGN_TILES = [
     subtitle: "Home and household picks",
     href: "/browse?categorySlug=home-kitchen",
     imageUrl:
-      "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=1200&q=85",
     categorySlug: "home-kitchen",
   },
   {
@@ -37,7 +37,7 @@ const CAMPAIGN_TILES = [
     subtitle: "Ethnic and occasion wear",
     href: "/browse?categorySlug=fashion",
     imageUrl:
-      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1200&q=85",
     categorySlug: "fashion",
   },
   {
@@ -46,7 +46,7 @@ const CAMPAIGN_TILES = [
     subtitle: "Beauty and personal care",
     href: "/browse?categorySlug=beauty-personal-care",
     imageUrl:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=1200&q=85",
     categorySlug: "beauty-personal-care",
   },
 ] as const;

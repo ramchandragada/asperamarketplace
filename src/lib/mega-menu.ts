@@ -306,7 +306,7 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   },
 ];
 
-/** Homepage shop-by-category tiles (subset with imagery). */
+/** Homepage shop-by-category tiles — eight primary lanes with imagery. */
 export const ASPERA_CATEGORY_TILES = [
   {
     id: "women",
@@ -363,20 +363,6 @@ export const ASPERA_CATEGORY_TILES = [
     href: browse("bags-footwear", { q: "bag" }),
     imageUrl:
       "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "jewellery",
-    label: "Jewellery",
-    href: browse("fashion", { audience: "women", q: "jewellery" }),
-    imageUrl:
-      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: "sports",
-    label: "Sports",
-    href: browse("sports-fitness"),
-    imageUrl:
-      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=400&q=80",
   },
 ] as const;
 

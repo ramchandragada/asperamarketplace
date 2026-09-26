@@ -215,7 +215,7 @@ export function CategoryCircles({
   );
 }
 
-/** Square category tiles — product prominent on soft light blurred wash */
+/** Square category tiles — cut-out products filling soft pastel wells */
 export function ShopByCategory({
   categories,
 }: {
@@ -253,25 +253,17 @@ export function ShopByCategory({
               className="group flex flex-col items-center gap-2.5 text-center"
             >
               <span
-                className="relative aspect-square w-full overflow-hidden rounded-xl border border-[#E8ECED] transition group-hover:border-accent group-hover:shadow-sm"
-                style={{ backgroundColor: category.bgTint ?? "#F3F5F6" }}
+                className="relative aspect-square w-full overflow-hidden rounded-2xl transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_12px_28px_rgba(18,59,74,0.12)]"
+                style={{
+                  background: `radial-gradient(120% 120% at 50% 35%, #ffffff 0%, ${category.bgTint ?? "#F3F5F6"} 62%, ${category.bgTint ?? "#F3F5F6"} 100%)`,
+                }}
               >
-                {/* Soft single-tone wash from the product photo */}
                 <Image
                   src={category.imageUrl}
                   alt=""
                   fill
-                  sizes="(max-width: 640px) 120px, 160px"
-                  aria-hidden
-                  className="scale-[1.55] object-cover object-center opacity-55 blur-2xl"
-                />
-                {/* Sharp product, framed on the light wash */}
-                <Image
-                  src={category.imageUrl}
-                  alt=""
-                  fill
-                  sizes="(max-width: 640px) 120px, 160px"
-                  className="object-contain object-center p-3 md:p-4"
+                  sizes="(max-width: 640px) 140px, 180px"
+                  className="object-contain object-center p-1.5 transition duration-300 group-hover:scale-[1.04] md:p-2"
                 />
               </span>
               <span className="text-[14px] font-medium text-foreground md:text-[15px]">

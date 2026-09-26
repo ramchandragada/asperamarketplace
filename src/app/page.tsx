@@ -99,7 +99,7 @@ export default async function Home() {
   ] = await Promise.all([
     searchApprovedProducts({
       page: 1,
-      pageSize: 10,
+      pageSize: 16,
       sort: "newest",
       inStockOnly: true,
     }),
@@ -175,6 +175,21 @@ export default async function Home() {
     return out;
   }
 
+  // Reserve new arrivals first so the rail always fills a full row of five
+  let newArrivals = takeUnique(newest.items, 5);
+  if (newArrivals.length < 5) {
+    const fill = await searchApprovedProducts({
+      page: 1,
+      pageSize: 24,
+      sort: "relevance",
+      inStockOnly: true,
+    });
+    newArrivals = [
+      ...newArrivals,
+      ...takeUnique(fill.items, 5 - newArrivals.length),
+    ];
+  }
+
   let trending = takeUnique(trendingPool.items, 18);
   if (trending.length < 12) {
     const extra = await searchApprovedProducts({
@@ -191,8 +206,6 @@ export default async function Home() {
       ),
     ];
   }
-
-  const newArrivals = takeUnique(newest.items, 10);
 
   const priceCollections = PRICE_COLLECTIONS.filter((collection) => {
     if (collection.maxPaise === 29900) return under299.total > 0;

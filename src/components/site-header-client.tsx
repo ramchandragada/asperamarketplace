@@ -9,6 +9,7 @@ import {
   type MegaMenuColumn,
 } from "@/lib/mega-menu";
 import { MobileCategoryDrawer } from "@/components/mobile-category-drawer";
+import { ScrollEdgeRail } from "@/components/product-loop-rail";
 
 function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -86,9 +87,9 @@ function MegaPanel({
 }) {
   return (
     <div className="absolute inset-x-0 top-full z-50 border-b border-[#E3E8E8] bg-white shadow-[var(--shadow-mega)]">
-      <div
-        className="flex w-full gap-8 overflow-x-auto px-4 py-6 md:gap-10 md:px-6 lg:px-8 xl:gap-12 xl:px-10"
-        style={{ scrollbarWidth: "thin" }}
+      <ScrollEdgeRail
+        label="Subcategories"
+        className="hide-scroll flex w-full gap-8 overflow-x-auto px-4 py-6 md:gap-10 md:px-6 lg:px-8 xl:gap-12 xl:px-10"
       >
         {columns.map((column) => (
           <div key={column.heading} className="min-w-[9.5rem] shrink-0">
@@ -110,7 +111,7 @@ function MegaPanel({
             </ul>
           </div>
         ))}
-      </div>
+      </ScrollEdgeRail>
     </div>
   );
 }
@@ -136,29 +137,31 @@ function CategoryNav() {
       className="relative hidden w-full border-t border-[#E3E8E8] bg-white md:block"
       onMouseLeave={scheduleClose}
     >
-      <nav
-        aria-label="Categories"
-        className="hide-scroll flex h-12 w-full items-stretch justify-between gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:gap-0 lg:px-8 xl:px-10 xl:text-[14px]"
-      >
-        {MEGA_MENU.map((entry) => {
-          const isActive = openKey === entry.key;
-          return (
-            <Link
-              key={entry.key}
-              href={entry.href}
-              className={`inline-flex shrink-0 items-center border-b-[3px] px-1.5 whitespace-nowrap transition-colors hover:text-accent xl:px-2 ${
-                isActive
-                  ? "border-accent font-semibold text-accent"
-                  : "border-transparent"
-              }`}
-              onMouseEnter={() => open(entry.key)}
-              onFocus={() => open(entry.key)}
-              aria-expanded={isActive}
-            >
-              {entry.label}
-            </Link>
-          );
-        })}
+      <nav aria-label="Categories">
+        <ScrollEdgeRail
+          label="Category list"
+          className="hide-scroll flex h-12 w-full items-stretch gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:px-8 xl:px-10 xl:text-[14px]"
+        >
+          {MEGA_MENU.map((entry) => {
+            const isActive = openKey === entry.key;
+            return (
+              <Link
+                key={entry.key}
+                href={entry.href}
+                className={`inline-flex shrink-0 items-center border-b-[3px] px-1.5 whitespace-nowrap transition-colors hover:text-accent xl:px-2 ${
+                  isActive
+                    ? "border-accent font-semibold text-accent"
+                    : "border-transparent"
+                }`}
+                onMouseEnter={() => open(entry.key)}
+                onFocus={() => open(entry.key)}
+                aria-expanded={isActive}
+              >
+                {entry.label}
+              </Link>
+            );
+          })}
+        </ScrollEdgeRail>
       </nav>
       {active ? (
         <div onMouseEnter={() => open(active.key)}>

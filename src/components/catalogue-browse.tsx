@@ -146,7 +146,7 @@ export function CatalogueBrowse({
   initialMaxPricePaise?: number;
   heading?: string;
   browseBasePath?: string;
-  /** `home` hides breadcrumb and uses Products For You chrome */
+  /** `home` hides breadcrumb and uses Picked for you chrome */
   variant?: "page" | "home";
   enableLoadMore?: boolean;
   /** Auto-load next page when sentinel enters viewport */
@@ -1064,7 +1064,7 @@ export function CatalogueBrowse({
               }`}
             >
               {isHome
-                ? (heading ?? "Products For You")
+                ? (heading ?? "Picked for you")
                 : query.trim()
                   ? `Results for “${query.trim()}”`
                   : categoryName}

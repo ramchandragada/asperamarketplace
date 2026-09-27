@@ -12,7 +12,7 @@ export function TrendingProductsRail({
   return (
     <ProductLoopRail
       items={products}
-      label="Trending products"
+      label="Picked for you"
       renderItem={(item) => <ProductCard product={item} />}
     />
   );

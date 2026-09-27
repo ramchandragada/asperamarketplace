@@ -130,6 +130,147 @@ export function AsperaHero() {
   );
 }
 
+export type PromoLane = {
+  id: string;
+  label: string;
+  href: string;
+  imageUrl: string;
+};
+
+/**
+ * Homepage discovery banner — sober Aspera take on Meesho’s split promo:
+ * offer panel + four tall collection lanes.
+ */
+export function DiscoveryPromoBanner({ lanes }: { lanes: PromoLane[] }) {
+  if (lanes.length === 0) return null;
+  const cards = lanes.slice(0, 4);
+
+  return (
+    <section className="container-shell py-3 md:py-4">
+      <div className="grid overflow-hidden rounded-2xl md:grid-cols-[minmax(15rem,0.85fr)_1.55fr]">
+        <div className="flex flex-col justify-between bg-[linear-gradient(160deg,#E66A3D_0%,#D4572F_55%,#C24A28_100%)] px-6 py-8 text-white md:px-8 md:py-10">
+          <div>
+            <p className="text-[13px] font-semibold tracking-wide text-white/85 uppercase">
+              Aspera picks
+            </p>
+            <h2 className="mt-3 max-w-[14rem] text-[28px] leading-[34px] font-bold tracking-tight md:text-[32px] md:leading-[38px]">
+              Fresh finds for everyday India
+            </h2>
+            <p className="mt-3 max-w-[16rem] text-[14px] leading-5 text-white/90">
+              Honest prices from independent sellers — shop trending, budget,
+              and essentials in one place.
+            </p>
+          </div>
+          <Link
+            href="/browse"
+            className="mt-8 inline-flex min-h-11 w-fit items-center justify-center rounded-lg bg-white px-6 text-[14px] font-semibold text-accent transition hover:bg-accent-soft"
+          >
+            Shop now
+          </Link>
+        </div>
+
+        <div className="bg-accent px-3 py-4 md:px-5 md:py-5">
+          <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+            {cards.map((lane) => (
+              <li key={lane.id}>
+                <Link
+                  href={lane.href}
+                  className="group relative flex aspect-[3/5] overflow-hidden rounded-xl bg-accent-soft shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+                >
+                  <Image
+                    src={lane.imageUrl}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 45vw, 18vw"
+                    className="object-cover object-center transition duration-500 group-hover:scale-[1.04]"
+                  />
+                  <span className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(15,47,58,0.55)_100%)]" />
+                  <span className="absolute inset-x-2 bottom-3 flex justify-center">
+                    <span className="inline-flex min-h-8 items-center rounded-full bg-white px-3 text-center text-[12px] font-semibold text-foreground shadow-sm md:text-[13px]">
+                      {lane.label}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export type SelectTile = {
+  id: string;
+  label: string;
+  href: string;
+  imageUrl: string;
+};
+
+/**
+ * Soft “selects” panel — lifestyle + 2×2 arched category tiles
+ * (Aspera teal, not a gold Meesho clone).
+ */
+export function AsperaSelectsBanner({ tiles }: { tiles: SelectTile[] }) {
+  const cards = tiles.slice(0, 4);
+  if (cards.length === 0) return null;
+
+  return (
+    <section className="container-shell py-3 md:py-4">
+      <div className="grid overflow-hidden rounded-2xl bg-[linear-gradient(120deg,#123B4A_0%,#1A5566_45%,#0F2F3A_100%)] md:grid-cols-[1.05fr_1fr]">
+        <div className="relative min-h-[220px] md:min-h-[280px]">
+          <Image
+            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1400&q=85"
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover object-center opacity-75"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_30%,rgba(15,47,58,0.78)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
+            <p className="font-display text-[22px] font-bold tracking-tight md:text-[26px]">
+              Aspera Selects
+            </p>
+            <p className="mt-1 text-[14px] text-white/85 md:text-[15px]">
+              Products you love. Quality we stand behind.
+            </p>
+            <Link
+              href="/browse"
+              className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-white/50 px-5 text-[13px] font-semibold text-white transition hover:bg-white/10"
+            >
+              Shop now
+            </Link>
+          </div>
+        </div>
+
+        <ul className="grid grid-cols-2 gap-3 p-4 md:gap-4 md:p-6">
+          {cards.map((tile) => (
+            <li key={tile.id}>
+              <Link
+                href={tile.href}
+                className="group flex flex-col items-center gap-2 text-center"
+              >
+                <span className="relative aspect-[4/5] w-full overflow-hidden rounded-[999px_999px_1.25rem_1.25rem] border border-white/35 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.12)]">
+                  <Image
+                    src={tile.imageUrl}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 40vw, 18vw"
+                    className="object-cover object-top transition duration-500 group-hover:scale-[1.04]"
+                  />
+                </span>
+                <span className="text-[13px] font-semibold tracking-wide text-[#D7E8EC] md:text-[14px]">
+                  {tile.label}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 /** Trust strip — full-bleed service bar under the hero */
 export function TrustSignalBar() {
   const items = [

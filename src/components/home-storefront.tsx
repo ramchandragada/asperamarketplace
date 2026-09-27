@@ -122,9 +122,9 @@ const HERO_SLIDES: HeroSlide[] = [
       "Care essentials, softwear, and nursery picks for the first chapter.",
     ctaLabel: "Shop baby",
     ctaHref: "/browse?categorySlug=baby-kids&q=baby",
-    productImage: "/category-tiles/kids.png",
+    productImage: "/category-tiles/home.png",
     wellTint: "#FFF1EA",
-    supportImages: ["/category-tiles/home.png", "/category-tiles/beauty.png"],
+    supportImages: ["/category-tiles/kids.png", "/category-tiles/beauty.png"],
     panelGradient:
       "linear-gradient(145deg,#FF8A65 0%,#FF6B4A 42%,#E66A3D 100%)",
     accentChip: "From day one",

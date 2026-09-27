@@ -140,7 +140,7 @@ function CategoryNav() {
       <nav aria-label="Categories">
         <ScrollEdgeRail
           label="Category list"
-          className="hide-scroll flex h-12 w-full items-stretch gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:px-8 xl:px-10 xl:text-[14px]"
+          className="hide-scroll flex h-12 w-full items-stretch justify-between gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:gap-0 lg:px-8 xl:px-10 xl:text-[14px]"
         >
           {MEGA_MENU.map((entry) => {
             const isActive = openKey === entry.key;

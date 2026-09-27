@@ -191,18 +191,36 @@ const HERO_AUTO_MS = 5200;
 /** Aspera hero — bright multi-banner carousel (newborn → elderly) */
 export function AsperaHero() {
   const labelId = useId();
+  const rootRef = useRef<HTMLElement | null>(null);
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
+  const [hoverPaused, setHoverPaused] = useState(false);
+  const [announce, setAnnounce] = useState("");
   const count = HERO_SLIDES.length;
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const paused = userPaused || hoverPaused;
+
+  const clearHiddenFocus = useCallback(() => {
+    const root = rootRef.current;
+    const active = document.activeElement;
+    if (!root || !(active instanceof HTMLElement)) return;
+    if (!root.contains(active)) return;
+    const slide = active.closest("[data-hero-slide]");
+    if (slide?.getAttribute("aria-hidden") === "true") {
+      active.blur();
+    }
+  }, []);
 
   const go = useCallback(
     (next: number) => {
-      setIndex(((next % count) + count) % count);
-      // Brief pause after manual nav so users can read the slide
-      setPaused(true);
+      const resolved = ((next % count) + count) % count;
+      setIndex(resolved);
+      const entry = HERO_SLIDES[resolved]!;
+      setAnnounce(`${entry.eyebrow}: ${entry.title}`);
+      // Brief sticky pause after manual nav so users can read the slide
+      setUserPaused(true);
       if (resumeTimer.current) clearTimeout(resumeTimer.current);
-      resumeTimer.current = setTimeout(() => setPaused(false), 8000);
+      resumeTimer.current = setTimeout(() => setUserPaused(false), 8000);
     },
     [count],
   );
@@ -212,6 +230,10 @@ export function AsperaHero() {
       if (resumeTimer.current) clearTimeout(resumeTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    clearHiddenFocus();
+  }, [index, clearHiddenFocus]);
 
   useEffect(() => {
     if (paused || count <= 1) return;
@@ -225,13 +247,20 @@ export function AsperaHero() {
     return () => window.clearInterval(timer);
   }, [paused, count]);
 
-  const slide = HERO_SLIDES[index]!;
-
   return (
     <section
+      ref={rootRef}
       className="relative w-full overflow-hidden border-b border-border"
       aria-roledescription="carousel"
       aria-labelledby={labelId}
+      onMouseEnter={() => setHoverPaused(true)}
+      onMouseLeave={() => setHoverPaused(false)}
+      onFocusCapture={() => setHoverPaused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setHoverPaused(false);
+        }
+      }}
     >
       <h2 id={labelId} className="sr-only">
         Aspera highlights — shopping for every age
@@ -243,6 +272,7 @@ export function AsperaHero() {
           return (
             <div
               key={entry.id}
+              data-hero-slide={entry.id}
               role="group"
               aria-roledescription="slide"
               aria-label={`${slideIndex + 1} of ${count}: ${entry.eyebrow}`}
@@ -358,31 +388,65 @@ export function AsperaHero() {
           </button>
         </div>
 
-        {/* Dots */}
-        <div className="absolute inset-x-0 bottom-3 z-[3] flex justify-center gap-2 md:bottom-4">
-          {HERO_SLIDES.map((entry, slideIndex) => {
-            const active = slideIndex === index;
-            return (
-              <button
-                key={entry.id}
-                type="button"
-                aria-label={`Show ${entry.eyebrow}`}
-                aria-current={active ? "true" : undefined}
-                className={`h-2 rounded-full transition-all ${
-                  active
-                    ? "w-6 bg-white shadow-sm"
-                    : "w-2 bg-white/55 hover:bg-white/80"
-                }`}
-                onClick={() => go(slideIndex)}
-              />
-            );
-          })}
+        {/* Dots + pause control */}
+        <div className="absolute inset-x-0 bottom-3 z-[3] flex items-center justify-center gap-3 md:bottom-4">
+          <div className="flex gap-2">
+            {HERO_SLIDES.map((entry, slideIndex) => {
+              const active = slideIndex === index;
+              return (
+                <button
+                  key={entry.id}
+                  type="button"
+                  aria-label={`Show ${entry.eyebrow}`}
+                  aria-current={active ? "true" : undefined}
+                  className={`h-2 rounded-full transition-all ${
+                    active
+                      ? "w-6 bg-white shadow-sm"
+                      : "w-2 bg-white/55 hover:bg-white/80"
+                  }`}
+                  onClick={() => go(slideIndex)}
+                />
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            aria-label={
+              userPaused ? "Play banner rotation" : "Pause banner rotation"
+            }
+            aria-pressed={userPaused}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-white/85 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white"
+            onClick={() => {
+              if (resumeTimer.current) clearTimeout(resumeTimer.current);
+              setUserPaused((value) => !value);
+            }}
+          >
+            {userPaused ? (
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d="M8 5.5v13l11-6.5L8 5.5Z" />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d="M7 5h3.5v14H7V5Zm6.5 0H17v14h-3.5V5Z" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Live region for screen readers */}
+      {/* Announce only on manual navigation — not every auto-advance */}
       <p className="sr-only" aria-live="polite">
-        {slide.eyebrow}: {slide.title}
+        {announce}
       </p>
     </section>
   );

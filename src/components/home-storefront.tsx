@@ -117,9 +117,10 @@ const HERO_SLIDES: HeroSlide[] = [
       "Care essentials, softwear, and nursery picks for the first chapter.",
     ctaLabel: "Shop baby",
     ctaHref: "/browse?categorySlug=baby-kids&q=baby",
+    // Indian father + toddler at festive lights — faces mid-frame
     imageUrl:
-      "https://images.unsplash.com/photo-1618986009068-4ff14e531667?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[50%_20%]",
+      "https://images.unsplash.com/photo-1618986009068-4ff14e531667?auto=format&fit=crop&w=1400&h=1600&q=85",
+    imagePosition: "object-[50%_28%]",
     panelGradient:
       "linear-gradient(145deg,#FF8A65 0%,#FF6B4A 42%,#E66A3D 100%)",
     accentChip: "From day one",
@@ -132,9 +133,10 @@ const HERO_SLIDES: HeroSlide[] = [
       "Clothes, toys, and school staples that keep pace with every adventure.",
     ctaLabel: "Shop kids",
     ctaHref: "/browse?categorySlug=baby-kids&audience=kids",
+    // Group of smiling Indian children — faces fill the frame
     imageUrl:
-      "https://images.unsplash.com/photo-1497486751825-1233686d5d80?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[50%_25%]",
+      "https://images.unsplash.com/photo-1497486751825-1233686d5d80?auto=format&fit=crop&w=1400&h=1600&q=85",
+    imagePosition: "object-center",
     panelGradient:
       "linear-gradient(145deg,#2EC4B6 0%,#1FA8A0 48%,#148F8A 100%)",
     accentChip: "Ages 2–12",
@@ -147,9 +149,10 @@ const HERO_SLIDES: HeroSlide[] = [
       "Fashion, beauty, and gadgets for every mood — clear prices, real sellers.",
     ctaLabel: "Shop fashion",
     ctaHref: "/browse?categorySlug=fashion",
+    // Indian woman in saree — studio portrait, face centered (replaces sky crop)
     imageUrl:
-      "https://images.unsplash.com/photo-1553009338-80e505b3f61b?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[50%_35%]",
+      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1400&h=1600&q=85",
+    imagePosition: "object-[50%_18%]",
     panelGradient:
       "linear-gradient(145deg,#F5B544 0%,#E89A2E 45%,#D4841A 100%)",
     accentChip: "Trending now",
@@ -162,9 +165,10 @@ const HERO_SLIDES: HeroSlide[] = [
       "Kitchen, living, and everyday essentials that make shared spaces work.",
     ctaLabel: "Shop home",
     ctaHref: "/browse?categorySlug=home-kitchen",
+    // Indian family studio portrait — parents + teens, faces centered
     imageUrl:
-      "https://images.unsplash.com/photo-1659352787906-f809a3b9e86e?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[50%_30%]",
+      "https://images.unsplash.com/photo-1659352787906-f809a3b9e86e?auto=format&fit=crop&w=1400&h=1600&q=85",
+    imagePosition: "object-center",
     panelGradient:
       "linear-gradient(145deg,#3D9BCC 0%,#2A7FA8 48%,#1A668A 100%)",
     accentChip: "Family favourites",
@@ -177,9 +181,10 @@ const HERO_SLIDES: HeroSlide[] = [
       "Wellness, easy living, and trusted everyday picks for later years.",
     ctaLabel: "Shop wellness",
     ctaHref: "/browse?categorySlug=health-wellness",
+    // Elderly Indian woman with bindi — close portrait
     imageUrl:
-      "https://images.unsplash.com/photo-1580471260026-2a8acbc7c7a7?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[45%_20%]",
+      "https://images.unsplash.com/photo-1580471260026-2a8acbc7c7a7?auto=format&fit=crop&w=1400&h=1600&q=85",
+    imagePosition: "object-[50%_22%]",
     panelGradient:
       "linear-gradient(145deg,#4DB6A5 0%,#2F7F8A 48%,#123B4A 100%)",
     accentChip: "Graceful living",

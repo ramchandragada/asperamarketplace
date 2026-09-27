@@ -123,10 +123,10 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop baby",
     ctaHref: "/browse?categorySlug=baby-kids&q=baby",
     productImage: "/category-tiles/home.png",
-    wellTint: "#FFF1EA",
+    wellTint: "#EEF5F4",
     supportImages: ["/category-tiles/kids.png", "/category-tiles/beauty.png"],
     panelGradient:
-      "linear-gradient(145deg,#FF8A65 0%,#FF6B4A 42%,#E66A3D 100%)",
+      "linear-gradient(145deg,#5A9E96 0%,#3D7F78 48%,#2A5F5A 100%)",
     accentChip: "From day one",
   },
   {
@@ -138,13 +138,13 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop kids",
     ctaHref: "/browse?categorySlug=baby-kids&audience=kids",
     productImage: "/category-tiles/kids.png",
-    wellTint: "#E8F7F4",
+    wellTint: "#E8F2F4",
     supportImages: [
       "/category-tiles/footwear.png",
       "/category-tiles/bags.png",
     ],
     panelGradient:
-      "linear-gradient(145deg,#2EC4B6 0%,#1FA8A0 48%,#148F8A 100%)",
+      "linear-gradient(145deg,#4A8FA0 0%,#347484 48%,#245A68 100%)",
     accentChip: "Ages 2–12",
   },
   {
@@ -156,13 +156,13 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop fashion",
     ctaHref: "/browse?categorySlug=fashion",
     productImage: "/category-tiles/women.png",
-    wellTint: "#FFF6E8",
+    wellTint: "#EEF3F5",
     supportImages: [
       "/category-tiles/beauty.png",
       "/category-tiles/electronics.png",
     ],
     panelGradient:
-      "linear-gradient(145deg,#F5B544 0%,#E89A2E 45%,#D4841A 100%)",
+      "linear-gradient(145deg,#5B7F8F 0%,#3F6474 48%,#2A4A58 100%)",
     accentChip: "Trending now",
   },
   {
@@ -174,10 +174,10 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop home",
     ctaHref: "/browse?categorySlug=home-kitchen",
     productImage: "/category-tiles/home.png",
-    wellTint: "#EAF3F8",
+    wellTint: "#EAF1F4",
     supportImages: ["/category-tiles/men.png", "/category-tiles/women.png"],
     panelGradient:
-      "linear-gradient(145deg,#3D9BCC 0%,#2A7FA8 48%,#1A668A 100%)",
+      "linear-gradient(145deg,#4A7A90 0%,#325F74 48%,#214A5C 100%)",
     accentChip: "Family favourites",
   },
   {
@@ -189,10 +189,10 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop wellness",
     ctaHref: "/browse?categorySlug=health-wellness",
     productImage: "/category-tiles/beauty.png",
-    wellTint: "#E8F0F0",
+    wellTint: "#E8EEF0",
     supportImages: ["/category-tiles/home.png", "/category-tiles/footwear.png"],
     panelGradient:
-      "linear-gradient(145deg,#4DB6A5 0%,#2F7F8A 48%,#123B4A 100%)",
+      "linear-gradient(145deg,#3D7A72 0%,#2A5C58 48%,#123B4A 100%)",
     accentChip: "Graceful living",
   },
 ];

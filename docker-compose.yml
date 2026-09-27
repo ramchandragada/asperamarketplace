@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: aspera-marketplace-dev-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aspera_dev
+      POSTGRES_PASSWORD: aspera_dev_only_not_secret
+      POSTGRES_DB: aspera_marketplace_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - aspera_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aspera_dev -d aspera_marketplace_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  aspera_pg_data:

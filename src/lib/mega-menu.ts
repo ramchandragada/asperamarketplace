@@ -809,6 +809,69 @@ export const ASPERA_CATEGORY_TILES = [
   },
 ] as const;
 
+/**
+ * Shop By Brands — Original-Brands-style lanes (Aspera labels, teal chrome).
+ * Reuses cutout category imagery for a continuous merchandising strip.
+ */
+export const ASPERA_BRAND_LANES = [
+  {
+    id: "personal-care",
+    label: "Personal Care",
+    href: browse("beauty-personal-care"),
+    imageUrl: "/category-tiles/beauty.png",
+    bgTint: "#F3EEF8",
+  },
+  {
+    id: "electronics",
+    label: "Electronics",
+    href: browse("electronics-accessories"),
+    imageUrl: "/category-tiles/electronics.png",
+    bgTint: "#EEF3F8",
+  },
+  {
+    id: "makeup",
+    label: "Makeup",
+    href: browse("beauty-personal-care", { q: "lipstick" }),
+    imageUrl: "/category-tiles/beauty.png",
+    bgTint: "#F8EFEA",
+  },
+  {
+    id: "fashion",
+    label: "Fashion",
+    href: browse("fashion", { audience: "women" }),
+    imageUrl: "/category-tiles/women.png",
+    bgTint: "#F6EFEA",
+  },
+  {
+    id: "menswear",
+    label: "Menswear",
+    href: browse("fashion", { audience: "men" }),
+    imageUrl: "/category-tiles/men.png",
+    bgTint: "#E9EEF3",
+  },
+  {
+    id: "bags",
+    label: "Bags",
+    href: browse("bags-footwear", { q: "bag" }),
+    imageUrl: "/category-tiles/bags.png",
+    bgTint: "#F6ECE8",
+  },
+  {
+    id: "footwear",
+    label: "Footwear",
+    href: browse("bags-footwear", { q: "shoe" }),
+    imageUrl: "/category-tiles/footwear.png",
+    bgTint: "#F4ECF0",
+  },
+  {
+    id: "home",
+    label: "Home",
+    href: browse("home-kitchen"),
+    imageUrl: "/category-tiles/home.png",
+    bgTint: "#EAF3EF",
+  },
+] as const;
+
 /** @deprecated Prefer ASPERA_CATEGORY_TILES — kept for temporary import compatibility */
 export const MEESHO_ARCH_CATEGORIES = ASPERA_CATEGORY_TILES.map((tile) => ({
   id: tile.id,

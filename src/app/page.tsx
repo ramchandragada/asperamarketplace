@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
 import { TrendingProductsRail } from "@/components/trending-products-rail";
-import { PageShell, SectionHeading } from "@/components/ui/page-shell";
+import { SectionHeading } from "@/components/ui/page-shell";
 import {
   AsperaHero,
   CampaignTiles,
   FeaturedSellers,
   PriceLedCollections,
   SellerConversionSection,
+  ShopByBrands,
   ShopByCategory,
   TrustSignalBar,
 } from "@/components/home-storefront";
@@ -17,7 +18,7 @@ import {
 } from "@/modules/catalogue/service";
 import { prisma } from "@/platform/db/prisma";
 import { slugify } from "@/modules/catalogue/helpers";
-import { ASPERA_CATEGORY_TILES } from "@/lib/mega-menu";
+import { ASPERA_BRAND_LANES, ASPERA_CATEGORY_TILES } from "@/lib/mega-menu";
 
 export const dynamic = "force-dynamic";
 
@@ -218,10 +219,11 @@ export default async function Home() {
       <AsperaHero />
       <TrustSignalBar />
       <ShopByCategory categories={[...ASPERA_CATEGORY_TILES]} />
+      <ShopByBrands brands={[...ASPERA_BRAND_LANES]} />
       <CampaignTiles tiles={campaignTiles} />
 
       {trending.length > 0 ? (
-        <section className="container-shell flex flex-col gap-4 py-8 md:py-12">
+        <section className="container-shell flex flex-col gap-3 py-5 md:gap-4 md:py-7">
           <SectionHeading
             title="Trending products"
             description="Fresh picks shoppers are exploring"
@@ -275,27 +277,25 @@ export default async function Home() {
       />
 
       {newArrivals.length > 0 ? (
-        <PageShell className="gap-4 !pt-4 !pb-4">
-          <section className="flex flex-col gap-4">
-            <SectionHeading
-              title="New arrivals"
-              description="Recently listed on Aspera"
-              action={
-                <Link
-                  href="/shop?sort=newest"
-                  className="text-sm font-medium text-accent hover:underline"
-                >
-                  See all →
-                </Link>
-              }
-            />
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-              {newArrivals.map((item) => (
-                <ProductCard key={item.id} product={item} />
-              ))}
-            </div>
-          </section>
-        </PageShell>
+        <section className="container-shell flex flex-col gap-3 py-5 md:gap-4 md:py-7">
+          <SectionHeading
+            title="New arrivals"
+            description="Recently listed on Aspera"
+            action={
+              <Link
+                href="/shop?sort=newest"
+                className="text-sm font-medium text-accent hover:underline"
+              >
+                See all →
+              </Link>
+            }
+          />
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:grid-cols-5">
+            {newArrivals.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
+          </div>
+        </section>
       ) : null}
 
       <SellerConversionSection />

@@ -100,18 +100,18 @@ export function AsperaHero() {
         <div className="absolute inset-0 bg-[linear-gradient(105deg,#F7FAFB_0%,rgba(247,250,251,0.94)_34%,rgba(247,250,251,0.55)_52%,rgba(247,250,251,0.12)_72%,transparent_100%)]" />
       </div>
 
-      <div className="relative container-shell flex min-h-[min(72vw,26rem)] flex-col justify-center py-12 md:min-h-[24rem] md:py-14 lg:min-h-[26rem]">
+      <div className="relative container-shell flex min-h-[min(68vw,22rem)] flex-col justify-center py-10 md:min-h-[20rem] md:py-12 lg:min-h-[22rem]">
         <p className="font-display text-[28px] font-bold tracking-tight text-accent md:text-[34px]">
           Aspera
         </p>
-        <h1 className="mt-3 max-w-lg text-[28px] leading-[34px] font-bold tracking-tight text-foreground md:mt-4 md:text-[40px] md:leading-[48px]">
+        <h1 className="mt-2 max-w-lg text-[28px] leading-[34px] font-bold tracking-tight text-foreground md:mt-3 md:text-[40px] md:leading-[48px]">
           Discover more. Choose better.
         </h1>
-        <p className="mt-3 max-w-md text-[15px] leading-[22px] text-muted md:text-[16px] md:leading-[24px]">
+        <p className="mt-2 max-w-md text-[15px] leading-[22px] text-muted md:text-[16px] md:leading-[24px]">
           Clear pricing, independent sellers, and simple delivery for everyday
           India.
         </p>
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-wrap gap-3">
           <Link
             href="/browse"
             className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-6 text-[14px] font-semibold text-accent-foreground transition hover:bg-accent-hover"
@@ -139,7 +139,7 @@ export function TrustSignalBar() {
   ];
   return (
     <div className="w-full border-b border-border bg-accent-soft">
-      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-1 gap-y-2 py-3.5 text-[13px] text-foreground md:justify-between md:py-4 lg:max-w-none lg:px-10">
+      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-1 gap-y-2 py-3 text-[13px] text-foreground md:justify-between md:py-3.5 lg:max-w-none lg:px-10">
         {items.map((item, index) => (
           <li
             key={item.label}
@@ -231,9 +231,9 @@ export function ShopByCategory({
 
   return (
     <section className="border-b border-border bg-surface">
-      <div className="container-shell py-8 md:py-12">
-        <div className="mb-5 flex items-end justify-between gap-3 md:mb-6">
-          <h2 className="text-[24px] leading-[32px] font-bold tracking-tight">
+      <div className="container-shell py-5 md:py-7">
+        <div className="mb-3 flex items-end justify-between gap-3 md:mb-4">
+          <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
             Shop by category
           </h2>
           <Link
@@ -250,7 +250,7 @@ export function ShopByCategory({
           renderItem={(category) => (
             <Link
               href={category.href}
-              className="group flex flex-col items-center gap-2.5 text-center"
+              className="group flex flex-col items-center gap-2 text-center"
             >
               <span
                 className="relative aspect-square w-full overflow-hidden rounded-2xl transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_12px_28px_rgba(18,59,74,0.12)]"
@@ -277,6 +277,84 @@ export function ShopByCategory({
   );
 }
 
+/** Shop By Brands — Original Brands-style vertical cards with teal footers */
+export function ShopByBrands({
+  brands,
+}: {
+  brands: Array<{
+    id: string;
+    label: string;
+    href: string;
+    imageUrl: string;
+    bgTint?: string;
+  }>;
+}) {
+  const tiles = brands.slice(0, 8);
+  if (tiles.length === 0) return null;
+
+  return (
+    <section className="border-b border-border bg-surface">
+      <div className="container-shell py-5 md:py-7">
+        <div className="mb-3 flex items-end justify-between gap-3 md:mb-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
+              Shop By Brands
+            </h2>
+            <span
+              className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground"
+              aria-label="Verified brands"
+              title="Verified brands"
+            >
+              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" aria-hidden>
+                <path
+                  d="M6 12.5l3.5 3.5L18 8"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          </div>
+          <Link
+            href="/browse"
+            className="text-[12px] font-semibold tracking-wide text-accent uppercase hover:underline"
+          >
+            View all →
+          </Link>
+        </div>
+        <ProductLoopRail
+          items={tiles}
+          label="Shop By Brands"
+          variant="category"
+          renderItem={(brand) => (
+            <Link
+              href={brand.href}
+              className="group flex flex-col overflow-hidden rounded-xl border border-[#E8ECED] bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(18,59,74,0.1)]"
+            >
+              <span
+                className="relative aspect-[3/4] w-full"
+                style={{ backgroundColor: brand.bgTint ?? "#F3EEF8" }}
+              >
+                <Image
+                  src={brand.imageUrl}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 140px, 180px"
+                  className="object-contain object-center p-3 transition duration-300 group-hover:scale-[1.03]"
+                />
+              </span>
+              <span className="flex min-h-11 items-center justify-center bg-accent px-2 py-2.5 text-center text-[13px] font-semibold text-accent-foreground">
+                {brand.label}
+              </span>
+            </Link>
+          )}
+        />
+      </div>
+    </section>
+  );
+}
+
 /** @deprecated Prefer ShopByCategory */
 export const CategoryArches = ShopByCategory;
 
@@ -291,21 +369,21 @@ export type CampaignTile = {
 export function CampaignTiles({ tiles }: { tiles: CampaignTile[] }) {
   if (tiles.length === 0) return null;
   return (
-    <section className="container-shell py-8 md:py-12">
-      <div className="mb-5 md:mb-6">
-        <h2 className="text-[24px] leading-[32px] font-bold tracking-tight">
+    <section className="container-shell py-5 md:py-7">
+      <div className="mb-3 md:mb-4">
+        <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
           Featured collections
         </h2>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-0.5 text-sm text-muted">
           Curated picks from live catalogue categories
         </p>
       </div>
-      <ul className="grid gap-4 md:grid-cols-3">
+      <ul className="grid gap-3 md:grid-cols-3 md:gap-4">
         {tiles.map((tile) => (
           <li key={tile.id}>
             <Link
               href={tile.href}
-              className="group relative flex h-[240px] overflow-hidden rounded-2xl md:h-[300px]"
+              className="group relative flex h-[200px] overflow-hidden rounded-2xl md:h-[240px]"
             >
               <Image
                 src={tile.imageUrl}
@@ -315,11 +393,11 @@ export function CampaignTiles({ tiles }: { tiles: CampaignTile[] }) {
                 className="object-cover object-center transition duration-500 group-hover:scale-[1.05]"
               />
               <span className="absolute inset-0 bg-[linear-gradient(180deg,transparent_35%,rgba(15,47,58,0.78)_100%)]" />
-              <span className="absolute inset-x-0 bottom-0 p-5 text-white md:p-6">
-                <span className="block text-[20px] font-bold leading-6 tracking-tight md:text-[22px]">
+              <span className="absolute inset-x-0 bottom-0 p-4 text-white md:p-5">
+                <span className="block text-[18px] font-bold leading-6 tracking-tight md:text-[20px]">
                   {tile.title}
                 </span>
-                <span className="mt-1.5 block text-[13px] text-white/90 md:text-[14px]">
+                <span className="mt-1 block text-[13px] text-white/90">
                   {tile.subtitle}
                 </span>
               </span>
@@ -344,12 +422,12 @@ export function PriceLedCollections({
   collections: PriceCollection[];
 }) {
   return (
-    <section className="container-shell py-8 md:py-12">
-      <div className="mb-5 md:mb-6">
-        <h2 className="text-[24px] leading-[32px] font-bold tracking-tight">
+    <section className="container-shell py-5 md:py-7">
+      <div className="mb-3 md:mb-4">
+        <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
           Shop by budget
         </h2>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-0.5 text-sm text-muted">
           Price-led collections from published products
         </p>
       </div>
@@ -386,12 +464,12 @@ export function FeaturedSellers({ sellers }: { sellers: SellerCardData[] }) {
   if (sellers.length === 0) return null;
 
   return (
-    <section className="container-shell flex flex-col gap-4 py-8 md:py-12">
+    <section className="container-shell flex flex-col gap-3 py-5 md:gap-4 md:py-7">
       <div>
-        <h2 className="text-[24px] leading-[32px] font-bold tracking-tight">
+        <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
           Featured sellers
         </h2>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-0.5 text-sm text-muted">
           Independent shops with approved catalogues
         </p>
       </div>
@@ -461,8 +539,8 @@ function brandLogoStyle(): {
 
 export function SellerConversionSection() {
   return (
-    <section className="container-shell py-8 md:py-12">
-      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-accent-soft p-6 md:flex-row md:items-center md:justify-between md:p-8">
+    <section className="container-shell py-5 md:py-7">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-accent-soft p-5 md:flex-row md:items-center md:justify-between md:p-6">
         <div>
           <h2 className="text-[24px] leading-[32px] font-bold tracking-tight">
             Sell on Aspera
@@ -488,8 +566,19 @@ export function MeeshoAppHero() {
   return <AsperaHero />;
 }
 
-export function OriginalBrandsSection() {
-  return null;
+export function OriginalBrandsSection({
+  brands,
+}: {
+  brands?: Array<{
+    id: string;
+    label: string;
+    href: string;
+    imageUrl: string;
+    bgTint?: string;
+  }>;
+}) {
+  if (!brands?.length) return null;
+  return <ShopByBrands brands={brands} />;
 }
 
 export function CampaignPromoBanner() {
@@ -501,7 +590,8 @@ export type OriginalBrandCard = {
   label: string;
   href: string;
   imageUrl: string;
-  overlay: string;
+  overlay?: string;
+  bgTint?: string;
 };
 
 export type CampaignCollection = {

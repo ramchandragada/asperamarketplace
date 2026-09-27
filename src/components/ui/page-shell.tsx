@@ -31,18 +31,18 @@ export function SectionHeading({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
       <div className="max-w-2xl">
         {eyebrow ? (
           <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
             {eyebrow}
           </p>
         ) : null}
-        <h2 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">
+        <h2 className="mt-0.5 text-[22px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
           {title}
         </h2>
         {description ? (
-          <p className="mt-2 text-sm leading-6 text-muted md:text-base">
+          <p className="mt-0.5 text-sm leading-5 text-muted md:text-[15px] md:leading-6">
             {description}
           </p>
         ) : null}

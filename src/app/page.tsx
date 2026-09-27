@@ -52,7 +52,7 @@ const DISCOVERY_LANES = [
     label: "Daily essentials",
     href: "/browse?categorySlug=home-kitchen",
     imageUrl:
-      "https://images.unsplash.com/photo-1556911220-bff31c875dba?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=85",
   },
 ] as const;
 

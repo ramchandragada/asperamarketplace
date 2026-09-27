@@ -38,39 +38,39 @@ const DISCOVERY_LANES = [
     label: "Budget buys",
     href: "/browse?maxPricePaise=59900",
     imageUrl:
-      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1589169011402-8b2cbd1ee593?auto=format&fit=crop&w=800&q=85",
   },
   {
     id: "rated",
     label: "Top rated picks",
     href: "/browse?sort=relevance",
     imageUrl:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1534235187448-833893dfe3e0?auto=format&fit=crop&w=800&q=85",
   },
   {
     id: "essentials",
     label: "Daily essentials",
     href: "/browse?categorySlug=home-kitchen",
     imageUrl:
-      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1659352790654-058e9077a4f4?auto=format&fit=crop&w=800&q=85",
   },
 ] as const;
 
-/** Aspera Selects — arched lifestyle tiles */
+/** Aspera Selects — arched lifestyle tiles (Indian faces & ethnic wear) */
 const SELECT_TILES = [
   {
     id: "lehengas",
     label: "Lehengas",
     href: "/browse?categorySlug=fashion&q=lehenga&audience=women",
     imageUrl:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1633891119630-cb3665df5b7d?auto=format&fit=crop&w=800&q=85",
   },
   {
     id: "menwear",
     label: "Menwear",
     href: "/browse?categorySlug=fashion&audience=men",
     imageUrl:
-      "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1534235187448-833893dfe3e0?auto=format&fit=crop&w=800&q=85",
   },
   {
     id: "sarees",
@@ -104,7 +104,7 @@ const CAMPAIGN_TILES = [
     subtitle: "Ethnic and occasion wear",
     href: "/browse?categorySlug=fashion",
     imageUrl:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1200&q=85",
+      "https://images.unsplash.com/photo-1633891119630-cb3665df5b7d?auto=format&fit=crop&w=1200&q=85",
     categorySlug: "fashion",
   },
   {

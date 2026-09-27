@@ -118,8 +118,8 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop baby",
     ctaHref: "/browse?categorySlug=baby-kids&q=baby",
     imageUrl:
-      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[50%_30%]",
+      "https://images.unsplash.com/photo-1618986009068-4ff14e531667?auto=format&fit=crop&w=1800&q=85",
+    imagePosition: "object-[50%_20%]",
     panelGradient:
       "linear-gradient(145deg,#FF8A65 0%,#FF6B4A 42%,#E66A3D 100%)",
     accentChip: "From day one",
@@ -133,8 +133,8 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop kids",
     ctaHref: "/browse?categorySlug=baby-kids&audience=kids",
     imageUrl:
-      "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[55%_25%]",
+      "https://images.unsplash.com/photo-1497486751825-1233686d5d80?auto=format&fit=crop&w=1800&q=85",
+    imagePosition: "object-[50%_25%]",
     panelGradient:
       "linear-gradient(145deg,#2EC4B6 0%,#1FA8A0 48%,#148F8A 100%)",
     accentChip: "Ages 2–12",
@@ -148,8 +148,8 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop fashion",
     ctaHref: "/browse?categorySlug=fashion",
     imageUrl:
-      "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[50%_20%]",
+      "https://images.unsplash.com/photo-1553009338-80e505b3f61b?auto=format&fit=crop&w=1800&q=85",
+    imagePosition: "object-[50%_35%]",
     panelGradient:
       "linear-gradient(145deg,#F5B544 0%,#E89A2E 45%,#D4841A 100%)",
     accentChip: "Trending now",
@@ -163,8 +163,8 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop home",
     ctaHref: "/browse?categorySlug=home-kitchen",
     imageUrl:
-      "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[60%_35%]",
+      "https://images.unsplash.com/photo-1659352787906-f809a3b9e86e?auto=format&fit=crop&w=1800&q=85",
+    imagePosition: "object-[50%_30%]",
     panelGradient:
       "linear-gradient(145deg,#3D9BCC 0%,#2A7FA8 48%,#1A668A 100%)",
     accentChip: "Family favourites",
@@ -178,8 +178,8 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop wellness",
     ctaHref: "/browse?categorySlug=health-wellness",
     imageUrl:
-      "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?auto=format&fit=crop&w=1800&q=85",
-    imagePosition: "object-[45%_25%]",
+      "https://images.unsplash.com/photo-1580471260026-2a8acbc7c7a7?auto=format&fit=crop&w=1800&q=85",
+    imagePosition: "object-[45%_20%]",
     panelGradient:
       "linear-gradient(145deg,#4DB6A5 0%,#2F7F8A 48%,#123B4A 100%)",
     accentChip: "Graceful living",
@@ -542,7 +542,7 @@ export function AsperaSelectsBanner({ tiles }: { tiles: SelectTile[] }) {
       <div className="grid overflow-hidden rounded-2xl bg-[linear-gradient(120deg,#123B4A_0%,#1A5566_45%,#0F2F3A_100%)] md:grid-cols-[1.05fr_1fr]">
         <div className="relative min-h-[220px] md:min-h-[280px]">
           <Image
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1400&q=85"
+            src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1400&q=85"
             alt=""
             fill
             sizes="(max-width: 768px) 100vw, 50vw"

@@ -4,7 +4,9 @@ import { TrendingProductsRail } from "@/components/trending-products-rail";
 import { SectionHeading } from "@/components/ui/page-shell";
 import {
   AsperaHero,
+  AsperaSelectsBanner,
   CampaignTiles,
+  DiscoveryPromoBanner,
   FeaturedSellers,
   PriceLedCollections,
   SellerConversionSection,
@@ -22,6 +24,70 @@ import { ASPERA_BRAND_LANES, ASPERA_CATEGORY_TILES } from "@/lib/mega-menu";
 
 export const dynamic = "force-dynamic";
 
+/** Split promo lanes — tall collection cards (Meesho-style discovery) */
+const DISCOVERY_LANES = [
+  {
+    id: "trending",
+    label: "Trending now",
+    href: "/popular",
+    imageUrl:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=85",
+  },
+  {
+    id: "budget",
+    label: "Budget buys",
+    href: "/browse?maxPricePaise=59900",
+    imageUrl:
+      "https://images.unsplash.com/photo-1589169011402-8b2cbd1ee593?auto=format&fit=crop&w=800&q=85",
+  },
+  {
+    id: "rated",
+    label: "Top rated picks",
+    href: "/browse?sort=relevance",
+    imageUrl:
+      "https://images.unsplash.com/photo-1534235187448-833893dfe3e0?auto=format&fit=crop&w=800&q=85",
+  },
+  {
+    id: "essentials",
+    label: "Daily essentials",
+    href: "/browse?categorySlug=home-kitchen",
+    imageUrl:
+      "https://images.unsplash.com/photo-1659352790654-058e9077a4f4?auto=format&fit=crop&w=800&q=85",
+  },
+] as const;
+
+/** Aspera Selects — arched lifestyle tiles (Indian faces & ethnic wear) */
+const SELECT_TILES = [
+  {
+    id: "lehengas",
+    label: "Lehengas",
+    href: "/browse?categorySlug=fashion&q=lehenga&audience=women",
+    imageUrl:
+      "https://images.unsplash.com/photo-1633891119630-cb3665df5b7d?auto=format&fit=crop&w=800&q=85",
+  },
+  {
+    id: "menwear",
+    label: "Menwear",
+    href: "/browse?categorySlug=fashion&audience=men",
+    imageUrl:
+      "https://images.unsplash.com/photo-1534235187448-833893dfe3e0?auto=format&fit=crop&w=800&q=85",
+  },
+  {
+    id: "sarees",
+    label: "Sarees",
+    href: "/browse?categorySlug=fashion&q=saree&audience=women",
+    imageUrl:
+      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=85",
+  },
+  {
+    id: "jewellery",
+    label: "Jewellery",
+    href: "/browse?categorySlug=fashion&q=jewellery&audience=women",
+    imageUrl:
+      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=85",
+  },
+] as const;
+
 const CAMPAIGN_TILES = [
   {
     id: "essentials",
@@ -38,7 +104,7 @@ const CAMPAIGN_TILES = [
     subtitle: "Ethnic and occasion wear",
     href: "/browse?categorySlug=fashion",
     imageUrl:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1200&q=85",
+      "https://images.unsplash.com/photo-1633891119630-cb3665df5b7d?auto=format&fit=crop&w=1200&q=85",
     categorySlug: "fashion",
   },
   {
@@ -218,6 +284,8 @@ export default async function Home() {
     <div className="flex flex-col">
       <AsperaHero />
       <TrustSignalBar />
+      <DiscoveryPromoBanner lanes={[...DISCOVERY_LANES]} />
+      <AsperaSelectsBanner tiles={[...SELECT_TILES]} />
       <ShopByCategory categories={[...ASPERA_CATEGORY_TILES]} />
       <ShopByBrands brands={[...ASPERA_BRAND_LANES]} />
       <CampaignTiles tiles={campaignTiles} />
@@ -225,11 +293,11 @@ export default async function Home() {
       {trending.length > 0 ? (
         <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
           <SectionHeading
-            title="Trending products"
-            description="Fresh picks shoppers are exploring"
+            title="Picked for you"
+            description="Personalised finds from live catalogue"
             action={
               <Link
-                href="/popular"
+                href="/browse"
                 className="text-sm font-medium text-accent hover:underline"
               >
                 See all →

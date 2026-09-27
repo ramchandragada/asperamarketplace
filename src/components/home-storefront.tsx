@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { type CSSProperties } from "react";
+import {
+  type CSSProperties,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { ProductLoopRail } from "@/components/product-loop-rail";
 
 function TrustReturnIcon() {
@@ -83,48 +90,541 @@ export function AnnouncementStrip() {
   );
 }
 
-/** Aspera hero — sober, bright, simple full-bleed merchandising plane */
+type HeroSlide = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  ctaLabel: string;
+  ctaHref: string;
+  /** Primary polished product cutout */
+  productImage: string;
+  /** Soft well tint behind the cutout */
+  wellTint: string;
+  /** Optional supporting cutouts for a merchandising cluster */
+  supportImages?: string[];
+  /** Bright left-panel gradient — Aspera palette */
+  panelGradient: string;
+  accentChip: string;
+};
+
+/**
+ * Full-bleed hero carousel — polished product merchandising
+ * (cutouts on soft wells, no candid lifestyle photos).
+ * Copy still spans every life stage from baby to seniors.
+ */
+const HERO_SLIDES: HeroSlide[] = [
+  {
+    id: "newborn",
+    eyebrow: "Newborn & baby",
+    title: "Soft starts for tiny travellers",
+    subtitle:
+      "Care essentials, softwear, and nursery picks for the first chapter.",
+    ctaLabel: "Shop baby",
+    ctaHref: "/browse?categorySlug=baby-kids&q=baby",
+    productImage: "/category-tiles/home.png",
+    wellTint: "#EEF5F4",
+    supportImages: ["/category-tiles/kids.png", "/category-tiles/beauty.png"],
+    panelGradient:
+      "linear-gradient(145deg,#5A9E96 0%,#3D7F78 48%,#2A5F5A 100%)",
+    accentChip: "From day one",
+  },
+  {
+    id: "kids",
+    eyebrow: "Kids & play",
+    title: "Bright finds for growing explorers",
+    subtitle:
+      "Clothes, toys, and school staples that keep pace with every adventure.",
+    ctaLabel: "Shop kids",
+    ctaHref: "/browse?categorySlug=baby-kids&audience=kids",
+    productImage: "/category-tiles/kids.png",
+    wellTint: "#E8F2F4",
+    supportImages: [
+      "/category-tiles/footwear.png",
+      "/category-tiles/bags.png",
+    ],
+    panelGradient:
+      "linear-gradient(145deg,#4A8FA0 0%,#347484 48%,#245A68 100%)",
+    accentChip: "Ages 2–12",
+  },
+  {
+    id: "youth",
+    eyebrow: "Teens & young adults",
+    title: "Style that keeps up with you",
+    subtitle:
+      "Fashion, beauty, and gadgets for every mood — clear prices, real sellers.",
+    ctaLabel: "Shop fashion",
+    ctaHref: "/browse?categorySlug=fashion",
+    productImage: "/category-tiles/women.png",
+    wellTint: "#EEF3F5",
+    supportImages: [
+      "/category-tiles/beauty.png",
+      "/category-tiles/electronics.png",
+    ],
+    panelGradient:
+      "linear-gradient(145deg,#5B7F8F 0%,#3F6474 48%,#2A4A58 100%)",
+    accentChip: "Trending now",
+  },
+  {
+    id: "family",
+    eyebrow: "Home & family",
+    title: "Everything for the whole household",
+    subtitle:
+      "Kitchen, living, and everyday essentials that make shared spaces work.",
+    ctaLabel: "Shop home",
+    ctaHref: "/browse?categorySlug=home-kitchen",
+    productImage: "/category-tiles/home.png",
+    wellTint: "#EAF1F4",
+    supportImages: ["/category-tiles/men.png", "/category-tiles/women.png"],
+    panelGradient:
+      "linear-gradient(145deg,#4A7A90 0%,#325F74 48%,#214A5C 100%)",
+    accentChip: "Family favourites",
+  },
+  {
+    id: "elders",
+    eyebrow: "Seniors & wellness",
+    title: "Comfort and care, thoughtfully chosen",
+    subtitle:
+      "Wellness, easy living, and trusted everyday picks for later years.",
+    ctaLabel: "Shop wellness",
+    ctaHref: "/browse?categorySlug=health-wellness",
+    productImage: "/category-tiles/beauty.png",
+    wellTint: "#E8EEF0",
+    supportImages: ["/category-tiles/home.png", "/category-tiles/footwear.png"],
+    panelGradient:
+      "linear-gradient(145deg,#3D7A72 0%,#2A5C58 48%,#123B4A 100%)",
+    accentChip: "Graceful living",
+  },
+];
+
+const HERO_AUTO_MS = 5200;
+
+/** Aspera hero — polished product carousel (newborn → elderly copy) */
 export function AsperaHero() {
+  const labelId = useId();
+  const rootRef = useRef<HTMLElement | null>(null);
+  const [index, setIndex] = useState(0);
+  const [userPaused, setUserPaused] = useState(false);
+  const [hoverPaused, setHoverPaused] = useState(false);
+  const [announce, setAnnounce] = useState("");
+  const count = HERO_SLIDES.length;
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const paused = userPaused || hoverPaused;
+
+  const clearHiddenFocus = useCallback(() => {
+    const root = rootRef.current;
+    const active = document.activeElement;
+    if (!root || !(active instanceof HTMLElement)) return;
+    if (!root.contains(active)) return;
+    const slide = active.closest("[data-hero-slide]");
+    if (slide?.getAttribute("aria-hidden") === "true") {
+      active.blur();
+    }
+  }, []);
+
+  const go = useCallback(
+    (next: number) => {
+      const resolved = ((next % count) + count) % count;
+      setIndex(resolved);
+      const entry = HERO_SLIDES[resolved]!;
+      setAnnounce(`${entry.eyebrow}: ${entry.title}`);
+      setUserPaused(true);
+      if (resumeTimer.current) clearTimeout(resumeTimer.current);
+      resumeTimer.current = setTimeout(() => setUserPaused(false), 8000);
+    },
+    [count],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    clearHiddenFocus();
+  }, [index, clearHiddenFocus]);
+
+  useEffect(() => {
+    if (paused || count <= 1) return;
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % count);
+    }, HERO_AUTO_MS);
+    return () => window.clearInterval(timer);
+  }, [paused, count]);
+
   return (
-    <section className="relative w-full overflow-hidden border-b border-border bg-[#F3F6F7]">
-      <div className="absolute inset-0" aria-hidden>
-        <Image
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2400&q=85"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[70%_40%] opacity-90 md:object-[75%_35%]"
-        />
-        {/* Soft bright veil — readable copy without a dark wash */}
-        <div className="absolute inset-0 bg-[linear-gradient(105deg,#F7FAFB_0%,rgba(247,250,251,0.94)_34%,rgba(247,250,251,0.55)_52%,rgba(247,250,251,0.12)_72%,transparent_100%)]" />
+    <section
+      ref={rootRef}
+      className="relative w-full overflow-hidden border-b border-border"
+      aria-roledescription="carousel"
+      aria-labelledby={labelId}
+      onMouseEnter={() => setHoverPaused(true)}
+      onMouseLeave={() => setHoverPaused(false)}
+      onFocusCapture={() => setHoverPaused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setHoverPaused(false);
+        }
+      }}
+    >
+      <h2 id={labelId} className="sr-only">
+        Aspera highlights — shopping for every age
+      </h2>
+
+      <div className="relative min-h-[min(78vw,24rem)] md:min-h-[22rem] lg:min-h-[24rem]">
+        {HERO_SLIDES.map((entry, slideIndex) => {
+          const active = slideIndex === index;
+          const supports = entry.supportImages?.slice(0, 2) ?? [];
+          return (
+            <div
+              key={entry.id}
+              data-hero-slide={entry.id}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${slideIndex + 1} of ${count}: ${entry.eyebrow}`}
+              aria-hidden={!active}
+              className={`absolute inset-0 transition-opacity duration-700 ease-out ${
+                active
+                  ? "z-[1] opacity-100"
+                  : "pointer-events-none z-0 opacity-0"
+              }`}
+            >
+              <div
+                className="absolute inset-0"
+                style={{ background: entry.panelGradient }}
+                aria-hidden
+              />
+              <div
+                className="absolute inset-0 opacity-[0.16]"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 16% 20%, rgba(255,255,255,0.55) 0%, transparent 42%), radial-gradient(circle at 82% 72%, rgba(255,255,255,0.22) 0%, transparent 40%)",
+                }}
+                aria-hidden
+              />
+
+              {/* Polished merchandising panel — product cutouts on soft wells */}
+              <div className="absolute inset-y-0 right-0 flex w-[min(62%,44rem)] items-center justify-center px-4 py-6 md:w-[56%] md:px-8 md:py-8">
+                <div
+                  className="relative flex h-full w-full max-w-[34rem] items-center justify-center gap-3 rounded-[1.75rem] px-4 py-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] md:gap-4 md:px-6 md:py-6"
+                  style={{
+                    background: `radial-gradient(120% 120% at 50% 30%, #ffffff 0%, ${entry.wellTint} 58%, ${entry.wellTint} 100%)`,
+                  }}
+                >
+                  {supports[0] ? (
+                    <div className="relative hidden aspect-[3/4] w-[22%] max-w-[7.5rem] overflow-hidden rounded-2xl bg-white/50 shadow-[0_10px_28px_rgba(18,59,74,0.1)] sm:block">
+                      <Image
+                        src={supports[0]}
+                        alt=""
+                        fill
+                        sizes="120px"
+                        className="object-contain object-center p-2"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="relative aspect-square w-[58%] max-w-[16rem] overflow-hidden rounded-[1.5rem] bg-white/60 shadow-[0_16px_40px_rgba(18,59,74,0.12)] md:w-[62%]">
+                    <Image
+                      src={entry.productImage}
+                      alt=""
+                      fill
+                      priority={slideIndex === 0}
+                      sizes="(max-width: 768px) 45vw, 280px"
+                      className="object-contain object-center p-3 md:p-4"
+                    />
+                  </div>
+                  {supports[1] ? (
+                    <div className="relative hidden aspect-[3/4] w-[22%] max-w-[7.5rem] overflow-hidden rounded-2xl bg-white/50 shadow-[0_10px_28px_rgba(18,59,74,0.1)] sm:block">
+                      <Image
+                        src={supports[1]}
+                        alt=""
+                        fill
+                        sizes="120px"
+                        className="object-contain object-center p-2"
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="relative z-[2] container-shell flex h-full min-h-[min(78vw,24rem)] flex-col justify-center py-10 md:min-h-[22rem] md:py-12 lg:min-h-[24rem]">
+                <div className="max-w-[20rem] text-white md:max-w-[26rem]">
+                  <p className="font-display text-[26px] font-bold tracking-tight drop-shadow-sm md:text-[32px]">
+                    Aspera
+                  </p>
+                  <span className="mt-3 inline-flex rounded-md bg-white/20 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white uppercase backdrop-blur-sm md:text-[12px]">
+                    {entry.accentChip}
+                  </span>
+                  <p className="mt-3 text-[13px] font-semibold tracking-wide text-white/90 uppercase md:text-[14px]">
+                    {entry.eyebrow}
+                  </p>
+                  <p className="mt-2 text-[26px] leading-[32px] font-bold tracking-tight md:text-[36px] md:leading-[42px]">
+                    {entry.title}
+                  </p>
+                  <p className="mt-2 max-w-sm text-[14px] leading-[21px] text-white/92 md:text-[15px] md:leading-[23px]">
+                    {entry.subtitle}
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <Link
+                      href={entry.ctaHref}
+                      className="inline-flex min-h-11 items-center justify-center rounded-lg bg-white px-6 text-[14px] font-semibold text-accent shadow-sm transition hover:bg-accent-soft"
+                      tabIndex={active ? 0 : -1}
+                    >
+                      {entry.ctaLabel}
+                    </Link>
+                    <Link
+                      href="/browse"
+                      className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/55 bg-white/10 px-5 text-[14px] font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+                      tabIndex={active ? 0 : -1}
+                    >
+                      Explore all
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Edge arrows */}
+        <div className="pointer-events-none absolute inset-y-0 z-[3] flex w-full items-center justify-between px-2 md:px-3">
+          <button
+            type="button"
+            aria-label="Previous banner"
+            className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-md bg-white/85 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white md:h-10 md:w-10"
+            onClick={() => go(index - 1)}
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden>
+              <path
+                d="M14.5 6.5 9 12l5.5 5.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Next banner"
+            className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-md bg-white/85 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white md:h-10 md:w-10"
+            onClick={() => go(index + 1)}
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden>
+              <path
+                d="M9.5 6.5 15 12l-5.5 5.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* Dots + pause control */}
+        <div className="absolute inset-x-0 bottom-3 z-[3] flex items-center justify-center gap-3 md:bottom-4">
+          <div className="flex gap-2">
+            {HERO_SLIDES.map((entry, slideIndex) => {
+              const active = slideIndex === index;
+              return (
+                <button
+                  key={entry.id}
+                  type="button"
+                  aria-label={`Show ${entry.eyebrow}`}
+                  aria-current={active ? "true" : undefined}
+                  className={`h-2 rounded-full transition-all ${
+                    active
+                      ? "w-6 bg-white shadow-sm"
+                      : "w-2 bg-white/55 hover:bg-white/80"
+                  }`}
+                  onClick={() => go(slideIndex)}
+                />
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            aria-label={
+              userPaused ? "Play banner rotation" : "Pause banner rotation"
+            }
+            aria-pressed={userPaused}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-white/85 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white"
+            onClick={() => {
+              if (resumeTimer.current) clearTimeout(resumeTimer.current);
+              setUserPaused((value) => !value);
+            }}
+          >
+            {userPaused ? (
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d="M8 5.5v13l11-6.5L8 5.5Z" />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d="M7 5h3.5v14H7V5Zm6.5 0H17v14h-3.5V5Z" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
-      <div className="relative container-shell flex min-h-[min(68vw,22rem)] flex-col justify-center py-10 md:min-h-[20rem] md:py-12 lg:min-h-[22rem]">
-        <p className="font-display text-[28px] font-bold tracking-tight text-accent md:text-[34px]">
-          Aspera
-        </p>
-        <h1 className="mt-2 max-w-lg text-[28px] leading-[34px] font-bold tracking-tight text-foreground md:mt-3 md:text-[40px] md:leading-[48px]">
-          Discover more. Choose better.
-        </h1>
-        <p className="mt-2 max-w-md text-[15px] leading-[22px] text-muted md:text-[16px] md:leading-[24px]">
-          Clear pricing, independent sellers, and simple delivery for everyday
-          India.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
+      <p className="sr-only" aria-live="polite">
+        {announce}
+      </p>
+    </section>
+  );
+}
+
+export type PromoLane = {
+  id: string;
+  label: string;
+  href: string;
+  imageUrl: string;
+};
+
+/**
+ * Homepage discovery banner — sober Aspera take on Meesho’s split promo:
+ * offer panel + four tall collection lanes.
+ */
+export function DiscoveryPromoBanner({ lanes }: { lanes: PromoLane[] }) {
+  if (lanes.length === 0) return null;
+  const cards = lanes.slice(0, 4);
+
+  return (
+    <section className="container-shell py-3 md:py-4">
+      <div className="grid overflow-hidden rounded-2xl md:grid-cols-[minmax(15rem,0.85fr)_1.55fr]">
+        <div className="flex flex-col justify-between bg-[linear-gradient(160deg,#E66A3D_0%,#D4572F_55%,#C24A28_100%)] px-6 py-8 text-white md:px-8 md:py-10">
+          <div>
+            <p className="text-[13px] font-semibold tracking-wide text-white/85 uppercase">
+              Aspera picks
+            </p>
+            <h2 className="mt-3 max-w-[14rem] text-[28px] leading-[34px] font-bold tracking-tight md:text-[32px] md:leading-[38px]">
+              Fresh finds for everyday India
+            </h2>
+            <p className="mt-3 max-w-[16rem] text-[14px] leading-5 text-white/90">
+              Honest prices from independent sellers — shop trending, budget,
+              and essentials in one place.
+            </p>
+          </div>
           <Link
             href="/browse"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-6 text-[14px] font-semibold text-accent-foreground transition hover:bg-accent-hover"
+            className="mt-8 inline-flex min-h-11 w-fit items-center justify-center rounded-lg bg-white px-6 text-[14px] font-semibold text-accent transition hover:bg-accent-soft"
           >
             Shop now
           </Link>
-          <Link
-            href="/sell"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border bg-white/80 px-6 text-[14px] font-semibold text-foreground backdrop-blur-sm transition hover:border-accent hover:text-accent"
-          >
-            Start selling
-          </Link>
         </div>
+
+        <div className="bg-accent px-3 py-4 md:px-5 md:py-5">
+          <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+            {cards.map((lane) => (
+              <li key={lane.id}>
+                <Link
+                  href={lane.href}
+                  className="group relative flex aspect-[3/5] overflow-hidden rounded-xl bg-accent-soft shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+                >
+                  <Image
+                    src={lane.imageUrl}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 45vw, 18vw"
+                    className="object-cover object-center transition duration-500 group-hover:scale-[1.04]"
+                  />
+                  <span className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(15,47,58,0.55)_100%)]" />
+                  <span className="absolute inset-x-2 bottom-3 flex justify-center">
+                    <span className="inline-flex min-h-8 items-center rounded-full bg-white px-3 text-center text-[12px] font-semibold text-foreground shadow-sm md:text-[13px]">
+                      {lane.label}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export type SelectTile = {
+  id: string;
+  label: string;
+  href: string;
+  imageUrl: string;
+};
+
+/**
+ * Soft “selects” panel — lifestyle + 2×2 arched category tiles
+ * (Aspera teal, not a gold Meesho clone).
+ */
+export function AsperaSelectsBanner({ tiles }: { tiles: SelectTile[] }) {
+  const cards = tiles.slice(0, 4);
+  if (cards.length === 0) return null;
+
+  return (
+    <section className="container-shell py-3 md:py-4">
+      <div className="grid overflow-hidden rounded-2xl bg-[linear-gradient(120deg,#123B4A_0%,#1A5566_45%,#0F2F3A_100%)] md:grid-cols-[1.05fr_1fr]">
+        <div className="relative min-h-[220px] md:min-h-[280px]">
+          <Image
+            src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1400&q=85"
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover object-center opacity-75"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_30%,rgba(15,47,58,0.78)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
+            <p className="font-display text-[22px] font-bold tracking-tight md:text-[26px]">
+              Aspera Selects
+            </p>
+            <p className="mt-1 text-[14px] text-white/85 md:text-[15px]">
+              Products you love. Quality we stand behind.
+            </p>
+            <Link
+              href="/browse"
+              className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-white/50 px-5 text-[13px] font-semibold text-white transition hover:bg-white/10"
+            >
+              Shop now
+            </Link>
+          </div>
+        </div>
+
+        <ul className="grid grid-cols-2 gap-3 p-4 md:gap-4 md:p-6">
+          {cards.map((tile) => (
+            <li key={tile.id}>
+              <Link
+                href={tile.href}
+                className="group flex flex-col items-center gap-2 text-center"
+              >
+                <span className="relative aspect-[4/5] w-full overflow-hidden rounded-[999px_999px_1.25rem_1.25rem] border border-white/35 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.12)]">
+                  <Image
+                    src={tile.imageUrl}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 40vw, 18vw"
+                    className="object-cover object-top transition duration-500 group-hover:scale-[1.04]"
+                  />
+                </span>
+                <span className="text-[13px] font-semibold tracking-wide text-[#D7E8EC] md:text-[14px]">
+                  {tile.label}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

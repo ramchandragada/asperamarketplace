@@ -219,7 +219,7 @@ h2,
 /* Category tiles — larger squares, fewer across the viewport */
 .product-loop-rail--category {
   grid-auto-columns: minmax(7.5rem, 7.5rem);
-  gap: 1.25rem;
+  gap: 0.875rem;
   align-items: start;
 }
 

@@ -97,16 +97,21 @@ type HeroSlide = {
   subtitle: string;
   ctaLabel: string;
   ctaHref: string;
-  imageUrl: string;
-  imagePosition: string;
-  /** Bright left-panel gradient — Aspera palette, not Meesho purple */
+  /** Primary polished product cutout */
+  productImage: string;
+  /** Soft well tint behind the cutout */
+  wellTint: string;
+  /** Optional supporting cutouts for a merchandising cluster */
+  supportImages?: string[];
+  /** Bright left-panel gradient — Aspera palette */
   panelGradient: string;
   accentChip: string;
 };
 
 /**
- * Full-bleed hero carousel — bright Aspera merchandising that shows
- * the marketplace serves every life stage from newborn to elderly.
+ * Full-bleed hero carousel — polished product merchandising
+ * (cutouts on soft wells, no candid lifestyle photos).
+ * Copy still spans every life stage from baby to seniors.
  */
 const HERO_SLIDES: HeroSlide[] = [
   {
@@ -117,10 +122,9 @@ const HERO_SLIDES: HeroSlide[] = [
       "Care essentials, softwear, and nursery picks for the first chapter.",
     ctaLabel: "Shop baby",
     ctaHref: "/browse?categorySlug=baby-kids&q=baby",
-    // Indian father + toddler at festive lights — show both faces
-    imageUrl:
-      "https://images.unsplash.com/photo-1618986009068-4ff14e531667?auto=format&fit=crop&w=1400&h=1600&q=85",
-    imagePosition: "object-[52%_42%]",
+    productImage: "/category-tiles/kids.png",
+    wellTint: "#FFF1EA",
+    supportImages: ["/category-tiles/home.png", "/category-tiles/beauty.png"],
     panelGradient:
       "linear-gradient(145deg,#FF8A65 0%,#FF6B4A 42%,#E66A3D 100%)",
     accentChip: "From day one",
@@ -133,10 +137,12 @@ const HERO_SLIDES: HeroSlide[] = [
       "Clothes, toys, and school staples that keep pace with every adventure.",
     ctaLabel: "Shop kids",
     ctaHref: "/browse?categorySlug=baby-kids&audience=kids",
-    // Group of smiling Indian children — faces fill the frame
-    imageUrl:
-      "https://images.unsplash.com/photo-1497486751825-1233686d5d80?auto=format&fit=crop&w=1400&h=1600&q=85",
-    imagePosition: "object-center",
+    productImage: "/category-tiles/kids.png",
+    wellTint: "#E8F7F4",
+    supportImages: [
+      "/category-tiles/footwear.png",
+      "/category-tiles/bags.png",
+    ],
     panelGradient:
       "linear-gradient(145deg,#2EC4B6 0%,#1FA8A0 48%,#148F8A 100%)",
     accentChip: "Ages 2–12",
@@ -149,10 +155,12 @@ const HERO_SLIDES: HeroSlide[] = [
       "Fashion, beauty, and gadgets for every mood — clear prices, real sellers.",
     ctaLabel: "Shop fashion",
     ctaHref: "/browse?categorySlug=fashion",
-    // Indian woman in saree — studio portrait, face centered (replaces sky crop)
-    imageUrl:
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1400&h=1600&q=85",
-    imagePosition: "object-[50%_18%]",
+    productImage: "/category-tiles/women.png",
+    wellTint: "#FFF6E8",
+    supportImages: [
+      "/category-tiles/beauty.png",
+      "/category-tiles/electronics.png",
+    ],
     panelGradient:
       "linear-gradient(145deg,#F5B544 0%,#E89A2E 45%,#D4841A 100%)",
     accentChip: "Trending now",
@@ -165,10 +173,9 @@ const HERO_SLIDES: HeroSlide[] = [
       "Kitchen, living, and everyday essentials that make shared spaces work.",
     ctaLabel: "Shop home",
     ctaHref: "/browse?categorySlug=home-kitchen",
-    // Indian family studio portrait — parents + teens, faces centered
-    imageUrl:
-      "https://images.unsplash.com/photo-1659352787906-f809a3b9e86e?auto=format&fit=crop&w=1400&h=1600&q=85",
-    imagePosition: "object-center",
+    productImage: "/category-tiles/home.png",
+    wellTint: "#EAF3F8",
+    supportImages: ["/category-tiles/men.png", "/category-tiles/women.png"],
     panelGradient:
       "linear-gradient(145deg,#3D9BCC 0%,#2A7FA8 48%,#1A668A 100%)",
     accentChip: "Family favourites",
@@ -181,10 +188,9 @@ const HERO_SLIDES: HeroSlide[] = [
       "Wellness, easy living, and trusted everyday picks for later years.",
     ctaLabel: "Shop wellness",
     ctaHref: "/browse?categorySlug=health-wellness",
-    // Elderly Indian woman with bindi — close portrait
-    imageUrl:
-      "https://images.unsplash.com/photo-1580471260026-2a8acbc7c7a7?auto=format&fit=crop&w=1400&h=1600&q=85",
-    imagePosition: "object-[50%_22%]",
+    productImage: "/category-tiles/beauty.png",
+    wellTint: "#E8F0F0",
+    supportImages: ["/category-tiles/home.png", "/category-tiles/footwear.png"],
     panelGradient:
       "linear-gradient(145deg,#4DB6A5 0%,#2F7F8A 48%,#123B4A 100%)",
     accentChip: "Graceful living",
@@ -193,7 +199,7 @@ const HERO_SLIDES: HeroSlide[] = [
 
 const HERO_AUTO_MS = 5200;
 
-/** Aspera hero — bright multi-banner carousel (newborn → elderly) */
+/** Aspera hero — polished product carousel (newborn → elderly copy) */
 export function AsperaHero() {
   const labelId = useId();
   const rootRef = useRef<HTMLElement | null>(null);
@@ -222,7 +228,6 @@ export function AsperaHero() {
       setIndex(resolved);
       const entry = HERO_SLIDES[resolved]!;
       setAnnounce(`${entry.eyebrow}: ${entry.title}`);
-      // Brief sticky pause after manual nav so users can read the slide
       setUserPaused(true);
       if (resumeTimer.current) clearTimeout(resumeTimer.current);
       resumeTimer.current = setTimeout(() => setUserPaused(false), 8000);
@@ -274,6 +279,7 @@ export function AsperaHero() {
       <div className="relative min-h-[min(78vw,24rem)] md:min-h-[22rem] lg:min-h-[24rem]">
         {HERO_SLIDES.map((entry, slideIndex) => {
           const active = slideIndex === index;
+          const supports = entry.supportImages?.slice(0, 2) ?? [];
           return (
             <div
               key={entry.id}
@@ -293,29 +299,56 @@ export function AsperaHero() {
                 style={{ background: entry.panelGradient }}
                 aria-hidden
               />
-              {/* Soft pattern wash for energy without clutter */}
               <div
-                className="absolute inset-0 opacity-[0.18]"
+                className="absolute inset-0 opacity-[0.16]"
                 style={{
                   backgroundImage:
-                    "radial-gradient(circle at 18% 22%, rgba(255,255,255,0.55) 0%, transparent 42%), radial-gradient(circle at 78% 70%, rgba(255,255,255,0.28) 0%, transparent 38%)",
+                    "radial-gradient(circle at 16% 20%, rgba(255,255,255,0.55) 0%, transparent 42%), radial-gradient(circle at 82% 72%, rgba(255,255,255,0.22) 0%, transparent 40%)",
                 }}
                 aria-hidden
               />
 
-              <div className="absolute inset-y-0 right-0 w-[min(62%,42rem)] md:w-[58%]">
-                <Image
-                  src={entry.imageUrl}
-                  alt=""
-                  fill
-                  priority={slideIndex === 0}
-                  sizes="(max-width: 768px) 70vw, 55vw"
-                  className={`object-cover ${entry.imagePosition}`}
-                />
+              {/* Polished merchandising panel — product cutouts on soft wells */}
+              <div className="absolute inset-y-0 right-0 flex w-[min(62%,44rem)] items-center justify-center px-4 py-6 md:w-[56%] md:px-8 md:py-8">
                 <div
-                  className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.12)_0%,transparent_22%)]"
-                  aria-hidden
-                />
+                  className="relative flex h-full w-full max-w-[34rem] items-center justify-center gap-3 rounded-[1.75rem] px-4 py-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] md:gap-4 md:px-6 md:py-6"
+                  style={{
+                    background: `radial-gradient(120% 120% at 50% 30%, #ffffff 0%, ${entry.wellTint} 58%, ${entry.wellTint} 100%)`,
+                  }}
+                >
+                  {supports[0] ? (
+                    <div className="relative hidden aspect-[3/4] w-[22%] max-w-[7.5rem] overflow-hidden rounded-2xl bg-white/50 shadow-[0_10px_28px_rgba(18,59,74,0.1)] sm:block">
+                      <Image
+                        src={supports[0]}
+                        alt=""
+                        fill
+                        sizes="120px"
+                        className="object-contain object-center p-2"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="relative aspect-square w-[58%] max-w-[16rem] overflow-hidden rounded-[1.5rem] bg-white/60 shadow-[0_16px_40px_rgba(18,59,74,0.12)] md:w-[62%]">
+                    <Image
+                      src={entry.productImage}
+                      alt=""
+                      fill
+                      priority={slideIndex === 0}
+                      sizes="(max-width: 768px) 45vw, 280px"
+                      className="object-contain object-center p-3 md:p-4"
+                    />
+                  </div>
+                  {supports[1] ? (
+                    <div className="relative hidden aspect-[3/4] w-[22%] max-w-[7.5rem] overflow-hidden rounded-2xl bg-white/50 shadow-[0_10px_28px_rgba(18,59,74,0.1)] sm:block">
+                      <Image
+                        src={supports[1]}
+                        alt=""
+                        fill
+                        sizes="120px"
+                        className="object-contain object-center p-2"
+                      />
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
               <div className="relative z-[2] container-shell flex h-full min-h-[min(78vw,24rem)] flex-col justify-center py-10 md:min-h-[22rem] md:py-12 lg:min-h-[24rem]">
@@ -449,7 +482,6 @@ export function AsperaHero() {
         </div>
       </div>
 
-      {/* Announce only on manual navigation — not every auto-advance */}
       <p className="sr-only" aria-live="polite">
         {announce}
       </p>

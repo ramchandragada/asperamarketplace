@@ -117,10 +117,10 @@ const HERO_SLIDES: HeroSlide[] = [
       "Care essentials, softwear, and nursery picks for the first chapter.",
     ctaLabel: "Shop baby",
     ctaHref: "/browse?categorySlug=baby-kids&q=baby",
-    // Indian father + toddler at festive lights — faces mid-frame
+    // Indian father + toddler at festive lights — show both faces
     imageUrl:
       "https://images.unsplash.com/photo-1618986009068-4ff14e531667?auto=format&fit=crop&w=1400&h=1600&q=85",
-    imagePosition: "object-[50%_28%]",
+    imagePosition: "object-[52%_42%]",
     panelGradient:
       "linear-gradient(145deg,#FF8A65 0%,#FF6B4A 42%,#E66A3D 100%)",
     accentChip: "From day one",
@@ -303,7 +303,7 @@ export function AsperaHero() {
                 aria-hidden
               />
 
-              <div className="absolute inset-y-0 right-0 w-[58%] md:w-[55%]">
+              <div className="absolute inset-y-0 right-0 w-[min(62%,42rem)] md:w-[58%]">
                 <Image
                   src={entry.imageUrl}
                   alt=""
@@ -313,7 +313,7 @@ export function AsperaHero() {
                   className={`object-cover ${entry.imagePosition}`}
                 />
                 <div
-                  className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.08)_0%,transparent_28%)] md:bg-[linear-gradient(90deg,rgba(18,59,74,0.35)_0%,transparent_36%)]"
+                  className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.12)_0%,transparent_22%)]"
                   aria-hidden
                 />
               </div>

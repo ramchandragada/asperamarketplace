@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useRef,
   useState,
 } from "react";
 import { ProductLoopRail } from "@/components/product-loop-rail";
@@ -193,13 +194,24 @@ export function AsperaHero() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const count = HERO_SLIDES.length;
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const go = useCallback(
     (next: number) => {
       setIndex(((next % count) + count) % count);
+      // Brief pause after manual nav so users can read the slide
+      setPaused(true);
+      if (resumeTimer.current) clearTimeout(resumeTimer.current);
+      resumeTimer.current = setTimeout(() => setPaused(false), 8000);
     },
     [count],
   );
+
+  useEffect(() => {
+    return () => {
+      if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (paused || count <= 1) return;
@@ -220,14 +232,6 @@ export function AsperaHero() {
       className="relative w-full overflow-hidden border-b border-border"
       aria-roledescription="carousel"
       aria-labelledby={labelId}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-          setPaused(false);
-        }
-      }}
     >
       <h2 id={labelId} className="sr-only">
         Aspera highlights — shopping for every age

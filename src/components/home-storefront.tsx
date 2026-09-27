@@ -230,9 +230,9 @@ export function ShopByCategory({
   const tiles = categories.slice(0, 8);
 
   return (
-    <section className="border-b border-border bg-surface">
-      <div className="container-shell py-5 md:py-7">
-        <div className="mb-3 flex items-end justify-between gap-3 md:mb-4">
+    <section className="bg-surface">
+      <div className="container-shell pt-4 pb-2 md:pt-5 md:pb-3">
+        <div className="mb-2.5 flex items-end justify-between gap-3 md:mb-3">
           <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
             Shop by category
           </h2>
@@ -277,7 +277,7 @@ export function ShopByCategory({
   );
 }
 
-/** Shop By Brands — Original Brands-style vertical cards with teal footers */
+/** Shop By Brands — Meesho Original Brands-style panel with teal footers */
 export function ShopByBrands({
   brands,
 }: {
@@ -287,69 +287,82 @@ export function ShopByBrands({
     href: string;
     imageUrl: string;
     bgTint?: string;
+    offer?: string;
   }>;
 }) {
   const tiles = brands.slice(0, 8);
   if (tiles.length === 0) return null;
 
   return (
-    <section className="border-b border-border bg-surface">
-      <div className="container-shell py-5 md:py-7">
-        <div className="mb-3 flex items-end justify-between gap-3 md:mb-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
-              Shop By Brands
-            </h2>
-            <span
-              className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground"
-              aria-label="Verified brands"
-              title="Verified brands"
-            >
-              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" aria-hidden>
-                <path
-                  d="M6 12.5l3.5 3.5L18 8"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          </div>
-          <Link
-            href="/browse"
-            className="text-[12px] font-semibold tracking-wide text-accent uppercase hover:underline"
-          >
-            View all →
-          </Link>
-        </div>
-        <ProductLoopRail
-          items={tiles}
-          label="Shop By Brands"
-          variant="category"
-          renderItem={(brand) => (
-            <Link
-              href={brand.href}
-              className="group flex flex-col overflow-hidden rounded-xl border border-[#E8ECED] bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(18,59,74,0.1)]"
-            >
+    <section className="bg-surface">
+      <div className="container-shell pt-2 pb-4 md:pt-3 md:pb-5">
+        <div className="overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#F8EDE4_0%,#F3E8EF_42%,#E6F0F2_100%)] px-3 py-4 shadow-[inset_0_0_0_1px_rgba(18,59,74,0.06)] md:px-5 md:py-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-[20px] leading-[26px] font-bold tracking-tight text-foreground md:text-[22px] md:leading-[28px]">
+                Shop By Brands
+              </h2>
               <span
-                className="relative aspect-[3/4] w-full"
-                style={{ backgroundColor: brand.bgTint ?? "#F3EEF8" }}
+                className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground"
+                aria-label="Verified brands"
+                title="Verified brands"
               >
-                <Image
-                  src={brand.imageUrl}
-                  alt=""
-                  fill
-                  sizes="(max-width: 640px) 140px, 180px"
-                  className="object-contain object-center p-3 transition duration-300 group-hover:scale-[1.03]"
-                />
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-3 w-3"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M6 12.5l3.5 3.5L18 8"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </span>
-              <span className="flex min-h-11 items-center justify-center bg-accent px-2 py-2.5 text-center text-[13px] font-semibold text-accent-foreground">
-                {brand.label}
-              </span>
+            </div>
+            <Link
+              href="/browse"
+              className="text-[12px] font-semibold tracking-wide text-accent uppercase hover:underline"
+            >
+              View all →
             </Link>
-          )}
-        />
+          </div>
+          <ProductLoopRail
+            items={tiles}
+            label="Shop By Brands"
+            variant="brands"
+            renderItem={(brand) => (
+              <Link
+                href={brand.href}
+                className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-[0_1px_0_rgba(18,59,74,0.06)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(18,59,74,0.12)]"
+              >
+                <span
+                  className="relative aspect-[3/4] w-full"
+                  style={{ backgroundColor: brand.bgTint ?? "#F3EEF8" }}
+                >
+                  {brand.offer ? (
+                    <span className="absolute top-2 left-2 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent uppercase shadow-sm">
+                      {brand.offer}
+                    </span>
+                  ) : null}
+                  <Image
+                    src={brand.imageUrl}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 150px, 190px"
+                    className="object-contain object-center p-3 transition duration-300 group-hover:scale-[1.03]"
+                  />
+                </span>
+                <span className="flex min-h-10 items-center justify-center bg-accent px-2 py-2 text-center text-[12px] font-semibold tracking-wide text-accent-foreground md:min-h-11 md:text-[13px]">
+                  {brand.label}
+                </span>
+              </Link>
+            )}
+          />
+        </div>
       </div>
     </section>
   );
@@ -369,8 +382,8 @@ export type CampaignTile = {
 export function CampaignTiles({ tiles }: { tiles: CampaignTile[] }) {
   if (tiles.length === 0) return null;
   return (
-    <section className="container-shell py-5 md:py-7">
-      <div className="mb-3 md:mb-4">
+    <section className="container-shell py-4 md:py-5">
+      <div className="mb-2.5 md:mb-3">
         <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
           Featured collections
         </h2>
@@ -383,7 +396,7 @@ export function CampaignTiles({ tiles }: { tiles: CampaignTile[] }) {
           <li key={tile.id}>
             <Link
               href={tile.href}
-              className="group relative flex h-[200px] overflow-hidden rounded-2xl md:h-[240px]"
+              className="group relative flex h-[180px] overflow-hidden rounded-2xl md:h-[220px]"
             >
               <Image
                 src={tile.imageUrl}
@@ -422,8 +435,8 @@ export function PriceLedCollections({
   collections: PriceCollection[];
 }) {
   return (
-    <section className="container-shell py-5 md:py-7">
-      <div className="mb-3 md:mb-4">
+    <section className="container-shell py-4 md:py-5">
+      <div className="mb-2.5 md:mb-3">
         <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
           Shop by budget
         </h2>
@@ -464,7 +477,7 @@ export function FeaturedSellers({ sellers }: { sellers: SellerCardData[] }) {
   if (sellers.length === 0) return null;
 
   return (
-    <section className="container-shell flex flex-col gap-3 py-5 md:gap-4 md:py-7">
+    <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
       <div>
         <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
           Featured sellers
@@ -539,7 +552,7 @@ function brandLogoStyle(): {
 
 export function SellerConversionSection() {
   return (
-    <section className="container-shell py-5 md:py-7">
+    <section className="container-shell py-4 md:py-5">
       <div className="flex flex-col gap-3 rounded-2xl border border-border bg-accent-soft p-5 md:flex-row md:items-center md:justify-between md:p-6">
         <div>
           <h2 className="text-[24px] leading-[32px] font-bold tracking-tight">
@@ -575,6 +588,7 @@ export function OriginalBrandsSection({
     href: string;
     imageUrl: string;
     bgTint?: string;
+    offer?: string;
   }>;
 }) {
   if (!brands?.length) return null;
@@ -592,6 +606,7 @@ export type OriginalBrandCard = {
   imageUrl: string;
   overlay?: string;
   bgTint?: string;
+  offer?: string;
 };
 
 export type CampaignCollection = {

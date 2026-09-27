@@ -223,7 +223,7 @@ export default async function Home() {
       <CampaignTiles tiles={campaignTiles} />
 
       {trending.length > 0 ? (
-        <section className="container-shell flex flex-col gap-3 py-5 md:gap-4 md:py-7">
+        <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
           <SectionHeading
             title="Trending products"
             description="Fresh picks shoppers are exploring"
@@ -277,7 +277,7 @@ export default async function Home() {
       />
 
       {newArrivals.length > 0 ? (
-        <section className="container-shell flex flex-col gap-3 py-5 md:gap-4 md:py-7">
+        <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
           <SectionHeading
             title="New arrivals"
             description="Recently listed on Aspera"

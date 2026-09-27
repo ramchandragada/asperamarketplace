@@ -235,6 +235,25 @@ h2,
   }
 }
 
+/* Brand cards — taller portrait cards for Original Brands panel */
+.product-loop-rail--brands {
+  grid-auto-columns: minmax(8.25rem, 8.25rem);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+@media (min-width: 640px) {
+  .product-loop-rail--brands {
+    grid-auto-columns: minmax(9.5rem, 9.5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-loop-rail--brands {
+    grid-auto-columns: minmax(10.5rem, 10.5rem);
+  }
+}
+
 .category-scroll {
   display: grid;
   grid-auto-flow: column;

@@ -69,8 +69,8 @@ export function ProductLoopRail<T extends LoopItem>({
   items: T[];
   renderItem: (item: T) => ReactNode;
   label?: string;
-  /** `wide` for product/seller cards; `category` for larger square tiles */
-  variant?: "wide" | "category";
+  /** `wide` for product/seller cards; `category` for square tiles; `brands` for Original Brands cards */
+  variant?: "wide" | "category" | "brands";
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const loopingRef = useRef(false);
@@ -196,7 +196,11 @@ export function ProductLoopRail<T extends LoopItem>({
         aria-label={label}
         tabIndex={0}
         className={`product-loop-rail hide-scroll touch-pan-x ${
-          variant === "category" ? "product-loop-rail--category" : ""
+          variant === "category"
+            ? "product-loop-rail--category"
+            : variant === "brands"
+              ? "product-loop-rail--brands"
+              : ""
         }`}
       >
         {loopItems.map(({ item, key }) => (

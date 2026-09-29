@@ -194,12 +194,25 @@ export async function createProductReview(
   if (!product || product.status !== "approved") {
     throw new TrustValidationError("Product is not available for review");
   }
+  const purchased = await prisma.orderLine.findFirst({
+    where: {
+      productId: input.productId,
+      order: { userId: actor.userId, paidAt: { not: null } },
+      ...(input.orderId ? { orderId: input.orderId } : {}),
+    },
+    select: { orderId: true },
+  });
+  if (!purchased) {
+    throw new TrustValidationError(
+      "You can review a product after a paid order for it",
+    );
+  }
   return prisma.$transaction(async (tx) => {
     const created = await tx.productReview.create({
       data: {
         productId: input.productId,
         userId: actor.userId,
-        orderId: input.orderId,
+        orderId: input.orderId ?? purchased.orderId,
         rating: input.rating,
         title: input.title,
         body: input.body,

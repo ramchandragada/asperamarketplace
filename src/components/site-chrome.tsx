@@ -5,9 +5,13 @@ import { prisma } from "@/platform/db/prisma";
 import { SiteHeaderClient } from "@/components/site-header-client";
 import { MEGA_MENU } from "@/lib/mega-menu";
 import { readGuestCartToken } from "@/modules/cart/guest";
+import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
 
 async function cartCount(userId: string | undefined, guestToken: string | null) {
   try {
+    await releaseExpiredCheckoutReservations(
+      userId ? { userId } : undefined,
+    );
     const cart = userId
       ? await prisma.cart.findFirst({
           where: { userId, status: "open" },

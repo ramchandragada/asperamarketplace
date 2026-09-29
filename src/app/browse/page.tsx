@@ -127,6 +127,7 @@ export default async function BrowsePage({
         initialMaxPricePaise={maxPricePaise}
         heading={heading}
         browseBasePath="/browse"
+        enableLoadMore
       />
     </PageShell>
   );

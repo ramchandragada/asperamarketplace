@@ -8,7 +8,10 @@ import {
   AuthenticationError,
   AuthorizationError,
 } from "@/modules/identity/policy";
-import { ConflictError as IdentityConflictError } from "@/modules/identity/service";
+import {
+  ConflictError as IdentityConflictError,
+  RateLimitError,
+} from "@/modules/identity/service";
 import {
   ConflictError as SellerConflictError,
   ValidationError,
@@ -101,6 +104,17 @@ export function jsonError(
         status: 400,
         headers: { [REQUEST_ID_HEADER]: requestId },
       },
+    );
+  }
+
+  if (error instanceof RateLimitError) {
+    return NextResponse.json(
+      fail({
+        requestId,
+        code: error.code,
+        message: error.message,
+      }),
+      { status: 429, headers: { [REQUEST_ID_HEADER]: requestId } },
     );
   }
 

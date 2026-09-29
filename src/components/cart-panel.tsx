@@ -82,6 +82,7 @@ export function CartPanel({ initialCart }: { initialCart: CartView }) {
                   <label className="text-sm">
                     Qty
                     <input
+                      key={`${item.variantId}-${item.quantity}`}
                       type="number"
                       min={0}
                       max={Math.min(99, item.availableQty)}

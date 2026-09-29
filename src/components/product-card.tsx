@@ -150,7 +150,8 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
     : null;
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]">
+      <WishlistButton productId={product.id} />
       <Link
         href={`/products/${product.slug}`}
         className="flex h-full flex-col"
@@ -158,7 +159,6 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
       >
         <div className="relative aspect-square overflow-hidden bg-accent-soft md:aspect-square">
           {product.badge ? <BadgePill badge={product.badge} /> : null}
-          <WishlistButton productId={product.id} />
           {showImage ? (
             <Image
               src={product.primaryImageUrl as string}

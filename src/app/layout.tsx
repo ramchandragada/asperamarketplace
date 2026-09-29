@@ -51,7 +51,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <SiteHeader />
-        <div id="content" className="flex-1 pb-16 md:pb-0">
+        <div id="content" tabIndex={-1} className="flex-1 pb-16 md:pb-0">
           {children}
         </div>
         <SiteFooter />

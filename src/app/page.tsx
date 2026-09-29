@@ -48,7 +48,7 @@ const DISCOVERY_LANES = [
   {
     id: "rated",
     label: "Top rated picks",
-    href: "/browse?sort=relevance",
+    href: "/browse?sort=rating",
     imageUrl:
       "https://images.unsplash.com/photo-1534235187448-833893dfe3e0?auto=format&fit=crop&w=800&q=85",
   },

@@ -19,6 +19,8 @@ import {
   beginIdempotentCommand,
   completeIdempotentCommand,
 } from "@/platform/idempotency/store";
+import { clampMergedQuantity } from "@/modules/cart/merge-qty";
+import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
 
 const RESERVATION_MINUTES = 15;
 
@@ -380,6 +382,15 @@ export async function mergeGuestCartIntoUser(
 
   await prisma.$transaction(async (tx) => {
     for (const line of guestCart.items) {
+      const variant = await tx.productVariant.findUnique({
+        where: { id: line.variantId },
+        include: { inventory: true },
+      });
+      if (!variant?.isActive) continue;
+      const available = availableQuantity(
+        variant.inventory?.onHand ?? 0,
+        variant.inventory?.reserved ?? 0,
+      );
       const existing = await tx.cartItem.findUnique({
         where: {
           cartId_variantId: {
@@ -388,17 +399,28 @@ export async function mergeGuestCartIntoUser(
           },
         },
       });
+      const quantity = clampMergedQuantity(
+        existing?.quantity ?? 0,
+        line.quantity,
+        available,
+      );
+      if (quantity < 1) {
+        if (existing) {
+          await tx.cartItem.delete({ where: { id: existing.id } });
+        }
+        continue;
+      }
       if (existing) {
         await tx.cartItem.update({
           where: { id: existing.id },
-          data: { quantity: existing.quantity + line.quantity },
+          data: { quantity },
         });
       } else {
         await tx.cartItem.create({
           data: {
             cartId: userCart.id,
             variantId: line.variantId,
-            quantity: line.quantity,
+            quantity,
           },
         });
       }
@@ -637,6 +659,12 @@ export async function confirmCheckout(
     taxPolicy,
   });
   assertClientTotal(snapshot, input.clientTotalPaise);
+
+  await releaseExpiredCheckoutReservations({
+    userId: actor.userId,
+    force: true,
+    correlationId,
+  });
 
   const reservedUntil = new Date(
     Date.now() + RESERVATION_MINUTES * 60 * 1000,

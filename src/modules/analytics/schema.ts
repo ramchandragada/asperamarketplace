@@ -33,6 +33,16 @@ export type TrackEventInput = z.infer<typeof trackEventSchema>;
 export type CreateExperimentInput = z.infer<typeof createExperimentSchema>;
 export type UpdateExperimentInput = z.infer<typeof updateExperimentSchema>;
 
+/** Events a browser may record. `order_paid` stays server-side only. */
+export const CLIENT_TRACKABLE_EVENTS = [
+  "page_view",
+  "product_view",
+  "search",
+  "add_to_cart",
+  "checkout_start",
+  "seller_dashboard_view",
+] as const;
+
 export const EVENT_TAXONOMY = [
   { name: "page_view", description: "Any authenticated or public page view" },
   { name: "product_view", description: "PDP impression" },

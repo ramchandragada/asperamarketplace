@@ -61,55 +61,71 @@ export function CartPanel({ initialCart }: { initialCart: CartView }) {
         </p>
       ) : (
         <>
-          <ul className="flex flex-col gap-4">
+          <ul className="flex flex-col gap-3">
             {cart.items.map((item) => (
-              <li key={item.variantId} className="border-b border-border pb-4">
-                <Link
-                  href={`/products/${item.productSlug}`}
-                  className="font-medium hover:underline"
+              <li
+                key={item.variantId}
+                className="flex gap-3 rounded-2xl bg-surface p-3 shadow-[var(--shadow-card)]"
+              >
+                <span
+                  className="photo-well flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-accent/50"
+                  aria-hidden
                 >
-                  {item.productTitle}
-                </Link>
-                <p className="text-sm text-muted">
-                  {item.variantTitle} · {item.sellerName}
-                </p>
-                <p className="text-sm">
-                  {formatPaise(item.unitPricePaise)} each · line{" "}
-                  {formatPaise(item.lineTotalPaise)}
-                  {!item.inStock ? " · stock issue" : ""}
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <label className="text-sm">
-                    Qty
-                    <input
-                      key={`${item.variantId}-${item.quantity}`}
-                      type="number"
-                      min={0}
-                      max={Math.min(99, item.availableQty)}
-                      defaultValue={item.quantity}
-                      disabled={pending}
-                      className="ml-2 w-20 rounded-lg border border-border bg-background px-2 py-1"
-                      onBlur={(event) => {
-                        const next = Number(event.target.value);
-                        if (Number.isFinite(next) && next !== item.quantity) {
-                          void setQuantity(item.variantId, next);
-                        }
-                      }}
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    className="text-sm underline"
-                    disabled={pending}
-                    onClick={() => void setQuantity(item.variantId, 0)}
+                  {item.productTitle.slice(0, 1).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/products/${item.productSlug}`}
+                    className="font-medium hover:underline"
                   >
-                    Remove
-                  </button>
+                    {item.productTitle}
+                  </Link>
+                  <p className="text-sm text-muted">
+                    {item.variantTitle} · {item.sellerName}
+                  </p>
+                  <p className="mt-1 text-sm">
+                    <span className="font-semibold">
+                      {formatPaise(item.lineTotalPaise)}
+                    </span>
+                    <span className="text-muted">
+                      {" "}
+                      · {formatPaise(item.unitPricePaise)} each
+                    </span>
+                    {!item.inStock ? " · stock issue" : ""}
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <label className="text-sm">
+                      Qty
+                      <input
+                        key={`${item.variantId}-${item.quantity}`}
+                        type="number"
+                        min={0}
+                        max={Math.min(99, item.availableQty)}
+                        defaultValue={item.quantity}
+                        disabled={pending}
+                        className="ml-2 w-20 rounded-full border border-border bg-background px-3 py-1"
+                        onBlur={(event) => {
+                          const next = Number(event.target.value);
+                          if (Number.isFinite(next) && next !== item.quantity) {
+                            void setQuantity(item.variantId, next);
+                          }
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="text-sm font-medium text-danger underline"
+                      disabled={pending}
+                      onClick={() => void setQuantity(item.variantId, 0)}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               </li>
             ))}
           </ul>
-          <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
+          <div className="rounded-2xl bg-surface p-4 shadow-[var(--shadow-card)]">
             <p className="text-lg font-semibold">
               Merchandise {formatPaise(cart.merchandisePaise)}
             </p>
@@ -118,9 +134,9 @@ export function CartPanel({ initialCart }: { initialCart: CartView }) {
             </p>
             <Link
               href="/checkout"
-              className="mt-4 inline-flex w-full items-center justify-center rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 font-semibold text-accent-foreground sm:w-fit"
+              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-accent px-4 py-2.5 font-semibold text-white sm:w-fit"
             >
-              Place order
+              Continue to checkout
             </Link>
           </div>
         </>

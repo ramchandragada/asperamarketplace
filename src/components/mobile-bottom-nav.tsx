@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Suspense } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 function HomeIcon() {
   return (
@@ -71,45 +72,62 @@ function UserIcon() {
   );
 }
 
-/** Meesho-style mobile tabs: Home · Categories · New · Cart · Account */
+/** App-style tabs: Home · Categories · New · Cart · Account */
 const items = [
   { href: "/", label: "Home", Icon: HomeIcon },
   { href: "/shop", label: "Categories", Icon: CategoriesIcon },
-  { href: "/shop?sort=newest", label: "New", Icon: NewIcon, match: "/shop" },
+  { href: "/shop?sort=newest", label: "New", Icon: NewIcon },
   { href: "/cart", label: "Cart", Icon: CartIcon },
   { href: "/account", label: "Account", Icon: UserIcon },
 ] as const;
 
-export function MobileBottomNav() {
+function tabActive(pathname: string, sort: string | null, href: string, label: string) {
+  if (href === "/") return pathname === "/";
+  const onShop = pathname === "/shop" || pathname.startsWith("/shop/");
+  if (label === "New") return onShop && sort === "newest";
+  if (href === "/shop") return onShop && sort !== "newest";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function NavBar({ sort }: { sort: string | null }) {
   const pathname = usePathname();
+  return (
+    <ul className="grid grid-cols-5 gap-0.5 rounded-full border border-border/80 bg-surface/92 px-1 py-1 shadow-[0_10px_30px_rgba(23,33,38,0.16)] backdrop-blur-md">
+      {items.map((item) => {
+        const active = tabActive(pathname, sort, item.href, item.label);
+        return (
+          <li key={item.label}>
+            <Link
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={`flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-full text-[10px] font-semibold ${
+                active ? "bg-accent text-accent-foreground" : "text-muted"
+              }`}
+            >
+              <item.Icon />
+              {item.label}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function NavBarWithSearch() {
+  const sort = useSearchParams().get("sort");
+  return <NavBar sort={sort} />;
+}
+
+export function MobileBottomNav() {
   return (
     <nav
       aria-label="Mobile primary"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-md md:hidden"
+      className="fixed inset-x-3 bottom-[max(0.45rem,env(safe-area-inset-bottom))] z-40 md:hidden"
     >
-      <ul className="grid grid-cols-5 gap-1 px-1 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        {items.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : item.href.startsWith("/shop?")
-                ? pathname.startsWith("/shop")
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
-            <li key={item.label}>
-              <Link
-                href={item.href}
-                className={`flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-[var(--radius-sm)] text-[10px] font-medium ${
-                  active ? "text-accent" : "text-muted"
-                }`}
-              >
-                <item.Icon />
-                {item.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      <Suspense fallback={<NavBar sort={null} />}>
+        <NavBarWithSearch />
+      </Suspense>
     </nav>
   );
 }

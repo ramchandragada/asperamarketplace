@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
-import { formatPaise } from "@/modules/catalogue/helpers";
+import { discountPercent, formatPaise } from "@/modules/catalogue/helpers";
 
 type VariantView = {
   id: string;
@@ -138,11 +138,25 @@ export function ProductPurchasePanel({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <p className="text-2xl font-bold">
-          {formatPaise(priceVariant.sellingPricePaise)}
+        <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="text-3xl font-bold tracking-tight md:text-4xl">
+            {formatPaise(priceVariant.sellingPricePaise)}
+          </span>
           {priceVariant.mrpPaise > priceVariant.sellingPricePaise ? (
-            <span className="ml-2 text-base font-normal text-muted line-through">
+            <span className="text-base font-normal text-muted line-through">
               {formatPaise(priceVariant.mrpPaise)}
+            </span>
+          ) : null}
+          {discountPercent(
+            priceVariant.mrpPaise,
+            priceVariant.sellingPricePaise,
+          ) ? (
+            <span className="offer-chip px-2 py-1 text-xs">
+              {discountPercent(
+                priceVariant.mrpPaise,
+                priceVariant.sellingPricePaise,
+              )}
+              % off
             </span>
           ) : null}
         </p>
@@ -313,7 +327,7 @@ export function ProductPurchasePanel({
       </div>
 
       {/* Single CTA instance: sticky on mobile, inline on desktop */}
-      <div className="fixed inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-50 flex gap-2 border-t border-border bg-surface p-3 md:static md:bottom-auto md:z-auto md:border-0 md:bg-transparent md:p-0">
+      <div className="fixed inset-x-3 bottom-[calc(5.35rem+env(safe-area-inset-bottom))] z-50 flex gap-2 rounded-2xl border border-border bg-surface/95 p-2 shadow-[var(--shadow-mega)] backdrop-blur-md md:static md:inset-auto md:bottom-auto md:z-auto md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
         <div className="min-w-0 flex-1 sm:flex-none">
           <AddToCartButton
             variantId={activeVariantId}
@@ -327,7 +341,7 @@ export function ProductPurchasePanel({
           <button
             type="button"
             disabled
-            className="inline-flex flex-1 items-center justify-center rounded-[var(--radius-sm)] bg-brand-accent px-4 py-2 text-sm font-semibold text-white opacity-60 sm:flex-none"
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-brand-accent px-4 py-2 text-sm font-semibold text-white opacity-60 sm:flex-none"
           >
             Buy now
           </button>
@@ -336,7 +350,7 @@ export function ProductPurchasePanel({
             type="button"
             disabled={buyPending}
             onClick={() => void buyNow()}
-            className="inline-flex flex-1 items-center justify-center rounded-[var(--radius-sm)] bg-brand-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 sm:flex-none"
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-brand-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 sm:flex-none"
           >
             {buyPending ? "Starting…" : "Buy now"}
           </button>
@@ -348,7 +362,7 @@ export function ProductPurchasePanel({
         </p>
       ) : null}
       {/* Spacer so the fixed bar sits above the mobile tab nav */}
-      <div className="h-36 md:hidden" aria-hidden />
+      <div className="h-40 md:hidden" aria-hidden />
     </div>
   );
 }

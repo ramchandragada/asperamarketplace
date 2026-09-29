@@ -949,9 +949,9 @@ export function PriceLedCollections({
           <li key={collection.id}>
             <Link
               href={collection.href}
-              className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-5 transition hover:border-accent hover:shadow-[var(--shadow-card)]"
+              className="flex flex-col gap-1 rounded-2xl bg-surface p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
             >
-              <span className="text-[20px] font-bold text-accent">
+              <span className="text-[22px] font-bold tracking-tight text-brand-accent">
                 {collection.label}
               </span>
               <span className="text-sm text-muted">{collection.hint}</span>

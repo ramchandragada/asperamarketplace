@@ -297,7 +297,7 @@ export default async function ProductDetailPage({
 
         <div className="flex flex-col gap-5">
           <div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
+            <h1 className="font-display text-[1.75rem] leading-tight font-semibold tracking-tight md:text-4xl">
               {product.title}
             </h1>
             <p className="mt-2 text-base text-muted">{product.summary}</p>
@@ -326,7 +326,7 @@ export default async function ProductDetailPage({
             productTitle={product.title}
           />
 
-          <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
+          <div className="rounded-2xl bg-surface p-4 shadow-[var(--shadow-card)]">
             <p className="text-xs font-semibold tracking-wide text-muted uppercase">
               Sold by
             </p>

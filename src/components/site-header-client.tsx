@@ -283,7 +283,7 @@ function HeaderSearch() {
           Search products
         </label>
         <div className="relative">
-          <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted">
+          <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted">
             <SearchIcon className="h-[18px] w-[18px]" />
           </span>
           <input
@@ -297,8 +297,14 @@ function HeaderSearch() {
             autoComplete="off"
             aria-autocomplete="list"
             aria-controls={listId}
-            className="h-11 w-full rounded-[8px] border border-border bg-white py-2.5 pr-4 pl-10 text-[14px] text-foreground outline-none placeholder:text-muted focus-visible:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/25"
+            className="h-12 w-full rounded-full border border-border bg-white py-2.5 pr-24 pl-11 text-[14px] text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none placeholder:text-muted focus-visible:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/25"
           />
+          <button
+            type="submit"
+            className="absolute top-1 right-1 bottom-1 inline-flex items-center rounded-full bg-brand-accent px-3.5 text-[13px] font-semibold text-white"
+          >
+            Search
+          </button>
         </div>
       </form>
       {showPanel ? (
@@ -429,13 +435,13 @@ export function SiteHeaderClient({
 
   return (
     <>
-      <div className="w-full bg-accent text-accent-foreground">
+      <div className="w-full bg-[linear-gradient(90deg,#123b4a_0%,#1a5348_58%,#9a4a28_100%)] text-accent-foreground">
         <p className="flex h-8 w-full items-center justify-center px-4 text-center text-[12px] font-medium tracking-wide md:h-9 md:px-8 md:text-[13px]">
           Free delivery on eligible orders · Easy returns · Secure checkout
         </p>
       </div>
     <header
-      className={`sticky top-0 z-40 w-full border-b border-border bg-surface ${
+      className={`sticky top-0 z-40 w-full border-b border-border/80 bg-surface/95 backdrop-blur-md ${
         compact ? "shadow-[0_1px_3px_rgba(18,59,74,0.08)]" : ""
       }`}
       data-compact={compact ? "true" : "false"}
@@ -531,7 +537,7 @@ export function SiteHeaderClient({
             <Link
               key={entry.key}
               href={entry.href}
-              className="inline-flex min-h-11 shrink-0 items-center rounded-lg border border-border bg-background px-3 text-[13px] font-medium whitespace-nowrap hover:border-accent hover:text-accent"
+              className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-background px-3 text-[13px] font-medium whitespace-nowrap shadow-[inset_0_0_0_1px_var(--border)] hover:text-accent"
             >
               {entry.label}
             </Link>

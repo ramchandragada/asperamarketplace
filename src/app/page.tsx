@@ -306,7 +306,8 @@ export default async function Home() {
       <CampaignTiles tiles={campaignTiles} />
 
       {trending.length > 0 ? (
-        <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
+        <section className="studio-band">
+          <div className="container-shell flex flex-col gap-3 py-5 md:gap-3.5 md:py-6">
           <SectionHeading
             title="Picked for you"
             description="Personalised finds from live catalogue"
@@ -320,6 +321,7 @@ export default async function Home() {
             }
           />
           <TrendingProductsRail products={trending} />
+          </div>
         </section>
       ) : null}
 
@@ -360,7 +362,8 @@ export default async function Home() {
       />
 
       {newArrivals.length > 0 ? (
-        <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
+        <section className="studio-band">
+          <div className="container-shell flex flex-col gap-3 py-5 md:gap-3.5 md:py-6">
           <SectionHeading
             title="New arrivals"
             description="Recently listed on Aspera"
@@ -378,6 +381,7 @@ export default async function Home() {
               <ProductCard key={item.id} product={item} />
             ))}
           </div>
+          </div>
         </section>
       ) : null}
 
@@ -385,7 +389,7 @@ export default async function Home() {
       {productsForYou.items.length > 0 ? (
         <section
           id="products-for-you"
-          className="border-t border-border/70 bg-background"
+          className="bg-background"
         >
           <div className="container-shell py-5 md:py-7">
             <CatalogueBrowse

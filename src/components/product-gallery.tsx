@@ -98,8 +98,8 @@ export function ProductGallery({
                   setActive(image.id);
                   setPinchScale(1);
                 }}
-                className={`relative h-16 w-16 overflow-hidden rounded-[var(--radius-sm)] border ${
-                  active === image.id ? "border-accent" : "border-border"
+                className={`photo-well relative h-16 w-16 overflow-hidden rounded-xl ring-2 ring-offset-2 ring-offset-background ${
+                  active === image.id ? "ring-accent" : "ring-transparent"
                 }`}
                 aria-label={image.altText}
                 aria-pressed={active === image.id}
@@ -129,7 +129,7 @@ export function ProductGallery({
       <div className="relative order-1 flex-1 overflow-visible lg:order-2">
         <div
           ref={mainRef}
-          className="relative aspect-square cursor-crosshair touch-pinch-zoom overflow-hidden rounded-[var(--radius)] border border-border bg-accent-soft/40 shadow-[var(--shadow-card)]"
+          className="photo-well relative aspect-square cursor-crosshair touch-pinch-zoom overflow-hidden rounded-2xl shadow-[var(--shadow-card)]"
           onPointerMove={onPointerMove}
           onPointerEnter={onPointerMove}
           onPointerLeave={() => setZoom(null)}

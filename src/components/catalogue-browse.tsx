@@ -1108,14 +1108,24 @@ export function CatalogueBrowse({
       </div>
 
       <div className="flex items-center gap-2 md:hidden">
-        <form onSubmit={onSearch} className="flex min-w-0 flex-1 gap-2">
+        <form onSubmit={onSearch} className="flex min-w-0 flex-1 gap-2" role="search">
+          <label className="sr-only" htmlFor="browse-search">
+            Search products
+          </label>
           <input
+            id="browse-search"
             name="q"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Try Saree, Kurti or Search by Product Code"
-            className="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-2 text-sm"
+            className="min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2 text-sm"
           />
+          <button
+            type="submit"
+            className="inline-flex min-h-11 items-center rounded-full bg-brand-accent px-3 text-sm font-semibold text-white"
+          >
+            Search
+          </button>
         </form>
         <Button
           type="button"
@@ -1158,7 +1168,7 @@ export function CatalogueBrowse({
             aria-label="Close filters"
             onClick={() => setFiltersOpen(false)}
           />
-          <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-surface p-4 shadow-[var(--shadow-mega)]">
+          <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-surface p-4 shadow-[var(--shadow-mega)]">
             <div className="mb-2 flex justify-end">
               <button
                 type="button"
@@ -1174,8 +1184,10 @@ export function CatalogueBrowse({
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="hidden border-r border-[#eee] pr-4 lg:block">
-          <div className="sticky top-24 bg-white py-1">{filterPanel}</div>
+        <aside className="hidden lg:block">
+          <div className="sticky top-36 rounded-2xl bg-surface p-3 shadow-[var(--shadow-card)]">
+            {filterPanel}
+          </div>
         </aside>
 
         <div className="flex flex-col gap-4">

@@ -41,8 +41,8 @@ export async function generateMetadata({
   const seller = await findSeller(slug);
   return {
     title: seller
-      ? `${seller.tradeName ?? seller.legalName} · Aspera Marketplace`
-      : "Seller shop · Aspera Marketplace",
+      ? (seller.tradeName ?? seller.legalName)
+      : "Seller shop",
   };
 }
 

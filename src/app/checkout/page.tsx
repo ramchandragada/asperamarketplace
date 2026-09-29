@@ -5,7 +5,7 @@ import { getCartForActor, listAddresses } from "@/modules/cart/service";
 import { getOptionalActor } from "@/modules/identity/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Checkout · Aspera Marketplace" };
+export const metadata = { title: "Checkout" };
 
 export default async function CheckoutPage() {
   const actor = await getOptionalActor();

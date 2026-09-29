@@ -6,7 +6,7 @@ import { listPrivacyRequests } from "@/modules/trust/service";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Privacy · Aspera Marketplace",
+  title: "Privacy",
   description: "How Aspera Marketplace handles personal data and privacy requests.",
 };
 

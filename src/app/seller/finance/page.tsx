@@ -10,7 +10,7 @@ import { actorHasSellerCapability } from "@/modules/identity/policy";
 import { prisma } from "@/platform/db/prisma";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Seller finance · Aspera Marketplace" };
+export const metadata = { title: "Seller finance" };
 
 export default async function SellerFinancePage() {
   const actor = await getOptionalActor();

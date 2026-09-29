@@ -11,7 +11,7 @@ import {
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Popular Products | Aspera Marketplace",
+  title: "Popular Products",
   description: "Trending and top-rated products on Aspera Marketplace.",
 };
 

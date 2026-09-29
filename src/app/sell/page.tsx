@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PageShell } from "@/components/ui/page-shell";
 
 export const metadata = {
-  title: "Sell on Aspera Marketplace",
+  title: "Sell on Aspera",
   description: "Start selling on Aspera — reach shoppers across India.",
 };
 

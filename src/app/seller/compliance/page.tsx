@@ -8,7 +8,7 @@ import { resolveSellerForActor } from "@/modules/seller/access";
 import { prisma } from "@/platform/db/prisma";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Seller compliance · Aspera Marketplace" };
+export const metadata = { title: "Seller compliance" };
 
 export default async function SellerCompliancePage() {
   const actor = await getOptionalActor();

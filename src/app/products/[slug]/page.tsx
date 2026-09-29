@@ -29,15 +29,16 @@ export async function generateMetadata({
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
     "https://asperamarketplace.vercel.app";
   if (!product) {
-    return { title: "Product · Aspera Marketplace" };
+    return { title: "Product" };
   }
   const image = product.images.find((img) => img.isPrimary)?.url ?? product.images[0]?.url;
+  const ogTitle = `${product.title} · Aspera Marketplace`;
   return {
-    title: `${product.title} | Aspera Marketplace`,
+    title: product.title,
     description: product.summary ?? product.description?.slice(0, 160),
     alternates: { canonical: `${siteUrl}/products/${product.slug}` },
     openGraph: {
-      title: `${product.title} | Aspera Marketplace`,
+      title: ogTitle,
       description: product.summary ?? undefined,
       url: `${siteUrl}/products/${product.slug}`,
       type: "website",
@@ -45,7 +46,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.title} | Aspera Marketplace`,
+      title: ogTitle,
       description: product.summary ?? undefined,
     },
   };

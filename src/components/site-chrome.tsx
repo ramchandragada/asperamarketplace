@@ -7,23 +7,40 @@ import { MEGA_MENU } from "@/lib/mega-menu";
 import { readGuestCartToken } from "@/modules/cart/guest";
 
 async function cartCount(userId: string | undefined, guestToken: string | null) {
-  const cart = userId
-    ? await prisma.cart.findFirst({
-        where: { userId, status: "open" },
-        include: { items: true },
-      })
-    : guestToken
+  try {
+    const cart = userId
       ? await prisma.cart.findFirst({
-          where: { guestToken, status: "open" },
+          where: { userId, status: "open" },
           include: { items: true },
         })
-      : null;
-  return cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+      : guestToken
+        ? await prisma.cart.findFirst({
+            where: { guestToken, status: "open" },
+            include: { items: true },
+          })
+        : null;
+    return cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+  } catch {
+    // Never let a cart/DB blip take down every page via the shared header.
+    return 0;
+  }
 }
 
 export async function SiteHeader() {
-  const actor = await getOptionalActor();
-  const guestToken = actor ? null : await readGuestCartToken();
+  let actor: Awaited<ReturnType<typeof getOptionalActor>> = null;
+  try {
+    actor = await getOptionalActor();
+  } catch {
+    actor = null;
+  }
+
+  let guestToken: string | null = null;
+  try {
+    guestToken = actor ? null : await readGuestCartToken();
+  } catch {
+    guestToken = null;
+  }
+
   const count = await cartCount(actor?.userId, guestToken);
   const isAdmin = actor ? actorIsAdmin(actor) : false;
   const hasSellerRole =

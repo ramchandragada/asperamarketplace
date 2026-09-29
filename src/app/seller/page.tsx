@@ -9,7 +9,7 @@ import { resolveSellerForActor } from "@/modules/seller/access";
 import { getSellerActionDashboard } from "@/modules/seller/dashboard";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Seller dashboard · Aspera Marketplace" };
+export const metadata = { title: "Seller dashboard" };
 
 const priorityTone = {
   critical: "danger",

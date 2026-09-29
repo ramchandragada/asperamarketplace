@@ -13,7 +13,7 @@ import {
 } from "@/modules/trust/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Trust & safety · Aspera Marketplace" };
+export const metadata = { title: "Trust & safety" };
 
 export default async function AdminTrustPage() {
   const actor = await getOptionalActor();

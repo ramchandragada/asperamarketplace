@@ -11,7 +11,7 @@ import {
 } from "@/modules/finance/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Finance · Aspera Marketplace" };
+export const metadata = { title: "Finance" };
 
 export default async function AdminFinancePage() {
   const actor = await getOptionalActor();

@@ -97,21 +97,14 @@ type HeroSlide = {
   subtitle: string;
   ctaLabel: string;
   ctaHref: string;
-  /** Primary polished product cutout */
-  productImage: string;
-  /** Soft well tint behind the cutout */
-  wellTint: string;
-  /** Optional supporting cutouts for a merchandising cluster */
-  supportImages?: string[];
-  /** Bright left-panel gradient — Aspera palette */
-  panelGradient: string;
+  /** Full-bleed lifestyle photo in /public/hero */
+  image: string;
   accentChip: string;
 };
 
 /**
- * Full-bleed hero carousel — polished product merchandising
- * (cutouts on soft wells, no candid lifestyle photos).
- * Copy still spans every life stage from baby to seniors.
+ * Full-bleed hero carousel. Photos are original generated lifestyle images
+ * committed under public/hero (not hotlinked). Copy spans baby to seniors.
  */
 const HERO_SLIDES: HeroSlide[] = [
   {
@@ -122,11 +115,7 @@ const HERO_SLIDES: HeroSlide[] = [
       "Care essentials, softwear, and nursery picks for the first chapter.",
     ctaLabel: "Shop baby",
     ctaHref: "/browse?categorySlug=baby-kids&q=baby",
-    productImage: "/category-tiles/home.png",
-    wellTint: "#EEF5F4",
-    supportImages: ["/category-tiles/kids.png", "/category-tiles/beauty.png"],
-    panelGradient:
-      "linear-gradient(145deg,#5A9E96 0%,#3D7F78 48%,#2A5F5A 100%)",
+    image: "/hero/hero-baby.webp",
     accentChip: "From day one",
   },
   {
@@ -137,14 +126,7 @@ const HERO_SLIDES: HeroSlide[] = [
       "Clothes, toys, and school staples that keep pace with every adventure.",
     ctaLabel: "Shop kids",
     ctaHref: "/browse?categorySlug=baby-kids&audience=kids",
-    productImage: "/category-tiles/kids.png",
-    wellTint: "#E8F2F4",
-    supportImages: [
-      "/category-tiles/footwear.png",
-      "/category-tiles/bags.png",
-    ],
-    panelGradient:
-      "linear-gradient(145deg,#4A8FA0 0%,#347484 48%,#245A68 100%)",
+    image: "/hero/hero-kids.webp",
     accentChip: "Ages 2–12",
   },
   {
@@ -155,14 +137,7 @@ const HERO_SLIDES: HeroSlide[] = [
       "Fashion, beauty, and gadgets for every mood — clear prices, real sellers.",
     ctaLabel: "Shop fashion",
     ctaHref: "/browse?categorySlug=fashion",
-    productImage: "/category-tiles/women.png",
-    wellTint: "#EEF3F5",
-    supportImages: [
-      "/category-tiles/beauty.png",
-      "/category-tiles/electronics.png",
-    ],
-    panelGradient:
-      "linear-gradient(145deg,#5B7F8F 0%,#3F6474 48%,#2A4A58 100%)",
+    image: "/hero/hero-fashion.webp",
     accentChip: "Trending now",
   },
   {
@@ -173,11 +148,7 @@ const HERO_SLIDES: HeroSlide[] = [
       "Kitchen, living, and everyday essentials that make shared spaces work.",
     ctaLabel: "Shop home",
     ctaHref: "/browse?categorySlug=home-kitchen",
-    productImage: "/category-tiles/home.png",
-    wellTint: "#EAF1F4",
-    supportImages: ["/category-tiles/men.png", "/category-tiles/women.png"],
-    panelGradient:
-      "linear-gradient(145deg,#4A7A90 0%,#325F74 48%,#214A5C 100%)",
+    image: "/hero/hero-home.webp",
     accentChip: "Family favourites",
   },
   {
@@ -188,11 +159,7 @@ const HERO_SLIDES: HeroSlide[] = [
       "Wellness, easy living, and trusted everyday picks for later years.",
     ctaLabel: "Shop wellness",
     ctaHref: "/browse?categorySlug=health-wellness",
-    productImage: "/category-tiles/beauty.png",
-    wellTint: "#E8EEF0",
-    supportImages: ["/category-tiles/home.png", "/category-tiles/footwear.png"],
-    panelGradient:
-      "linear-gradient(145deg,#3D7A72 0%,#2A5C58 48%,#123B4A 100%)",
+    image: "/hero/hero-wellness.webp",
     accentChip: "Graceful living",
   },
 ];
@@ -277,10 +244,9 @@ export function AsperaHero() {
       </h2>
 
       <div className="relative grid grid-cols-[3.25rem_minmax(0,1fr)_3.25rem] md:grid-cols-[4.25rem_minmax(0,1fr)_4.25rem]">
-        <div className="relative col-start-2 row-start-1 min-h-[min(78vw,24rem)] md:min-h-[22rem] lg:min-h-[24rem]">
+        <div className="relative col-start-2 row-start-1 min-h-[24.5rem] md:min-h-[22rem] lg:min-h-[24rem]">
         {HERO_SLIDES.map((entry, slideIndex) => {
           const active = slideIndex === index;
-          const supports = entry.supportImages?.slice(0, 2) ?? [];
           return (
             <div
               key={entry.id}
@@ -289,72 +255,33 @@ export function AsperaHero() {
               aria-roledescription="slide"
               aria-label={`${slideIndex + 1} of ${count}: ${entry.eyebrow}`}
               aria-hidden={!active}
-              className={`absolute inset-0 transition-opacity duration-700 ease-out ${
+              className={`absolute inset-0 bg-[#123b4a] transition-opacity duration-700 ease-out ${
                 active
                   ? "z-[1] opacity-100"
                   : "pointer-events-none z-0 opacity-0"
               }`}
             >
+              {/* Photo fills the banner, including the arrow gutters.
+                  Copy stays in the center column so the arrows cannot cover it. */}
               <div
                 className="absolute inset-y-0 -left-[3.25rem] -right-[3.25rem] md:-left-[4.25rem] md:-right-[4.25rem]"
-                style={{ background: entry.panelGradient }}
                 aria-hidden
-              />
-              <div
-                className="absolute inset-y-0 -left-[3.25rem] -right-[3.25rem] opacity-[0.16] md:-left-[4.25rem] md:-right-[4.25rem]"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 16% 20%, rgba(255,255,255,0.55) 0%, transparent 42%), radial-gradient(circle at 82% 72%, rgba(255,255,255,0.22) 0%, transparent 40%)",
-                }}
-                aria-hidden
-              />
-
-              {/* Polished merchandising panel — product cutouts on soft wells.
-                  Right edge stays inside the center column so the next arrow
-                  cannot cover the collage. */}
-              <div className="absolute inset-y-0 right-1 flex w-[min(58%,40rem)] items-center justify-center px-2 py-6 sm:right-2 md:w-[54%] md:px-4 md:py-8 lg:right-3">
-                <div
-                  className="relative flex h-full w-full max-w-[34rem] items-center justify-center gap-3 rounded-[1.75rem] px-4 py-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] md:gap-4 md:px-6 md:py-6"
-                  style={{
-                    background: `radial-gradient(120% 120% at 50% 30%, #ffffff 0%, ${entry.wellTint} 58%, ${entry.wellTint} 100%)`,
-                  }}
-                >
-                  {supports[0] ? (
-                    <div className="relative hidden aspect-[3/4] w-[22%] max-w-[7.5rem] overflow-hidden rounded-2xl bg-white/50 shadow-[0_10px_28px_rgba(18,59,74,0.1)] sm:block">
-                      <Image
-                        src={supports[0]}
-                        alt=""
-                        fill
-                        sizes="120px"
-                        className="object-contain object-center p-2"
-                      />
-                    </div>
-                  ) : null}
-                  <div className="relative aspect-square w-[58%] max-w-[16rem] overflow-hidden rounded-[1.5rem] bg-white/60 shadow-[0_16px_40px_rgba(18,59,74,0.12)] md:w-[62%]">
-                    <Image
-                      src={entry.productImage}
-                      alt=""
-                      fill
-                      priority={slideIndex === 0}
-                      sizes="(max-width: 768px) 45vw, 280px"
-                      className="object-contain object-center p-3 md:p-4"
-                    />
-                  </div>
-                  {supports[1] ? (
-                    <div className="relative hidden aspect-[3/4] w-[22%] max-w-[7.5rem] overflow-hidden rounded-2xl bg-white/50 shadow-[0_10px_28px_rgba(18,59,74,0.1)] sm:block">
-                      <Image
-                        src={supports[1]}
-                        alt=""
-                        fill
-                        sizes="120px"
-                        className="object-contain object-center p-2"
-                      />
-                    </div>
-                  ) : null}
-                </div>
+              >
+                <Image
+                  src={entry.image}
+                  alt=""
+                  fill
+                  priority={slideIndex === 0}
+                  sizes="100vw"
+                  className="object-cover object-[72%_center]"
+                />
               </div>
+              <div
+                className="absolute inset-y-0 -left-[3.25rem] -right-[3.25rem] bg-[linear-gradient(90deg,rgba(8,24,32,0.84)_0%,rgba(8,24,32,0.62)_58%,rgba(8,24,32,0.28)_100%)] md:-left-[4.25rem] md:-right-[4.25rem] md:bg-[linear-gradient(90deg,rgba(8,24,32,0.78)_0%,rgba(8,24,32,0.5)_34%,rgba(8,24,32,0.14)_62%,rgba(8,24,32,0.04)_100%)]"
+                aria-hidden
+              />
 
-              <div className="relative z-[2] container-shell flex h-full min-h-[min(78vw,24rem)] flex-col justify-center py-10 md:min-h-[22rem] md:py-12 lg:min-h-[24rem]">
+              <div className="relative z-[2] container-shell flex h-full min-h-[24.5rem] flex-col justify-center pt-5 pb-[4.75rem] md:min-h-[22rem] md:py-12 lg:min-h-[24rem]">
                 <div className="max-w-[20rem] text-white md:max-w-[26rem]">
                   <p className="font-display text-[26px] font-bold tracking-tight drop-shadow-sm md:text-[32px]">
                     Aspera
@@ -365,7 +292,7 @@ export function AsperaHero() {
                   <p className="mt-3 text-[13px] font-semibold tracking-wide text-white/90 uppercase md:text-[14px]">
                     {entry.eyebrow}
                   </p>
-                  <p className="mt-2 text-[26px] leading-[32px] font-bold tracking-tight md:text-[36px] md:leading-[42px]">
+                  <p className="mt-2 text-[26px] leading-[32px] font-bold tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] md:text-[36px] md:leading-[42px]">
                     {entry.title}
                   </p>
                   <p className="mt-2 max-w-sm text-[14px] leading-[21px] text-white/92 md:text-[15px] md:leading-[23px]">
@@ -393,7 +320,9 @@ export function AsperaHero() {
           );
         })}
 
-        {/* Dots + pause control — kept in the center column, clear of the arrows */}
+        {/* Dots + pause sit in the center column. On a phone they use the
+            reserved bottom band so they cannot cover the CTAs or the headline.
+            Desktop keeps them over the lower edge of the photograph. */}
         <div className="absolute inset-x-0 bottom-3 z-[3] flex items-center justify-center gap-3 md:bottom-4">
           <div className="flex gap-2">
             {HERO_SLIDES.map((entry, slideIndex) => {
@@ -449,7 +378,7 @@ export function AsperaHero() {
         </div>
         </div>
 
-        {/* Side columns keep the arrows off the headline and the collage */}
+        {/* Side columns keep the arrows off the headline */}
         <div className="z-[4] col-start-1 row-start-1 flex items-center justify-center">
           <button
             type="button"

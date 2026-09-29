@@ -39,6 +39,7 @@ App: http://localhost:3000
 | Seller ops | `seller.ops@aspera.local` | `AsperaOpsDevOnly1!` |
 | Seller finance | `seller.finance@aspera.local` | `AsperaFinanceDevOnly1!` |
 | Seller support | `seller.support@aspera.local` | `AsperaSupportDevOnly1!` |
+| Seller Studio Loom (10 listings) | `studio.loom@aspera.local` | `AsperaStudioDevOnly1!` |
 
 Catalogue seed: **12 categories**, **≥10 products each** (see `docs/CATALOGUE_SEED.md`). Run `pnpm db:migrate && pnpm db:seed` on non-production only.
 

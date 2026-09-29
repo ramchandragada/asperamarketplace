@@ -1,5 +1,21 @@
 import { z } from "zod";
 
+const CATALOGUE_IMAGE_HOSTS = new Set([
+  "images.unsplash.com",
+  "plus.unsplash.com",
+]);
+
+/** Storefront photos must be https URLs the image optimizer and CSP already allow. */
+export const catalogueImageUrlSchema = z
+  .string()
+  .trim()
+  .url()
+  .max(500)
+  .refine((value) => {
+    const url = new URL(value);
+    return url.protocol === "https:" && CATALOGUE_IMAGE_HOSTS.has(url.hostname);
+  }, "Image URL must be an https Unsplash photo");
+
 export const createProductSchema = z
   .object({
     sellerId: z.uuid(),
@@ -14,6 +30,7 @@ export const createProductSchema = z
       .trim()
       .regex(/^\d{4,8}$/, "HSN must be 4 to 8 digits")
       .optional(),
+    imageUrl: catalogueImageUrlSchema.optional(),
     variant: z.object({
       sku: z
         .string()

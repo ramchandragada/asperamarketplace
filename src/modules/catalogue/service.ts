@@ -147,6 +147,18 @@ export async function createProductDraft(
       },
     });
 
+    if (input.imageUrl) {
+      await tx.productImage.create({
+        data: {
+          productId: product.id,
+          url: input.imageUrl,
+          altText: input.title,
+          sortOrder: 0,
+          isPrimary: true,
+        },
+      });
+    }
+
     const variant = await tx.productVariant.create({
       data: {
         productId: product.id,

@@ -276,7 +276,8 @@ export function AsperaHero() {
         Aspera highlights — shopping for every age
       </h2>
 
-      <div className="relative min-h-[min(78vw,24rem)] md:min-h-[22rem] lg:min-h-[24rem]">
+      <div className="relative grid grid-cols-[3.25rem_minmax(0,1fr)_3.25rem] md:grid-cols-[4.25rem_minmax(0,1fr)_4.25rem]">
+        <div className="relative col-start-2 row-start-1 min-h-[min(78vw,24rem)] md:min-h-[22rem] lg:min-h-[24rem]">
         {HERO_SLIDES.map((entry, slideIndex) => {
           const active = slideIndex === index;
           const supports = entry.supportImages?.slice(0, 2) ?? [];
@@ -295,12 +296,12 @@ export function AsperaHero() {
               }`}
             >
               <div
-                className="absolute inset-0"
+                className="absolute inset-y-0 -left-[3.25rem] -right-[3.25rem] md:-left-[4.25rem] md:-right-[4.25rem]"
                 style={{ background: entry.panelGradient }}
                 aria-hidden
               />
               <div
-                className="absolute inset-0 opacity-[0.16]"
+                className="absolute inset-y-0 -left-[3.25rem] -right-[3.25rem] opacity-[0.16] md:-left-[4.25rem] md:-right-[4.25rem]"
                 style={{
                   backgroundImage:
                     "radial-gradient(circle at 16% 20%, rgba(255,255,255,0.55) 0%, transparent 42%), radial-gradient(circle at 82% 72%, rgba(255,255,255,0.22) 0%, transparent 40%)",
@@ -308,8 +309,10 @@ export function AsperaHero() {
                 aria-hidden
               />
 
-              {/* Polished merchandising panel — product cutouts on soft wells */}
-              <div className="absolute inset-y-0 right-0 flex w-[min(62%,44rem)] items-center justify-center px-4 py-6 md:w-[56%] md:px-8 md:py-8">
+              {/* Polished merchandising panel — product cutouts on soft wells.
+                  Right edge stays inside the center column so the next arrow
+                  cannot cover the collage. */}
+              <div className="absolute inset-y-0 right-1 flex w-[min(58%,40rem)] items-center justify-center px-2 py-6 sm:right-2 md:w-[54%] md:px-4 md:py-8 lg:right-3">
                 <div
                   className="relative flex h-full w-full max-w-[34rem] items-center justify-center gap-3 rounded-[1.75rem] px-4 py-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] md:gap-4 md:px-6 md:py-6"
                   style={{
@@ -390,43 +393,7 @@ export function AsperaHero() {
           );
         })}
 
-        {/* Edge arrows */}
-        <div className="pointer-events-none absolute inset-y-0 z-[3] flex w-full items-center justify-between px-2 md:px-3">
-          <button
-            type="button"
-            aria-label="Previous banner"
-            className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-md bg-white/85 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white md:h-10 md:w-10"
-            onClick={() => go(index - 1)}
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden>
-              <path
-                d="M14.5 6.5 9 12l5.5 5.5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            aria-label="Next banner"
-            className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-md bg-white/85 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white md:h-10 md:w-10"
-            onClick={() => go(index + 1)}
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden>
-              <path
-                d="M9.5 6.5 15 12l-5.5 5.5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Dots + pause control */}
+        {/* Dots + pause control — kept in the center column, clear of the arrows */}
         <div className="absolute inset-x-0 bottom-3 z-[3] flex items-center justify-center gap-3 md:bottom-4">
           <div className="flex gap-2">
             {HERO_SLIDES.map((entry, slideIndex) => {
@@ -478,6 +445,45 @@ export function AsperaHero() {
                 <path d="M7 5h3.5v14H7V5Zm6.5 0H17v14h-3.5V5Z" />
               </svg>
             )}
+          </button>
+        </div>
+        </div>
+
+        {/* Side columns keep the arrows off the headline and the collage */}
+        <div className="z-[4] col-start-1 row-start-1 flex items-center justify-center">
+          <button
+            type="button"
+            aria-label="Previous banner"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-white/90 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white"
+            onClick={() => go(index - 1)}
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+              <path
+                d="M14.5 6.5 9 12l5.5 5.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <div className="z-[4] col-start-3 row-start-1 flex items-center justify-center">
+          <button
+            type="button"
+            aria-label="Next banner"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-white/90 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white"
+            onClick={() => go(index + 1)}
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+              <path
+                d="M9.5 6.5 15 12l-5.5 5.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
       </div>

@@ -146,7 +146,7 @@ export function CatalogueBrowse({
   initialMaxPricePaise?: number;
   heading?: string;
   browseBasePath?: string;
-  /** `home` hides breadcrumb and uses Picked for you chrome */
+  /** `home` hides breadcrumb/top sort; Meesho-style Products For You chrome */
   variant?: "page" | "home";
   enableLoadMore?: boolean;
   /** Auto-load next page when sentinel enters viewport */
@@ -1060,41 +1060,50 @@ export function CatalogueBrowse({
           <div>
             <h1
               className={`font-display font-semibold tracking-tight ${
-                isHome ? "text-2xl md:text-3xl" : "text-3xl"
+                isHome ? "text-[22px] md:text-[28px]" : "text-3xl"
               }`}
             >
               {isHome
-                ? (heading ?? "Picked for you")
+                ? (heading ?? "Products For You")
                 : query.trim()
                   ? `Results for “${query.trim()}”`
                   : categoryName}
             </h1>
-            <p className="mt-1 text-sm text-muted">
-              {total >= 1000
-                ? "1000+ Products"
-                : `Showing ${items.length === 0 ? 0 : 1}–${items.length} of ${total} products`}
-            </p>
+            {!isHome ? (
+              <p className="mt-1 text-sm text-muted">
+                {total >= 1000
+                  ? "1000+ Products"
+                  : `Showing ${items.length === 0 ? 0 : 1}–${items.length} of ${total} products`}
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-muted">
+                Sort and filter live catalogue picks — shop by category, price,
+                and more.
+              </p>
+            )}
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <span className="text-muted">Sort by:</span>
-            <select
-              value={sort}
-              onChange={(event) => {
-                setSort(event.target.value);
-                startTransition(() => {
-                  void runSearch({ sort: event.target.value, page: 1 });
-                });
-              }}
-              className="rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-1.5 font-medium"
-              aria-label="Sort by"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {!isHome ? (
+            <label className="flex items-center gap-2 text-sm">
+              <span className="text-muted">Sort by:</span>
+              <select
+                value={sort}
+                onChange={(event) => {
+                  setSort(event.target.value);
+                  startTransition(() => {
+                    void runSearch({ sort: event.target.value, page: 1 });
+                  });
+                }}
+                className="rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-1.5 font-medium"
+                aria-label="Sort by"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </div>
       </div>
 

@@ -189,9 +189,16 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
           ) : null}
         </div>
         <div className="flex flex-1 flex-col gap-1 p-3 md:p-4">
-          <h3 className="line-clamp-2 text-[15px] leading-[21px] font-semibold text-foreground">
-            {product.title}
-          </h3>
+          <div className="flex items-start gap-1.5">
+            <h3 className="min-w-0 flex-1 line-clamp-2 text-[15px] leading-[21px] font-semibold text-foreground">
+              {product.title}
+            </h3>
+            {product.sellerVerified ? (
+              <span className="mt-0.5 shrink-0 rounded-full bg-[#e8f3f1] px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent">
+                Aspera
+              </span>
+            ) : null}
+          </div>
           <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
             <span className="text-[20px] leading-[26px] font-bold text-foreground">
               {formatPaise(product.minPricePaise)}

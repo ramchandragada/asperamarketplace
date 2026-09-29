@@ -1,6 +1,9 @@
 import Link from "next/link";
+import {
+  CatalogueBrowse,
+  type BrowseProduct,
+} from "@/components/catalogue-browse";
 import { ProductCard } from "@/components/product-card";
-import { TrendingProductsRail } from "@/components/trending-products-rail";
 import { SectionHeading } from "@/components/ui/page-shell";
 import {
   AsperaHero,
@@ -15,6 +18,7 @@ import {
   TrustSignalBar,
 } from "@/components/home-storefront";
 import {
+  listActiveBrands,
   listActiveCategories,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
@@ -143,7 +147,10 @@ const PRICE_COLLECTIONS = [
 ] as const;
 
 export default async function Home() {
-  const categories = await listActiveCategories();
+  const [categories, brands] = await Promise.all([
+    listActiveCategories(),
+    listActiveBrands(),
+  ]);
   const categorySlugSet = new Set(categories.map((c) => c.slug));
 
   const campaignTiles = CAMPAIGN_TILES.filter((tile) =>
@@ -158,7 +165,7 @@ export default async function Home() {
 
   const [
     newest,
-    trendingPool,
+    productsForYou,
     under299,
     under599,
     under999,
@@ -173,9 +180,8 @@ export default async function Home() {
     searchApprovedProducts({
       page: 1,
       pageSize: 24,
-      sort: "newest",
+      sort: "relevance",
       inStockOnly: true,
-      categorySlug: categorySlugSet.has("fashion") ? "fashion" : undefined,
     }),
     searchApprovedProducts({
       page: 1,
@@ -257,23 +263,6 @@ export default async function Home() {
     ];
   }
 
-  let trending = takeUnique(trendingPool.items, 18);
-  if (trending.length < 12) {
-    const extra = await searchApprovedProducts({
-      page: 1,
-      pageSize: 28,
-      sort: "relevance",
-      inStockOnly: true,
-    });
-    trending = [
-      ...trending,
-      ...takeUnique(
-        extra.items.filter((item) => !usedIds.has(item.id)),
-        18 - trending.length,
-      ),
-    ];
-  }
-
   const priceCollections = PRICE_COLLECTIONS.filter((collection) => {
     if (collection.maxPaise === 29900) return under299.total > 0;
     if (collection.maxPaise === 59900) return under599.total > 0;
@@ -290,21 +279,31 @@ export default async function Home() {
       <ShopByBrands brands={[...ASPERA_BRAND_LANES]} />
       <CampaignTiles tiles={campaignTiles} />
 
-      {trending.length > 0 ? (
-        <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
-          <SectionHeading
-            title="Picked for you"
-            description="Personalised finds from live catalogue"
-            action={
-              <Link
-                href="/browse"
-                className="text-sm font-medium text-accent hover:underline"
-              >
-                See all →
-              </Link>
-            }
-          />
-          <TrendingProductsRail products={trending} />
+      {productsForYou.items.length > 0 ? (
+        <section
+          id="products-for-you"
+          className="border-t border-border/70 bg-background"
+        >
+          <div className="container-shell py-5 md:py-7">
+            <CatalogueBrowse
+              variant="home"
+              heading="Products For You"
+              browseBasePath="/browse"
+              initialItems={productsForYou.items as BrowseProduct[]}
+              initialQuery=""
+              initialTotal={productsForYou.total}
+              initialSort="relevance"
+              categories={categories.map((category) => ({
+                slug: category.slug,
+                name: category.name,
+                productCount: category.productCount,
+              }))}
+              brands={brands}
+              enableLoadMore
+              infiniteScroll
+              updateUrl={false}
+            />
+          </div>
         </section>
       ) : null}
 

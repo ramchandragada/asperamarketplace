@@ -4,6 +4,7 @@ import {
   type BrowseProduct,
 } from "@/components/catalogue-browse";
 import { ProductCard } from "@/components/product-card";
+import { TrendingProductsRail } from "@/components/trending-products-rail";
 import { SectionHeading } from "@/components/ui/page-shell";
 import {
   AsperaHero,
@@ -165,6 +166,7 @@ export default async function Home() {
 
   const [
     newest,
+    trendingPool,
     productsForYou,
     under299,
     under599,
@@ -176,6 +178,13 @@ export default async function Home() {
       pageSize: 16,
       sort: "newest",
       inStockOnly: true,
+    }),
+    searchApprovedProducts({
+      page: 1,
+      pageSize: 24,
+      sort: "newest",
+      inStockOnly: true,
+      categorySlug: categorySlugSet.has("fashion") ? "fashion" : undefined,
     }),
     searchApprovedProducts({
       page: 1,
@@ -263,6 +272,23 @@ export default async function Home() {
     ];
   }
 
+  let trending = takeUnique(trendingPool.items, 18);
+  if (trending.length < 12) {
+    const extra = await searchApprovedProducts({
+      page: 1,
+      pageSize: 28,
+      sort: "relevance",
+      inStockOnly: true,
+    });
+    trending = [
+      ...trending,
+      ...takeUnique(
+        extra.items.filter((item) => !usedIds.has(item.id)),
+        18 - trending.length,
+      ),
+    ];
+  }
+
   const priceCollections = PRICE_COLLECTIONS.filter((collection) => {
     if (collection.maxPaise === 29900) return under299.total > 0;
     if (collection.maxPaise === 59900) return under599.total > 0;
@@ -279,31 +305,21 @@ export default async function Home() {
       <ShopByBrands brands={[...ASPERA_BRAND_LANES]} />
       <CampaignTiles tiles={campaignTiles} />
 
-      {productsForYou.items.length > 0 ? (
-        <section
-          id="products-for-you"
-          className="border-t border-border/70 bg-background"
-        >
-          <div className="container-shell py-5 md:py-7">
-            <CatalogueBrowse
-              variant="home"
-              heading="Products For You"
-              browseBasePath="/browse"
-              initialItems={productsForYou.items as BrowseProduct[]}
-              initialQuery=""
-              initialTotal={productsForYou.total}
-              initialSort="relevance"
-              categories={categories.map((category) => ({
-                slug: category.slug,
-                name: category.name,
-                productCount: category.productCount,
-              }))}
-              brands={brands}
-              enableLoadMore
-              infiniteScroll
-              updateUrl={false}
-            />
-          </div>
+      {trending.length > 0 ? (
+        <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
+          <SectionHeading
+            title="Picked for you"
+            description="Personalised finds from live catalogue"
+            action={
+              <Link
+                href="/browse"
+                className="text-sm font-medium text-accent hover:underline"
+              >
+                See all →
+              </Link>
+            }
+          />
+          <TrendingProductsRail products={trending} />
         </section>
       ) : null}
 
@@ -361,6 +377,35 @@ export default async function Home() {
             {newArrivals.map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Added below existing merchandising — does not replace any prior section */}
+      {productsForYou.items.length > 0 ? (
+        <section
+          id="products-for-you"
+          className="border-t border-border/70 bg-background"
+        >
+          <div className="container-shell py-5 md:py-7">
+            <CatalogueBrowse
+              variant="home"
+              heading="Products For You"
+              browseBasePath="/browse"
+              initialItems={productsForYou.items as BrowseProduct[]}
+              initialQuery=""
+              initialTotal={productsForYou.total}
+              initialSort="relevance"
+              categories={categories.map((category) => ({
+                slug: category.slug,
+                name: category.name,
+                productCount: category.productCount,
+              }))}
+              brands={brands}
+              enableLoadMore
+              infiniteScroll
+              updateUrl={false}
+            />
           </div>
         </section>
       ) : null}

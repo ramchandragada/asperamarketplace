@@ -22,7 +22,8 @@ Direction: **Studio Bazaar**. A warm paper canvas so photographs lead, teal for 
 - Home “Picked for you” and “New arrivals” sit on a lighter band so the scroll has rhythm. Budget tiles use the offer colour.
 - Header search is a pill with a visible Search button. Mobile browse search has the same button.
 - The bottom navigation is a floating pill. Only one shop tab is active at a time.
-- The product gallery uses the same warm well. Price and the offer chip are the first thing in the buy column. Add to cart and Buy now float above the tab pill.
+- The product gallery uses the same warm well. Price and the offer chip are the first thing in the buy column. On a phone, Add to cart and Buy now sit in one row above the tab pill; quantity stays on desktop and in the cart.
+- Offer clay is deep enough that white type on chips and buttons clears contrast. Muted text on the paper canvas stays readable.
 - Cart rows are cards with a line total and a clay continue-to-checkout action. Checkout primary buttons match that action. Payment, reservation, and auth behaviour are unchanged.
 
 ## Left as-is

@@ -327,7 +327,7 @@ export function ProductPurchasePanel({
       </div>
 
       {/* Single CTA instance: sticky on mobile, inline on desktop */}
-      <div className="fixed inset-x-3 bottom-[calc(5.35rem+env(safe-area-inset-bottom))] z-50 flex gap-2 rounded-2xl border border-border bg-surface/95 p-2 shadow-[var(--shadow-mega)] backdrop-blur-md md:static md:inset-auto md:bottom-auto md:z-auto md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+      <div className="fixed inset-x-3 bottom-[calc(5.85rem+env(safe-area-inset-bottom))] z-50 flex gap-2 rounded-2xl border border-border bg-surface/95 p-2 shadow-[0_-8px_24px_rgba(23,33,38,0.08)] backdrop-blur-md md:static md:inset-auto md:bottom-auto md:z-auto md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
         <div className="min-w-0 flex-1 sm:flex-none">
           <AddToCartButton
             variantId={activeVariantId}

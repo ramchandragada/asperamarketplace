@@ -72,8 +72,8 @@ export function AddToCartButton({
 
   return (
     <div className="flex w-full flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="text-sm">
+      <div className="flex w-full flex-wrap items-center gap-2">
+        <label className="hidden text-sm md:inline">
           Qty
           <input
             type="number"
@@ -81,18 +81,18 @@ export function AddToCartButton({
             max={Math.min(99, availableQty)}
             value={quantity}
             onChange={(event) => setQuantity(Number(event.target.value) || 1)}
-            className="ml-2 w-20 rounded-lg border border-border bg-background px-2 py-1"
+            className="ml-2 w-20 rounded-full border border-border bg-background px-3 py-1"
           />
         </label>
         <button
           type="button"
           disabled={pending}
           onClick={() => void add()}
-          className="inline-flex min-h-11 items-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-60"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-60 md:w-auto"
         >
           {pending ? "Adding…" : "Add to cart"}
         </button>
-        <a href="/cart" className="text-sm underline">
+        <a href="/cart" className="hidden text-sm underline md:inline">
           View cart
         </a>
       </div>

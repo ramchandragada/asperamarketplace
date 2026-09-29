@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AuthForm } from "@/components/auth-form";
 import { PageShell } from "@/components/ui/page-shell";
 
-export const metadata = { title: "Sign in · Aspera Marketplace" };
+export const metadata = { title: "Sign in" };
 
 export default function LoginPage() {
   return (

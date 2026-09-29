@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AuthForm } from "@/components/auth-form";
 import { PageShell } from "@/components/ui/page-shell";
 
-export const metadata = { title: "Register · Aspera Marketplace" };
+export const metadata = { title: "Register" };
 
 export default function RegisterPage() {
   return (

@@ -9,19 +9,34 @@ import { readGuestCartToken } from "@/modules/cart/guest";
 import { getOptionalActor } from "@/modules/identity/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Cart · Aspera Marketplace" };
+export const metadata = { title: "Cart" };
 
 export default async function CartPage() {
-  const actor = await getOptionalActor();
-  const guestToken = actor ? null : await readGuestCartToken();
+  let actor: Awaited<ReturnType<typeof getOptionalActor>> = null;
+  try {
+    actor = await getOptionalActor();
+  } catch {
+    actor = null;
+  }
+
+  let guestToken: string | null = null;
+  try {
+    guestToken = actor ? null : await readGuestCartToken();
+  } catch {
+    guestToken = null;
+  }
 
   let cart: Awaited<ReturnType<typeof getCartForIdentity>> | ReturnType<
     typeof emptyCartView
   > = emptyCartView();
-  if (actor) {
-    cart = await getCartForIdentity({ type: "user", userId: actor.userId });
-  } else if (guestToken) {
-    cart = await getCartForIdentity({ type: "guest", guestToken });
+  try {
+    if (actor) {
+      cart = await getCartForIdentity({ type: "user", userId: actor.userId });
+    } else if (guestToken) {
+      cart = await getCartForIdentity({ type: "guest", guestToken });
+    }
+  } catch {
+    cart = emptyCartView();
   }
 
   return (

@@ -6,7 +6,7 @@ import { listTicketsForActor } from "@/modules/fulfilment/service";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Support · Aspera Marketplace",
+  title: "Support",
   description: "Get help with orders, returns, and seller questions on Aspera.",
 };
 

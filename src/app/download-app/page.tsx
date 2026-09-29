@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PageShell } from "@/components/ui/page-shell";
 
 export const metadata = {
-  title: "Download App · Aspera Marketplace",
+  title: "Download App",
   description: "Get the Aspera Marketplace app for exclusive deals and faster shopping.",
 };
 

@@ -10,7 +10,7 @@ import { actorIsAdmin } from "@/modules/identity/policy";
 import { getOptionalActor } from "@/modules/identity/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Analytics · Aspera Marketplace" };
+export const metadata = { title: "Analytics" };
 
 export default async function AdminAnalyticsPage() {
   const actor = await getOptionalActor();

@@ -23,25 +23,34 @@ export function ProductPurchasePanel({
   highlights: Array<{ label: string; value: string }>;
   productTitle?: string;
 }) {
-  const [selectedId, setSelectedId] = useState(variants[0]?.id ?? "");
-  const [pincode, setPincode] = useState("");
-  const [deliveryNote, setDeliveryNote] = useState<string | null>(null);
-  const selected = variants.find((variant) => variant.id === selectedId) ?? variants[0];
-
   const sizeVariants = useMemo(() => {
     return variants.filter((variant) => {
       const opts = variant.optionValues ?? {};
-      return Boolean(opts.size || opts.Size) || /^(xs|s|m|l|xl|xxl|standard)$/i.test(variant.title);
+      return (
+        Boolean(opts.size || opts.Size) ||
+        /^(xs|s|m|l|xl|xxl|standard)$/i.test(variant.title)
+      );
     });
   }, [variants]);
+
+  const requiresSize = sizeVariants.length > 1;
+  const [selectedId, setSelectedId] = useState(
+    requiresSize ? "" : (variants[0]?.id ?? ""),
+  );
+  const [sizeChosen, setSizeChosen] = useState(!requiresSize);
+  const [pincode, setPincode] = useState("");
+  const [deliveryNote, setDeliveryNote] = useState<string | null>(null);
+
+  const selected =
+    variants.find((variant) => variant.id === selectedId) ??
+    (requiresSize ? undefined : variants[0]);
+  const priceVariant = selected ?? variants[0];
 
   const colorOptions = useMemo(() => {
     const colors = new Map<string, string>();
     for (const variant of variants) {
       const color =
-        variant.optionValues?.color ??
-        variant.optionValues?.Color ??
-        null;
+        variant.optionValues?.color ?? variant.optionValues?.Color ?? null;
       if (color) colors.set(color, variant.id);
     }
     return [...colors.entries()];
@@ -65,18 +74,21 @@ export function ProductPurchasePanel({
     );
   }
 
-  if (!selected) {
+  if (!priceVariant) {
     return <p className="text-sm text-muted">No active variants.</p>;
   }
+
+  const selectionRequired = requiresSize && !sizeChosen;
+  const activeVariantId = selected?.id ?? priceVariant.id;
 
   return (
     <div className="flex flex-col gap-5">
       <div>
         <p className="text-2xl font-bold">
-          {formatPaise(selected.sellingPricePaise)}
-          {selected.mrpPaise > selected.sellingPricePaise ? (
+          {formatPaise(priceVariant.sellingPricePaise)}
+          {priceVariant.mrpPaise > priceVariant.sellingPricePaise ? (
             <span className="ml-2 text-base font-normal text-muted line-through">
-              {formatPaise(selected.mrpPaise)}
+              {formatPaise(priceVariant.mrpPaise)}
             </span>
           ) : null}
         </p>
@@ -87,7 +99,7 @@ export function ProductPurchasePanel({
         <div>
           <p className="mb-2 text-sm font-semibold">
             Select colour
-            {selected.optionValues?.color || selected.optionValues?.Color
+            {selected?.optionValues?.color || selected?.optionValues?.Color
               ? `: ${selected.optionValues.color ?? selected.optionValues.Color}`
               : ""}
           </p>
@@ -97,7 +109,10 @@ export function ProductPurchasePanel({
                 key={color}
                 type="button"
                 title={color}
-                onClick={() => setSelectedId(variantId)}
+                onClick={() => {
+                  setSelectedId(variantId);
+                  if (!requiresSize) setSizeChosen(true);
+                }}
                 className={`h-9 w-9 rounded-full border-2 shadow-sm ${
                   selectedId === variantId
                     ? "border-accent ring-2 ring-accent/30"
@@ -114,21 +129,29 @@ export function ProductPurchasePanel({
 
       {sizeVariants.length > 1 ? (
         <div>
-          <p className="mb-2 text-sm font-semibold">Select size</p>
+          <p className="mb-2 text-sm font-semibold">
+            Select size
+            {selectionRequired ? (
+              <span className="ml-1 font-normal text-muted">(required)</span>
+            ) : null}
+          </p>
           <div className="flex flex-wrap gap-2">
             {sizeVariants.map((variant) => {
               const size =
                 variant.optionValues?.size ??
                 variant.optionValues?.Size ??
                 variant.title;
-              const active = variant.id === selected.id;
+              const active = sizeChosen && variant.id === selected?.id;
               const soldOut = variant.availableQty <= 0;
               return (
                 <button
                   key={variant.id}
                   type="button"
                   disabled={soldOut}
-                  onClick={() => setSelectedId(variant.id)}
+                  onClick={() => {
+                    setSelectedId(variant.id);
+                    setSizeChosen(true);
+                  }}
                   className={`min-w-[2.75rem] rounded-[var(--radius-sm)] border px-3 py-2 text-sm font-medium ${
                     active
                       ? "border-accent bg-accent-soft font-semibold text-accent"
@@ -149,12 +172,15 @@ export function ProductPurchasePanel({
           <p className="mb-2 text-sm font-semibold">Select option</p>
           <div className="flex flex-wrap gap-2">
             {variants.map((variant) => {
-              const active = variant.id === selected.id;
+              const active = variant.id === selected?.id;
               return (
                 <button
                   key={variant.id}
                   type="button"
-                  onClick={() => setSelectedId(variant.id)}
+                  onClick={() => {
+                    setSelectedId(variant.id);
+                    setSizeChosen(true);
+                  }}
                   className={`rounded-[var(--radius-sm)] border px-3 py-2 text-sm ${
                     active
                       ? "border-accent bg-accent-soft font-semibold text-accent"
@@ -230,35 +256,36 @@ export function ProductPurchasePanel({
         </a>
       </div>
 
-      <div className="hidden gap-3 sm:flex">
-        <AddToCartButton
-          variantId={selected.id}
-          availableQty={selected.availableQty}
-          productTitle={productTitle}
-        />
-        <a
-          href="/checkout"
-          className="inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-brand-accent px-4 py-2 text-sm font-semibold text-white"
-        >
-          Buy now
-        </a>
-      </div>
-
-      <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-border bg-surface p-3 sm:hidden">
-        <div className="flex-1">
+      {/* Single CTA instance: sticky on mobile, inline on desktop */}
+      <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-border bg-surface p-3 sm:static sm:z-auto sm:border-0 sm:bg-transparent sm:p-0">
+        <div className="min-w-0 flex-1 sm:flex-none">
           <AddToCartButton
-            variantId={selected.id}
-            availableQty={selected.availableQty}
+            variantId={activeVariantId}
+            availableQty={selected?.availableQty ?? priceVariant.availableQty}
             productTitle={productTitle}
+            selectionRequired={selectionRequired}
+            selectionHint="Please select a size before adding to cart"
           />
         </div>
-        <a
-          href="/checkout"
-          className="inline-flex flex-1 items-center justify-center rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground"
-        >
-          Buy now
-        </a>
+        {selectionRequired ? (
+          <button
+            type="button"
+            disabled
+            className="inline-flex flex-1 items-center justify-center rounded-[var(--radius-sm)] bg-brand-accent px-4 py-2 text-sm font-semibold text-white opacity-60 sm:flex-none"
+          >
+            Buy now
+          </button>
+        ) : (
+          <a
+            href="/checkout"
+            className="inline-flex flex-1 items-center justify-center rounded-[var(--radius-sm)] bg-brand-accent px-4 py-2 text-sm font-semibold text-white sm:flex-none"
+          >
+            Buy now
+          </a>
+        )}
       </div>
+      {/* Spacer so fixed mobile bar does not cover content */}
+      <div className="h-20 sm:hidden" aria-hidden />
     </div>
   );
 }

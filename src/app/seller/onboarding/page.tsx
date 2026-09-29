@@ -5,7 +5,7 @@ import { getOptionalActor } from "@/modules/identity/service";
 import { listOwnedSellers } from "@/modules/seller/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Seller onboarding · Aspera Marketplace" };
+export const metadata = { title: "Seller onboarding" };
 
 export default async function SellerOnboardingPage() {
   const actor = await getOptionalActor();

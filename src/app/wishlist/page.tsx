@@ -4,7 +4,7 @@ import { getOptionalActor } from "@/modules/identity/service";
 import { listWishlistProducts } from "@/modules/wishlist/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Wishlist · Aspera Marketplace" };
+export const metadata = { title: "Wishlist" };
 
 export default async function WishlistPage() {
   const actor = await getOptionalActor();

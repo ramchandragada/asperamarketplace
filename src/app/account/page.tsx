@@ -8,7 +8,7 @@ import { getOptionalActor } from "@/modules/identity/service";
 import { prisma } from "@/platform/db/prisma";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "My Account · Aspera Marketplace" };
+export const metadata = { title: "My Account" };
 
 export default async function AccountPage() {
   const actor = await getOptionalActor();

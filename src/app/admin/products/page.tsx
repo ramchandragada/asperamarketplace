@@ -6,7 +6,7 @@ import { actorIsAdmin } from "@/modules/identity/policy";
 import { getOptionalActor } from "@/modules/identity/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Product moderation · Aspera Marketplace" };
+export const metadata = { title: "Product moderation" };
 
 export default async function AdminProductsPage() {
   const actor = await getOptionalActor();

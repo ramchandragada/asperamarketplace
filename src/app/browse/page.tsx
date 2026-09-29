@@ -10,7 +10,7 @@ import {
 } from "@/modules/catalogue/service";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Shop · Aspera Marketplace" };
+export const metadata = { title: "Shop" };
 
 const SORTS = new Set([
   "relevance",

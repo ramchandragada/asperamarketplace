@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Card } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Seller analytics · Aspera Marketplace" };
+export const metadata = { title: "Seller analytics" };
 
 export default async function SellerAnalyticsPage() {
   const actor = await getOptionalActor();

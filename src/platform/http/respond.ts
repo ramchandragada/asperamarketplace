@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 import { fail, ok } from "@/platform/http/envelope";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/platform/http/request-id";
+import { logger } from "@/platform/logging/logger";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -45,6 +47,16 @@ import { TrustValidationError } from "@/modules/trust/service";
 import { AnalyticsValidationError } from "@/modules/analytics/service";
 import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
+
+function isPrismaInfrastructureError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError ||
+    error instanceof Prisma.PrismaClientUnknownRequestError ||
+    error instanceof Prisma.PrismaClientInitializationError ||
+    error instanceof Prisma.PrismaClientRustPanicError ||
+    error instanceof Prisma.PrismaClientValidationError
+  );
+}
 
 export function getRequestId(request: Request): string {
   return resolveRequestId(request.headers.get(REQUEST_ID_HEADER));
@@ -162,6 +174,35 @@ export function jsonError(
       { status: 400, headers: { [REQUEST_ID_HEADER]: requestId } },
     );
   }
+
+  if (isPrismaInfrastructureError(error)) {
+    const prismaCode =
+      error instanceof Prisma.PrismaClientKnownRequestError
+        ? error.code
+        : error instanceof Prisma.PrismaClientInitializationError
+          ? error.errorCode
+          : undefined;
+    logger.error("API database error", {
+      requestId,
+      prismaCode,
+      name: error instanceof Error ? error.name : "PrismaError",
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return NextResponse.json(
+      fail({
+        requestId,
+        code: "SERVICE_UNAVAILABLE",
+        message: "Cart service is temporarily unavailable. Please try again.",
+      }),
+      { status: 503, headers: { [REQUEST_ID_HEADER]: requestId } },
+    );
+  }
+
+  logger.error("API internal error", {
+    requestId,
+    name: error instanceof Error ? error.name : "UnknownError",
+    message: error instanceof Error ? error.message : String(error),
+  });
 
   return NextResponse.json(
     fail({

@@ -244,7 +244,7 @@ export function AsperaHero() {
       </h2>
 
       <div className="relative grid grid-cols-[3.25rem_minmax(0,1fr)_3.25rem] md:grid-cols-[4.25rem_minmax(0,1fr)_4.25rem]">
-        <div className="relative col-start-2 row-start-1 min-h-[min(78vw,24rem)] md:min-h-[22rem] lg:min-h-[24rem]">
+        <div className="relative col-start-2 row-start-1 min-h-[24.5rem] md:min-h-[22rem] lg:min-h-[24rem]">
         {HERO_SLIDES.map((entry, slideIndex) => {
           const active = slideIndex === index;
           return (
@@ -281,7 +281,7 @@ export function AsperaHero() {
                 aria-hidden
               />
 
-              <div className="relative z-[2] container-shell flex h-full min-h-[min(78vw,24rem)] flex-col justify-center py-10 md:min-h-[22rem] md:py-12 lg:min-h-[24rem]">
+              <div className="relative z-[2] container-shell flex h-full min-h-[24.5rem] flex-col justify-center pt-5 pb-[4.75rem] md:min-h-[22rem] md:py-12 lg:min-h-[24rem]">
                 <div className="max-w-[20rem] text-white md:max-w-[26rem]">
                   <p className="font-display text-[26px] font-bold tracking-tight drop-shadow-sm md:text-[32px]">
                     Aspera
@@ -320,7 +320,9 @@ export function AsperaHero() {
           );
         })}
 
-        {/* Dots + pause control — kept in the center column, clear of the arrows */}
+        {/* Dots + pause sit in the center column. On a phone they use the
+            reserved bottom band so they cannot cover the CTAs or the headline.
+            Desktop keeps them over the lower edge of the photograph. */}
         <div className="absolute inset-x-0 bottom-3 z-[3] flex items-center justify-center gap-3 md:bottom-4">
           <div className="flex gap-2">
             {HERO_SLIDES.map((entry, slideIndex) => {

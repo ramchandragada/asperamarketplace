@@ -245,7 +245,7 @@ const ONLINE_SHOPPING_GROUPS = [
 export function SiteFooter() {
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-auto border-t border-border bg-surface">
+    <footer className="mt-auto border-t border-border bg-surface pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0">
       <div className="container-shell grid gap-8 py-10 text-sm md:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
           <p className="font-display text-lg font-bold text-accent">

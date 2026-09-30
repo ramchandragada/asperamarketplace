@@ -180,7 +180,7 @@ export function ProductPurchasePanel({
                 type="button"
                 title={color}
                 onClick={() => selectColor(color)}
-                className={`h-9 w-9 rounded-full border-2 shadow-sm ${
+                className={`h-11 w-11 rounded-full border-2 shadow-sm md:h-9 md:w-9 ${
                   active
                     ? "border-accent ring-2 ring-accent/30"
                     : "border-border hover:border-accent"
@@ -220,7 +220,7 @@ export function ProductPurchasePanel({
                     setSelectedId(variant.id);
                     setSizeChosen(true);
                   }}
-                  className={`min-w-[2.75rem] rounded-[var(--radius-sm)] border px-3 py-2 text-sm font-medium ${
+                  className={`min-h-11 min-w-[2.75rem] rounded-[var(--radius-sm)] border px-3 py-2 text-sm font-medium md:min-h-0 ${
                     active
                       ? "border-accent bg-accent-soft font-semibold text-accent"
                       : soldOut
@@ -249,7 +249,7 @@ export function ProductPurchasePanel({
                     setSelectedId(variant.id);
                     setSizeChosen(true);
                   }}
-                  className={`rounded-[var(--radius-sm)] border px-3 py-2 text-sm ${
+                  className={`min-h-11 rounded-[var(--radius-sm)] border px-3 py-2 text-sm md:min-h-0 ${
                     active
                       ? "border-accent bg-accent-soft font-semibold text-accent"
                       : "border-border hover:border-accent"
@@ -287,13 +287,13 @@ export function ProductPurchasePanel({
             inputMode="numeric"
             maxLength={6}
             placeholder="Enter pincode"
-            className="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border px-3 py-2 text-sm"
+            className="min-h-11 min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border px-3 py-2 text-base md:min-h-0 md:text-sm"
             aria-label="Pincode"
           />
           <button
             type="button"
             onClick={checkDelivery}
-            className="rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground"
+            className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground md:min-h-0"
           >
             Check
           </button>
@@ -327,7 +327,7 @@ export function ProductPurchasePanel({
       </div>
 
       {/* Single CTA instance: sticky on mobile, inline on desktop */}
-      <div className="fixed inset-x-3 bottom-[calc(5.85rem+env(safe-area-inset-bottom))] z-50 flex gap-2 rounded-2xl border border-border bg-surface/95 p-2 shadow-[0_-8px_24px_rgba(23,33,38,0.08)] backdrop-blur-md md:static md:inset-auto md:bottom-auto md:z-auto md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+      <div className="fixed inset-x-3 bottom-[calc(5.85rem+env(safe-area-inset-bottom))] z-50 flex gap-2 rounded-2xl border border-border bg-surface p-2 shadow-[0_-8px_24px_rgba(23,33,38,0.08)] [overflow-anchor:none] md:static md:inset-auto md:bottom-auto md:z-auto md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
         <div className="min-w-0 flex-1 sm:flex-none">
           <AddToCartButton
             variantId={activeVariantId}

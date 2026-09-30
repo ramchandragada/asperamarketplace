@@ -92,7 +92,7 @@ function tabActive(pathname: string, sort: string | null, href: string, label: s
 function NavBar({ sort }: { sort: string | null }) {
   const pathname = usePathname();
   return (
-    <ul className="grid grid-cols-5 gap-0.5 rounded-full border border-border/80 bg-surface/92 px-1 py-1 shadow-[0_10px_30px_rgba(23,33,38,0.16)] backdrop-blur-md">
+    <ul className="grid grid-cols-5 gap-0.5 rounded-full border border-border/80 bg-surface px-1 py-1 shadow-[0_10px_30px_rgba(23,33,38,0.16)]">
       {items.map((item) => {
         const active = tabActive(pathname, sort, item.href, item.label);
         return (
@@ -123,7 +123,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Mobile primary"
-      className="fixed inset-x-3 bottom-[max(0.45rem,env(safe-area-inset-bottom))] z-40 md:hidden"
+      className="fixed inset-x-3 bottom-[max(0.45rem,env(safe-area-inset-bottom))] z-40 [overflow-anchor:none] md:hidden"
     >
       <Suspense fallback={<NavBar sort={null} />}>
         <NavBarWithSearch />

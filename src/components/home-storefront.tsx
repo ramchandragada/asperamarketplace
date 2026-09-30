@@ -333,13 +333,17 @@ export function AsperaHero() {
                   type="button"
                   aria-label={`Show ${entry.eyebrow}`}
                   aria-current={active ? "true" : undefined}
-                  className={`h-2 rounded-full transition-all ${
-                    active
-                      ? "w-6 bg-white shadow-sm"
-                      : "w-2 bg-white/55 hover:bg-white/80"
-                  }`}
+                  className="inline-flex h-11 w-8 items-center justify-center md:h-auto md:w-auto"
                   onClick={() => go(slideIndex)}
-                />
+                >
+                  <span
+                    className={`h-2 rounded-full transition-all ${
+                      active
+                        ? "w-6 bg-white shadow-sm"
+                        : "w-2 bg-white/55 hover:bg-white/80"
+                    }`}
+                  />
+                </button>
               );
             })}
           </div>
@@ -349,7 +353,7 @@ export function AsperaHero() {
               userPaused ? "Play banner rotation" : "Pause banner rotation"
             }
             aria-pressed={userPaused}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-white/85 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-white/85 text-accent shadow-sm transition hover:bg-white md:h-7 md:w-7 md:backdrop-blur-sm"
             onClick={() => {
               if (resumeTimer.current) clearTimeout(resumeTimer.current);
               setUserPaused((value) => !value);

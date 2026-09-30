@@ -252,7 +252,7 @@ export default async function ProductDetailPage({
       <nav aria-label="Breadcrumb" className="text-xs text-muted">
         <ol className="flex flex-wrap items-center gap-1">
           <li>
-            <Link href="/" className="hover:text-accent">
+            <Link href="/" className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0">
               Home
             </Link>
           </li>
@@ -260,7 +260,7 @@ export default async function ProductDetailPage({
             &gt;
           </li>
           <li>
-            <Link href="/shop" className="hover:text-accent">
+            <Link href="/shop" className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0">
               Shop
             </Link>
           </li>
@@ -270,7 +270,7 @@ export default async function ProductDetailPage({
           <li>
             <Link
               href={`/browse?categorySlug=${encodeURIComponent(product.category.slug)}`}
-              className="hover:text-accent"
+              className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0"
             >
               {product.category.name}
             </Link>

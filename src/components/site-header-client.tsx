@@ -195,7 +195,7 @@ type SuggestItem = {
   title: string;
 };
 
-function HeaderSearch() {
+function HeaderSearch({ inputId = "global-search" }: { inputId?: string }) {
   const [focused, setFocused] = useState(false);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SuggestItem[]>([]);
@@ -279,7 +279,7 @@ function HeaderSearch() {
         role="search"
         onSubmit={() => onSubmit()}
       >
-        <label className="sr-only" htmlFor="global-search">
+        <label className="sr-only" htmlFor={inputId}>
           Search products
         </label>
         <div className="relative">
@@ -287,7 +287,7 @@ function HeaderSearch() {
             <SearchIcon className="h-[18px] w-[18px]" />
           </span>
           <input
-            id="global-search"
+            id={inputId}
             name="q"
             type="search"
             value={query}
@@ -297,7 +297,7 @@ function HeaderSearch() {
             autoComplete="off"
             aria-autocomplete="list"
             aria-controls={listId}
-            className="h-12 w-full rounded-full border border-border bg-white py-2.5 pr-24 pl-11 text-[14px] text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none placeholder:text-muted focus-visible:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/25"
+            className="h-12 w-full rounded-full border border-border bg-white py-2.5 pr-24 pl-11 text-base text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] outline-none placeholder:text-muted focus-visible:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/25 md:text-[14px]"
           />
           <button
             type="submit"
@@ -322,7 +322,7 @@ function HeaderSearch() {
                   <li key={term}>
                     <Link
                       href={`/browse?q=${encodeURIComponent(term)}`}
-                      className="block rounded px-2 py-1.5 text-sm hover:bg-accent-soft"
+                      className="flex min-h-11 items-center rounded px-2 py-1.5 text-base hover:bg-accent-soft md:min-h-0 md:text-sm"
                       onClick={() => setFocused(false)}
                     >
                       {term}
@@ -341,7 +341,7 @@ function HeaderSearch() {
                 <li key={term}>
                   <Link
                     href={`/browse?q=${encodeURIComponent(term)}`}
-                    className="inline-flex rounded-full border border-border px-2.5 py-1 text-xs hover:border-accent hover:text-accent"
+                    className="inline-flex min-h-11 items-center rounded-full border border-border px-2.5 py-1 text-sm hover:border-accent hover:text-accent md:min-h-0 md:text-xs"
                     onClick={() => {
                       remember(term);
                       setFocused(false);
@@ -363,7 +363,7 @@ function HeaderSearch() {
                   <li key={item.id}>
                     <Link
                       href={`/products/${item.slug}`}
-                      className="block rounded px-2 py-1.5 text-sm hover:bg-accent-soft"
+                      className="flex min-h-11 items-center rounded px-2 py-1.5 text-base hover:bg-accent-soft md:min-h-0 md:text-sm"
                       onClick={() => setFocused(false)}
                     >
                       {item.title}
@@ -382,7 +382,7 @@ function HeaderSearch() {
                 <li key={entry.key}>
                   <Link
                     href={entry.href}
-                    className="block rounded px-2 py-1.5 text-sm hover:bg-accent-soft"
+                    className="flex min-h-11 items-center rounded px-2 py-1.5 text-base hover:bg-accent-soft md:min-h-0 md:text-sm"
                     onClick={() => setFocused(false)}
                   >
                     {entry.label}
@@ -418,10 +418,20 @@ export function SiteHeaderClient({
   const compactRef = useRef(false);
 
   useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 768px)");
     function onScroll() {
+      // Phones keep one header height for the whole scroll. Hiding the search
+      // row and category chips shrank the sticky box by ~135px; mobile
+      // browsers then rewound scrollY and the bar flickered.
+      if (!desktop.matches) {
+        if (compactRef.current) {
+          compactRef.current = false;
+          setCompact(false);
+        }
+        return;
+      }
       const y = window.scrollY;
-      // Hysteresis stops the sticky header height from oscillating around a
-      // single threshold (height change → scrollY shift → flicker loop).
+      // Hysteresis stops the desktop row (72px → 56px) from oscillating.
       const next =
         compactRef.current ? y > COMPACT_EXIT_Y : y > COMPACT_ENTER_Y;
       if (next === compactRef.current) return;
@@ -430,7 +440,11 @@ export function SiteHeaderClient({
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    desktop.addEventListener("change", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      desktop.removeEventListener("change", onScroll);
+    };
   }, []);
 
   return (
@@ -441,19 +455,19 @@ export function SiteHeaderClient({
         </p>
       </div>
     <header
-      className={`sticky top-0 z-40 w-full border-b border-border/80 bg-surface/95 backdrop-blur-md ${
-        compact ? "shadow-[0_1px_3px_rgba(18,59,74,0.08)]" : ""
+      className={`sticky top-0 z-40 w-full border-border/80 bg-surface [overflow-anchor:none] max-md:border-b-0 md:border-b md:bg-surface/95 md:backdrop-blur-md ${
+        compact ? "md:shadow-[0_1px_3px_rgba(18,59,74,0.08)]" : ""
       }`}
       data-compact={compact ? "true" : "false"}
     >
       <div
-        className={`flex w-full items-center gap-4 px-4 md:gap-6 md:px-6 lg:px-8 xl:px-10 ${
-          compact ? "h-14" : "h-[72px]"
+        className={`flex h-[72px] w-full items-center gap-4 px-4 md:gap-6 md:px-6 lg:px-8 xl:px-10 ${
+          compact ? "md:h-14" : ""
         }`}
       >
         <Link
           href="/"
-          className="shrink-0 font-bold text-[22px] leading-none tracking-tight text-accent md:text-[24px]"
+          className="inline-flex min-h-11 shrink-0 items-center font-bold text-[22px] leading-none tracking-tight text-accent md:text-[24px]"
         >
           Aspera
         </Link>
@@ -510,28 +524,20 @@ export function SiteHeaderClient({
         </nav>
       </div>
 
-      <div
-        className={`w-full px-4 md:hidden md:px-6 ${
-          compact ? "hidden" : "pb-2.5"
-        }`}
-      >
-        <HeaderSearch />
-      </div>
-
-      {/* Keep category rail mounted and full-height — collapsing it with
-          max-height/opacity on scroll changed sticky header size and fought
-          scrollY, which made the bar flicker. */}
       <CategoryNav />
-
-      <div
-        className={`flex w-full items-center gap-2 border-t border-border px-3 py-2 md:hidden ${
-          compact ? "hidden" : ""
-        }`}
-      >
+    </header>
+    {/* Search and category chips stay in normal flow on phones. Putting them
+        inside the sticky header and then hiding them on scroll changed the
+        stuck bar's height and made mobile browsers rewind the page. */}
+    <div className="border-b border-border/80 bg-surface md:hidden">
+      <div className="w-full px-4 pb-2.5">
+        <HeaderSearch inputId="global-search-mobile" />
+      </div>
+      <div className="flex w-full items-center gap-2 border-t border-border px-3 py-2">
         <MobileCategoryDrawer />
         <nav
           aria-label="Mobile category shortcuts"
-          className="hide-scroll flex min-w-0 flex-1 gap-2 overflow-x-auto text-xs"
+          className="hide-scroll flex min-w-0 flex-1 gap-2 overflow-x-auto overscroll-x-contain text-xs"
         >
           {MEGA_MENU.map((entry) => (
             <Link
@@ -544,7 +550,7 @@ export function SiteHeaderClient({
           ))}
         </nav>
       </div>
-    </header>
+    </div>
     </>
   );
 }

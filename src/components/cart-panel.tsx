@@ -103,7 +103,7 @@ export function CartPanel({ initialCart }: { initialCart: CartView }) {
                         max={Math.min(99, item.availableQty)}
                         defaultValue={item.quantity}
                         disabled={pending}
-                        className="ml-2 w-20 rounded-full border border-border bg-background px-3 py-1"
+                        className="ml-2 h-11 w-20 rounded-full border border-border bg-background px-3 text-base md:h-auto md:py-1 md:text-sm"
                         onBlur={(event) => {
                           const next = Number(event.target.value);
                           if (Number.isFinite(next) && next !== item.quantity) {
@@ -114,7 +114,7 @@ export function CartPanel({ initialCart }: { initialCart: CartView }) {
                     </label>
                     <button
                       type="button"
-                      className="text-sm font-medium text-danger underline"
+                      className="inline-flex min-h-11 items-center text-sm font-medium text-danger underline md:min-h-0"
                       disabled={pending}
                       onClick={() => void setQuantity(item.variantId, 0)}
                     >

@@ -143,7 +143,7 @@ const ONLINE_SHOPPING_GROUPS = [
     heading: "Women Accessories",
     links: [
       { label: "Scarves", href: "/browse?categorySlug=fashion&audience=women&q=scarf" },
-      { label: "Handbags", href: "/browse?categorySlug=bags-footwear&q=sling" },
+      { label: "Handbags", href: "/browse?categorySlug=bags-footwear&q=handbag" },
       { label: "Earrings", href: "/browse?q=earring" },
       { label: "Belts", href: "/browse?categorySlug=bags-footwear&q=belt" },
     ],
@@ -201,7 +201,7 @@ const ONLINE_SHOPPING_GROUPS = [
     heading: "Baby",
     links: [
       { label: "Swaddles", href: "/browse?categorySlug=baby-kids&audience=kids&q=swaddle" },
-      { label: "Feeding", href: "/browse?categorySlug=baby-kids&audience=kids&q=bib" },
+      { label: "Feeding", href: "/browse?categorySlug=baby-kids&audience=kids&q=feeding" },
       { label: "Soft toys", href: "/browse?categorySlug=baby-kids&audience=kids&q=plush" },
     ],
   },
@@ -494,7 +494,7 @@ export function SiteFooter() {
             </p>
           </div>
           <p className="flex flex-wrap gap-3">
-            <Link href="/support" className="hover:text-foreground">
+            <Link href="/terms" className="hover:text-foreground">
               Terms
             </Link>
             <Link href="/privacy" className="hover:text-foreground">

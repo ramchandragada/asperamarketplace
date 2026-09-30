@@ -54,31 +54,6 @@ function TrustCodIcon() {
   );
 }
 
-function TrustPriceIcon() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 3 4.5 7.5v9L12 21l7.5-4.5v-9L12 3Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.5 12.5c0-1.2.9-2 2.2-2h1.1c1.1 0 1.9.7 1.9 1.7 0 .9-.5 1.4-1.5 1.7l-1.7.5c-1 .3-1.5.8-1.5 1.7 0 1 .9 1.7 2.1 1.7h1c1.3 0 2.2-.8 2.2-2"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <path
-        d="M12 8.5v1.2M12 16.2V17.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 /** Honest announcement strip for marketplace chrome */
 export function AnnouncementStrip() {
   return (
@@ -99,7 +74,6 @@ type HeroSlide = {
   ctaHref: string;
   /** Full-bleed lifestyle photo in /public/hero */
   image: string;
-  accentChip: string;
 };
 
 /**
@@ -116,7 +90,6 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop baby",
     ctaHref: "/browse?categorySlug=baby-kids&q=baby",
     image: "/hero/hero-baby.webp",
-    accentChip: "From day one",
   },
   {
     id: "kids",
@@ -127,7 +100,6 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop kids",
     ctaHref: "/browse?categorySlug=baby-kids&audience=kids",
     image: "/hero/hero-kids.webp",
-    accentChip: "Ages 2–12",
   },
   {
     id: "youth",
@@ -138,7 +110,6 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop fashion",
     ctaHref: "/browse?categorySlug=fashion",
     image: "/hero/hero-fashion.webp",
-    accentChip: "Trending now",
   },
   {
     id: "family",
@@ -149,7 +120,6 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop home",
     ctaHref: "/browse?categorySlug=home-kitchen",
     image: "/hero/hero-home.webp",
-    accentChip: "Family favourites",
   },
   {
     id: "elders",
@@ -160,7 +130,6 @@ const HERO_SLIDES: HeroSlide[] = [
     ctaLabel: "Shop wellness",
     ctaHref: "/browse?categorySlug=health-wellness",
     image: "/hero/hero-wellness.webp",
-    accentChip: "Graceful living",
   },
 ];
 
@@ -249,7 +218,7 @@ export function AsperaHero() {
       }}
     >
       <h2 id={labelId} className="sr-only">
-        Aspera highlights — shopping for every age
+        Category highlights
       </h2>
 
       <div className="relative grid grid-cols-[3.25rem_minmax(0,1fr)_3.25rem] md:grid-cols-[4.25rem_minmax(0,1fr)_4.25rem]">
@@ -292,13 +261,7 @@ export function AsperaHero() {
 
               <div className="relative z-[2] container-shell flex h-full min-h-[24.5rem] flex-col justify-center pt-5 pb-[4.75rem] md:min-h-[22rem] md:py-12 lg:min-h-[24rem]">
                 <div className="max-w-[20rem] text-white md:max-w-[26rem]">
-                  <p className="font-display text-[26px] font-bold tracking-tight drop-shadow-sm md:text-[32px]">
-                    Aspera
-                  </p>
-                  <span className="mt-3 inline-flex rounded-md bg-white/20 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white uppercase backdrop-blur-sm md:text-[12px]">
-                    {entry.accentChip}
-                  </span>
-                  <p className="mt-3 text-[13px] font-semibold tracking-wide text-white/90 uppercase md:text-[14px]">
+                  <p className="text-[13px] font-semibold tracking-wide text-white/90 uppercase md:text-[14px]">
                     {entry.eyebrow}
                   </p>
                   <p className="mt-2 text-[26px] leading-[32px] font-bold tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] md:text-[36px] md:leading-[42px]">
@@ -424,10 +387,7 @@ export function DiscoveryPromoBanner({ lanes }: { lanes: PromoLane[] }) {
       <div className="grid overflow-hidden rounded-2xl md:grid-cols-[minmax(15rem,0.85fr)_1.55fr]">
         <div className="flex flex-col justify-between bg-[linear-gradient(160deg,#E66A3D_0%,#D4572F_55%,#C24A28_100%)] px-6 py-8 text-white md:px-8 md:py-10">
           <div>
-            <p className="text-[13px] font-semibold tracking-wide text-white/85 uppercase">
-              Aspera picks
-            </p>
-            <h2 className="mt-3 max-w-[14rem] text-[28px] leading-[34px] font-bold tracking-tight md:text-[32px] md:leading-[38px]">
+            <h2 className="max-w-[14rem] text-[28px] leading-[34px] font-bold tracking-tight md:text-[32px] md:leading-[38px]">
               Fresh finds for everyday India
             </h2>
             <p className="mt-3 max-w-[16rem] text-[14px] leading-5 text-white/90">
@@ -502,15 +462,9 @@ export function AsperaSelectsBanner({ tiles }: { tiles: SelectTile[] }) {
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_30%,rgba(15,47,58,0.78)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
-            <p className="font-display text-[22px] font-bold tracking-tight md:text-[26px]">
-              Aspera Selects
-            </p>
-            <p className="mt-1 text-[14px] text-white/85 md:text-[15px]">
-              Products you love. Quality we stand behind.
-            </p>
             <Link
               href="/browse"
-              className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-white/50 px-5 text-[13px] font-semibold text-white transition hover:bg-white/10"
+              className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/50 px-5 text-[13px] font-semibold text-white transition hover:bg-white/10"
             >
               Shop now
             </Link>
@@ -550,11 +504,10 @@ export function TrustSignalBar() {
   const items = [
     { label: "Easy returns on eligible orders", Icon: TrustReturnIcon },
     { label: "Cash on delivery available", Icon: TrustCodIcon },
-    { label: "Clear prices before you buy", Icon: TrustPriceIcon },
   ];
   return (
     <div className="w-full border-b border-border bg-accent-soft">
-      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-1 gap-y-2 py-3 text-[13px] text-foreground md:justify-between md:py-3.5 lg:max-w-none lg:px-10">
+      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-3 text-[13px] text-foreground md:gap-x-10 md:py-3.5 lg:max-w-none lg:px-10">
         {items.map((item, index) => (
           <li
             key={item.label}

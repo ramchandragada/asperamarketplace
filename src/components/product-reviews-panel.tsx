@@ -296,7 +296,7 @@ export function ProductReviewsPanel({
         <>
           <ul className="flex flex-col gap-4">
             {visibleReviews.map((review) => {
-              const author = review.authorName ?? "Aspera shopper";
+              const author = review.authorName ?? "Shopper";
               const parts = author.trim().split(/\s+/);
               const initial =
                 ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() ||

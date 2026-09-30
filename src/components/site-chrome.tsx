@@ -99,19 +99,19 @@ const SEO_BLOCKS = [
 const COMMUNITY_BLOCKS = [
   {
     title: "Join the Aspera Community",
-    body: "Shop with confidence across categories, follow order updates, and save favourites to your wishlist. A marketplace built for value-seeking Indian households.",
+    body: "Follow order updates and save favourites to your wishlist.",
     href: "/shop",
     cta: "Start shopping",
   },
   {
     title: "Download Aspera App Now",
-    body: "Get faster discovery, deal alerts, and a smoother checkout experience on mobile. Download the app for exclusive first-order offers.",
+    body: "iOS and Android builds are coming soon.",
     href: "/download-app",
     cta: "Download app",
   },
   {
     title: "More Than Just Shopping",
-    body: "Sell to shoppers nationwide with verified listings, transparent fees, and a dedicated seller dashboard. Grow your catalogue on Aspera.",
+    body: "Sell to shoppers nationwide with verified listings, transparent fees, and a dedicated seller dashboard.",
     href: "/seller/onboarding",
     cta: "Become a Supplier",
   },
@@ -252,8 +252,7 @@ export function SiteFooter() {
             Aspera Marketplace
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
-            A multi-vendor marketplace for everyday shopping from independent
-            Indian sellers — clear pricing, easy discovery, and secure checkout.
+            Multi-vendor marketplace of independent Indian sellers.
           </p>
           <div className="mt-4 space-y-1 text-xs text-muted">
             <p>
@@ -395,10 +394,7 @@ export function SiteFooter() {
       <div className="border-t border-border bg-background/70">
         <div className="container-shell space-y-8 py-8">
           <div>
-            <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
-              Shop with Aspera
-            </p>
-            <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {SEO_BLOCKS.map((block) => (
                 <article key={block.title} className="text-sm">
                   <Link
@@ -434,9 +430,6 @@ export function SiteFooter() {
         <div className="container-shell py-8">
           <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
             Online Shopping
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            Browse popular categories and subcategories across Aspera Marketplace.
           </p>
           <div className="mt-5 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {ONLINE_SHOPPING_GROUPS.map((group) => (

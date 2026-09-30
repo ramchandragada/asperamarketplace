@@ -213,16 +213,9 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               </span>
             ) : null}
           </p>
-          <div className="flex items-start gap-1.5">
-            <h3 className="min-w-0 flex-1 line-clamp-2 text-[13px] leading-[18px] font-medium text-foreground md:text-[14px] md:leading-5">
-              {product.title}
-            </h3>
-            {product.sellerVerified ? (
-              <span className="mt-0.5 shrink-0 rounded-full bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent">
-                Aspera
-              </span>
-            ) : null}
-          </div>
+          <h3 className="line-clamp-2 text-[13px] leading-[18px] font-medium text-foreground md:text-[14px] md:leading-5">
+            {product.title}
+          </h3>
           {hasRating ? (
             <p className="text-[11px] text-muted">
               {(product.reviewCount ?? 0) >= 1000

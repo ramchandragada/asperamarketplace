@@ -27,6 +27,7 @@ import {
   ensureChartOfAccounts,
   postOrderPaidLedger,
 } from "@/modules/finance/service";
+import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
 
 export class OrderValidationError extends Error {
   readonly code = "VALIDATION_ERROR";
@@ -88,6 +89,11 @@ export async function createOrderFromCheckout(
     );
   }
   if (checkout.reservedUntil && checkout.reservedUntil < new Date()) {
+    await releaseExpiredCheckoutReservations({
+      userId: actor.userId,
+      force: true,
+      correlationId,
+    });
     throw new OrderValidationError("Checkout reservation has expired");
   }
 

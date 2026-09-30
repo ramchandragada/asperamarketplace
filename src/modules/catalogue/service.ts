@@ -20,6 +20,7 @@ import {
   resolveStorefrontRating,
 } from "@/modules/catalogue/claims";
 import { SHIPPING_POLICY } from "@/modules/cart/pricing";
+import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
 import {
   searchProductsSchema,
   type CreateProductInput,
@@ -145,6 +146,18 @@ export async function createProductDraft(
         searchDocument,
       },
     });
+
+    if (input.imageUrl) {
+      await tx.productImage.create({
+        data: {
+          productId: product.id,
+          url: input.imageUrl,
+          altText: input.title,
+          sortOrder: 0,
+          isPrimary: true,
+        },
+      });
+    }
 
     const variant = await tx.productVariant.create({
       data: {
@@ -344,6 +357,7 @@ export async function listProductsForModeration(actor: Actor) {
 }
 
 export async function getPublicProductBySlug(slug: string) {
+  await releaseExpiredCheckoutReservations();
   return prisma.product.findFirst({
     where: { slug, status: "approved" },
     include: {
@@ -366,9 +380,29 @@ export async function getPublicProductBySlug(slug: string) {
   });
 }
 
+type ReviewAggregate = { average: number | null; count: number };
+
+async function reviewAggregatesFor(productIds: string[]) {
+  const unique = [...new Set(productIds)];
+  if (unique.length === 0) return new Map<string, ReviewAggregate>();
+  const grouped = await prisma.productReview.groupBy({
+    by: ["productId"],
+    where: { status: "approved", productId: { in: unique } },
+    _avg: { rating: true },
+    _count: { _all: true },
+  });
+  return new Map(
+    grouped.map((row) => [
+      row.productId,
+      { average: row._avg.rating, count: row._count._all },
+    ]),
+  );
+}
+
 export async function searchApprovedProducts(
   raw: z.input<typeof searchProductsSchema>,
 ) {
+  await releaseExpiredCheckoutReservations();
   const input = searchProductsSchema.parse(raw);
   const page = input.page;
   const pageSize = input.pageSize;
@@ -383,7 +417,7 @@ export async function searchApprovedProducts(
         : sort === "price_desc"
           ? Prisma.sql`ORDER BY min_price_paise DESC`
           : sort === "rating"
-            ? Prisma.sql`ORDER BY p.published_at DESC NULLS LAST`
+            ? Prisma.sql`ORDER BY MAX(rv.rating_avg) DESC NULLS LAST, p.published_at DESC NULLS LAST`
             : sort === "relevance"
               ? Prisma.sql`ORDER BY
                   CASE WHEN p.title ILIKE ${"%" + query + "%"} THEN 2
@@ -411,6 +445,8 @@ export async function searchApprovedProducts(
         min_mrp_paise: number;
         available_qty: number;
         total_count: bigint;
+        rating_avg: number | null;
+        rating_count: number | null;
       }>
     >(Prisma.sql`
       WITH ranked AS (
@@ -426,6 +462,8 @@ export async function searchApprovedProducts(
           MIN(v.mrp_paise) AS min_mrp_paise,
           COALESCE(SUM(GREATEST(i.on_hand - i.reserved, 0)), 0)::int AS available_qty,
           COUNT(*) OVER() AS total_count,
+          MAX(rv.rating_avg) AS rating_avg,
+          MAX(rv.rating_count) AS rating_count,
           p.published_at,
           p.attributes,
           p.search_document
@@ -435,6 +473,14 @@ export async function searchApprovedProducts(
         INNER JOIN product_variants v ON v.product_id = p.id AND v.is_active = true
         LEFT JOIN inventory_items i ON i.variant_id = v.id
         LEFT JOIN brands b ON b.id = p.brand_id
+        LEFT JOIN (
+          SELECT product_id,
+                 AVG(rating)::float8 AS rating_avg,
+                 COUNT(*)::int AS rating_count
+          FROM product_reviews
+          WHERE status = 'approved'
+          GROUP BY product_id
+        ) rv ON rv.product_id = p.id
         WHERE p.status = 'approved'
           AND (
             -- Match title/summary/category tightly so long descriptions do not
@@ -482,8 +528,31 @@ export async function searchApprovedProducts(
               ? Prisma.sql`AND v.selling_price_paise <= ${input.maxPricePaise}`
               : Prisma.empty
           }
+          ${
+            input.minRating !== undefined
+              ? Prisma.sql`AND COALESCE(rv.rating_avg, 0) >= ${input.minRating}`
+              : Prisma.empty
+          }
         GROUP BY p.id, p.slug, p.title, p.summary, c.name, s.trade_name, s.legal_name, s.status, p.published_at, p.attributes, p.search_document
-        ${input.inStockOnly ? Prisma.sql`HAVING COALESCE(SUM(GREATEST(i.on_hand - i.reserved, 0)), 0) > 0` : Prisma.empty}
+        ${
+          input.inStockOnly || input.minDiscountPercent !== undefined
+            ? Prisma.sql`HAVING ${Prisma.join(
+                [
+                  ...(input.inStockOnly
+                    ? [
+                        Prisma.sql`COALESCE(SUM(GREATEST(i.on_hand - i.reserved, 0)), 0) > 0`,
+                      ]
+                    : []),
+                  ...(input.minDiscountPercent !== undefined
+                    ? [
+                        Prisma.sql`(CASE WHEN MIN(v.mrp_paise) > MIN(v.selling_price_paise) THEN ROUND(((MIN(v.mrp_paise) - MIN(v.selling_price_paise))::numeric / NULLIF(MIN(v.mrp_paise), 0)) * 100) ELSE 0 END) >= ${input.minDiscountPercent}`,
+                      ]
+                    : []),
+                ],
+                " AND ",
+              )}`
+            : Prisma.empty
+        }
         ${orderSql}
         LIMIT ${pageSize} OFFSET ${offset}
       )
@@ -502,6 +571,9 @@ export async function searchApprovedProducts(
       minPricePaise: row.min_price_paise,
       minMrpPaise: row.min_mrp_paise,
       availableQty: row.available_qty,
+      ratingAverage:
+        row.rating_count && row.rating_avg != null ? Number(row.rating_avg) : null,
+      reviewCount: row.rating_count ?? 0,
     }));
     return {
       items: await enrichStorefrontCards(await attachPrimaryImages(baseItems)),
@@ -571,10 +643,8 @@ export async function searchApprovedProducts(
     prisma.product.findMany({
       where,
       orderBy,
-      skip: needsClientSortOrFilter ? 0 : offset,
-      take: needsClientSortOrFilter
-        ? Math.min(200, pageSize * 8)
-        : pageSize,
+      skip: needsClientSortOrFilter ? undefined : offset,
+      take: needsClientSortOrFilter ? undefined : pageSize,
       include: {
         category: true,
         brand: { select: { slug: true, name: true } },
@@ -600,24 +670,9 @@ export async function searchApprovedProducts(
       const reserved = variant.inventory?.reserved ?? 0;
       return sum + Math.max(onHand - reserved, 0);
     }, 0);
-    const attrs =
-      product.attributes &&
-      typeof product.attributes === "object" &&
-      !Array.isArray(product.attributes)
-        ? (product.attributes as Record<string, unknown>)
-        : {};
-    const ratingAverage =
-      typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null;
-    const reviewCount =
-      typeof attrs.reviewCount === "number" ? attrs.reviewCount : 0;
     const sellerVerified = product.seller.status === "approved";
     const minPricePaise = Math.min(...prices);
     const minMrpPaise = Math.min(...mrps);
-    const storefrontRating = resolveStorefrontRating({
-      // List cards do not join ProductReview yet — never fall back to attributes.
-      attributeRatingAverage: ratingAverage,
-      attributeReviewCount: reviewCount,
-    });
     return {
       id: product.id,
       slug: product.slug,
@@ -629,8 +684,8 @@ export async function searchApprovedProducts(
       minPricePaise,
       minMrpPaise,
       availableQty,
-      ratingAverage: storefrontRating?.average ?? null,
-      reviewCount: storefrontRating?.count ?? 0,
+      ratingAverage: null as number | null,
+      reviewCount: 0,
       dealEndsAt: null,
       deliveryFeePaise: null,
       freeDeliveryHint: freeDeliveryHintFromPolicy({
@@ -654,6 +709,20 @@ export async function searchApprovedProducts(
       primaryImageAlt:
         product.images[0]?.altText ??
         `${product.title} (catalogue preview image)`,
+    };
+  });
+
+  const reviewAggs = await reviewAggregatesFor(items.map((item) => item.id));
+  items = items.map((item) => {
+    const aggregate = reviewAggs.get(item.id);
+    const storefrontRating = resolveStorefrontRating({
+      reviewAggregateAverage: aggregate?.average,
+      reviewAggregateCount: aggregate?.count,
+    });
+    return {
+      ...item,
+      ratingAverage: storefrontRating?.average ?? null,
+      reviewCount: storefrontRating?.count ?? 0,
     };
   });
 
@@ -717,31 +786,30 @@ async function enrichStorefrontCards<
 >(items: T[]) {
   if (items.length === 0) return items;
   const needsMeta = items.some(
-    (item) =>
-      item.variantCount == null ||
-      item.badge === undefined ||
-      item.ratingAverage == null,
+    (item) => item.variantCount == null || item.badge === undefined,
   );
-  if (!needsMeta) return items;
-  const products = await prisma.product.findMany({
-    where: { id: { in: items.map((item) => item.id) } },
-    select: {
-      id: true,
-      createdAt: true,
-      attributes: true,
-      brand: { select: { slug: true, name: true } },
-      seller: { select: { status: true } },
-      _count: { select: { variants: { where: { isActive: true } } } },
-    },
-  });
+  const missingRatings = items.filter(
+    (item) => item.ratingAverage == null || (item.reviewCount ?? 0) <= 0,
+  );
+  if (!needsMeta && missingRatings.length === 0) return items;
+  const [products, reviewAggs] = await Promise.all([
+    needsMeta
+      ? prisma.product.findMany({
+          where: { id: { in: items.map((item) => item.id) } },
+          select: {
+            id: true,
+            createdAt: true,
+            brand: { select: { slug: true, name: true } },
+            seller: { select: { status: true } },
+            _count: { select: { variants: { where: { isActive: true } } } },
+          },
+        })
+      : Promise.resolve([]),
+    reviewAggregatesFor(missingRatings.map((item) => item.id)),
+  ]);
   const byId = new Map(products.map((product) => [product.id, product]));
   return items.map((item) => {
     const product = byId.get(item.id);
-    const raw = product?.attributes;
-    const attrs =
-      raw && typeof raw === "object" && !Array.isArray(raw)
-        ? (raw as Record<string, unknown>)
-        : {};
     const sellerVerified =
       item.sellerVerified ?? product?.seller.status === "approved";
     const freeDelivery = freeDeliveryHintFromPolicy({
@@ -752,13 +820,14 @@ async function enrichStorefrontCards<
       item.minMrpPaise != null && item.minPricePaise != null
         ? discountPercent(item.minMrpPaise, item.minPricePaise)
         : null;
-    const storefrontRating = resolveStorefrontRating({
-      // Enrichment must not promote attribute demo metrics.
-      attributeRatingAverage:
-        typeof attrs.ratingAverage === "number" ? attrs.ratingAverage : null,
-      attributeReviewCount:
-        typeof attrs.reviewCount === "number" ? attrs.reviewCount : null,
-    });
+    const aggregate = reviewAggs.get(item.id);
+    const storefrontRating =
+      item.ratingAverage != null && (item.reviewCount ?? 0) > 0
+        ? { average: item.ratingAverage, count: item.reviewCount ?? 0 }
+        : resolveStorefrontRating({
+            reviewAggregateAverage: aggregate?.average,
+            reviewAggregateCount: aggregate?.count,
+          });
     return {
       ...item,
       ratingAverage: storefrontRating?.average ?? null,

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { safeJsonLd } from "@/lib/json-ld";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
@@ -245,13 +246,13 @@ export default async function ProductDetailPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([productJsonLd, breadcrumbJsonLd]),
+          __html: safeJsonLd([productJsonLd, breadcrumbJsonLd]),
         }}
       />
       <nav aria-label="Breadcrumb" className="text-xs text-muted">
         <ol className="flex flex-wrap items-center gap-1">
           <li>
-            <Link href="/" className="hover:text-accent">
+            <Link href="/" className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0">
               Home
             </Link>
           </li>
@@ -259,7 +260,7 @@ export default async function ProductDetailPage({
             &gt;
           </li>
           <li>
-            <Link href="/shop" className="hover:text-accent">
+            <Link href="/shop" className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0">
               Shop
             </Link>
           </li>
@@ -269,7 +270,7 @@ export default async function ProductDetailPage({
           <li>
             <Link
               href={`/browse?categorySlug=${encodeURIComponent(product.category.slug)}`}
-              className="hover:text-accent"
+              className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0"
             >
               {product.category.name}
             </Link>
@@ -296,7 +297,7 @@ export default async function ProductDetailPage({
 
         <div className="flex flex-col gap-5">
           <div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
+            <h1 className="font-display text-[1.75rem] leading-tight font-semibold tracking-tight md:text-4xl">
               {product.title}
             </h1>
             <p className="mt-2 text-base text-muted">{product.summary}</p>
@@ -325,7 +326,7 @@ export default async function ProductDetailPage({
             productTitle={product.title}
           />
 
-          <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
+          <div className="rounded-2xl bg-surface p-4 shadow-[var(--shadow-card)]">
             <p className="text-xs font-semibold tracking-wide text-muted uppercase">
               Sold by
             </p>

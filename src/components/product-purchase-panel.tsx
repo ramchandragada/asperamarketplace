@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
-import { formatPaise } from "@/modules/catalogue/helpers";
+import { discountPercent, formatPaise } from "@/modules/catalogue/helpers";
 
 type VariantView = {
   id: string;
@@ -40,6 +41,16 @@ export function ProductPurchasePanel({
   const [sizeChosen, setSizeChosen] = useState(!requiresSize);
   const [pincode, setPincode] = useState("");
   const [deliveryNote, setDeliveryNote] = useState<string | null>(null);
+  const [buyError, setBuyError] = useState<string | null>(null);
+  const [buyPending, setBuyPending] = useState(false);
+  const router = useRouter();
+
+  function variantColor(variant: VariantView) {
+    return variant.optionValues?.color ?? variant.optionValues?.Color ?? null;
+  }
+  function variantSize(variant: VariantView) {
+    return variant.optionValues?.size ?? variant.optionValues?.Size ?? null;
+  }
 
   const selected =
     variants.find((variant) => variant.id === selectedId) ??
@@ -47,14 +58,60 @@ export function ProductPurchasePanel({
   const priceVariant = selected ?? variants[0];
 
   const colorOptions = useMemo(() => {
-    const colors = new Map<string, string>();
+    const colors = new Set<string>();
     for (const variant of variants) {
       const color =
         variant.optionValues?.color ?? variant.optionValues?.Color ?? null;
-      if (color) colors.set(color, variant.id);
+      if (color) colors.add(color);
     }
-    return [...colors.entries()];
+    return [...colors];
   }, [variants]);
+
+  function selectColor(color: string) {
+    const size = selected ? variantSize(selected) : null;
+    const match =
+      variants.find(
+        (variant) =>
+          variantColor(variant) === color &&
+          (size == null || variantSize(variant) === size),
+      ) ?? variants.find((variant) => variantColor(variant) === color);
+    if (!match) return;
+    setSelectedId(match.id);
+    if (!requiresSize) setSizeChosen(true);
+  }
+
+  const selectionRequired = Boolean(priceVariant) && requiresSize && !sizeChosen;
+  const activeVariantId = selected?.id ?? priceVariant?.id ?? "";
+
+  async function buyNow() {
+    if (selectionRequired || !activeVariantId) return;
+    setBuyPending(true);
+    setBuyError(null);
+    try {
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ variantId: activeVariantId, quantity: 1 }),
+      });
+      if (response.status === 401) {
+        router.push(`/login?next=${encodeURIComponent("/checkout")}`);
+        return;
+      }
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as {
+          message?: string;
+        } | null;
+        setBuyError(body?.message ?? "Could not start checkout");
+        return;
+      }
+      router.push("/checkout");
+      router.refresh();
+    } catch {
+      setBuyError("Could not reach the cart service. Try again.");
+    } finally {
+      setBuyPending(false);
+    }
+  }
 
   function checkDelivery() {
     const clean = pincode.replace(/\D/g, "");
@@ -78,17 +135,28 @@ export function ProductPurchasePanel({
     return <p className="text-sm text-muted">No active variants.</p>;
   }
 
-  const selectionRequired = requiresSize && !sizeChosen;
-  const activeVariantId = selected?.id ?? priceVariant.id;
-
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <p className="text-2xl font-bold">
-          {formatPaise(priceVariant.sellingPricePaise)}
+        <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="text-3xl font-bold tracking-tight md:text-4xl">
+            {formatPaise(priceVariant.sellingPricePaise)}
+          </span>
           {priceVariant.mrpPaise > priceVariant.sellingPricePaise ? (
-            <span className="ml-2 text-base font-normal text-muted line-through">
+            <span className="text-base font-normal text-muted line-through">
               {formatPaise(priceVariant.mrpPaise)}
+            </span>
+          ) : null}
+          {discountPercent(
+            priceVariant.mrpPaise,
+            priceVariant.sellingPricePaise,
+          ) ? (
+            <span className="offer-chip px-2 py-1 text-xs">
+              {discountPercent(
+                priceVariant.mrpPaise,
+                priceVariant.sellingPricePaise,
+              )}
+              % off
             </span>
           ) : null}
         </p>
@@ -104,31 +172,31 @@ export function ProductPurchasePanel({
               : ""}
           </p>
           <div className="flex flex-wrap gap-2">
-            {colorOptions.map(([color, variantId]) => (
+            {colorOptions.map((color) => {
+              const active = variantColor(selected ?? priceVariant) === color;
+              return (
               <button
                 key={color}
                 type="button"
                 title={color}
-                onClick={() => {
-                  setSelectedId(variantId);
-                  if (!requiresSize) setSizeChosen(true);
-                }}
-                className={`h-9 w-9 rounded-full border-2 shadow-sm ${
-                  selectedId === variantId
+                onClick={() => selectColor(color)}
+                className={`h-11 w-11 rounded-full border-2 shadow-sm md:h-9 md:w-9 ${
+                  active
                     ? "border-accent ring-2 ring-accent/30"
                     : "border-border hover:border-accent"
                 }`}
                 style={{ backgroundColor: colorToCss(color) }}
                 aria-label={color}
-                aria-pressed={selectedId === variantId}
+                aria-pressed={active}
               />
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : null}
 
       {sizeVariants.length > 1 ? (
-        <div>
+        <div id="size-chart">
           <p className="mb-2 text-sm font-semibold">
             Select size
             {selectionRequired ? (
@@ -152,7 +220,7 @@ export function ProductPurchasePanel({
                     setSelectedId(variant.id);
                     setSizeChosen(true);
                   }}
-                  className={`min-w-[2.75rem] rounded-[var(--radius-sm)] border px-3 py-2 text-sm font-medium ${
+                  className={`min-h-11 min-w-[2.75rem] rounded-[var(--radius-sm)] border px-3 py-2 text-sm font-medium md:min-h-0 ${
                     active
                       ? "border-accent bg-accent-soft font-semibold text-accent"
                       : soldOut
@@ -181,7 +249,7 @@ export function ProductPurchasePanel({
                     setSelectedId(variant.id);
                     setSizeChosen(true);
                   }}
-                  className={`rounded-[var(--radius-sm)] border px-3 py-2 text-sm ${
+                  className={`min-h-11 rounded-[var(--radius-sm)] border px-3 py-2 text-sm md:min-h-0 ${
                     active
                       ? "border-accent bg-accent-soft font-semibold text-accent"
                       : "border-border hover:border-accent"
@@ -219,13 +287,13 @@ export function ProductPurchasePanel({
             inputMode="numeric"
             maxLength={6}
             placeholder="Enter pincode"
-            className="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border px-3 py-2 text-sm"
+            className="min-h-11 min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border px-3 py-2 text-base md:min-h-0 md:text-sm"
             aria-label="Pincode"
           />
           <button
             type="button"
             onClick={checkDelivery}
-            className="rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground"
+            className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground md:min-h-0"
           >
             Check
           </button>
@@ -248,16 +316,18 @@ export function ProductPurchasePanel({
             <span className="font-semibold text-success">✓</span> Fast Delivery
           </li>
         </ul>
-        <a
-          href="#size-chart"
-          className="mt-2 text-xs font-semibold text-accent hover:underline"
-        >
-          Size Chart →
-        </a>
+        {sizeVariants.length > 1 ? (
+          <a
+            href="#size-chart"
+            className="mt-2 inline-block text-xs font-semibold text-accent hover:underline"
+          >
+            Size Chart →
+          </a>
+        ) : null}
       </div>
 
       {/* Single CTA instance: sticky on mobile, inline on desktop */}
-      <div className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-border bg-surface p-3 sm:static sm:z-auto sm:border-0 sm:bg-transparent sm:p-0">
+      <div className="fixed inset-x-3 bottom-[calc(5.85rem+env(safe-area-inset-bottom))] z-50 flex gap-2 rounded-2xl border border-border bg-surface p-2 shadow-[0_-8px_24px_rgba(23,33,38,0.08)] [overflow-anchor:none] md:static md:inset-auto md:bottom-auto md:z-auto md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
         <div className="min-w-0 flex-1 sm:flex-none">
           <AddToCartButton
             variantId={activeVariantId}
@@ -271,21 +341,28 @@ export function ProductPurchasePanel({
           <button
             type="button"
             disabled
-            className="inline-flex flex-1 items-center justify-center rounded-[var(--radius-sm)] bg-brand-accent px-4 py-2 text-sm font-semibold text-white opacity-60 sm:flex-none"
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-brand-accent px-4 py-2 text-sm font-semibold text-white opacity-60 sm:flex-none"
           >
             Buy now
           </button>
         ) : (
-          <a
-            href="/checkout"
-            className="inline-flex flex-1 items-center justify-center rounded-[var(--radius-sm)] bg-brand-accent px-4 py-2 text-sm font-semibold text-white sm:flex-none"
+          <button
+            type="button"
+            disabled={buyPending}
+            onClick={() => void buyNow()}
+            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-brand-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 sm:flex-none"
           >
-            Buy now
-          </a>
+            {buyPending ? "Starting…" : "Buy now"}
+          </button>
         )}
       </div>
-      {/* Spacer so fixed mobile bar does not cover content */}
-      <div className="h-20 sm:hidden" aria-hidden />
+      {buyError ? (
+        <p className="text-sm text-red-700" role="alert">
+          {buyError}
+        </p>
+      ) : null}
+      {/* Spacer so the fixed bar sits above the mobile tab nav */}
+      <div className="h-40 md:hidden" aria-hidden />
     </div>
   );
 }

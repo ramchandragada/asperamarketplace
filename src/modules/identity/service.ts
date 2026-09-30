@@ -13,6 +13,10 @@ import {
 import { isRoleKey, type RoleKey } from "@/modules/identity/roles";
 import type { LoginInput, RegisterInput } from "@/modules/identity/schema";
 import { logger } from "@/platform/logging/logger";
+import {
+  isLoginLocked,
+  LOGIN_LOCK_WINDOW_MS,
+} from "@/modules/identity/login-guard";
 
 export const SESSION_COOKIE = "aspera_session";
 const SESSION_DAYS = 14;
@@ -126,6 +130,25 @@ export async function loginUser(
   meta: { ipAddress?: string; userAgent?: string; correlationId: string },
 ) {
   const email = input.email.trim().toLowerCase();
+  const since = new Date(Date.now() - LOGIN_LOCK_WINDOW_MS);
+  const recentFailures = await prisma.loginAttempt.count({
+    where: { email, success: false, createdAt: { gte: since } },
+  });
+  if (isLoginLocked(recentFailures)) {
+    await prisma.loginAttempt.create({
+      data: {
+        email,
+        success: false,
+        ipAddress: meta.ipAddress,
+        userAgent: meta.userAgent,
+        reason: "rate_limited",
+      },
+    });
+    throw new RateLimitError(
+      "Too many sign-in attempts. Try again in 15 minutes.",
+    );
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
   const valid =
     user && user.status === "active"
@@ -263,6 +286,15 @@ export function sessionCookieOptions(expiresAt: Date) {
     path: "/",
     expires: expiresAt,
   };
+}
+
+export class RateLimitError extends Error {
+  readonly code = "RATE_LIMITED";
+
+  constructor(message: string) {
+    super(message);
+    this.name = "RateLimitError";
+  }
 }
 
 export class ConflictError extends Error {

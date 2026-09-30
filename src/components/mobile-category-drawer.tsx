@@ -49,7 +49,7 @@ export function MobileCategoryDrawer() {
     <div className="md:hidden">
       <button
         type="button"
-        className="inline-flex min-h-10 items-center gap-1.5 rounded-[var(--radius-sm)] border border-border bg-background px-2.5 text-sm font-medium"
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-sm)] border border-border bg-background px-2.5 text-sm font-medium"
         aria-expanded={open}
         aria-controls={titleId}
         onClick={() => setOpen((value) => !value)}
@@ -71,13 +71,13 @@ export function MobileCategoryDrawer() {
             role="dialog"
             aria-modal="true"
             aria-label="Browse categories"
-            className="absolute inset-y-0 left-0 flex w-[min(100%,22rem)] flex-col bg-surface shadow-[var(--shadow-mega)]"
+            className="absolute inset-y-0 left-0 flex w-[min(100%,22rem)] flex-col bg-surface pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-mega)]"
           >
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <p className="font-display text-lg font-semibold">Categories</p>
               <button
                 type="button"
-                className="rounded-[var(--radius-sm)] p-2 text-muted hover:bg-accent-soft/70 hover:text-foreground"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-sm)] text-muted hover:bg-accent-soft/70 hover:text-foreground"
                 aria-label="Close"
                 onClick={() => setOpen(false)}
               >
@@ -87,7 +87,7 @@ export function MobileCategoryDrawer() {
             <div className="flex-1 overflow-y-auto pb-24">
               <Link
                 href={ALL_CATEGORIES_MENU.href}
-                className="block border-b border-border px-4 py-3 text-sm font-semibold text-accent"
+                className="flex min-h-11 items-center border-b border-border px-4 py-3 text-sm font-semibold text-accent"
                 onClick={() => setOpen(false)}
               >
                 View all categories →
@@ -99,7 +99,7 @@ export function MobileCategoryDrawer() {
                     <li key={category.key} className="border-b border-border">
                       <button
                         type="button"
-                        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold"
+                        className="flex min-h-11 w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold"
                         aria-expanded={isOpen}
                         onClick={() =>
                           setExpanded((current) =>
@@ -116,7 +116,7 @@ export function MobileCategoryDrawer() {
                         <div className="space-y-3 bg-background/60 px-4 pb-3">
                           <Link
                             href={category.href}
-                            className="text-xs font-medium text-accent"
+                            className="inline-flex min-h-11 items-center text-sm font-medium text-accent"
                             onClick={() => setOpen(false)}
                           >
                             Shop all {category.label}
@@ -131,7 +131,7 @@ export function MobileCategoryDrawer() {
                                   <li key={item.href + item.label}>
                                     <Link
                                       href={item.href}
-                                      className="block py-1 text-sm text-foreground"
+                                      className="flex min-h-11 items-center text-sm text-foreground"
                                       onClick={() => setOpen(false)}
                                     >
                                       {item.label}

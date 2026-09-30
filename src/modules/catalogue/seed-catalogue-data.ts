@@ -2,6 +2,7 @@
  * Preview catalogue definitions for Aspera Marketplace storefront demos.
  * Product copy is customer-facing Meesho-style descriptions — not production inventory.
  */
+import { navLaneProducts } from "./seed-nav-lanes";
 
 export type SeedCategoryDef = {
   slug: string;
@@ -200,7 +201,7 @@ function productsFor(
 }
 
 /** At least 10 products per category; mix of prices, stock, and a few non-approved. */
-export const SEED_PRODUCTS: SeedProductDef[] = [
+export const SEED_PRODUCT_BASE: SeedProductDef[] = [
   ...productsFor("general-merchandise", [
     { slug: "cotton-tea-towel-set-demo", title: "Cotton tea towel set", summary: "Pack of three absorbent cotton tea towels for everyday kitchens.", description: "Soft cotton tea towels with hanging loops for drying crockery and wiping counters. Absorbent weave that softens with every wash. A practical three-pack for everyday kitchens.", brandSlug: "aspera-home", sellerKey: "home", sku: "TOWEL-SET-01", mrpPaise: 59900, sellingPricePaise: 39900, onHand: 40, weightGrams: 350, hsnCode: "6302" },
     { slug: "bamboo-laundry-basket", title: "Bamboo laundry basket", summary: "Ventilated bamboo hamper with cotton liner.", description: "Lightweight rectangular bamboo hamper with a removable cotton liner. Ventilated sides keep laundry fresh between washes. Ideal for bedrooms, balconies, and compact apartments.", brandSlug: "aspera-home", sellerKey: "home", sku: "BAM-LB-01", mrpPaise: 189900, sellingPricePaise: 149900, onHand: 18, weightGrams: 2200, hsnCode: "4602" },
@@ -348,6 +349,11 @@ export const SEED_PRODUCTS: SeedProductDef[] = [
     { slug: "room-freshener-gel", title: "Room freshener gel can", summary: "Long-lasting gel fragrance for living rooms.", description: "Long-lasting gel freshener can for living rooms and bathrooms. Soft fragrance that refreshes small spaces. Set-and-forget freshness between deep cleans.", brandSlug: "coastal-bloom", sellerKey: "wellness", sku: "FRS-GEL", mrpPaise: 24900, sellingPricePaise: 19900, onHand: 70, weightGrams: 200, hsnCode: "3307" },
     { slug: "dustpan-broom-compact", title: "Compact dustpan and broom", summary: "Standing dustpan set for quick clean-ups.", description: "Standing dustpan and broom set sized for apartments. Quick clean-ups for crumbs and balcony dust. Compact storage that does not clutter utility corners.", brandSlug: "aspera-home", sellerKey: "home", sku: "DPS-SET", mrpPaise: 39900, sellingPricePaise: 29900, onHand: 4, weightGrams: 450, hsnCode: "9603" },
   ]),
+];
+
+export const SEED_PRODUCTS: SeedProductDef[] = [
+  ...SEED_PRODUCT_BASE,
+  ...navLaneProducts(SEED_PRODUCT_BASE, SEED_CATEGORIES, SEED_BRANDS),
 ];
 
 export function imagesForProduct(

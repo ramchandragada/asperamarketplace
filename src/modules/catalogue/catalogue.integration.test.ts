@@ -192,4 +192,51 @@ describe.runIf(hasDatabase)("catalogue discovery integration", () => {
     expect(audit).not.toBeNull();
     expect(outbox).not.toBeNull();
   });
+
+  it("uses approved reviews for rating filters and sort", async () => {
+    const product = await prisma.product.findFirst({
+      where: { status: "approved" },
+    });
+    const user = await prisma.user.findFirst();
+    expect(product).not.toBeNull();
+    expect(user).not.toBeNull();
+    if (!product || !user) return;
+
+    const review = await prisma.productReview.create({
+      data: {
+        productId: product.id,
+        userId: user.id,
+        rating: 5,
+        title: "Rating filter fixture",
+        body: "Approved review used only to verify catalogue rating filters.",
+        status: "approved",
+      },
+    });
+
+    try {
+      const filtered = await searchApprovedProducts({
+        minRating: 4,
+        sort: "rating",
+        page: 1,
+        pageSize: 24,
+      });
+      expect(filtered.total).toBeGreaterThan(0);
+      expect(filtered.items.some((item) => item.id === product.id)).toBe(true);
+      expect(filtered.items[0]?.ratingAverage ?? 0).toBeGreaterThanOrEqual(4);
+      expect(
+        filtered.items.every((item) => (item.ratingAverage ?? 0) >= 4),
+      ).toBe(true);
+
+      const searched = await searchApprovedProducts({
+        q: product.title.split(" ")[0] ?? product.title,
+        minRating: 4,
+        sort: "rating",
+        page: 1,
+        pageSize: 12,
+      });
+      expect(searched.items.some((item) => item.id === product.id)).toBe(true);
+    } finally {
+      await prisma.productReview.delete({ where: { id: review.id } });
+    }
+  });
 });

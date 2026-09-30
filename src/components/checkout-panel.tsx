@@ -230,7 +230,7 @@ export function CheckoutPanel({
             <button
               type="button"
               disabled={pending}
-              className="mt-3 rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground disabled:opacity-60"
+              className="mt-3 inline-flex min-h-11 items-center rounded-full bg-brand-accent px-5 py-2 font-semibold text-white disabled:opacity-60"
               onClick={() => void createOrder()}
             >
               Create order
@@ -368,7 +368,7 @@ export function CheckoutPanel({
                 type="button"
                 disabled={pending}
                 onClick={() => void preview()}
-                className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground disabled:opacity-60"
+                className="min-h-11 rounded-full bg-brand-accent px-5 py-2 font-semibold text-white disabled:opacity-60"
               >
                 Preview totals
               </button>

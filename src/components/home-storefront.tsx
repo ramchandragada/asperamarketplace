@@ -171,12 +171,14 @@ export function AsperaHero() {
   const labelId = useId();
   const rootRef = useRef<HTMLElement | null>(null);
   const [index, setIndex] = useState(0);
-  const [userPaused, setUserPaused] = useState(false);
-  const [hoverPaused, setHoverPaused] = useState(false);
+  const [held, setHeld] = useState(false);
   const [announce, setAnnounce] = useState("");
   const count = HERO_SLIDES.length;
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const paused = userPaused || hoverPaused;
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  // Hover and focus used to pause the timer. A phone tap fires mouseenter
+  // and often never mouseleave, so autoplay stopped and stayed stopped.
+  const paused = held;
 
   const clearHiddenFocus = useCallback(() => {
     const root = rootRef.current;
@@ -195,9 +197,9 @@ export function AsperaHero() {
       setIndex(resolved);
       const entry = HERO_SLIDES[resolved]!;
       setAnnounce(`${entry.eyebrow}: ${entry.title}`);
-      setUserPaused(true);
+      setHeld(true);
       if (resumeTimer.current) clearTimeout(resumeTimer.current);
-      resumeTimer.current = setTimeout(() => setUserPaused(false), 8000);
+      resumeTimer.current = setTimeout(() => setHeld(false), 8000);
     },
     [count],
   );
@@ -230,13 +232,20 @@ export function AsperaHero() {
       className="relative w-full overflow-hidden border-b border-border"
       aria-roledescription="carousel"
       aria-labelledby={labelId}
-      onMouseEnter={() => setHoverPaused(true)}
-      onMouseLeave={() => setHoverPaused(false)}
-      onFocusCapture={() => setHoverPaused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-          setHoverPaused(false);
-        }
+      onTouchStart={(event) => {
+        const touch = event.changedTouches[0];
+        if (!touch) return;
+        touchStart.current = { x: touch.clientX, y: touch.clientY };
+      }}
+      onTouchEnd={(event) => {
+        const start = touchStart.current;
+        touchStart.current = null;
+        const touch = event.changedTouches[0];
+        if (!start || !touch) return;
+        const dx = touch.clientX - start.x;
+        const dy = touch.clientY - start.y;
+        if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+        go(dx < 0 ? index + 1 : index - 1);
       }}
     >
       <h2 id={labelId} className="sr-only">
@@ -320,10 +329,9 @@ export function AsperaHero() {
           );
         })}
 
-        {/* Dots + pause sit in the center column. On a phone they use the
-            reserved bottom band so they cannot cover the CTAs or the headline.
-            Desktop keeps them over the lower edge of the photograph. */}
-        <div className="absolute inset-x-0 bottom-3 z-[3] flex items-center justify-center gap-3 md:bottom-4">
+        {/* Dots sit in the center column's bottom band so they stay off the
+            headline and the call-to-action buttons. */}
+        <div className="absolute inset-x-0 bottom-3 z-[3] flex items-center justify-center md:bottom-4">
           <div className="flex gap-2">
             {HERO_SLIDES.map((entry, slideIndex) => {
               const active = slideIndex === index;
@@ -347,38 +355,6 @@ export function AsperaHero() {
               );
             })}
           </div>
-          <button
-            type="button"
-            aria-label={
-              userPaused ? "Play banner rotation" : "Pause banner rotation"
-            }
-            aria-pressed={userPaused}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-white/85 text-accent shadow-sm transition hover:bg-white md:h-7 md:w-7 md:backdrop-blur-sm"
-            onClick={() => {
-              if (resumeTimer.current) clearTimeout(resumeTimer.current);
-              setUserPaused((value) => !value);
-            }}
-          >
-            {userPaused ? (
-              <svg
-                viewBox="0 0 24 24"
-                className="h-3.5 w-3.5"
-                fill="currentColor"
-                aria-hidden
-              >
-                <path d="M8 5.5v13l11-6.5L8 5.5Z" />
-              </svg>
-            ) : (
-              <svg
-                viewBox="0 0 24 24"
-                className="h-3.5 w-3.5"
-                fill="currentColor"
-                aria-hidden
-              >
-                <path d="M7 5h3.5v14H7V5Zm6.5 0H17v14h-3.5V5Z" />
-              </svg>
-            )}
-          </button>
         </div>
         </div>
 
@@ -387,14 +363,14 @@ export function AsperaHero() {
           <button
             type="button"
             aria-label="Previous banner"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-white/90 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-transparent text-white [filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.85))] transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             onClick={() => go(index - 1)}
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" aria-hidden>
               <path
                 d="M14.5 6.5 9 12l5.5 5.5"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="2.4"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -405,14 +381,14 @@ export function AsperaHero() {
           <button
             type="button"
             aria-label="Next banner"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-white/90 text-accent shadow-sm backdrop-blur-sm transition hover:bg-white"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-transparent text-white [filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.85))] transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             onClick={() => go(index + 1)}
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" aria-hidden>
               <path
                 d="M9.5 6.5 15 12l-5.5 5.5"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="2.4"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />

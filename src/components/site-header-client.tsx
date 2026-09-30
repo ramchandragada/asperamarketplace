@@ -451,7 +451,16 @@ export function SiteHeaderClient({
     <>
       <div className="w-full bg-[linear-gradient(90deg,#123b4a_0%,#1a5348_58%,#9a4a28_100%)] text-accent-foreground">
         <p className="flex h-8 w-full items-center justify-center px-4 text-center text-[12px] font-medium tracking-wide md:h-9 md:px-8 md:text-[13px]">
-          Free delivery on eligible orders · Easy returns · Secure checkout
+          <span className="flex items-center justify-center gap-1.5 whitespace-nowrap md:hidden">
+            <span>Free delivery</span>
+            <span aria-hidden>·</span>
+            <span>Easy returns</span>
+            <span aria-hidden>·</span>
+            <span>Secure checkout</span>
+          </span>
+          <span className="hidden md:inline">
+            Free delivery on eligible orders · Easy returns · Secure checkout
+          </span>
         </p>
       </div>
     <header

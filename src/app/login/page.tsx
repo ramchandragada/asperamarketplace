@@ -16,9 +16,6 @@ export default async function LoginPage({
     <PageShell narrow className="items-center justify-center py-16 md:py-24">
       <div className="w-full max-w-md rounded-[var(--radius)] border border-border bg-surface p-6 shadow-[var(--shadow-card)] md:p-8">
         <h1 className="font-display text-3xl font-semibold">Sign in</h1>
-        <p className="mt-2 text-sm text-muted">
-          Welcome back to Aspera Marketplace.
-        </p>
         <div className="mt-6">
           <AuthForm mode="login" nextPath={nextPath} />
         </div>

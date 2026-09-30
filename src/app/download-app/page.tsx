@@ -3,7 +3,7 @@ import { PageShell } from "@/components/ui/page-shell";
 
 export const metadata = {
   title: "Download App",
-  description: "Get the Aspera Marketplace app for exclusive deals and faster shopping.",
+  description: "Native iOS and Android builds are coming soon.",
 };
 
 export default function DownloadAppPage() {
@@ -11,9 +11,8 @@ export default function DownloadAppPage() {
     <PageShell narrow>
       <h1 className="font-display text-3xl font-semibold">Download the Aspera App</h1>
       <p className="mt-3 text-muted">
-        Shop on the go with exclusive app-only drops, faster checkout, and deal
-        alerts. Native iOS and Android builds are coming soon — use the mobile
-        web storefront today.
+        Native iOS and Android builds are coming soon. Use the mobile web
+        storefront today.
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <span className="inline-flex items-center rounded-[var(--radius-sm)] border border-border bg-surface px-4 py-2.5 text-sm font-medium text-muted">

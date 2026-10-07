@@ -5,8 +5,27 @@ import {
   imagesForProduct,
   SEED_BRANDS,
   SEED_CATEGORIES,
+  SEED_PRODUCT_BASE,
   SEED_PRODUCTS,
 } from "./seed-catalogue-data";
+
+/** Multi-seller siblings should share the primary listing's photos. */
+function imageSourceFor(
+  item: (typeof SEED_PRODUCTS)[number],
+  fallbackIndex: number,
+) {
+  if (!item.sharedListingKey) {
+    return { slug: item.slug, index: fallbackIndex };
+  }
+  const primaryIndex = SEED_PRODUCT_BASE.findIndex(
+    (entry) => entry.sharedListingKey === item.sharedListingKey,
+  );
+  const primary = primaryIndex >= 0 ? SEED_PRODUCT_BASE[primaryIndex] : undefined;
+  return {
+    slug: primary?.slug ?? item.slug,
+    index: primaryIndex >= 0 ? primaryIndex : fallbackIndex,
+  };
+}
 
 export type SeedSellerMap = Record<string, { id: string }>;
 
@@ -258,11 +277,12 @@ export async function seedMarketplaceCatalogue(
           }
         }
 
+        const imageSource = imageSourceFor(item, index);
         for (const image of imagesForProduct(
           item.categorySlug,
           item.title,
-          index,
-          item.slug,
+          imageSource.index,
+          imageSource.slug,
         )) {
           await tx.productImage.create({
             data: {
@@ -375,11 +395,12 @@ export async function seedMarketplaceCatalogue(
 
       // Refresh images so category pools / slug overrides stay aligned with titles
       await prisma.productImage.deleteMany({ where: { productId: existing.id } });
+      const imageSource = imageSourceFor(item, index);
       for (const image of imagesForProduct(
         item.categorySlug,
         item.title,
-        index,
-        item.slug,
+        imageSource.index,
+        imageSource.slug,
       )) {
         await prisma.productImage.create({
           data: {

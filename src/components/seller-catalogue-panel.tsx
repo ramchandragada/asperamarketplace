@@ -103,10 +103,123 @@ export function SellerCataloguePanel({
     await refresh();
   }
 
+  async function createOffer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setMessage(null);
+    const form = new FormData(event.currentTarget);
+    const payload = {
+      sellerId,
+      sourceProductId: String(form.get("sourceProductId") ?? "").trim(),
+      variant: {
+        sku: String(form.get("offerSku") ?? "").toUpperCase(),
+        title: String(form.get("offerVariantTitle") ?? "") || undefined,
+        mrpPaise: Number(form.get("offerMrpPaise")),
+        sellingPricePaise: Number(form.get("offerSellingPricePaise")),
+        initialStock: Number(form.get("offerInitialStock")),
+      },
+    };
+    const response = await fetch("/api/seller/products/offer", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const body = (await response.json()) as { message?: string };
+    if (!response.ok) {
+      setError(body.message ?? "Could not create offer");
+      return;
+    }
+    setMessage(
+      body.message ??
+        "Offer draft created — submit it for review to appear on the product page",
+    );
+    event.currentTarget.reset();
+    await refresh();
+  }
+
   return (
     <div className="flex flex-col gap-8">
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
+
+      <form
+        onSubmit={createOffer}
+        className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-2"
+      >
+        <h2 className="sm:col-span-2 text-lg font-semibold">
+          Sell an existing product
+        </h2>
+        <p className="sm:col-span-2 text-sm text-muted">
+          Paste the product id from an approved listing. You keep your own price,
+          SKU, and stock; shoppers see you under &quot;Other sellers&quot; on that
+          product.
+        </p>
+        <label className="text-sm sm:col-span-2">
+          Source product id
+          <input
+            name="sourceProductId"
+            required
+            placeholder="uuid of an approved product"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+          />
+        </label>
+        <label className="text-sm">
+          Your SKU
+          <input
+            name="offerSku"
+            required
+            pattern="[A-Z0-9-]+"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 uppercase"
+          />
+        </label>
+        <label className="text-sm">
+          Variant title
+          <input
+            name="offerVariantTitle"
+            defaultValue="Standard"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          MRP (paise)
+          <input
+            name="offerMrpPaise"
+            type="number"
+            required
+            min={1}
+            defaultValue={49900}
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          Selling price (paise)
+          <input
+            name="offerSellingPricePaise"
+            type="number"
+            required
+            min={1}
+            defaultValue={39900}
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          Initial stock
+          <input
+            name="offerInitialStock"
+            type="number"
+            required
+            min={0}
+            defaultValue={20}
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+          />
+        </label>
+        <button
+          type="submit"
+          className="sm:col-span-2 rounded-lg border border-border bg-background px-4 py-2 font-medium"
+        >
+          Create offer draft
+        </button>
+      </form>
 
       <form
         onSubmit={createDraft}

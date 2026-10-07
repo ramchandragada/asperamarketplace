@@ -54,6 +54,31 @@ export const submitProductSchema = z.object({
   productId: z.uuid(),
 });
 
+/** Another approved seller lists the same product with their own price and stock. */
+export const createProductOfferSchema = z
+  .object({
+    sellerId: z.uuid(),
+    /** Approved storefront product this seller wants to also sell. */
+    sourceProductId: z.uuid(),
+    variant: z.object({
+      sku: z
+        .string()
+        .trim()
+        .min(3)
+        .max(64)
+        .regex(/^[A-Z0-9-]+$/, "SKU must be uppercase letters, numbers, or hyphen"),
+      title: z.string().trim().min(1).max(120).optional(),
+      mrpPaise: z.number().int().positive(),
+      sellingPricePaise: z.number().int().positive(),
+      initialStock: z.number().int().min(0).max(1_000_000),
+      weightGrams: z.number().int().positive().optional(),
+    }),
+  })
+  .refine((value) => value.variant.mrpPaise >= value.variant.sellingPricePaise, {
+    message: "MRP must be greater than or equal to selling price",
+    path: ["variant", "mrpPaise"],
+  });
+
 export const reviewProductSchema = z.object({
   productId: z.uuid(),
   decision: z.enum(["approve", "reject"]),
@@ -82,6 +107,7 @@ export const searchProductsSchema = z.object({
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
+export type CreateProductOfferInput = z.infer<typeof createProductOfferSchema>;
 export type SubmitProductInput = z.infer<typeof submitProductSchema>;
 export type ReviewProductInput = z.infer<typeof reviewProductSchema>;
 export type SearchProductsInput = z.infer<typeof searchProductsSchema>;

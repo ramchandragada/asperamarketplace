@@ -28,6 +28,11 @@ export type SeedProductDef = {
   status?: "approved" | "draft" | "submitted";
   /** Storefront audience segment for fashion/kids nav filters */
   audience?: "women" | "men" | "kids" | "unisex";
+  /**
+   * Same key = same shopper-facing product sold by multiple sellers.
+   * Each row remains its own Product with that seller's price and stock.
+   */
+  sharedListingKey?: string;
 };
 
 /** Curated Unsplash photo IDs for preview catalogue imagery. */
@@ -203,16 +208,16 @@ function productsFor(
 /** At least 10 products per category; mix of prices, stock, and a few non-approved. */
 export const SEED_PRODUCT_BASE: SeedProductDef[] = [
   ...productsFor("general-merchandise", [
-    { slug: "cotton-tea-towel-set-demo", title: "Cotton tea towel set", summary: "Pack of three absorbent cotton tea towels for everyday kitchens.", description: "Soft cotton tea towels with hanging loops for drying crockery and wiping counters. Absorbent weave that softens with every wash. A practical three-pack for everyday kitchens.", brandSlug: "aspera-home", sellerKey: "home", sku: "TOWEL-SET-01", mrpPaise: 59900, sellingPricePaise: 39900, onHand: 40, weightGrams: 350, hsnCode: "6302" },
+    { slug: "cotton-tea-towel-set-demo", title: "Cotton tea towel set", summary: "Pack of three absorbent cotton tea towels for everyday kitchens.", description: "Soft cotton tea towels with hanging loops for drying crockery and wiping counters. Absorbent weave that softens with every wash. A practical three-pack for everyday kitchens.", brandSlug: "aspera-home", sellerKey: "home", sku: "TOWEL-SET-01", mrpPaise: 59900, sellingPricePaise: 39900, onHand: 40, weightGrams: 350, hsnCode: "6302", sharedListingKey: "ms-cotton-tea-towel" },
     { slug: "bamboo-laundry-basket", title: "Bamboo laundry basket", summary: "Ventilated bamboo hamper with cotton liner.", description: "Lightweight rectangular bamboo hamper with a removable cotton liner. Ventilated sides keep laundry fresh between washes. Ideal for bedrooms, balconies, and compact apartments.", brandSlug: "aspera-home", sellerKey: "home", sku: "BAM-LB-01", mrpPaise: 189900, sellingPricePaise: 149900, onHand: 18, weightGrams: 2200, hsnCode: "4602" },
     { slug: "microfibre-cleaning-cloth-pack", title: "Microfibre cleaning cloth pack", summary: "Set of eight colour-coded microfibre cloths.", description: "Lint-free microfibre cloths colour-coded for glass, kitchen, and electronics. Trap dust without harsh chemicals and rinse clean quickly. Soft enough for screens yet tough on grease.", brandSlug: "aspera-home", sellerKey: "home", sku: "MF-CL-08", mrpPaise: 49900, sellingPricePaise: 34900, onHand: 120, weightGrams: 280, hsnCode: "6307" },
-    { slug: "foldable-shopping-tote", title: "Foldable shopping tote", summary: "Compact nylon tote that packs into a pouch.", description: "Compact nylon market tote that packs into its own pouch. Reinforced handles carry weekly groceries without stretching. Reusable, washable, and light enough for every outing.", brandSlug: "narmada-weave", sellerKey: "fashion", sku: "TOTE-FLD-01", mrpPaise: 39900, sellingPricePaise: 29900, onHand: 75, weightGrams: 120, hsnCode: "4202" },
+    { slug: "foldable-shopping-tote", title: "Foldable shopping tote", summary: "Compact nylon tote that packs into a pouch.", description: "Compact nylon market tote that packs into its own pouch. Reinforced handles carry weekly groceries without stretching. Reusable, washable, and light enough for every outing.", brandSlug: "narmada-weave", sellerKey: "fashion", sku: "TOTE-FLD-01", mrpPaise: 39900, sellingPricePaise: 29900, onHand: 75, weightGrams: 120, hsnCode: "4202", sharedListingKey: "ms-foldable-shopping-tote" },
     { slug: "silicone-ice-tray-with-lid", title: "Silicone ice tray with lid", summary: "Flexible tray for slow-melt cubes with spill-proof lid.", description: "Flexible freezer-safe silicone tray for slow-melt cubes with a spill-proof lid. The lid reduces odour transfer from other freezer items. Easy to twist-release cubes into glasses or bottles.", brandSlug: "aspera-home", sellerKey: "home", sku: "ICE-SL-01", mrpPaise: 44900, sellingPricePaise: 44900, onHand: 55, weightGrams: 220, hsnCode: "3924" },
     { slug: "cotton-floor-duster", title: "Cotton floor duster", summary: "Traditional cotton thread mop head with wooden handle.", description: "Traditional cotton-thread mop head on a sturdy wooden handle. Covers tile and marble floors quickly between deep cleans. Replacement-ready design for long-term household use.", brandSlug: "aspera-home", sellerKey: "home", sku: "DST-CT-01", mrpPaise: 34900, sellingPricePaise: 24900, onHand: 3, weightGrams: 900, hsnCode: "9603" },
     { slug: "steel-peg-hanger-pack", title: "Steel peg hanger pack", summary: "Pack of twenty rust-resistant clothes pegs.", description: "Pack of twenty rust-resistant spring pegs for balcony drying lines. Strong grip holds towels and sheets even in breeze. Compact storage clip keeps the set organised.", brandSlug: "aspera-home", sellerKey: "home", sku: "PEG-ST-20", mrpPaise: 19900, sellingPricePaise: 14900, onHand: 200, weightGrams: 320, hsnCode: "7326" },
     { slug: "scented-soy-votive-trio", title: "Scented soy votive trio", summary: "Three soy wax votives in sandalwood, citrus, and jasmine.", description: "Three soy-wax votives in sandalwood, citrus, and jasmine for shelves and bathrooms. Clean-burning wax with a gentle evening glow. Gift-ready set for small spaces.", brandSlug: "coastal-bloom", sellerKey: "artisan", sku: "VOTE-3", mrpPaise: 69900, sellingPricePaise: 54900, onHand: 40, weightGrams: 450, hsnCode: "3406" },
     { slug: "reusable-produce-mesh-bags", title: "Reusable produce mesh bags", summary: "Set of five washable mesh bags for fruits and vegetables.", description: "Set of five washable mesh bags with drawcords for fruits and vegetables. Lightweight enough for market runs and fridge storage. Cut down on single-use plastic while keeping produce visible.", brandSlug: "narmada-weave", sellerKey: "home", sku: "MESH-5", mrpPaise: 59900, sellingPricePaise: 39900, onHand: 0, weightGrams: 150, hsnCode: "6307" },
-    { slug: "digital-kitchen-timer", title: "Digital kitchen timer", summary: "Magnetic countdown timer with loud alert.", description: "Magnetic LCD countdown timer with a loud alert for busy cooks. Stick it on the fridge or oven door while you prep. Simple controls for baking, boiling, and school routines.", brandSlug: "silicon-bay", sellerKey: "tech", sku: "TMR-DIG-01", mrpPaise: 49900, sellingPricePaise: 37900, onHand: 60, weightGrams: 90, hsnCode: "9106" },
+    { slug: "digital-kitchen-timer", title: "Digital kitchen timer", summary: "Magnetic countdown timer with loud alert.", description: "Magnetic LCD countdown timer with a loud alert for busy cooks. Stick it on the fridge or oven door while you prep. Simple controls for baking, boiling, and school routines.", brandSlug: "silicon-bay", sellerKey: "tech", sku: "TMR-DIG-01", mrpPaise: 49900, sellingPricePaise: 37900, onHand: 60, weightGrams: 90, hsnCode: "9106", sharedListingKey: "ms-digital-kitchen-timer" },
     { slug: "general-merch-draft-organiser", title: "Draft desk caddy (unpublished)", summary: "Draft listing used to test seller moderation queues.", description: "Multi-compartment desk caddy awaiting catalogue approval. Holds pens, clips, and sticky notes within arm’s reach. Not yet visible on the public storefront.", brandSlug: "ink-and-quill", sellerKey: "home", sku: "DRF-CAD-01", mrpPaise: 79900, sellingPricePaise: 59900, onHand: 10, weightGrams: 400, hsnCode: "3926", status: "draft" },
   ]),
   ...productsFor("fashion", [
@@ -351,8 +356,115 @@ export const SEED_PRODUCT_BASE: SeedProductDef[] = [
   ]),
 ];
 
+/** Extra seller rows for products that already exist above (same title, different price/stock). */
+export const SEED_MULTI_SELLER_OFFERS: SeedProductDef[] = [
+  {
+    slug: "cotton-tea-towel-set-mumbai",
+    title: "Cotton tea towel set",
+    summary: "Pack of three absorbent cotton tea towels for everyday kitchens.",
+    description:
+      "Soft cotton tea towels with hanging loops for drying crockery and wiping counters. Absorbent weave that softens with every wash. A practical three-pack for everyday kitchens.",
+    categorySlug: "general-merchandise",
+    brandSlug: "aspera-home",
+    sellerKey: "mumbai",
+    sku: "TOWEL-SET-MUM",
+    mrpPaise: 59900,
+    sellingPricePaise: 36900,
+    onHand: 28,
+    weightGrams: 350,
+    hsnCode: "6302",
+    sharedListingKey: "ms-cotton-tea-towel",
+  },
+  {
+    slug: "cotton-tea-towel-set-artisan",
+    title: "Cotton tea towel set",
+    summary: "Pack of three absorbent cotton tea towels for everyday kitchens.",
+    description:
+      "Soft cotton tea towels with hanging loops for drying crockery and wiping counters. Absorbent weave that softens with every wash. A practical three-pack for everyday kitchens.",
+    categorySlug: "general-merchandise",
+    brandSlug: "aspera-home",
+    sellerKey: "artisan",
+    sku: "TOWEL-SET-ART",
+    mrpPaise: 64900,
+    sellingPricePaise: 42900,
+    onHand: 15,
+    weightGrams: 350,
+    hsnCode: "6302",
+    sharedListingKey: "ms-cotton-tea-towel",
+  },
+  {
+    slug: "digital-kitchen-timer-home",
+    title: "Digital kitchen timer",
+    summary: "Magnetic countdown timer with loud alert.",
+    description:
+      "Magnetic LCD countdown timer with a loud alert for busy cooks. Stick it on the fridge or oven door while you prep. Simple controls for baking, boiling, and school routines.",
+    categorySlug: "general-merchandise",
+    brandSlug: "silicon-bay",
+    sellerKey: "home",
+    sku: "TMR-DIG-HOME",
+    mrpPaise: 49900,
+    sellingPricePaise: 34900,
+    onHand: 45,
+    weightGrams: 90,
+    hsnCode: "9106",
+    sharedListingKey: "ms-digital-kitchen-timer",
+  },
+  {
+    slug: "digital-kitchen-timer-mumbai",
+    title: "Digital kitchen timer",
+    summary: "Magnetic countdown timer with loud alert.",
+    description:
+      "Magnetic LCD countdown timer with a loud alert for busy cooks. Stick it on the fridge or oven door while you prep. Simple controls for baking, boiling, and school routines.",
+    categorySlug: "general-merchandise",
+    brandSlug: "silicon-bay",
+    sellerKey: "mumbai",
+    sku: "TMR-DIG-MUM",
+    mrpPaise: 52900,
+    sellingPricePaise: 39900,
+    onHand: 22,
+    weightGrams: 90,
+    hsnCode: "9106",
+    sharedListingKey: "ms-digital-kitchen-timer",
+  },
+  {
+    slug: "foldable-shopping-tote-textile",
+    title: "Foldable shopping tote",
+    summary: "Compact nylon tote that packs into a pouch.",
+    description:
+      "Compact nylon market tote that packs into its own pouch. Reinforced handles carry weekly groceries without stretching. Reusable, washable, and light enough for every outing.",
+    categorySlug: "general-merchandise",
+    brandSlug: "narmada-weave",
+    sellerKey: "textile",
+    sku: "TOTE-FLD-TEX",
+    mrpPaise: 39900,
+    sellingPricePaise: 27900,
+    onHand: 60,
+    weightGrams: 120,
+    hsnCode: "4202",
+    sharedListingKey: "ms-foldable-shopping-tote",
+  },
+  {
+    slug: "foldable-shopping-tote-mumbai",
+    title: "Foldable shopping tote",
+    summary: "Compact nylon tote that packs into a pouch.",
+    description:
+      "Compact nylon market tote that packs into its own pouch. Reinforced handles carry weekly groceries without stretching. Reusable, washable, and light enough for every outing.",
+    categorySlug: "general-merchandise",
+    brandSlug: "narmada-weave",
+    sellerKey: "mumbai",
+    sku: "TOTE-FLD-MUM",
+    mrpPaise: 42900,
+    sellingPricePaise: 31900,
+    onHand: 40,
+    weightGrams: 120,
+    hsnCode: "4202",
+    sharedListingKey: "ms-foldable-shopping-tote",
+  },
+];
+
 export const SEED_PRODUCTS: SeedProductDef[] = [
   ...SEED_PRODUCT_BASE,
+  ...SEED_MULTI_SELLER_OFFERS,
   ...navLaneProducts(SEED_PRODUCT_BASE, SEED_CATEGORIES, SEED_BRANDS),
 ];
 

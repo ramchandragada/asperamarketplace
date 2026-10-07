@@ -84,7 +84,7 @@ export default async function AccountPage() {
           Seller dashboard
         </Link>
         {actorIsAdmin(actor) ? (
-          <Link href="/admin/sellers" className="text-accent underline">
+          <Link href="/admin" className="text-accent underline">
             Admin
           </Link>
         ) : null}

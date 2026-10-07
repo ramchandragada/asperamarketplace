@@ -1,12 +1,9 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { EVENT_TAXONOMY } from "@/modules/analytics/schema";
 import {
   listExperiments,
   platformDashboard,
 } from "@/modules/analytics/service";
-import { actorIsAdmin } from "@/modules/identity/policy";
 import { getOptionalActor } from "@/modules/identity/service";
 
 export const dynamic = "force-dynamic";
@@ -14,25 +11,20 @@ export const metadata = { title: "Analytics" };
 
 export default async function AdminAnalyticsPage() {
   const actor = await getOptionalActor();
-  if (!actor) redirect("/login");
-  if (!actorIsAdmin(actor)) redirect("/account");
 
   const [dashboard, experiments] = await Promise.all([
-    platformDashboard(actor),
-    listExperiments(actor),
+    platformDashboard(actor!),
+    listExperiments(actor!),
   ]);
   const maxEvent = Math.max(1, ...dashboard.eventCounts.map((e) => e.count));
 
   return (
-    <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-8 px-6 py-16">
+    <div className="flex flex-col gap-8">
       <div>
-        <p className="text-sm font-medium tracking-wide text-muted uppercase">
-          Admin
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold">Analytics</h1>
+        <h1 className="text-3xl font-semibold">Analytics</h1>
         <p className="mt-2 text-muted">
           Last {dashboard.windowDays} days of tracked events, search queries,
-          and order health. Charts are CSS bars (no chart vendor yet).
+          and order health.
         </p>
       </div>
 
@@ -47,9 +39,7 @@ export default async function AdminAnalyticsPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Event counts</h2>
         {dashboard.eventCounts.length === 0 ? (
-          <p className="text-sm text-muted">
-            No events yet. Clients can POST `/api/analytics/events`.
-          </p>
+          <p className="text-sm text-muted">No analytics events recorded yet.</p>
         ) : (
           dashboard.eventCounts.map((row) => (
             <div key={row.eventName} className="text-sm">
@@ -114,22 +104,10 @@ export default async function AdminAnalyticsPage() {
             </li>
           ))}
           {experiments.length === 0 ? (
-            <li className="text-muted">
-              Create via POST `/api/analytics/dashboard`.
-            </li>
+            <li className="text-muted">No experiments configured.</li>
           ) : null}
         </ul>
       </section>
-
-      <p className="text-sm">
-        <Link href="/admin/trust" className="underline">
-          Trust
-        </Link>
-        {" · "}
-        <Link href="/account" className="underline">
-          Account
-        </Link>
-      </p>
-    </main>
+    </div>
   );
 }

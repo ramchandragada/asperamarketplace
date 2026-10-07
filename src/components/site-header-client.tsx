@@ -497,7 +497,7 @@ export function SiteHeaderClient({
           </Link>
           {showAdmin ? (
             <Link
-              href="/admin/sellers"
+              href="/admin"
               className="hidden min-h-11 items-center px-1 text-[14px] font-medium text-foreground hover:text-accent lg:inline-flex"
             >
               Admin

@@ -106,8 +106,39 @@ export const searchProductsSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(48).default(12),
 });
 
+export const updateSellerProductSchema = z
+  .object({
+    sellerId: z.uuid(),
+    productId: z.uuid(),
+    title: z.string().trim().min(3).max(200).optional(),
+    summary: z.string().trim().min(10).max(400).optional(),
+    description: z.string().trim().min(20).max(5000).optional(),
+    /** archive = pause/unlist from storefront */
+    status: z.enum(["draft", "archived"]).optional(),
+    imageUrl: catalogueImageUrlSchema.optional(),
+    variant: z
+      .object({
+        id: z.uuid(),
+        mrpPaise: z.number().int().positive().optional(),
+        sellingPricePaise: z.number().int().positive().optional(),
+        onHand: z.number().int().min(0).max(1_000_000).optional(),
+      })
+      .optional(),
+  })
+  .refine(
+    (value) =>
+      value.variant?.mrpPaise == null ||
+      value.variant?.sellingPricePaise == null ||
+      value.variant.mrpPaise >= value.variant.sellingPricePaise,
+    {
+      message: "MRP must be greater than or equal to selling price",
+      path: ["variant", "mrpPaise"],
+    },
+  );
+
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type CreateProductOfferInput = z.infer<typeof createProductOfferSchema>;
+export type UpdateSellerProductInput = z.infer<typeof updateSellerProductSchema>;
 export type SubmitProductInput = z.infer<typeof submitProductSchema>;
 export type ReviewProductInput = z.infer<typeof reviewProductSchema>;
 export type SearchProductsInput = z.infer<typeof searchProductsSchema>;

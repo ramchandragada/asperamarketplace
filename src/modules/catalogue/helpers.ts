@@ -64,7 +64,22 @@ export function buildSearchDocument(input: {
 }
 
 export function formatPaise(paise: number): string {
-  return `₹${(paise / 100).toFixed(2)}`;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+  }).format(paise / 100);
+}
+
+/** Convert a rupee amount typed by a seller (e.g. 699 or 699.50) into integer paise. */
+export function paiseFromRupees(rupees: number): number {
+  if (!Number.isFinite(rupees) || rupees < 0) {
+    throw new Error("Rupee amount must be a non-negative number");
+  }
+  return Math.round(rupees * 100);
+}
+
+export function rupeesFromPaise(paise: number): string {
+  return (paise / 100).toFixed(2);
 }
 
 export function discountPercent(mrp: number, price: number) {

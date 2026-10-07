@@ -324,6 +324,9 @@ model Product {
   statusReason     String?       @map("status_reason")
   countryOfOrigin  String?       @map("country_of_origin")
   hsnCode          String?       @map("hsn_code")
+  /// Groups seller-owned listings that are the same shopper-facing product.
+  /// Each seller keeps their own Product + Variant + Inventory; the PDP lists siblings.
+  sharedListingKey String?       @map("shared_listing_key")
   attributes       Json?
   searchDocument   String        @default("") @map("search_document")
   submittedAt      DateTime?     @map("submitted_at") @db.Timestamptz(6)
@@ -345,6 +348,8 @@ model Product {
   @@index([sellerId])
   @@index([categoryId])
   @@index([status])
+  @@index([sharedListingKey])
+  @@unique([sharedListingKey, sellerId])
   @@map("products")
 }
 

@@ -24,6 +24,7 @@ import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations"
 import {
   searchProductsSchema,
   type CreateProductInput,
+  type CreateProductOfferInput,
   type ReviewProductInput,
   type SubmitProductInput,
 } from "@/modules/catalogue/schema";
@@ -213,6 +214,250 @@ export async function createProductDraft(
 
     return { product, variant, inventory };
   });
+}
+
+/**
+ * Lets an approved seller create their own listing of an existing approved product.
+ * Catalogue copy and images are copied; price, SKU, and stock stay with this seller.
+ * Cart and fulfilment keep using that seller's variant (existing multi-seller checkout).
+ */
+export async function createProductOffer(
+  actor: Actor,
+  input: CreateProductOfferInput,
+  correlationId: string,
+) {
+  const seller = await requireApprovedSellerOwnership(actor, input.sellerId);
+  const source = await prisma.product.findFirst({
+    where: { id: input.sourceProductId, status: "approved" },
+    include: {
+      images: { orderBy: { sortOrder: "asc" } },
+      category: true,
+      brand: true,
+      variants: {
+        where: { isActive: true },
+        orderBy: { sellingPricePaise: "asc" },
+        take: 1,
+      },
+    },
+  });
+  if (!source) {
+    throw new CatalogueValidationError(
+      "Source product must be an approved storefront listing",
+    );
+  }
+  if (source.sellerId === seller.id) {
+    throw new CatalogueValidationError(
+      "You already sell this product — edit your existing listing instead",
+    );
+  }
+
+  const sharedListingKey =
+    source.sharedListingKey ?? `listing-${source.id.replace(/-/g, "").slice(0, 16)}`;
+
+  const existingOffer = await prisma.product.findFirst({
+    where: {
+      sharedListingKey,
+      sellerId: seller.id,
+      status: { not: "archived" },
+    },
+  });
+  if (existingOffer) {
+    throw new CatalogueConflictError(
+      "You already have a listing for this product",
+    );
+  }
+
+  const baseSlug = slugify(source.title);
+  const slug = `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`;
+  const brandName = source.brand?.name;
+  const searchDocument = buildSearchDocument({
+    title: source.title,
+    summary: source.summary,
+    description: source.description,
+    brandName,
+    categoryName: source.category.name,
+    sku: input.variant.sku,
+  });
+  const weightGrams =
+    input.variant.weightGrams ?? source.variants[0]?.weightGrams ?? undefined;
+
+  return prisma.$transaction(async (tx) => {
+    if (!source.sharedListingKey) {
+      await tx.product.update({
+        where: { id: source.id },
+        data: { sharedListingKey },
+      });
+    }
+
+    const product = await tx.product.create({
+      data: {
+        sellerId: seller.id,
+        categoryId: source.categoryId,
+        brandId: source.brandId,
+        slug,
+        title: source.title,
+        summary: source.summary,
+        description: source.description,
+        status: "draft",
+        countryOfOrigin: source.countryOfOrigin,
+        hsnCode: source.hsnCode,
+        sharedListingKey,
+        attributes: source.attributes ?? undefined,
+        searchDocument,
+      },
+    });
+
+    for (const [index, image] of source.images.entries()) {
+      await tx.productImage.create({
+        data: {
+          productId: product.id,
+          url: image.url,
+          altText: image.altText,
+          sortOrder: image.sortOrder ?? index,
+          isPrimary: image.isPrimary || index === 0,
+        },
+      });
+    }
+
+    const variant = await tx.productVariant.create({
+      data: {
+        productId: product.id,
+        sku: input.variant.sku,
+        title: input.variant.title ?? source.variants[0]?.title ?? "Standard",
+        mrpPaise: input.variant.mrpPaise,
+        sellingPricePaise: input.variant.sellingPricePaise,
+        weightGrams,
+      },
+    });
+
+    const inventory = await tx.inventoryItem.create({
+      data: {
+        variantId: variant.id,
+        sellerId: seller.id,
+        onHand: input.variant.initialStock,
+        reserved: 0,
+        damaged: 0,
+      },
+    });
+
+    if (input.variant.initialStock > 0) {
+      await tx.stockMovement.create({
+        data: {
+          inventoryItemId: inventory.id,
+          movementType: "receive",
+          quantity: input.variant.initialStock,
+          reason: "Initial stock on multi-seller offer draft",
+          actorId: actor.userId,
+          correlationId,
+        },
+      });
+    }
+
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "product.offer_draft_created",
+        targetType: "product",
+        targetId: product.id,
+        afterState: {
+          title: product.title,
+          status: product.status,
+          sharedListingKey,
+          sourceProductId: source.id,
+          sku: variant.sku,
+          sellingPricePaise: variant.sellingPricePaise,
+          onHand: inventory.onHand,
+        },
+        reason: "Seller created offer on an existing product",
+        correlationId,
+      },
+    });
+
+    return { product, variant, inventory, sharedListingKey, sourceProductId: source.id };
+  });
+}
+
+export type SiblingSellerOffer = {
+  productId: string;
+  slug: string;
+  sellerId: string;
+  sellerName: string;
+  sellerVerified: boolean;
+  sellingPricePaise: number;
+  mrpPaise: number;
+  availableQty: number;
+  isCurrent: boolean;
+};
+
+/** Other approved sellers offering the same shared listing (excluding empty keys). */
+export async function listSiblingSellerOffers(
+  productId: string,
+): Promise<SiblingSellerOffer[]> {
+  const product = await prisma.product.findFirst({
+    where: { id: productId, status: "approved" },
+    select: { id: true, sharedListingKey: true },
+  });
+  if (!product?.sharedListingKey) {
+    return [];
+  }
+
+  const siblings = await prisma.product.findMany({
+    where: {
+      sharedListingKey: product.sharedListingKey,
+      status: "approved",
+    },
+    include: {
+      seller: {
+        select: {
+          id: true,
+          legalName: true,
+          tradeName: true,
+          status: true,
+        },
+      },
+      variants: {
+        where: { isActive: true },
+        include: { inventory: true },
+      },
+    },
+  });
+
+  return siblings
+    .map((sibling) => {
+      let sellingPricePaise = Number.POSITIVE_INFINITY;
+      let mrpPaise = Number.POSITIVE_INFINITY;
+      let availableQty = 0;
+      for (const variant of sibling.variants) {
+        sellingPricePaise = Math.min(sellingPricePaise, variant.sellingPricePaise);
+        mrpPaise = Math.min(mrpPaise, variant.mrpPaise);
+        availableQty += Math.max(
+          (variant.inventory?.onHand ?? 0) - (variant.inventory?.reserved ?? 0),
+          0,
+        );
+      }
+      if (!Number.isFinite(sellingPricePaise)) {
+        return null;
+      }
+      return {
+        productId: sibling.id,
+        slug: sibling.slug,
+        sellerId: sibling.seller.id,
+        sellerName: sibling.seller.tradeName ?? sibling.seller.legalName,
+        sellerVerified: sibling.seller.status === "approved",
+        sellingPricePaise,
+        mrpPaise: Number.isFinite(mrpPaise) ? mrpPaise : sellingPricePaise,
+        availableQty,
+        isCurrent: sibling.id === product.id,
+      } satisfies SiblingSellerOffer;
+    })
+    .filter((row): row is SiblingSellerOffer => row != null)
+    .sort((a, b) => {
+      if (a.isCurrent !== b.isCurrent) return a.isCurrent ? -1 : 1;
+      if ((a.availableQty > 0) !== (b.availableQty > 0)) {
+        return a.availableQty > 0 ? -1 : 1;
+      }
+      return a.sellingPricePaise - b.sellingPricePaise;
+    });
 }
 
 export async function submitProductForReview(

@@ -142,9 +142,10 @@ export async function seedMarketplaceCatalogue(
     const preferred = input.sellers[item.sellerKey];
     const seller =
       preferred ?? sellerPool[index % Math.max(sellerPool.length, 1)]!;
-    // Rotate some listings across extra sellers for storefront diversity
+    // Rotate some listings across extra sellers for storefront diversity.
+    // Keep the preferred seller when the row is part of a multi-seller group.
     const diversified =
-      sellerPool.length > 4 && index % 3 === 0
+      !item.sharedListingKey && sellerPool.length > 4 && index % 3 === 0
         ? sellerPool[index % sellerPool.length]!
         : seller;
     const categoryId = categoryIds[item.categorySlug];
@@ -188,6 +189,7 @@ export async function seedMarketplaceCatalogue(
             status,
             countryOfOrigin: "India",
             hsnCode: item.hsnCode,
+            sharedListingKey: item.sharedListingKey,
             searchDocument,
             attributes,
             submittedAt: new Date(),
@@ -286,6 +288,7 @@ export async function seedMarketplaceCatalogue(
           sellerId: activeSeller.id,
           searchDocument,
           hsnCode: item.hsnCode,
+          sharedListingKey: item.sharedListingKey ?? null,
           attributes,
           status,
           publishedAt:

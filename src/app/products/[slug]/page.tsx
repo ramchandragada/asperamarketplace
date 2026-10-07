@@ -9,8 +9,10 @@ import { ProductReviewsPanel } from "@/components/product-reviews-panel";
 import { ProductShareBar } from "@/components/product-share";
 import { PdpTrustBadgeRow } from "@/components/pdp-trust-badge-row";
 import { PageShell } from "@/components/ui/page-shell";
+import { OtherSellersPanel } from "@/components/other-sellers-panel";
 import {
   getPublicProductBySlug,
+  listSiblingSellerOffers,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
 import { getOptionalActor } from "@/modules/identity/service";
@@ -82,25 +84,32 @@ export default async function ProductDetailPage({
   }
 
   const actor = await getOptionalActor();
-  const [reviews, sellerProductCount, similar, alsoBought, shareUrl] =
-    await Promise.all([
-      listApprovedReviewsForProduct(product.id),
-      prisma.product.count({
-        where: { sellerId: product.sellerId, status: "approved" },
-      }),
-      searchApprovedProducts({
-        categorySlug: product.category.slug,
-        page: 1,
-        pageSize: 10,
-        sort: "newest",
-      }),
-      searchApprovedProducts({
-        page: 1,
-        pageSize: 12,
-        sort: "rating",
-      }),
-      absoluteProductUrl(product.slug),
-    ]);
+  const [
+    reviews,
+    sellerProductCount,
+    siblingOffers,
+    similar,
+    alsoBought,
+    shareUrl,
+  ] = await Promise.all([
+    listApprovedReviewsForProduct(product.id),
+    prisma.product.count({
+      where: { sellerId: product.sellerId, status: "approved" },
+    }),
+    listSiblingSellerOffers(product.id),
+    searchApprovedProducts({
+      categorySlug: product.category.slug,
+      page: 1,
+      pageSize: 10,
+      sort: "newest",
+    }),
+    searchApprovedProducts({
+      page: 1,
+      pageSize: 12,
+      sort: "rating",
+    }),
+    absoluteProductUrl(product.slug),
+  ]);
 
   const sellerName = product.seller.tradeName ?? product.seller.legalName;
   const sellerVerified = product.seller.status === "approved";
@@ -180,6 +189,20 @@ export default async function ProductDetailPage({
     Number.POSITIVE_INFINITY,
   );
   const inStock = variants.some((v) => v.availableQty > 0);
+  const siblingOfferNodes = siblingOffers.map((offer) => ({
+    "@type": "Offer",
+    url: `${siteUrl}/products/${offer.slug}`,
+    priceCurrency: "INR",
+    price: (offer.sellingPricePaise / 100).toFixed(2),
+    availability:
+      offer.availableQty > 0
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+    seller: {
+      "@type": "Organization",
+      name: offer.sellerName,
+    },
+  }));
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -190,21 +213,35 @@ export default async function ProductDetailPage({
     brand: product.brand
       ? { "@type": "Brand", name: product.brand.name }
       : undefined,
-    offers: {
-      "@type": "Offer",
-      url: `${siteUrl}/products/${product.slug}`,
-      priceCurrency: "INR",
-      price: Number.isFinite(lowestPrice)
-        ? (lowestPrice / 100).toFixed(2)
-        : undefined,
-      availability: inStock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-      seller: {
-        "@type": "Organization",
-        name: sellerName,
-      },
-    },
+    offers:
+      siblingOfferNodes.length > 1
+        ? {
+            "@type": "AggregateOffer",
+            priceCurrency: "INR",
+            lowPrice: (
+              Math.min(...siblingOffers.map((o) => o.sellingPricePaise)) / 100
+            ).toFixed(2),
+            highPrice: (
+              Math.max(...siblingOffers.map((o) => o.sellingPricePaise)) / 100
+            ).toFixed(2),
+            offerCount: siblingOfferNodes.length,
+            offers: siblingOfferNodes,
+          }
+        : {
+            "@type": "Offer",
+            url: `${siteUrl}/products/${product.slug}`,
+            priceCurrency: "INR",
+            price: Number.isFinite(lowestPrice)
+              ? (lowestPrice / 100).toFixed(2)
+              : undefined,
+            availability: inStock
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+            seller: {
+              "@type": "Organization",
+              name: sellerName,
+            },
+          },
     ...(average != null && reviews.length > 0
       ? {
           aggregateRating: {
@@ -352,6 +389,8 @@ export default async function ProductDetailPage({
               </Link>
             </div>
           </div>
+
+          <OtherSellersPanel offers={siblingOffers} />
 
           <section className="text-sm leading-7 text-muted">
             <h2 className="text-lg font-semibold text-foreground">

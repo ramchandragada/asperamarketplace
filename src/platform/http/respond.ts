@@ -50,6 +50,10 @@ import { TrustValidationError } from "@/modules/trust/service";
 import { AnalyticsValidationError } from "@/modules/analytics/service";
 import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
+import {
+  HttpValidationError,
+  NotFoundError,
+} from "@/platform/http/errors";
 
 function isPrismaInfrastructureError(error: unknown): boolean {
   return (
@@ -137,6 +141,29 @@ export function jsonError(
         message: error.message,
       }),
       { status: 403, headers: { [REQUEST_ID_HEADER]: requestId } },
+    );
+  }
+
+  if (error instanceof NotFoundError) {
+    return NextResponse.json(
+      fail({
+        requestId,
+        code: error.code,
+        message: error.message,
+      }),
+      { status: 404, headers: { [REQUEST_ID_HEADER]: requestId } },
+    );
+  }
+
+  if (error instanceof HttpValidationError) {
+    return NextResponse.json(
+      fail({
+        requestId,
+        code: error.code,
+        message: error.message,
+        fieldErrors: error.fieldErrors,
+      }),
+      { status: 400, headers: { [REQUEST_ID_HEADER]: requestId } },
     );
   }
 

@@ -39,7 +39,13 @@ export const submitSellerSchema = z.object({
 
 export const reviewSellerSchema = z.object({
   sellerId: z.uuid(),
-  decision: z.enum(["approve", "reject"]),
+  decision: z.enum([
+    "approve",
+    "reject",
+    "request_info",
+    "suspend",
+    "reactivate",
+  ]),
   reason: z.string().trim().min(3).max(500),
   expectedVersion: z.number().int().positive(),
 });

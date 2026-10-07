@@ -627,27 +627,31 @@ export async function listSellerProducts(
       if (options.stock === "low") return available > 0 && available <= 5;
       return available > 5;
     });
-    const start = (page - 1) * pageSize;
+    const total = filtered.length;
+    const pageCount = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Math.min(page, pageCount);
+    const start = (safePage - 1) * pageSize;
     return {
       items: filtered.slice(start, start + pageSize),
-      page,
+      page: safePage,
       pageSize,
-      total: filtered.length,
+      total,
+      pageCount,
     };
   }
 
-  const [total, items] = await Promise.all([
-    prisma.product.count({ where }),
-    prisma.product.findMany({
-      where,
-      orderBy: { updatedAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      include,
-    }),
-  ]);
+  const total = await prisma.product.count({ where });
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const items = await prisma.product.findMany({
+    where,
+    orderBy: { updatedAt: "desc" },
+    skip: (safePage - 1) * pageSize,
+    take: pageSize,
+    include,
+  });
 
-  return { items, page, pageSize, total };
+  return { items, page: safePage, pageSize, total, pageCount };
 }
 
 export async function getSellerProduct(
@@ -675,6 +679,7 @@ export async function updateSellerProduct(
     title?: string;
     summary?: string;
     description?: string;
+    categoryId?: string;
     status?: "draft" | "archived" | "approved";
     imageUrl?: string;
     variant?: {
@@ -689,7 +694,10 @@ export async function updateSellerProduct(
   await requireApprovedSellerOwnership(actor, input.sellerId);
   const existing = await prisma.product.findFirst({
     where: { id: input.productId, sellerId: input.sellerId },
-    include: { variants: { include: { inventory: true } } },
+    include: {
+      variants: { include: { inventory: true } },
+      images: { orderBy: { sortOrder: "asc" }, take: 1 },
+    },
   });
   if (!existing) {
     throw new CatalogueValidationError("Product not found for this seller");
@@ -706,16 +714,45 @@ export async function updateSellerProduct(
     );
   }
 
+  const contentChanged =
+    (input.title != null && input.title !== existing.title) ||
+    (input.summary != null && input.summary !== existing.summary) ||
+    (input.description != null && input.description !== existing.description) ||
+    (input.categoryId != null && input.categoryId !== existing.categoryId) ||
+    (input.imageUrl != null &&
+      input.imageUrl !== (existing.images[0]?.url ?? null));
+
   return prisma.$transaction(async (tx) => {
+    let nextStatus = existing.status;
+    let statusReason = existing.statusReason;
+    let publishedAt = existing.publishedAt;
+    let submittedAt = existing.submittedAt;
+
+    if (input.status === "archived" || input.status === "draft") {
+      assertProductTransition(existing.status, input.status);
+      nextStatus = input.status;
+      publishedAt = null;
+      statusReason =
+        input.status === "archived" ? "Paused by seller" : statusReason;
+    } else if (contentChanged && existing.status === "approved") {
+      assertProductTransition("approved", "submitted");
+      nextStatus = "submitted";
+      publishedAt = null;
+      submittedAt = new Date();
+      statusReason = "Seller updated listing content — awaiting review";
+    }
+
     const product = await tx.product.update({
       where: { id: existing.id },
       data: {
         ...(input.title ? { title: input.title } : {}),
         ...(input.summary ? { summary: input.summary } : {}),
         ...(input.description ? { description: input.description } : {}),
-        ...(input.status === "archived" || input.status === "draft"
-          ? { status: input.status, publishedAt: null }
-          : {}),
+        ...(input.categoryId ? { categoryId: input.categoryId } : {}),
+        status: nextStatus,
+        statusReason,
+        publishedAt,
+        submittedAt,
         version: { increment: 1 },
       },
     });
@@ -750,6 +787,11 @@ export async function updateSellerProduct(
         },
       });
       if (input.variant.onHand != null && variant.inventory) {
+        if (input.variant.onHand < variant.inventory.reserved) {
+          throw new CatalogueValidationError(
+            `On-hand stock cannot be less than reserved (${variant.inventory.reserved})`,
+          );
+        }
         await tx.inventoryItem.update({
           where: { id: variant.inventory.id },
           data: { onHand: input.variant.onHand, version: { increment: 1 } },
@@ -770,15 +812,26 @@ export async function updateSellerProduct(
     await tx.auditLog.create({
       data: {
         actorId: actor.userId,
-        action: "product.seller_updated",
+        action: contentChanged
+          ? "product.seller_content_updated"
+          : "product.seller_updated",
         targetType: "product",
         targetId: product.id,
+        beforeState: {
+          title: existing.title,
+          status: existing.status,
+          categoryId: existing.categoryId,
+        },
         afterState: {
           title: product.title,
           status: product.status,
+          categoryId: product.categoryId,
+          contentChanged,
           variant: input.variant ?? null,
         },
-        reason: "Seller updated listing",
+        reason: contentChanged
+          ? "Seller updated listing content"
+          : "Seller updated listing",
         correlationId,
       },
     });
@@ -790,13 +843,40 @@ export async function updateSellerProduct(
 export async function listSellerInventory(
   actor: Actor,
   sellerId: string,
-  filter?: "all" | "low_stock" | "out_of_stock",
+  options?: {
+    filter?: "all" | "low_stock" | "out_of_stock";
+    q?: string;
+    page?: number;
+    pageSize?: number;
+  },
 ) {
   await requireApprovedSellerOwnership(actor, sellerId);
+  const filter = options?.filter ?? "all";
+  const page = Math.max(1, options?.page ?? 1);
+  const pageSize = Math.min(50, Math.max(1, options?.pageSize ?? 25));
+  const q = options?.q?.trim();
+
   const rows = await prisma.inventoryItem.findMany({
     where: {
       sellerId,
-      variant: { isActive: true, product: { sellerId } },
+      variant: {
+        isActive: true,
+        product: {
+          sellerId,
+          ...(q
+            ? {
+                OR: [
+                  { title: { contains: q, mode: "insensitive" } },
+                  {
+                    variants: {
+                      some: { sku: { contains: q, mode: "insensitive" } },
+                    },
+                  },
+                ],
+              }
+            : {}),
+        },
+      },
     },
     include: {
       variant: {
@@ -811,9 +891,9 @@ export async function listSellerInventory(
       },
     },
     orderBy: { updatedAt: "desc" },
-    take: 500,
+    take: 2000,
   });
-  return rows
+  const mapped = rows
     .map((row) => ({
       inventoryItemId: row.id,
       productId: row.variant.product.id,
@@ -835,6 +915,18 @@ export async function listSellerInventory(
       return true;
     })
     .sort((a, b) => a.available - b.available);
+
+  const total = mapped.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const start = (safePage - 1) * pageSize;
+  return {
+    items: mapped.slice(start, start + pageSize),
+    page: safePage,
+    pageSize,
+    total,
+    pageCount,
+  };
 }
 
 export async function listProductsForModeration(actor: Actor) {
@@ -850,6 +942,110 @@ export async function listProductsForModeration(actor: Actor) {
       variants: { include: { inventory: true } },
     },
   });
+}
+
+const ADMIN_PRODUCT_TAB_STATUS = {
+  pending: "submitted",
+  approved: "approved",
+  rejected: "rejected",
+  paused: "archived",
+} as const;
+
+export type AdminProductTab = keyof typeof ADMIN_PRODUCT_TAB_STATUS;
+
+export async function listAdminProducts(
+  actor: Actor,
+  options?: {
+    status?: AdminProductTab;
+    q?: string;
+    categoryId?: string;
+    sellerId?: string;
+    page?: number;
+    pageSize?: number;
+  },
+) {
+  if (!actorIsAdmin(actor)) {
+    throw new AuthorizationError("Administrator role required");
+  }
+
+  const tab: AdminProductTab = options?.status ?? "pending";
+  const status = ADMIN_PRODUCT_TAB_STATUS[tab];
+  const page = Math.max(1, options?.page ?? 1);
+  const pageSize = Math.min(50, Math.max(1, options?.pageSize ?? 20));
+  const q = options?.q?.trim();
+
+  const filterWhere: Prisma.ProductWhereInput = {
+    ...(options?.categoryId ? { categoryId: options.categoryId } : {}),
+    ...(options?.sellerId ? { sellerId: options.sellerId } : {}),
+    ...(q
+      ? {
+          OR: [
+            { title: { contains: q, mode: "insensitive" } },
+            {
+              variants: {
+                some: { sku: { contains: q, mode: "insensitive" } },
+              },
+            },
+            {
+              seller: {
+                OR: [
+                  { legalName: { contains: q, mode: "insensitive" } },
+                  { tradeName: { contains: q, mode: "insensitive" } },
+                ],
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+
+  const where: Prisma.ProductWhereInput = {
+    ...filterWhere,
+    status,
+  };
+
+  const include = {
+    seller: { select: { id: true, legalName: true, tradeName: true } },
+    category: true,
+    brand: true,
+    images: { orderBy: { sortOrder: "asc" as const }, take: 3 },
+    variants: { include: { inventory: true } },
+  };
+
+  const [total, pending, approved, rejected, paused] = await Promise.all([
+    prisma.product.count({ where }),
+    prisma.product.count({
+      where: { ...filterWhere, status: "submitted" },
+    }),
+    prisma.product.count({
+      where: { ...filterWhere, status: "approved" },
+    }),
+    prisma.product.count({
+      where: { ...filterWhere, status: "rejected" },
+    }),
+    prisma.product.count({
+      where: { ...filterWhere, status: "archived" },
+    }),
+  ]);
+
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const items = await prisma.product.findMany({
+    where,
+    orderBy: [{ submittedAt: "desc" }, { createdAt: "desc" }],
+    skip: (safePage - 1) * pageSize,
+    take: pageSize,
+    include,
+  });
+
+  return {
+    items,
+    page: safePage,
+    pageSize,
+    total,
+    pageCount,
+    counts: { pending, approved, rejected, paused },
+  };
 }
 
 export async function getPublicProductBySlug(slug: string) {

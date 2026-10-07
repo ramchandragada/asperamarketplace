@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { PanelAccountMenu } from "@/components/panel-account-menu";
 
 const LINKS = [
   { href: "/seller", label: "Dashboard", exact: true },
@@ -19,9 +20,13 @@ const LINKS = [
 
 export function SellerNav({
   sellerName,
+  displayName,
+  showAdmin,
   capabilities,
 }: {
   sellerName: string;
+  displayName: string;
+  showAdmin: boolean;
   capabilities: {
     catalogue: boolean;
     fulfilment: boolean;
@@ -55,6 +60,11 @@ export function SellerNav({
           >
             View storefront
           </Link>
+          <PanelAccountMenu
+            displayName={displayName}
+            showSeller
+            showAdmin={showAdmin}
+          />
         </div>
         <button
           type="button"

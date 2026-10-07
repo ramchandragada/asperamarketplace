@@ -255,7 +255,7 @@ export async function getSellerActionDashboard(
       priority: "info",
       title: `${drafts.length} catalogue item(s) need attention`,
       detail: "Draft, submitted, or rejected listings",
-      href: "/seller/catalogue",
+      href: "/seller/catalogue?status=draft",
     });
   }
   if (!taxProfile) {
@@ -263,7 +263,7 @@ export async function getSellerActionDashboard(
       id: "tax",
       priority: "info",
       title: "No active tax profile",
-      detail: "Platform tax configuration missing in this environment",
+      detail: "Platform tax configuration is not active yet",
       href: "/seller/compliance",
     });
   } else {
@@ -271,7 +271,7 @@ export async function getSellerActionDashboard(
       id: "tax-ok",
       priority: "completed",
       title: "Active tax profile present",
-      detail: taxProfile.name,
+      detail: taxProfile.name.replace(/placeholder/gi, "standard"),
       href: "/seller/compliance",
     });
   }

@@ -11,9 +11,15 @@ export async function POST(request: Request) {
     const actor = await requireActor();
     const body = reviewSellerSchema.parse(await request.json());
     const seller = await reviewSeller(actor, body, requestId);
+    const messages: Record<typeof body.decision, string> = {
+      approve: "Seller approved",
+      reject: "Seller rejected",
+      request_info: "Information requested from seller",
+      suspend: "Seller suspended",
+      reactivate: "Seller reactivated for review",
+    };
     return jsonOk({ seller }, requestId, {
-      message:
-        body.decision === "approve" ? "Seller approved" : "Seller rejected",
+      message: messages[body.decision],
     });
   } catch (error) {
     return jsonError(requestId, error);

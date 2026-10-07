@@ -3,10 +3,36 @@ import {
   getSellerProduct,
   updateSellerProduct,
 } from "@/modules/catalogue/service";
+import { AuthorizationError } from "@/modules/identity/policy";
 import { requireActor } from "@/modules/identity/service";
+import { resolveSellerForActor } from "@/modules/seller/access";
+import { assertUuid, NotFoundError } from "@/platform/http/errors";
 import { getRequestId, jsonError, jsonOk } from "@/platform/http/respond";
 
 export const dynamic = "force-dynamic";
+
+async function resolveCatalogueSellerId(
+  actor: Awaited<ReturnType<typeof requireActor>>,
+  preferred: string | null | undefined,
+) {
+  if (preferred) {
+    assertUuid(preferred, "sellerId");
+    const seller = await resolveSellerForActor(
+      actor,
+      "catalogue.write",
+      preferred,
+    );
+    if (!seller) {
+      throw new AuthorizationError("Seller catalogue access denied");
+    }
+    return seller.id;
+  }
+  const seller = await resolveSellerForActor(actor, "catalogue.write");
+  if (!seller) {
+    throw new AuthorizationError("No approved seller workspace for catalogue");
+  }
+  return seller.id;
+}
 
 export async function GET(
   request: Request,
@@ -16,22 +42,15 @@ export async function GET(
   try {
     const actor = await requireActor();
     const { id } = await context.params;
+    assertUuid(id, "id");
     const url = new URL(request.url);
-    const sellerId = url.searchParams.get("sellerId");
-    if (!sellerId) {
-      return jsonError(requestId, {
-        name: "ValidationError",
-        message: "sellerId is required",
-        code: "VALIDATION_ERROR",
-      });
-    }
+    const sellerId = await resolveCatalogueSellerId(
+      actor,
+      url.searchParams.get("sellerId"),
+    );
     const product = await getSellerProduct(actor, sellerId, id);
     if (!product) {
-      return jsonError(requestId, {
-        name: "NotFoundError",
-        message: "Product not found",
-        code: "NOT_FOUND",
-      });
+      throw new NotFoundError("Product not found");
     }
     return jsonOk({ product }, requestId);
   } catch (error) {
@@ -47,8 +66,15 @@ export async function PATCH(
   try {
     const actor = await requireActor();
     const { id } = await context.params;
+    assertUuid(id, "id");
+    const raw = (await request.json()) as Record<string, unknown>;
+    const sellerId = await resolveCatalogueSellerId(
+      actor,
+      typeof raw.sellerId === "string" ? raw.sellerId : null,
+    );
     const body = updateSellerProductSchema.parse({
-      ...(await request.json()),
+      ...raw,
+      sellerId,
       productId: id,
     });
     const product = await updateSellerProduct(actor, body, requestId);

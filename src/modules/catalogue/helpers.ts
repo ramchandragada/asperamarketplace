@@ -3,9 +3,10 @@ import { ProductStatus } from "@prisma/client";
 const ALLOWED: Record<ProductStatus, ProductStatus[]> = {
   draft: ["submitted", "archived"],
   submitted: ["approved", "rejected"],
-  approved: ["archived"],
+  /** Content edits on live listings return them to moderation. */
+  approved: ["archived", "submitted"],
   rejected: ["draft", "submitted", "archived"],
-  archived: [],
+  archived: ["draft"],
 };
 
 export function canTransitionProductStatus(

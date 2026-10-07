@@ -74,13 +74,19 @@ export default async function AdminAnalyticsPage() {
 
       <section>
         <h2 className="text-lg font-semibold">Orders by status</h2>
-        <ul className="mt-2 text-sm">
-          {dashboard.ordersByStatus.map((row) => (
-            <li key={row.status}>
-              {row.status}: {row.count} · {formatPaise(row.totalPaise)}
-            </li>
-          ))}
-        </ul>
+        {dashboard.ordersByStatus.length === 0 ? (
+          <p className="mt-2 text-sm text-muted">
+            No orders in this window yet.
+          </p>
+        ) : (
+          <ul className="mt-2 text-sm">
+            {dashboard.ordersByStatus.map((row) => (
+              <li key={row.status}>
+                {row.status}: {row.count} · {formatPaise(row.totalPaise)}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section>

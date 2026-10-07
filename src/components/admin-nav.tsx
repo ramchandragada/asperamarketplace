@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { PanelAccountMenu } from "@/components/panel-account-menu";
 
 const LINKS = [
   { href: "/admin", label: "Overview", exact: true },
@@ -14,7 +15,13 @@ const LINKS = [
   { href: "/admin/audit", label: "Audit log" },
 ] as const;
 
-export function AdminNav({ adminName }: { adminName: string }) {
+export function AdminNav({
+  adminName,
+  showSeller,
+}: {
+  adminName: string;
+  showSeller: boolean;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -32,6 +39,11 @@ export function AdminNav({ adminName }: { adminName: string }) {
           >
             View storefront
           </Link>
+          <PanelAccountMenu
+            displayName={adminName}
+            showSeller={showSeller}
+            showAdmin
+          />
         </div>
         <button
           type="button"

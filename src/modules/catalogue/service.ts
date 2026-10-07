@@ -573,17 +573,268 @@ export async function reviewProduct(
   });
 }
 
-export async function listSellerProducts(actor: Actor, sellerId: string) {
+export async function listSellerProducts(
+  actor: Actor,
+  sellerId: string,
+  options?: {
+    q?: string;
+    status?: "draft" | "submitted" | "approved" | "rejected" | "archived";
+    stock?: "in" | "low" | "out";
+    page?: number;
+    pageSize?: number;
+  },
+) {
   await requireApprovedSellerOwnership(actor, sellerId);
-  return prisma.product.findMany({
-    where: { sellerId },
-    orderBy: { createdAt: "desc" },
+  const page = Math.max(1, options?.page ?? 1);
+  const pageSize = Math.min(50, Math.max(1, options?.pageSize ?? 25));
+  const q = options?.q?.trim();
+
+  const where: Prisma.ProductWhereInput = {
+    sellerId,
+    ...(options?.status ? { status: options.status } : {}),
+    ...(q
+      ? {
+          OR: [
+            { title: { contains: q, mode: "insensitive" } },
+            { slug: { contains: q, mode: "insensitive" } },
+            { variants: { some: { sku: { contains: q, mode: "insensitive" } } } },
+          ],
+        }
+      : {}),
+  };
+
+  const include = {
+    category: true,
+    brand: true,
+    images: { orderBy: { sortOrder: "asc" as const }, take: 1 },
+    variants: { include: { inventory: true } },
+  };
+
+  if (options?.stock) {
+    const all = await prisma.product.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      take: 500,
+      include,
+    });
+    const filtered = all.filter((product) => {
+      const available = product.variants.reduce((sum, variant) => {
+        const onHand = variant.inventory?.onHand ?? 0;
+        const reserved = variant.inventory?.reserved ?? 0;
+        return sum + Math.max(onHand - reserved, 0);
+      }, 0);
+      if (options.stock === "out") return available === 0;
+      if (options.stock === "low") return available > 0 && available <= 5;
+      return available > 5;
+    });
+    const start = (page - 1) * pageSize;
+    return {
+      items: filtered.slice(start, start + pageSize),
+      page,
+      pageSize,
+      total: filtered.length,
+    };
+  }
+
+  const [total, items] = await Promise.all([
+    prisma.product.count({ where }),
+    prisma.product.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include,
+    }),
+  ]);
+
+  return { items, page, pageSize, total };
+}
+
+export async function getSellerProduct(
+  actor: Actor,
+  sellerId: string,
+  productId: string,
+) {
+  await requireApprovedSellerOwnership(actor, sellerId);
+  return prisma.product.findFirst({
+    where: { id: productId, sellerId },
     include: {
       category: true,
       brand: true,
+      images: { orderBy: { sortOrder: "asc" } },
       variants: { include: { inventory: true } },
     },
   });
+}
+
+export async function updateSellerProduct(
+  actor: Actor,
+  input: {
+    sellerId: string;
+    productId: string;
+    title?: string;
+    summary?: string;
+    description?: string;
+    status?: "draft" | "archived" | "approved";
+    imageUrl?: string;
+    variant?: {
+      id: string;
+      mrpPaise?: number;
+      sellingPricePaise?: number;
+      onHand?: number;
+    };
+  },
+  correlationId: string,
+) {
+  await requireApprovedSellerOwnership(actor, input.sellerId);
+  const existing = await prisma.product.findFirst({
+    where: { id: input.productId, sellerId: input.sellerId },
+    include: { variants: { include: { inventory: true } } },
+  });
+  if (!existing) {
+    throw new CatalogueValidationError("Product not found for this seller");
+  }
+
+  if (
+    input.variant &&
+    input.variant.mrpPaise != null &&
+    input.variant.sellingPricePaise != null &&
+    input.variant.mrpPaise < input.variant.sellingPricePaise
+  ) {
+    throw new CatalogueValidationError(
+      "MRP must be greater than or equal to selling price",
+    );
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const product = await tx.product.update({
+      where: { id: existing.id },
+      data: {
+        ...(input.title ? { title: input.title } : {}),
+        ...(input.summary ? { summary: input.summary } : {}),
+        ...(input.description ? { description: input.description } : {}),
+        ...(input.status === "archived" || input.status === "draft"
+          ? { status: input.status, publishedAt: null }
+          : {}),
+        version: { increment: 1 },
+      },
+    });
+
+    if (input.imageUrl) {
+      await tx.productImage.deleteMany({ where: { productId: product.id } });
+      await tx.productImage.create({
+        data: {
+          productId: product.id,
+          url: input.imageUrl,
+          altText: product.title,
+          sortOrder: 0,
+          isPrimary: true,
+        },
+      });
+    }
+
+    if (input.variant) {
+      const variant = existing.variants.find((row) => row.id === input.variant!.id);
+      if (!variant) {
+        throw new CatalogueValidationError("Variant not found on this product");
+      }
+      await tx.productVariant.update({
+        where: { id: variant.id },
+        data: {
+          ...(input.variant.mrpPaise != null
+            ? { mrpPaise: input.variant.mrpPaise }
+            : {}),
+          ...(input.variant.sellingPricePaise != null
+            ? { sellingPricePaise: input.variant.sellingPricePaise }
+            : {}),
+        },
+      });
+      if (input.variant.onHand != null && variant.inventory) {
+        await tx.inventoryItem.update({
+          where: { id: variant.inventory.id },
+          data: { onHand: input.variant.onHand, version: { increment: 1 } },
+        });
+        await tx.stockMovement.create({
+          data: {
+            inventoryItemId: variant.inventory.id,
+            movementType: "adjust",
+            quantity: input.variant.onHand - variant.inventory.onHand,
+            reason: "Seller stock update",
+            actorId: actor.userId,
+            correlationId,
+          },
+        });
+      }
+    }
+
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "product.seller_updated",
+        targetType: "product",
+        targetId: product.id,
+        afterState: {
+          title: product.title,
+          status: product.status,
+          variant: input.variant ?? null,
+        },
+        reason: "Seller updated listing",
+        correlationId,
+      },
+    });
+
+    return getSellerProduct(actor, input.sellerId, product.id);
+  });
+}
+
+export async function listSellerInventory(
+  actor: Actor,
+  sellerId: string,
+  filter?: "all" | "low_stock" | "out_of_stock",
+) {
+  await requireApprovedSellerOwnership(actor, sellerId);
+  const rows = await prisma.inventoryItem.findMany({
+    where: {
+      sellerId,
+      variant: { isActive: true, product: { sellerId } },
+    },
+    include: {
+      variant: {
+        select: {
+          id: true,
+          sku: true,
+          title: true,
+          mrpPaise: true,
+          sellingPricePaise: true,
+          product: { select: { id: true, title: true, status: true, slug: true } },
+        },
+      },
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 500,
+  });
+  return rows
+    .map((row) => ({
+      inventoryItemId: row.id,
+      productId: row.variant.product.id,
+      productTitle: row.variant.product.title,
+      productStatus: row.variant.product.status,
+      slug: row.variant.product.slug,
+      variantId: row.variant.id,
+      sku: row.variant.sku,
+      variantTitle: row.variant.title,
+      mrpPaise: row.variant.mrpPaise,
+      sellingPricePaise: row.variant.sellingPricePaise,
+      onHand: row.onHand,
+      reserved: row.reserved,
+      available: Math.max(row.onHand - row.reserved, 0),
+    }))
+    .filter((row) => {
+      if (filter === "out_of_stock") return row.available === 0;
+      if (filter === "low_stock") return row.available > 0 && row.available <= 5;
+      return true;
+    })
+    .sort((a, b) => a.available - b.available);
 }
 
 export async function listProductsForModeration(actor: Actor) {

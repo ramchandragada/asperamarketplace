@@ -46,7 +46,7 @@ export default async function SellerLayout({
   return (
     <PageShell>
       <div className="grid gap-6 md:grid-cols-[15rem_minmax(0,1fr)]">
-        <aside className="md:sticky md:top-24 md:self-start">
+        <aside className="md:sticky md:top-6 md:self-start">
           <SellerNav sellerName={sellerName} capabilities={capabilities} />
         </aside>
         <div className="min-w-0">{children}</div>

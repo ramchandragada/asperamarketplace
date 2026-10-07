@@ -21,8 +21,22 @@ export async function GET(request: Request) {
         code: "VALIDATION_ERROR",
       });
     }
-    const products = await listSellerProducts(actor, sellerId);
-    return jsonOk({ products }, requestId);
+    const status = url.searchParams.get("status") as
+      | "draft"
+      | "submitted"
+      | "approved"
+      | "rejected"
+      | "archived"
+      | null;
+    const stock = url.searchParams.get("stock") as "in" | "low" | "out" | null;
+    const result = await listSellerProducts(actor, sellerId, {
+      q: url.searchParams.get("q") ?? undefined,
+      status: status ?? undefined,
+      stock: stock ?? undefined,
+      page: Number(url.searchParams.get("page") ?? "1"),
+      pageSize: Number(url.searchParams.get("pageSize") ?? "25"),
+    });
+    return jsonOk({ products: result.items, ...result }, requestId);
   } catch (error) {
     return jsonError(requestId, error);
   }

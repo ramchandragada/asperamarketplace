@@ -38,10 +38,12 @@ export function SellerFulfilmentPanel({
   sellerId,
   initialGroups,
   initialReturns,
+  returnsOnly = false,
 }: {
   sellerId: string;
   initialGroups: FulfilmentGroup[];
   initialReturns: ReturnRow[];
+  returnsOnly?: boolean;
 }) {
   const [groups, setGroups] = useState(initialGroups);
   const [returns, setReturns] = useState(initialReturns);
@@ -131,6 +133,7 @@ export function SellerFulfilmentPanel({
       {message ? <p className="text-sm text-foreground">{message}</p> : null}
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
+      {returnsOnly ? null : (
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold">Fulfilment groups</h2>
         {groups.length === 0 ? (
@@ -238,6 +241,7 @@ export function SellerFulfilmentPanel({
           ))
         )}
       </section>
+      )}
 
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold">Return requests</h2>

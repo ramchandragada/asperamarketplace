@@ -3,23 +3,22 @@ import { redirect } from "next/navigation";
 import { SellerFulfilmentPanel } from "@/components/seller-fulfilment-panel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getOptionalActor } from "@/modules/identity/service";
-import { listSellerFulfilment } from "@/modules/fulfilment/service";
+import { listReturnsForSeller } from "@/modules/fulfilment/service";
 import { resolveSellerForActor } from "@/modules/seller/access";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Seller orders" };
+export const metadata = { title: "Seller returns" };
 
-export default async function SellerFulfilmentPage() {
+export default async function SellerReturnsPage() {
   const actor = await getOptionalActor();
   if (!actor) redirect("/login");
 
-  const seller = await resolveSellerForActor(actor, "fulfilment.write");
-
+  const seller = await resolveSellerForActor(actor, "returns.review");
   if (!seller) {
     return (
       <EmptyState
-        title="Orders access unavailable"
-        description="Requires seller operations or owner capability."
+        title="Returns access unavailable"
+        description="Requires seller owner, operations, or support capability."
         action={
           <Link href="/seller" className="text-sm underline">
             Dashboard
@@ -29,21 +28,22 @@ export default async function SellerFulfilmentPage() {
     );
   }
 
-  const groups = await listSellerFulfilment(actor, seller.id);
+  const returns = await listReturnsForSeller(actor, seller.id);
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-semibold">Orders</h1>
+        <h1 className="text-3xl font-semibold">Returns</h1>
         <p className="mt-2 text-muted">
-          Process, ship, deliver, or cancel paid groups for{" "}
+          Open and recent return requests for{" "}
           {seller.tradeName ?? seller.legalName}.
         </p>
       </div>
       <SellerFulfilmentPanel
         sellerId={seller.id}
-        initialGroups={groups}
-        initialReturns={[]}
+        initialGroups={[]}
+        initialReturns={returns}
+        returnsOnly
       />
     </div>
   );

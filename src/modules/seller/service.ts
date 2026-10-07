@@ -13,7 +13,10 @@ import type {
 } from "@/modules/seller/schema";
 import { assertSellerTransition } from "@/modules/seller/states";
 import { NotFoundError } from "@/platform/http/errors";
-import { createDocumentStorage } from "@/platform/storage/local";
+import {
+  createDocumentStorage,
+  StorageValidationError,
+} from "@/platform/storage/local";
 
 function assertSellerOwner(actor: Actor, ownerUserId: string) {
   if (actor.userId !== ownerUserId) {
@@ -258,8 +261,14 @@ export async function getSellerDocumentForAdmin(
     throw new NotFoundError("Document not found for this seller");
   }
   const storage = createDocumentStorage();
-  const bytes = await storage.get(document.storageKey);
-  return { document, bytes };
+  try {
+    const bytes = await storage.get(document.storageKey);
+    return { document, bytes };
+  } catch (error) {
+    if (error instanceof StorageValidationError) throw error;
+    // Local disk does not persist on Vercel — missing bytes must be 404, not 500.
+    throw new NotFoundError("Document file not available");
+  }
 }
 
 export async function reviewSeller(

@@ -3,7 +3,9 @@ import {
   listAdminProducts,
   type AdminProductTab,
 } from "@/modules/catalogue/service";
+import { HttpValidationError } from "@/platform/http/errors";
 import { getRequestId, jsonError, jsonOk } from "@/platform/http/respond";
+import { isDbUuid } from "@/platform/validation/id";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +23,21 @@ export async function GET(request: Request) {
     const q = url.searchParams.get("q")?.trim() || undefined;
     const categoryId = url.searchParams.get("categoryId")?.trim() || undefined;
     const sellerId = url.searchParams.get("sellerId")?.trim() || undefined;
-    const page = Number(url.searchParams.get("page") ?? "1") || 1;
-    const pageSize = Number(url.searchParams.get("pageSize") ?? "20") || 20;
+    if (categoryId && !isDbUuid(categoryId)) {
+      throw new HttpValidationError("Invalid categoryId", {
+        categoryId: ["Must be a valid UUID"],
+      });
+    }
+    if (sellerId && !isDbUuid(sellerId)) {
+      throw new HttpValidationError("Invalid sellerId", {
+        sellerId: ["Must be a valid UUID"],
+      });
+    }
+    const page = Math.max(1, Number(url.searchParams.get("page") ?? "1") || 1);
+    const pageSize = Math.min(
+      50,
+      Math.max(1, Number(url.searchParams.get("pageSize") ?? "20") || 20),
+    );
 
     const result = await listAdminProducts(actor, {
       status,

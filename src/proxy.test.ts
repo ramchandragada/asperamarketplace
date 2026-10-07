@@ -23,6 +23,18 @@ describe("proxy auth gates", () => {
     expect(response.headers.get("location")).toContain("/login?next=%2Fadmin");
   });
 
+  it("allows logged-out /seller-policies (public page)", () => {
+    const response = proxy(request("/seller-policies"));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-robots-tag")).toBeNull();
+  });
+
+  it("still redirects exact /seller when logged out", () => {
+    const response = proxy(request("/seller"));
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toContain("/login?next=%2Fseller");
+  });
+
   it("allows logged-in /seller through and marks seller surface", () => {
     const response = proxy(
       request("/seller/catalogue", "aspera_session=test-token"),

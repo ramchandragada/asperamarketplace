@@ -88,6 +88,20 @@ export function discountPercent(mrp: number, price: number) {
   return Math.round(((mrp - price) / mrp) * 100);
 }
 
+/** Merge a partial price PATCH with stored variant values before MRP checks. */
+export function mergeVariantPrices(
+  stored: { mrpPaise: number; sellingPricePaise: number },
+  patch: { mrpPaise?: number; sellingPricePaise?: number },
+) {
+  const mrpPaise = patch.mrpPaise ?? stored.mrpPaise;
+  const sellingPricePaise = patch.sellingPricePaise ?? stored.sellingPricePaise;
+  return {
+    mrpPaise,
+    sellingPricePaise,
+    withinMrp: mrpPaise >= sellingPricePaise,
+  };
+}
+
 export type ProductCardBadge =
   | "new"
   | "best-value"

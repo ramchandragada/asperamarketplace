@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dbUuid } from "@/platform/validation/id";
 
 const indianState = z
   .string()
@@ -33,12 +34,12 @@ export const createSellerDraftSchema = z.object({
 });
 
 export const submitSellerSchema = z.object({
-  sellerId: z.uuid(),
+  sellerId: dbUuid,
   acceptAgreement: z.literal(true),
 });
 
 export const reviewSellerSchema = z.object({
-  sellerId: z.uuid(),
+  sellerId: dbUuid,
   decision: z.enum([
     "approve",
     "reject",

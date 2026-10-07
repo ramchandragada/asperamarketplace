@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatPaise } from "@/modules/catalogue/helpers";
 
 type FulfilmentGroup = {
@@ -50,6 +50,14 @@ export function SellerFulfilmentPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setGroups(initialGroups);
+  }, [initialGroups]);
+
+  useEffect(() => {
+    setReturns(initialReturns);
+  }, [initialReturns]);
 
   async function refresh() {
     const [groupsRes, returnsRes] = await Promise.all([

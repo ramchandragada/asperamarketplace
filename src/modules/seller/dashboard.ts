@@ -271,7 +271,7 @@ export async function getSellerActionDashboard(
       id: "tax-ok",
       priority: "completed",
       title: "Active tax profile present",
-      detail: taxProfile.name.replace(/placeholder/gi, "standard"),
+      detail: `${taxProfile.name.replace(/placeholder/gi, "standard")} — Not a legal GST/TCS determination`,
       href: "/seller/compliance",
     });
   }

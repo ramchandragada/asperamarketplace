@@ -14,6 +14,8 @@ export const PRIVILEGED_AUDIT_ACTIONS = [
   "product.draft_created",
   "product.offer_draft_created",
   "product.submitted",
+  "product.seller_updated",
+  "product.seller_content_updated",
   "product.approved",
   "product.rejected",
   "order.created",

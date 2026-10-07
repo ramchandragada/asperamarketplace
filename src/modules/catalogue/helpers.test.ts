@@ -4,6 +4,7 @@ import {
   buildSearchDocument,
   canTransitionProductStatus,
   formatPaise,
+  mergeVariantPrices,
   paiseFromRupees,
   rupeesFromPaise,
   slugify,
@@ -47,5 +48,15 @@ describe("catalogue helpers", () => {
     expect(paiseFromRupees(199)).toBe(19900);
     expect(paiseFromRupees(699.5)).toBe(69950);
     expect(rupeesFromPaise(19900)).toBe("199.00");
+  });
+
+  it("rejects selling-price-only PATCH above stored MRP", () => {
+    const merged = mergeVariantPrices(
+      { mrpPaise: 10000, sellingPricePaise: 8000 },
+      { sellingPricePaise: 12000 },
+    );
+    expect(merged.withinMrp).toBe(false);
+    expect(merged.mrpPaise).toBe(10000);
+    expect(merged.sellingPricePaise).toBe(12000);
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { trackProductView } from "@/components/analytics-beacon";
@@ -27,7 +27,10 @@ export function ProductPurchasePanel({
   highlights: Array<{ label: string; value: string }>;
   productTitle?: string;
 }) {
+  const viewedRef = useRef(false);
   useEffect(() => {
+    if (viewedRef.current) return;
+    viewedRef.current = true;
     trackProductView(productId);
   }, [productId]);
   const sizeVariants = useMemo(() => {

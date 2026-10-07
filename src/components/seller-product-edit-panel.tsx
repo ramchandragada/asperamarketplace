@@ -7,6 +7,7 @@ import {
   paiseFromRupees,
   rupeesFromPaise,
 } from "@/modules/catalogue/helpers";
+import { apiErrorMessage } from "@/platform/http/api-error-message";
 
 type Product = {
   id: string;
@@ -48,16 +49,35 @@ export function SellerProductEditPanel({
     const form = new FormData(event.currentTarget);
     const mrpRupees = Number(form.get("mrpRupees"));
     const sellingRupees = Number(form.get("sellingRupees"));
+    if (!(mrpRupees > 0) || !(sellingRupees > 0)) {
+      setError("Enter MRP and selling price in rupees");
+      return;
+    }
     if (sellingRupees > mrpRupees) {
       setError("Selling price cannot be greater than MRP");
       return;
     }
+    const title = String(form.get("title") ?? "");
+    const summary = String(form.get("summary") ?? "");
+    const description = String(form.get("description") ?? "");
     const imageUrl = String(form.get("imageUrl") ?? "").trim();
+    const contentChanged =
+      product.status === "approved" &&
+      (title !== product.title ||
+        summary !== product.summary ||
+        description !== product.description ||
+        (imageUrl !== "" && imageUrl !== (product.images[0]?.url ?? "")));
+    if (contentChanged) {
+      const confirmed = window.confirm(
+        "This will unpublish the listing until it's re-approved. Continue?",
+      );
+      if (!confirmed) return;
+    }
     const payload = {
       sellerId,
-      title: String(form.get("title") ?? ""),
-      summary: String(form.get("summary") ?? ""),
-      description: String(form.get("description") ?? ""),
+      title,
+      summary,
+      description,
       imageUrl: imageUrl || undefined,
       variant: {
         id: variant.id,
@@ -71,9 +91,12 @@ export function SellerProductEditPanel({
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const body = (await response.json()) as { message?: string };
+    const body = (await response.json()) as {
+      message?: string;
+      fieldErrors?: Record<string, string[]> | null;
+    };
     if (!response.ok) {
-      setError(body.message ?? "Update failed");
+      setError(apiErrorMessage(body, "Update failed"));
       return;
     }
     setMessage(body.message ?? "Saved");
@@ -87,9 +110,12 @@ export function SellerProductEditPanel({
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ sellerId, status }),
     });
-    const body = (await response.json()) as { message?: string };
+    const body = (await response.json()) as {
+      message?: string;
+      fieldErrors?: Record<string, string[]> | null;
+    };
     if (!response.ok) {
-      setError(body.message ?? "Status change failed");
+      setError(apiErrorMessage(body, "Status change failed"));
       return;
     }
     setMessage(status === "archived" ? "Listing paused" : "Moved to draft");
@@ -103,9 +129,12 @@ export function SellerProductEditPanel({
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ productId: product.id }),
     });
-    const body = (await response.json()) as { message?: string };
+    const body = (await response.json()) as {
+      message?: string;
+      fieldErrors?: Record<string, string[]> | null;
+    };
     if (!response.ok) {
-      setError(body.message ?? "Submit failed");
+      setError(apiErrorMessage(body, "Submit failed"));
       return;
     }
     setMessage(body.message ?? "Submitted for review");
@@ -135,6 +164,14 @@ export function SellerProductEditPanel({
 
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
+
+      {product.status === "approved" ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          Changing title, summary, description, or image will unpublish this
+          listing until an admin re-approves it. Price and stock-only edits keep
+          it live.
+        </p>
+      ) : null}
 
       {product.images[0] ? (
         // eslint-disable-next-line @next/next/no-img-element

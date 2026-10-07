@@ -23,6 +23,12 @@ describe("seller products API guards", () => {
     expect(() => assertUuid(id, "id")).not.toThrow();
   });
 
+  it("accepts non-RFC4122 seed-style UUIDs for seller product routes", () => {
+    const id = "8670a3ca-0000-0000-0000-000000000001";
+    expect(isUuid(id)).toBe(true);
+    expect(() => assertUuid(id, "sellerId")).not.toThrow();
+  });
+
   it("allows approved listings to return to submitted for content edits", () => {
     expect(canTransitionProductStatus("approved", "submitted")).toBe(true);
   });

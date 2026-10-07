@@ -36,7 +36,11 @@ export default async function AdminSellersPage({
           sellers.
         </p>
       </div>
-      <AdminSellerQueue key={tab} initialSellers={sellers} tab={tab} />
+      <AdminSellerQueue
+        key={`${tab}:${sellers.map((seller) => `${seller.id}:${seller.version}`).join(",")}`}
+        initialSellers={sellers}
+        tab={tab}
+      />
     </div>
   );
 }

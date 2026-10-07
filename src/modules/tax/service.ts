@@ -25,7 +25,8 @@ export async function ensureDefaultTaxProfiles() {
     create: {
       key: TAX_POLICY.key,
       name: "India GST (standard)",
-      description: "Default marketplace tax profile for settlements.",
+      description:
+        "Default marketplace tax profile for settlements. Not a legal GST/TCS determination.",
       rateBps: TAX_POLICY.rateBps,
       active: true,
       version: TAX_POLICY.version,
@@ -33,7 +34,8 @@ export async function ensureDefaultTaxProfiles() {
     },
     update: {
       name: "India GST (standard)",
-      description: "Default marketplace tax profile for settlements.",
+      description:
+        "Default marketplace tax profile for settlements. Not a legal GST/TCS determination.",
       explanation: TAX_POLICY.explanation,
     },
   });

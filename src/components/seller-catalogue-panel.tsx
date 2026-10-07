@@ -8,6 +8,7 @@ import {
   paiseFromRupees,
 } from "@/modules/catalogue/helpers";
 import { ProductSourcePicker } from "@/components/product-source-picker";
+import { apiErrorMessage } from "@/platform/http/api-error-message";
 
 type Category = { id: string; slug: string; name: string };
 
@@ -88,9 +89,10 @@ export function SellerCataloguePanel({
         page?: number;
       };
       message?: string;
+      fieldErrors?: Record<string, string[]> | null;
     };
     if (!response.ok) {
-      setError(body.message ?? "Could not load products");
+      setError(apiErrorMessage(body, "Could not load products"));
       return;
     }
     setProducts(body.data?.products ?? body.data?.items ?? []);
@@ -146,9 +148,12 @@ export function SellerCataloguePanel({
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const body = (await response.json()) as { message?: string };
+    const body = (await response.json()) as {
+      message?: string;
+      fieldErrors?: Record<string, string[]> | null;
+    };
     if (!response.ok) {
-      setError(body.message ?? "Could not create draft");
+      setError(apiErrorMessage(body, "Could not create draft"));
       return;
     }
     setMessage("Product draft created");
@@ -163,6 +168,10 @@ export function SellerCataloguePanel({
     const form = new FormData(event.currentTarget);
     const mrpRupees = Number(form.get("offerMrpRupees"));
     const sellingRupees = Number(form.get("offerSellingRupees"));
+    if (!(mrpRupees > 0) || !(sellingRupees > 0)) {
+      setError("Enter MRP and selling price in rupees");
+      return;
+    }
     if (sellingRupees > mrpRupees) {
       setError("Selling price cannot be greater than MRP");
       return;
@@ -183,9 +192,12 @@ export function SellerCataloguePanel({
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const body = (await response.json()) as { message?: string };
+    const body = (await response.json()) as {
+      message?: string;
+      fieldErrors?: Record<string, string[]> | null;
+    };
     if (!response.ok) {
-      setError(body.message ?? "Could not create offer");
+      setError(apiErrorMessage(body, "Could not create offer"));
       return;
     }
     setMessage(
@@ -204,9 +216,12 @@ export function SellerCataloguePanel({
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ productId }),
     });
-    const body = (await response.json()) as { message?: string };
+    const body = (await response.json()) as {
+      message?: string;
+      fieldErrors?: Record<string, string[]> | null;
+    };
     if (!response.ok) {
-      setError(body.message ?? "Submit failed");
+      setError(apiErrorMessage(body, "Submit failed"));
       return;
     }
     setMessage(body.message ?? "Submitted");

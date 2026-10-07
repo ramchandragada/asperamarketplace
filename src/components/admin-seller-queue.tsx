@@ -345,14 +345,10 @@ export function AdminSellerQueue({
                   <ul className="mt-1 flex flex-col gap-1 text-sm">
                     {seller.documents.map((doc) => (
                       <li key={doc.id}>
-                        <a
+                        <AdminDocumentLink
                           href={`/api/admin/sellers/${seller.id}/documents/${doc.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-accent underline-offset-2 hover:underline"
-                        >
-                          {doc.documentType}: {doc.fileName}
-                        </a>
+                          label={`${doc.documentType}: ${doc.fileName}`}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -428,5 +424,56 @@ export function AdminSellerQueue({
         </div>
       ) : null}
     </div>
+  );
+}
+
+function AdminDocumentLink({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
+  const [unavailable, setUnavailable] = useState(false);
+  const [checking, setChecking] = useState(false);
+
+  if (unavailable) {
+    return <span className="text-muted">file unavailable</span>;
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="text-accent underline-offset-2 hover:underline"
+      onClick={(event) => {
+        event.preventDefault();
+        if (checking) return;
+        setChecking(true);
+        void (async () => {
+          try {
+            const response = await fetch(href);
+            if (response.status === 404) {
+              setUnavailable(true);
+              return;
+            }
+            if (!response.ok) {
+              setUnavailable(true);
+              return;
+            }
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank", "noopener,noreferrer");
+          } catch {
+            setUnavailable(true);
+          } finally {
+            setChecking(false);
+          }
+        })();
+      }}
+    >
+      {checking ? `${label}…` : label}
+    </a>
   );
 }

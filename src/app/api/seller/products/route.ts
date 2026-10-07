@@ -7,13 +7,18 @@ import {
 } from "@/modules/catalogue/service";
 import { resolveSellerForActor } from "@/modules/seller/access";
 import { AuthorizationError } from "@/modules/identity/policy";
-import { assertUuid, HttpValidationError } from "@/platform/http/errors";
+import { assertUuid } from "@/platform/http/errors";
 import { getRequestId, jsonError, jsonOk } from "@/platform/http/respond";
 
 export const dynamic = "force-dynamic";
 
 const listQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
+  page: z.coerce
+    .number()
+    .int()
+    .catch(1)
+    .transform((value) => Math.max(1, value))
+    .default(1),
   pageSize: z.coerce.number().int().min(1).max(50).default(25),
   q: z.string().trim().max(120).optional(),
   status: z
@@ -105,17 +110,6 @@ export async function POST(request: Request) {
       message: "Product draft created",
     });
   } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message.includes("Rupee amount")
-    ) {
-      return jsonError(
-        requestId,
-        new HttpValidationError(error.message, {
-          "variant.sellingPricePaise": [error.message],
-        }),
-      );
-    }
     return jsonError(requestId, error);
   }
 }

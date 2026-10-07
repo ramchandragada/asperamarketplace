@@ -1,5 +1,7 @@
 /** HTTP-mappable domain errors for API routes. */
 
+import { DB_UUID_RE } from "@/platform/validation/id";
+
 export class NotFoundError extends Error {
   readonly code = "NOT_FOUND";
 
@@ -24,14 +26,11 @@ export class HttpValidationError extends Error {
 }
 
 /** Accepts standard 8-4-4-4-12 hex UUIDs (Prisma @db.Uuid). */
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export function assertUuid(
   value: string,
   field = "id",
 ): asserts value is string {
-  if (!UUID_RE.test(value)) {
+  if (!DB_UUID_RE.test(value)) {
     throw new HttpValidationError(`Invalid ${field}`, {
       [field]: ["Must be a valid UUID"],
     });
@@ -39,5 +38,5 @@ export function assertUuid(
 }
 
 export function isUuid(value: string): boolean {
-  return UUID_RE.test(value);
+  return DB_UUID_RE.test(value);
 }

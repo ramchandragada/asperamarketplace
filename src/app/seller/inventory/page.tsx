@@ -60,6 +60,7 @@ export default async function SellerInventoryPage({
         </p>
       </div>
       <SellerInventoryPanel
+        key={`${filter}|${q}|${result.page}`}
         sellerId={seller.id}
         filter={filter}
         initialQuery={q}

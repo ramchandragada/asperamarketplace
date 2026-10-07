@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dbUuid } from "@/platform/validation/id";
 
 const CATALOGUE_IMAGE_HOSTS = new Set([
   "images.unsplash.com",
@@ -18,8 +19,8 @@ export const catalogueImageUrlSchema = z
 
 export const createProductSchema = z
   .object({
-    sellerId: z.uuid(),
-    categoryId: z.uuid(),
+    sellerId: dbUuid,
+    categoryId: dbUuid,
     brandName: z.string().trim().min(1).max(120).optional(),
     title: z.string().trim().min(3).max(200),
     summary: z.string().trim().min(10).max(400),
@@ -51,15 +52,15 @@ export const createProductSchema = z
   });
 
 export const submitProductSchema = z.object({
-  productId: z.uuid(),
+  productId: dbUuid,
 });
 
 /** Another approved seller lists the same product with their own price and stock. */
 export const createProductOfferSchema = z
   .object({
-    sellerId: z.uuid(),
+    sellerId: dbUuid,
     /** Approved storefront product this seller wants to also sell. */
-    sourceProductId: z.uuid(),
+    sourceProductId: dbUuid,
     variant: z.object({
       sku: z
         .string()
@@ -80,7 +81,7 @@ export const createProductOfferSchema = z
   });
 
 export const reviewProductSchema = z.object({
-  productId: z.uuid(),
+  productId: dbUuid,
   decision: z.enum(["approve", "reject"]),
   reason: z.string().trim().min(3).max(500),
   expectedVersion: z.number().int().positive(),
@@ -108,18 +109,18 @@ export const searchProductsSchema = z.object({
 
 export const updateSellerProductSchema = z
   .object({
-    sellerId: z.uuid(),
-    productId: z.uuid(),
+    sellerId: dbUuid,
+    productId: dbUuid,
     title: z.string().trim().min(3).max(200).optional(),
     summary: z.string().trim().min(10).max(400).optional(),
     description: z.string().trim().min(20).max(5000).optional(),
-    categoryId: z.uuid().optional(),
+    categoryId: dbUuid.optional(),
     /** archive = pause/unlist from storefront */
     status: z.enum(["draft", "archived"]).optional(),
     imageUrl: catalogueImageUrlSchema.optional(),
     variant: z
       .object({
-        id: z.uuid(),
+        id: dbUuid,
         mrpPaise: z.number().int().positive().optional(),
         sellingPricePaise: z.number().int().positive().optional(),
         onHand: z.number().int().min(0).max(1_000_000).optional(),

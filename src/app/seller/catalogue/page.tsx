@@ -67,6 +67,7 @@ export default async function SellerCataloguePage({
         </p>
       </div>
       <SellerCataloguePanel
+        key={`${status}|${q}|${listed.page}`}
         sellerId={seller.id}
         categories={categories}
         initialProducts={listed.items}

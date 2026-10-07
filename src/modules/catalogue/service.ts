@@ -11,6 +11,7 @@ import {
   assertProductTransition,
   buildSearchDocument,
   discountPercent,
+  mergeVariantPrices,
   resolveProductBadge,
   slugify,
   type ProductCardBadge,
@@ -28,6 +29,10 @@ import {
   type ReviewProductInput,
   type SubmitProductInput,
 } from "@/modules/catalogue/schema";
+import {
+  HttpValidationError,
+  NotFoundError,
+} from "@/platform/http/errors";
 
 async function requireApprovedSellerOwnership(actor: Actor, sellerId: string) {
   const seller = await prisma.seller.findUniqueOrThrow({
@@ -105,9 +110,14 @@ export async function createProductDraft(
   correlationId: string,
 ) {
   const seller = await requireApprovedSellerOwnership(actor, input.sellerId);
-  const category = await prisma.category.findFirstOrThrow({
+  const category = await prisma.category.findFirst({
     where: { id: input.categoryId, isActive: true },
   });
+  if (!category) {
+    throw new HttpValidationError("Category not found or inactive", {
+      categoryId: ["Category not found or inactive"],
+    });
+  }
 
   let brandId: string | undefined;
   if (input.brandName) {
@@ -700,18 +710,36 @@ export async function updateSellerProduct(
     },
   });
   if (!existing) {
-    throw new CatalogueValidationError("Product not found for this seller");
+    throw new NotFoundError("Product not found");
   }
 
-  if (
-    input.variant &&
-    input.variant.mrpPaise != null &&
-    input.variant.sellingPricePaise != null &&
-    input.variant.mrpPaise < input.variant.sellingPricePaise
-  ) {
-    throw new CatalogueValidationError(
-      "MRP must be greater than or equal to selling price",
-    );
+  if (input.categoryId != null && input.categoryId !== existing.categoryId) {
+    const category = await prisma.category.findFirst({
+      where: { id: input.categoryId, isActive: true },
+    });
+    if (!category) {
+      throw new HttpValidationError("Category not found or inactive", {
+        categoryId: ["Category not found or inactive"],
+      });
+    }
+  }
+
+  if (input.variant) {
+    const variant = existing.variants.find((row) => row.id === input.variant!.id);
+    if (!variant) {
+      throw new CatalogueValidationError("Variant not found on this product");
+    }
+    const merged = mergeVariantPrices(variant, input.variant);
+    if (!merged.withinMrp) {
+      throw new HttpValidationError(
+        "MRP must be greater than or equal to selling price",
+        {
+          "variant.sellingPricePaise": [
+            "Must be less than or equal to MRP",
+          ],
+        },
+      );
+    }
   }
 
   const contentChanged =

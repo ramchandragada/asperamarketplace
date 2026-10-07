@@ -40,6 +40,7 @@ export default async function SellerReturnsPage() {
         </p>
       </div>
       <SellerFulfilmentPanel
+        key={`${seller.id}-returns`}
         sellerId={seller.id}
         initialGroups={[]}
         initialReturns={returns}

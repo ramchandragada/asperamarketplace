@@ -7,6 +7,7 @@ import {
 } from "@/modules/wishlist/service";
 import { getOptionalActor } from "@/modules/identity/service";
 import { getRequestId, jsonError, jsonOk } from "@/platform/http/respond";
+import { dbUuid } from "@/platform/validation/id";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +31,9 @@ export async function GET(request: Request) {
 }
 
 const bodySchema = z.object({
-  productId: z.uuid(),
+  productId: dbUuid,
   action: z.enum(["add", "remove"]).default("add"),
 });
-
 export async function POST(request: Request) {
   const requestId = getRequestId(request);
   try {

@@ -41,6 +41,7 @@ export default async function SellerFulfilmentPage() {
         </p>
       </div>
       <SellerFulfilmentPanel
+        key={seller.id}
         sellerId={seller.id}
         initialGroups={groups}
         initialReturns={[]}

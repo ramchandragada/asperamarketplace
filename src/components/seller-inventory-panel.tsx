@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { formatPaise } from "@/modules/catalogue/helpers";
+import { apiErrorMessage } from "@/platform/http/api-error-message";
 
 type Row = {
   inventoryItemId: string;
@@ -63,7 +64,12 @@ export function SellerInventoryPanel({
   async function saveRow(row: Row) {
     setError(null);
     setMessage(null);
-    const onHand = Number(drafts[row.inventoryItemId]);
+    const raw = (drafts[row.inventoryItemId] ?? "").trim();
+    if (raw === "") {
+      setError("Enter on-hand quantity");
+      return;
+    }
+    const onHand = Number(raw);
     if (!Number.isInteger(onHand) || onHand < 0) {
       setError("On-hand must be a whole number ≥ 0");
       return;
@@ -80,9 +86,12 @@ export function SellerInventoryPanel({
         variant: { id: row.variantId, onHand },
       }),
     });
-    const body = (await response.json()) as { message?: string };
+    const body = (await response.json()) as {
+      message?: string;
+      fieldErrors?: Record<string, string[]> | null;
+    };
     if (!response.ok) {
-      setError(body.message ?? "Could not update stock");
+      setError(apiErrorMessage(body, "Could not update stock"));
       return;
     }
     setRows((current) =>

@@ -4,11 +4,19 @@ import { REQUEST_ID_HEADER, resolveRequestId } from "@/platform/http/request-id"
 
 const SESSION_COOKIE = "aspera_session";
 
+function isSellerPanelPath(pathname: string) {
+  return pathname === "/seller" || pathname.startsWith("/seller/");
+}
+
+function isAdminPanelPath(pathname: string) {
+  return pathname === "/admin" || pathname.startsWith("/admin/");
+}
+
 export function proxy(request: NextRequest) {
   const requestId = resolveRequestId(request.headers.get(REQUEST_ID_HEADER));
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/seller")) {
+  if (isAdminPanelPath(pathname) || isSellerPanelPath(pathname)) {
     const token = request.cookies.get(SESSION_COOKIE)?.value;
     if (!token) {
       const login = new URL("/login", request.url);
@@ -23,9 +31,9 @@ export function proxy(request: NextRequest) {
   requestHeaders.set(REQUEST_ID_HEADER, requestId);
   requestHeaders.set("x-aspera-pathname", pathname);
   const surface =
-    pathname.startsWith("/admin") || pathname.startsWith("/api/admin")
+    isAdminPanelPath(pathname) || pathname.startsWith("/api/admin")
       ? "admin"
-      : pathname.startsWith("/seller") || pathname.startsWith("/api/seller")
+      : isSellerPanelPath(pathname) || pathname.startsWith("/api/seller")
         ? "seller"
         : "shopper";
   requestHeaders.set("x-aspera-surface", surface);

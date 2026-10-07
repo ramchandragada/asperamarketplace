@@ -216,9 +216,7 @@ export async function seedMarketplaceCatalogue(
             reviewedByUserId: status === "approved" ? input.adminUserId : null,
             publishedAt: status === "approved" ? new Date() : null,
             statusReason:
-              status === "approved"
-                ? "Seeded approved listing"
-                : `Seed ${status} listing`,
+              status === "submitted" ? "Awaiting catalogue review" : null,
           },
         });
 

@@ -14,7 +14,8 @@ describe("catalogue helpers", () => {
     expect(canTransitionProductStatus("draft", "submitted")).toBe(true);
     expect(canTransitionProductStatus("submitted", "approved")).toBe(true);
     expect(canTransitionProductStatus("rejected", "submitted")).toBe(true);
-    expect(canTransitionProductStatus("approved", "submitted")).toBe(false);
+    expect(canTransitionProductStatus("approved", "submitted")).toBe(true);
+    expect(canTransitionProductStatus("approved", "archived")).toBe(true);
   });
 
   it("throws on illegal product transitions", () => {

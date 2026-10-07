@@ -67,7 +67,7 @@ async function ensureSeller(input: {
         reviewedAt: new Date(),
         reviewedByUserId: input.adminId,
         approvedAt: new Date(),
-        statusReason: "Seeded approved demo seller for catalogue density",
+        statusReason: null,
       },
     });
   } else {
@@ -80,7 +80,7 @@ async function ensureSeller(input: {
         approvedAt: seller.approvedAt ?? new Date(),
         reviewedAt: new Date(),
         reviewedByUserId: input.adminId,
-        statusReason: "Seeded approved demo seller for catalogue density",
+        statusReason: null,
       },
     });
   }

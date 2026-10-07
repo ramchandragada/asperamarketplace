@@ -358,6 +358,7 @@ export default async function ProductDetailPage({
           </div>
 
           <ProductPurchasePanel
+            productId={product.id}
             variants={variants}
             highlights={highlights}
             productTitle={product.title}

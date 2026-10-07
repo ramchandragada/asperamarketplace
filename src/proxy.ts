@@ -8,7 +8,7 @@ export function proxy(request: NextRequest) {
   const requestId = resolveRequestId(request.headers.get(REQUEST_ID_HEADER));
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/admin") || pathname.startsWith("/seller")) {
     const token = request.cookies.get(SESSION_COOKIE)?.value;
     if (!token) {
       const login = new URL("/login", request.url);
@@ -34,7 +34,7 @@ export function proxy(request: NextRequest) {
     request: { headers: requestHeaders },
   });
   response.headers.set(REQUEST_ID_HEADER, requestId);
-  if (surface === "admin") {
+  if (surface === "admin" || surface === "seller") {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   return response;

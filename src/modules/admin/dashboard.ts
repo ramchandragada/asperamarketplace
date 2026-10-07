@@ -40,7 +40,12 @@ export async function getAdminHomeDashboard(
     prisma.privacyRequest.count({
       where: { status: { in: ["received", "in_progress"] } },
     }),
-    prisma.auditLog.count({ where: { createdAt: { gte: weekAgo } } }),
+    prisma.auditLog.count({
+      where: {
+        createdAt: { gte: weekAgo },
+        NOT: { action: { startsWith: "cart." } },
+      },
+    }),
   ]);
 
   return {

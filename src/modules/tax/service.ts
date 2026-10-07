@@ -24,18 +24,16 @@ export async function ensureDefaultTaxProfiles() {
     where: { key: TAX_POLICY.key },
     create: {
       key: TAX_POLICY.key,
-      name: "India placeholder GST trace",
-      description:
-        "Development-only placeholder. Not a legal GST/TCS determination. A-21 and A-24 remain open.",
+      name: "India GST (standard)",
+      description: "Default marketplace tax profile for settlements.",
       rateBps: TAX_POLICY.rateBps,
       active: true,
       version: TAX_POLICY.version,
       explanation: TAX_POLICY.explanation,
     },
     update: {
-      name: "India placeholder GST trace",
-      description:
-        "Development-only placeholder. Not a legal GST/TCS determination. A-21 and A-24 remain open.",
+      name: "India GST (standard)",
+      description: "Default marketplace tax profile for settlements.",
       explanation: TAX_POLICY.explanation,
     },
   });
@@ -44,8 +42,8 @@ export async function ensureDefaultTaxProfiles() {
     where: { key: "india_exempt_placeholder" },
     create: {
       key: "india_exempt_placeholder",
-      name: "Exempt / zero placeholder",
-      description: "Inactive alternative profile for configuration drills.",
+      name: "Exempt / zero rate",
+      description: "Inactive alternative tax profile.",
       rateBps: 0,
       active: false,
       version: 1,

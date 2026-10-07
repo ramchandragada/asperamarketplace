@@ -113,6 +113,7 @@ export const updateSellerProductSchema = z
     title: z.string().trim().min(3).max(200).optional(),
     summary: z.string().trim().min(10).max(400).optional(),
     description: z.string().trim().min(20).max(5000).optional(),
+    categoryId: z.uuid().optional(),
     /** archive = pause/unlist from storefront */
     status: z.enum(["draft", "archived"]).optional(),
     imageUrl: catalogueImageUrlSchema.optional(),

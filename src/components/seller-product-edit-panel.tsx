@@ -117,7 +117,15 @@ export function SellerProductEditPanel({
         <div>
           <p className="text-sm text-muted">Status: {product.status}</p>
           {product.statusReason ? (
-            <p className="text-sm text-red-700">{product.statusReason}</p>
+            <p
+              className={`text-sm ${
+                product.status === "rejected"
+                  ? "text-red-700"
+                  : "text-muted"
+              }`}
+            >
+              {product.statusReason}
+            </p>
           ) : null}
         </div>
         <Link href="/seller/catalogue" className="text-sm text-accent underline">

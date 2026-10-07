@@ -7,6 +7,7 @@ import {
   formatPaise,
   paiseFromRupees,
 } from "@/modules/catalogue/helpers";
+import { ProductSourcePicker } from "@/components/product-source-picker";
 
 type Category = { id: string; slug: string; name: string };
 
@@ -225,17 +226,9 @@ export function SellerCataloguePanel({
           Sell an existing product
         </h2>
         <p className="sm:col-span-2 text-sm text-muted">
-          Paste the product id from an approved listing. You keep your own price,
-          SKU, and stock.
+          Search an approved listing. You keep your own price, SKU, and stock.
         </p>
-        <label className="text-sm sm:col-span-2">
-          Source product id
-          <input
-            name="sourceProductId"
-            required
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
-          />
-        </label>
+        <ProductSourcePicker name="sourceProductId" />
         <label className="text-sm">
           Your SKU
           <input
@@ -259,9 +252,9 @@ export function SellerCataloguePanel({
             name="offerMrpRupees"
             type="number"
             required
-            min={1}
+            min={0.01}
             step="0.01"
-            defaultValue={499}
+            placeholder="e.g. 499"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />
         </label>
@@ -271,9 +264,9 @@ export function SellerCataloguePanel({
             name="offerSellingRupees"
             type="number"
             required
-            min={1}
+            min={0.01}
             step="0.01"
-            defaultValue={399}
+            placeholder="e.g. 399"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />
         </label>
@@ -284,7 +277,8 @@ export function SellerCataloguePanel({
             type="number"
             required
             min={0}
-            defaultValue={20}
+            step={1}
+            placeholder="e.g. 20"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />
         </label>
@@ -401,9 +395,9 @@ export function SellerCataloguePanel({
             name="mrpRupees"
             type="number"
             required
-            min={1}
+            min={0.01}
             step="0.01"
-            defaultValue={499}
+            placeholder="e.g. 499"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />
         </label>
@@ -413,9 +407,9 @@ export function SellerCataloguePanel({
             name="sellingRupees"
             type="number"
             required
-            min={1}
+            min={0.01}
             step="0.01"
-            defaultValue={399}
+            placeholder="e.g. 399"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />
         </label>
@@ -426,7 +420,8 @@ export function SellerCataloguePanel({
             type="number"
             required
             min={0}
-            defaultValue={25}
+            step={1}
+            placeholder="e.g. 25"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />
         </label>

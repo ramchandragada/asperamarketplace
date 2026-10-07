@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { headers } from "next/headers";
+import { Suspense } from "react";
+import { AnalyticsBeacon } from "@/components/analytics-beacon";
 import { BackToTopButton } from "@/components/back-to-top";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
@@ -71,6 +73,11 @@ export default async function RootLayout({
           </>
         )}
         <ToastHost />
+        {isPanel ? null : (
+          <Suspense fallback={null}>
+            <AnalyticsBeacon />
+          </Suspense>
+        )}
       </body>
     </html>
   );

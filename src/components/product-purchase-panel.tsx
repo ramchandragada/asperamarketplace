@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { trackProductView } from "@/components/analytics-beacon";
 import { discountPercent, formatPaise } from "@/modules/catalogue/helpers";
 
 type VariantView = {
@@ -16,14 +17,19 @@ type VariantView = {
 };
 
 export function ProductPurchasePanel({
+  productId,
   variants,
   highlights,
   productTitle,
 }: {
+  productId: string;
   variants: VariantView[];
   highlights: Array<{ label: string; value: string }>;
   productTitle?: string;
 }) {
+  useEffect(() => {
+    trackProductView(productId);
+  }, [productId]);
   const sizeVariants = useMemo(() => {
     return variants.filter((variant) => {
       const opts = variant.optionValues ?? {};
@@ -331,6 +337,7 @@ export function ProductPurchasePanel({
         <div className="min-w-0 flex-1 sm:flex-none">
           <AddToCartButton
             variantId={activeVariantId}
+            productId={productId}
             availableQty={selected?.availableQty ?? priceVariant.availableQty}
             productTitle={productTitle}
             selectionRequired={selectionRequired}

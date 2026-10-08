@@ -1,12 +1,13 @@
 import { z } from "zod";
+import { dbUuid } from "@/platform/validation/id";
 
 export const addCartItemSchema = z.object({
-  variantId: z.uuid(),
+  variantId: dbUuid,
   quantity: z.number().int().min(1).max(99),
 });
 
 export const updateCartItemSchema = z.object({
-  variantId: z.uuid(),
+  variantId: dbUuid,
   quantity: z.number().int().min(0).max(99),
 });
 
@@ -30,22 +31,25 @@ export const createAddressSchema = z.object({
 });
 
 export const previewCheckoutSchema = z.object({
-  addressId: z.uuid(),
+  addressId: dbUuid,
   couponCode: z.string().trim().min(3).max(40).optional(),
   /** Display hint only. Rejected when it disagrees with the server total. */
   clientTotalPaise: z.number().int().nonnegative().optional(),
 });
 
 export const confirmCheckoutSchema = z.object({
-  addressId: z.uuid(),
+  addressId: dbUuid,
   couponCode: z.string().trim().min(3).max(40).optional(),
   clientTotalPaise: z.number().int().nonnegative().optional(),
   idempotencyKey: z.string().trim().min(8).max(120),
   expectedCartVersion: z.number().int().positive(),
 });
 
+export const updateAddressSchema = createAddressSchema;
+
 export type AddCartItemInput = z.infer<typeof addCartItemSchema>;
 export type UpdateCartItemInput = z.infer<typeof updateCartItemSchema>;
 export type CreateAddressInput = z.infer<typeof createAddressSchema>;
+export type UpdateAddressInput = z.infer<typeof updateAddressSchema>;
 export type PreviewCheckoutInput = z.infer<typeof previewCheckoutSchema>;
 export type ConfirmCheckoutInput = z.infer<typeof confirmCheckoutSchema>;

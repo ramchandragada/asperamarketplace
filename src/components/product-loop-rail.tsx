@@ -195,7 +195,7 @@ export function ProductLoopRail<T extends LoopItem>({
         role="region"
         aria-label={label}
         tabIndex={0}
-        className={`product-loop-rail hide-scroll touch-pan-x ${
+        className={`product-loop-rail hide-scroll ${
           variant === "category"
             ? "product-loop-rail--category"
             : variant === "brands"

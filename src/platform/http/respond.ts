@@ -8,7 +8,10 @@ import {
   AuthenticationError,
   AuthorizationError,
 } from "@/modules/identity/policy";
-import { ConflictError as IdentityConflictError } from "@/modules/identity/service";
+import {
+  ConflictError as IdentityConflictError,
+  RateLimitError,
+} from "@/modules/identity/service";
 import {
   ConflictError as SellerConflictError,
   ValidationError,
@@ -47,6 +50,10 @@ import { TrustValidationError } from "@/modules/trust/service";
 import { AnalyticsValidationError } from "@/modules/analytics/service";
 import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
+import {
+  HttpValidationError,
+  NotFoundError,
+} from "@/platform/http/errors";
 
 function isPrismaInfrastructureError(error: unknown): boolean {
   return (
@@ -104,6 +111,17 @@ export function jsonError(
     );
   }
 
+  if (error instanceof RateLimitError) {
+    return NextResponse.json(
+      fail({
+        requestId,
+        code: error.code,
+        message: error.message,
+      }),
+      { status: 429, headers: { [REQUEST_ID_HEADER]: requestId } },
+    );
+  }
+
   if (error instanceof AuthenticationError) {
     return NextResponse.json(
       fail({
@@ -123,6 +141,29 @@ export function jsonError(
         message: error.message,
       }),
       { status: 403, headers: { [REQUEST_ID_HEADER]: requestId } },
+    );
+  }
+
+  if (error instanceof NotFoundError) {
+    return NextResponse.json(
+      fail({
+        requestId,
+        code: error.code,
+        message: error.message,
+      }),
+      { status: 404, headers: { [REQUEST_ID_HEADER]: requestId } },
+    );
+  }
+
+  if (error instanceof HttpValidationError) {
+    return NextResponse.json(
+      fail({
+        requestId,
+        code: error.code,
+        message: error.message,
+        fieldErrors: error.fieldErrors,
+      }),
+      { status: 400, headers: { [REQUEST_ID_HEADER]: requestId } },
     );
   }
 
@@ -201,7 +242,7 @@ export function jsonError(
   logger.error("API internal error", {
     requestId,
     name: error instanceof Error ? error.name : "UnknownError",
-    message: error instanceof Error ? error.message : String(error),
+    errorMessage: error instanceof Error ? error.message : String(error),
   });
 
   return NextResponse.json(

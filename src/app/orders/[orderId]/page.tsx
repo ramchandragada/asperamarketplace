@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { OrderPayButtons } from "@/components/order-pay-buttons";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { getOrderForActor } from "@/modules/orders/service";
 import { getOptionalActor } from "@/modules/identity/service";
@@ -67,6 +68,13 @@ export default async function OrderDetailPage({
           ))}
           {order.payments.length === 0 ? <li>No payment attempts yet.</li> : null}
         </ul>
+        <OrderPayButtons
+          orderId={order.id}
+          canPay={
+            order.status === "awaiting_payment" ||
+            order.status === "payment_failed"
+          }
+        />
       </section>
       <section>
         <h2 className="text-lg font-semibold">Refunds</h2>

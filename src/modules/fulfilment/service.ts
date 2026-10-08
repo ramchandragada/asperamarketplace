@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { cappedReturnQuantity, returnRefundPaise } from "@/modules/fulfilment/refund";
 import type { OrderStatus } from "@prisma/client";
 import { prisma } from "@/platform/db/prisma";
 import {
@@ -110,7 +111,14 @@ export async function listSellerFulfilment(actor: Actor, sellerId: string) {
     },
     orderBy: { createdAt: "desc" },
     include: {
-      order: { select: { id: true, orderNumber: true, status: true } },
+      order: {
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          totalPaise: true,
+        },
+      },
       lines: true,
       shipment: true,
     },
@@ -402,14 +410,41 @@ export async function createReturnRequest(
     );
   }
 
+  const line = input.orderLineId
+    ? order.lines.find((entry) => entry.id === input.orderLineId)
+    : undefined;
+  if (!line || line.sellerId !== input.sellerId) {
+    throw new FulfilmentValidationError(
+      "Choose a delivered line from this seller to return",
+    );
+  }
+  const prior = await prisma.returnRequest.findMany({
+    where: {
+      orderLineId: line.id,
+      status: { not: "rejected" },
+    },
+    select: { quantity: true },
+  });
+  const alreadyReturned = prior.reduce((sum, entry) => sum + entry.quantity, 0);
+  const quantity = cappedReturnQuantity(
+    line.quantity,
+    input.quantity,
+    alreadyReturned,
+  );
+  if (quantity < 1) {
+    throw new FulfilmentValidationError(
+      "Return quantity exceeds the quantity purchased on that line",
+    );
+  }
+
   return prisma.$transaction(async (tx) => {
     const created = await tx.returnRequest.create({
       data: {
         orderId: order.id,
         userId: actor.userId,
         sellerId: input.sellerId,
-        orderLineId: input.orderLineId,
-        quantity: input.quantity,
+        orderLineId: line.id,
+        quantity,
         reason: input.reason,
         status: "requested",
       },
@@ -420,7 +455,7 @@ export async function createReturnRequest(
         action: "return.requested",
         targetType: "return_request",
         targetId: created.id,
-        afterState: { reason: input.reason, quantity: input.quantity },
+        afterState: { reason: input.reason, quantity },
         reason: input.reason,
         correlationId,
       },
@@ -465,13 +500,23 @@ export async function reviewReturnRequest(
 
     if (input.decision === "approve") {
       const line = request.orderLineId
-        ? request.order.lines.find((entry) => entry.id === request.orderLineId)
-        : request.order.lines.find((entry) => entry.sellerId === request.sellerId);
-      const amountPaise = line
-        ? Math.floor((line.lineTotalPaise / line.quantity) * request.quantity)
-        : Math.floor(request.order.lines
-            .filter((entry) => entry.sellerId === request.sellerId)
-            .reduce((sum, entry) => sum + entry.lineTotalPaise, 0) / 2);
+        ? request.order.lines.find(
+            (entry) =>
+              entry.id === request.orderLineId &&
+              entry.sellerId === request.sellerId,
+          )
+        : undefined;
+      if (!line) {
+        throw new FulfilmentValidationError(
+          "Return is not tied to a purchased line for this seller",
+        );
+      }
+      const quantity = cappedReturnQuantity(line.quantity, request.quantity);
+      const amountPaise = returnRefundPaise({
+        lineTotalPaise: line.lineTotalPaise,
+        purchasedQuantity: line.quantity,
+        requestedQuantity: quantity,
+      });
 
       await tx.refund.create({
         data: {
@@ -486,7 +531,7 @@ export async function reviewReturnRequest(
         },
       });
 
-      if (line) {
+      if (quantity > 0) {
         const inventory = await tx.inventoryItem.findUnique({
           where: { variantId: line.variantId },
         });
@@ -494,7 +539,7 @@ export async function reviewReturnRequest(
           await tx.inventoryItem.update({
             where: { id: inventory.id },
             data: {
-              onHand: { increment: request.quantity },
+              onHand: { increment: quantity },
               version: { increment: 1 },
             },
           });
@@ -502,7 +547,7 @@ export async function reviewReturnRequest(
             data: {
               inventoryItemId: inventory.id,
               movementType: "customer_return",
-              quantity: request.quantity,
+              quantity,
               reason: `Return approved ${request.id}`,
               actorId: actor.userId,
               correlationId,

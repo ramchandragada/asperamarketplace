@@ -21,12 +21,12 @@ import type {
   MockCompletePaymentInput,
   StartPaymentInput,
 } from "@/modules/orders/schema";
-import { LocalObjectStorage } from "@/platform/storage/local";
-import path from "node:path";
+import { createDocumentStorage } from "@/platform/storage/local";
 import {
   ensureChartOfAccounts,
   postOrderPaidLedger,
 } from "@/modules/finance/service";
+import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
 
 export class OrderValidationError extends Error {
   readonly code = "VALIDATION_ERROR";
@@ -88,6 +88,11 @@ export async function createOrderFromCheckout(
     );
   }
   if (checkout.reservedUntil && checkout.reservedUntil < new Date()) {
+    await releaseExpiredCheckoutReservations({
+      userId: actor.userId,
+      force: true,
+      correlationId,
+    });
     throw new OrderValidationError("Checkout reservation has expired");
   }
 
@@ -586,10 +591,8 @@ async function markPaymentSucceeded(
         "Development invoice document. Not a legally reviewed tax invoice. Seller-of-record and GST treatment remain open (A-21, A-24).",
     };
 
-    const storageRoot =
-      process.env.DOCUMENT_STORAGE_PATH ??
-      path.join(process.cwd(), "uploads", "invoices");
-    const storage = new LocalObjectStorage(storageRoot);
+    // Vercel functions are read-only except /tmp — use shared storage root.
+    const storage = createDocumentStorage();
     const bytes = Buffer.from(JSON.stringify(document, null, 2), "utf8");
     const stored = await storage.put({
       namespace: "invoices",

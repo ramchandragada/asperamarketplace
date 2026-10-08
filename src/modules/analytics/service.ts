@@ -6,10 +6,11 @@ import {
   requireSellerCapability,
   type Actor,
 } from "@/modules/identity/policy";
-import type {
-  CreateExperimentInput,
-  TrackEventInput,
-  UpdateExperimentInput,
+import {
+  CLIENT_TRACKABLE_EVENTS,
+  type CreateExperimentInput,
+  type TrackEventInput,
+  type UpdateExperimentInput,
 } from "@/modules/analytics/schema";
 
 export class AnalyticsValidationError extends Error {
@@ -24,14 +25,22 @@ export async function trackAnalyticsEvent(
   actor: Actor | null,
   input: TrackEventInput,
 ) {
+  if (
+    !CLIENT_TRACKABLE_EVENTS.includes(
+      input.eventName as (typeof CLIENT_TRACKABLE_EVENTS)[number],
+    )
+  ) {
+    throw new AnalyticsValidationError("That analytics event is not accepted");
+  }
   return prisma.analyticsEvent.create({
     data: {
       eventName: input.eventName,
       actorId: actor?.userId,
       sessionId: actor?.sessionId,
       productId: input.productId,
-      orderId: input.orderId,
-      sellerId: input.sellerId,
+      // Client payloads must not attach arbitrary orders or sellers.
+      orderId: undefined,
+      sellerId: undefined,
       searchQuery: input.searchQuery,
       properties: (input.properties ?? undefined) as
         | Prisma.InputJsonValue

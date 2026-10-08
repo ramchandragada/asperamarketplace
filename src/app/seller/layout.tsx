@@ -3,7 +3,10 @@ import { SellerNav } from "@/components/seller-nav";
 import { PageShell } from "@/components/ui/page-shell";
 import { getOptionalActor } from "@/modules/identity/service";
 import { resolveSellerForActor } from "@/modules/seller/access";
-import { actorHasSellerCapability } from "@/modules/identity/policy";
+import {
+  actorHasSellerCapability,
+  actorIsAdmin,
+} from "@/modules/identity/policy";
 
 export default async function SellerLayout({
   children,
@@ -46,8 +49,13 @@ export default async function SellerLayout({
   return (
     <PageShell>
       <div className="grid gap-6 md:grid-cols-[15rem_minmax(0,1fr)]">
-        <aside className="md:sticky md:top-24 md:self-start">
-          <SellerNav sellerName={sellerName} capabilities={capabilities} />
+        <aside className="md:sticky md:top-6 md:self-start">
+          <SellerNav
+            sellerName={sellerName}
+            displayName={actor.displayName}
+            showAdmin={actorIsAdmin(actor)}
+            capabilities={capabilities}
+          />
         </aside>
         <div className="min-w-0">{children}</div>
       </div>

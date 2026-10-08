@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 
 type AuthFormProps = {
   mode: "login" | "register";
+  nextPath?: string | null;
 };
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, nextPath }: AuthFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -17,13 +18,14 @@ export function AuthForm({ mode }: AuthFormProps) {
     setPending(true);
     setError(null);
     const form = new FormData(event.currentTarget);
+    const intent = String(form.get("intent") ?? "customer");
     const payload =
       mode === "register"
         ? {
             email: String(form.get("email") ?? ""),
             password: String(form.get("password") ?? ""),
             displayName: String(form.get("displayName") ?? ""),
-            intent: String(form.get("intent") ?? "seller"),
+            intent,
           }
         : {
             email: String(form.get("email") ?? ""),
@@ -44,7 +46,11 @@ export function AuthForm({ mode }: AuthFormProps) {
       setError(body.message ?? body.error ?? "Request failed");
       return;
     }
-    router.push(mode === "register" ? "/seller/onboarding" : "/account");
+    const destination =
+      mode === "register" && intent === "seller"
+        ? "/seller/onboarding"
+        : (nextPath ?? "/account");
+    router.push(destination);
     router.refresh();
   }
 
@@ -86,7 +92,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           Account intent
           <select
             name="intent"
-            defaultValue="seller"
+            defaultValue="customer"
             className="rounded-lg border border-border bg-surface px-3 py-2"
           >
             <option value="seller">Seller</option>

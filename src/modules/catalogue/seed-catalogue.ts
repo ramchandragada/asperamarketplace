@@ -5,8 +5,27 @@ import {
   imagesForProduct,
   SEED_BRANDS,
   SEED_CATEGORIES,
+  SEED_PRODUCT_BASE,
   SEED_PRODUCTS,
 } from "./seed-catalogue-data";
+
+/** Multi-seller siblings should share the primary listing's photos. */
+function imageSourceFor(
+  item: (typeof SEED_PRODUCTS)[number],
+  fallbackIndex: number,
+) {
+  if (!item.sharedListingKey) {
+    return { slug: item.slug, index: fallbackIndex };
+  }
+  const primaryIndex = SEED_PRODUCT_BASE.findIndex(
+    (entry) => entry.sharedListingKey === item.sharedListingKey,
+  );
+  const primary = primaryIndex >= 0 ? SEED_PRODUCT_BASE[primaryIndex] : undefined;
+  return {
+    slug: primary?.slug ?? item.slug,
+    index: primaryIndex >= 0 ? primaryIndex : fallbackIndex,
+  };
+}
 
 export type SeedSellerMap = Record<string, { id: string }>;
 
@@ -142,9 +161,10 @@ export async function seedMarketplaceCatalogue(
     const preferred = input.sellers[item.sellerKey];
     const seller =
       preferred ?? sellerPool[index % Math.max(sellerPool.length, 1)]!;
-    // Rotate some listings across extra sellers for storefront diversity
+    // Rotate some listings across extra sellers for storefront diversity.
+    // Keep the preferred seller when the row is part of a multi-seller group.
     const diversified =
-      sellerPool.length > 4 && index % 3 === 0
+      !item.sharedListingKey && sellerPool.length > 4 && index % 3 === 0
         ? sellerPool[index % sellerPool.length]!
         : seller;
     const categoryId = categoryIds[item.categorySlug];
@@ -188,6 +208,7 @@ export async function seedMarketplaceCatalogue(
             status,
             countryOfOrigin: "India",
             hsnCode: item.hsnCode,
+            sharedListingKey: item.sharedListingKey,
             searchDocument,
             attributes,
             submittedAt: new Date(),
@@ -195,9 +216,7 @@ export async function seedMarketplaceCatalogue(
             reviewedByUserId: status === "approved" ? input.adminUserId : null,
             publishedAt: status === "approved" ? new Date() : null,
             statusReason:
-              status === "approved"
-                ? "Seeded approved listing"
-                : `Seed ${status} listing`,
+              status === "submitted" ? "Awaiting catalogue review" : null,
           },
         });
 
@@ -256,11 +275,12 @@ export async function seedMarketplaceCatalogue(
           }
         }
 
+        const imageSource = imageSourceFor(item, index);
         for (const image of imagesForProduct(
           item.categorySlug,
           item.title,
-          index,
-          item.slug,
+          imageSource.index,
+          imageSource.slug,
         )) {
           await tx.productImage.create({
             data: {
@@ -286,6 +306,7 @@ export async function seedMarketplaceCatalogue(
           sellerId: activeSeller.id,
           searchDocument,
           hsnCode: item.hsnCode,
+          sharedListingKey: item.sharedListingKey ?? null,
           attributes,
           status,
           publishedAt:
@@ -372,11 +393,12 @@ export async function seedMarketplaceCatalogue(
 
       // Refresh images so category pools / slug overrides stay aligned with titles
       await prisma.productImage.deleteMany({ where: { productId: existing.id } });
+      const imageSource = imageSourceFor(item, index);
       for (const image of imagesForProduct(
         item.categorySlug,
         item.title,
-        index,
-        item.slug,
+        imageSource.index,
+        imageSource.slug,
       )) {
         await prisma.productImage.create({
           data: {

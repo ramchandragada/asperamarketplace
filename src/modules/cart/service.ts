@@ -13,12 +13,16 @@ import type {
   ConfirmCheckoutInput,
   CreateAddressInput,
   PreviewCheckoutInput,
+  UpdateAddressInput,
   UpdateCartItemInput,
 } from "@/modules/cart/schema";
 import {
   beginIdempotentCommand,
   completeIdempotentCommand,
 } from "@/platform/idempotency/store";
+import { clampMergedQuantity } from "@/modules/cart/merge-qty";
+import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
+import { NotFoundError } from "@/platform/http/errors";
 
 const RESERVATION_MINUTES = 15;
 
@@ -380,6 +384,15 @@ export async function mergeGuestCartIntoUser(
 
   await prisma.$transaction(async (tx) => {
     for (const line of guestCart.items) {
+      const variant = await tx.productVariant.findUnique({
+        where: { id: line.variantId },
+        include: { inventory: true },
+      });
+      if (!variant?.isActive) continue;
+      const available = availableQuantity(
+        variant.inventory?.onHand ?? 0,
+        variant.inventory?.reserved ?? 0,
+      );
       const existing = await tx.cartItem.findUnique({
         where: {
           cartId_variantId: {
@@ -388,17 +401,28 @@ export async function mergeGuestCartIntoUser(
           },
         },
       });
+      const quantity = clampMergedQuantity(
+        existing?.quantity ?? 0,
+        line.quantity,
+        available,
+      );
+      if (quantity < 1) {
+        if (existing) {
+          await tx.cartItem.delete({ where: { id: existing.id } });
+        }
+        continue;
+      }
       if (existing) {
         await tx.cartItem.update({
           where: { id: existing.id },
-          data: { quantity: existing.quantity + line.quantity },
+          data: { quantity },
         });
       } else {
         await tx.cartItem.create({
           data: {
             cartId: userCart.id,
             variantId: line.variantId,
-            quantity: line.quantity,
+            quantity,
           },
         });
       }
@@ -430,6 +454,89 @@ export async function listAddresses(actor: Actor) {
   return prisma.customerAddress.findMany({
     where: { userId: actor.userId },
     orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+  });
+}
+
+export async function deleteAddress(actor: Actor, addressId: string) {
+  const address = await prisma.customerAddress.findFirst({
+    where: { id: addressId, userId: actor.userId },
+  });
+  if (!address) {
+    throw new NotFoundError("Address not found");
+  }
+  const inUse = await prisma.checkoutSession.count({
+    where: {
+      addressId,
+      status: { in: ["draft", "reserved"] },
+    },
+  });
+  if (inUse > 0) {
+    throw new CartValidationError(
+      "Address is used by an active checkout — finish or cancel that checkout first",
+    );
+  }
+  await prisma.customerAddress.delete({ where: { id: addressId } });
+  return { deleted: true as const };
+}
+
+export async function updateAddress(
+  actor: Actor,
+  addressId: string,
+  input: UpdateAddressInput,
+  correlationId: string,
+) {
+  const existing = await prisma.customerAddress.findFirst({
+    where: { id: addressId, userId: actor.userId },
+  });
+  if (!existing) {
+    throw new NotFoundError("Address not found");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    if (input.isDefault) {
+      await tx.customerAddress.updateMany({
+        where: { userId: actor.userId, isDefault: true, NOT: { id: addressId } },
+        data: { isDefault: false },
+      });
+    }
+    const updated = await tx.customerAddress.update({
+      where: { id: addressId },
+      data: {
+        label: input.label,
+        fullName: input.fullName,
+        phone: input.phone,
+        line1: input.line1,
+        line2: input.line2 ?? null,
+        city: input.city,
+        state: input.state,
+        postalCode: input.postalCode,
+        country: input.country,
+        isDefault: input.isDefault ?? existing.isDefault,
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "address.updated",
+        targetType: "customer_address",
+        targetId: updated.id,
+        beforeState: {
+          city: existing.city,
+          state: existing.state,
+          postalCode: existing.postalCode,
+          phone: existing.phone,
+        },
+        afterState: {
+          city: updated.city,
+          state: updated.state,
+          postalCode: updated.postalCode,
+          phone: updated.phone,
+        },
+        reason: "Customer updated delivery address",
+        correlationId,
+      },
+    });
+    return updated;
   });
 }
 
@@ -638,6 +745,12 @@ export async function confirmCheckout(
   });
   assertClientTotal(snapshot, input.clientTotalPaise);
 
+  await releaseExpiredCheckoutReservations({
+    userId: actor.userId,
+    force: true,
+    correlationId,
+  });
+
   const reservedUntil = new Date(
     Date.now() + RESERVATION_MINUTES * 60 * 1000,
   );
@@ -775,8 +888,13 @@ export async function confirmCheckout(
 }
 
 export async function getLatestReservedCheckout(actor: Actor) {
+  const now = new Date();
   return prisma.checkoutSession.findFirst({
-    where: { userId: actor.userId, status: "reserved" },
+    where: {
+      userId: actor.userId,
+      status: "reserved",
+      OR: [{ reservedUntil: null }, { reservedUntil: { gt: now } }],
+    },
     orderBy: { createdAt: "desc" },
     include: { address: true },
   });

@@ -12,7 +12,11 @@ import type {
   SubmitSellerInput,
 } from "@/modules/seller/schema";
 import { assertSellerTransition } from "@/modules/seller/states";
-import { createDocumentStorage } from "@/platform/storage/local";
+import { NotFoundError } from "@/platform/http/errors";
+import {
+  createDocumentStorage,
+  StorageValidationError,
+} from "@/platform/storage/local";
 
 function assertSellerOwner(actor: Actor, ownerUserId: string) {
   if (actor.userId !== ownerUserId) {
@@ -228,11 +232,43 @@ export async function listSellersForAdmin(actor: Actor) {
           id: true,
           documentType: true,
           fileName: true,
+          contentType: true,
+          storageKey: true,
           createdAt: true,
         },
       },
     },
   });
+}
+
+export async function getSellerDocumentForAdmin(
+  actor: Actor,
+  sellerId: string,
+  documentId: string,
+) {
+  requireAdmin(actor);
+  const document = await prisma.kycDocument.findFirst({
+    where: { id: documentId, sellerId },
+    select: {
+      id: true,
+      fileName: true,
+      contentType: true,
+      storageKey: true,
+      byteSize: true,
+    },
+  });
+  if (!document) {
+    throw new NotFoundError("Document not found for this seller");
+  }
+  const storage = createDocumentStorage();
+  try {
+    const bytes = await storage.get(document.storageKey);
+    return { document, bytes };
+  } catch (error) {
+    if (error instanceof StorageValidationError) throw error;
+    // Local disk does not persist on Vercel — missing bytes must be 404, not 500.
+    throw new NotFoundError("Document file not available");
+  }
 }
 
 export async function reviewSeller(
@@ -246,6 +282,149 @@ export async function reviewSeller(
   });
   if (seller.version !== input.expectedVersion) {
     throw new ConflictError("Seller was updated by another operator. Reload and retry.");
+  }
+
+  if (input.decision === "request_info") {
+    if (seller.status !== "submitted" && seller.status !== "under_review") {
+      throw new ConflictError("Seller is not waiting for review");
+    }
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.seller.update({
+        where: { id: seller.id, version: seller.version },
+        data: {
+          statusReason: input.reason,
+          reviewedAt: new Date(),
+          reviewedByUserId: actor.userId,
+          version: { increment: 1 },
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorId: actor.userId,
+          action: "seller.request_info",
+          targetType: "seller",
+          targetId: seller.id,
+          beforeState: {
+            status: seller.status,
+            statusReason: seller.statusReason,
+            version: seller.version,
+          },
+          afterState: {
+            status: updated.status,
+            statusReason: updated.statusReason,
+            version: updated.version,
+            reason: input.reason,
+          },
+          reason: input.reason,
+          correlationId,
+        },
+      });
+      return updated;
+    });
+  }
+
+  if (input.decision === "suspend") {
+    if (seller.status !== "approved") {
+      throw new ConflictError("Only approved sellers can be suspended");
+    }
+    assertSellerTransition("approved", "suspended");
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.seller.update({
+        where: { id: seller.id, version: seller.version },
+        data: {
+          status: "suspended",
+          statusReason: input.reason,
+          reviewedAt: new Date(),
+          reviewedByUserId: actor.userId,
+          version: { increment: 1 },
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorId: actor.userId,
+          action: "seller.suspended",
+          targetType: "seller",
+          targetId: seller.id,
+          beforeState: { status: seller.status, version: seller.version },
+          afterState: {
+            status: updated.status,
+            version: updated.version,
+            reason: input.reason,
+          },
+          reason: input.reason,
+          correlationId,
+        },
+      });
+      await tx.outboxEvent.create({
+        data: {
+          eventType: "SellerSuspended",
+          aggregateType: "seller",
+          aggregateId: seller.id,
+          payload: {
+            status: updated.status,
+            reason: input.reason,
+            reviewedByUserId: actor.userId,
+          },
+        },
+      });
+      return updated;
+    });
+  }
+
+  if (input.decision === "reactivate") {
+    if (seller.status !== "suspended") {
+      throw new ConflictError("Only suspended sellers can be reactivated");
+    }
+    assertSellerTransition("suspended", "under_review");
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.seller.update({
+        where: { id: seller.id, version: seller.version },
+        data: {
+          status: "under_review",
+          statusReason: input.reason,
+          reviewedAt: new Date(),
+          reviewedByUserId: actor.userId,
+          version: { increment: 1 },
+        },
+      });
+      await tx.sellerKycCase.create({
+        data: {
+          sellerId: seller.id,
+          stage: KycStage.manual_review,
+          status: KycCaseStatus.open,
+          notes: input.reason,
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorId: actor.userId,
+          action: "seller.reactivated",
+          targetType: "seller",
+          targetId: seller.id,
+          beforeState: { status: seller.status, version: seller.version },
+          afterState: {
+            status: updated.status,
+            version: updated.version,
+            reason: input.reason,
+          },
+          reason: input.reason,
+          correlationId,
+        },
+      });
+      await tx.outboxEvent.create({
+        data: {
+          eventType: "SellerReactivated",
+          aggregateType: "seller",
+          aggregateId: seller.id,
+          payload: {
+            status: updated.status,
+            reason: input.reason,
+            reviewedByUserId: actor.userId,
+          },
+        },
+      });
+      return updated;
+    });
   }
 
   const nextStatus = input.decision === "approve" ? "approved" : "rejected";

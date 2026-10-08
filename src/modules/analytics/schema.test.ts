@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createExperimentSchema, trackEventSchema } from "./schema";
+import {
+  CLIENT_TRACKABLE_EVENTS,
+  createExperimentSchema,
+  trackEventSchema,
+} from "./schema";
 
 describe("analytics schemas", () => {
   it("tracks search events", () => {
@@ -8,6 +12,11 @@ describe("analytics schemas", () => {
       searchQuery: "tea towel",
     });
     expect(parsed.searchQuery).toBe("tea towel");
+  });
+
+  it("keeps payment events off the public client list", () => {
+    expect(CLIENT_TRACKABLE_EVENTS).not.toContain("order_paid");
+    expect(CLIENT_TRACKABLE_EVENTS).toContain("add_to_cart");
   });
 
   it("requires experiment weights to be present", () => {

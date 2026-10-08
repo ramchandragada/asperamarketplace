@@ -51,12 +51,13 @@ export default async function SellerCompliancePage() {
         <p className="text-sm">
           Active tax profile:{" "}
           {taxProfile
-            ? `${taxProfile.name} (${taxProfile.key}) — configurable placeholder`
+            ? `${taxProfile.name} (${taxProfile.key})`
             : "None configured"}
         </p>
         <p className="text-xs text-muted">
-          Platform compliance evidence is tracked in COMPLIANCE_REGISTER.md for
-          operators—not displayed as a customer-facing “legally approved” badge.
+          Not a legal GST/TCS determination. Platform compliance evidence is
+          tracked in COMPLIANCE_REGISTER.md for operators—not displayed as a
+          customer-facing “legally approved” badge.
         </p>
       </Card>
       <Link href="/seller/onboarding" className="text-sm underline">

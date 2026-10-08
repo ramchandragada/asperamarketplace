@@ -119,6 +119,7 @@ export default async function ShopPage({
         initialMaxPricePaise={maxPricePaise}
         heading="All products"
         browseBasePath="/shop"
+        enableLoadMore
       />
     </PageShell>
   );

@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { dbUuid } from "@/platform/validation/id";
 
 export const trackEventSchema = z.object({
   eventName: z.string().trim().min(2).max(80),
-  productId: z.uuid().optional(),
-  orderId: z.uuid().optional(),
-  sellerId: z.uuid().optional(),
+  productId: dbUuid.optional(),
+  orderId: dbUuid.optional(),
+  sellerId: dbUuid.optional(),
   searchQuery: z.string().trim().min(1).max(200).optional(),
   properties: z.record(z.string(), z.unknown()).optional(),
 });
@@ -25,13 +26,23 @@ export const createExperimentSchema = z.object({
 });
 
 export const updateExperimentSchema = z.object({
-  experimentId: z.uuid(),
+  experimentId: dbUuid,
   status: z.enum(["draft", "running", "paused", "concluded"]),
 });
 
 export type TrackEventInput = z.infer<typeof trackEventSchema>;
 export type CreateExperimentInput = z.infer<typeof createExperimentSchema>;
 export type UpdateExperimentInput = z.infer<typeof updateExperimentSchema>;
+
+/** Events a browser may record. `order_paid` stays server-side only. */
+export const CLIENT_TRACKABLE_EVENTS = [
+  "page_view",
+  "product_view",
+  "search",
+  "add_to_cart",
+  "checkout_start",
+  "seller_dashboard_view",
+] as const;
 
 export const EVENT_TAXONOMY = [
   { name: "page_view", description: "Any authenticated or public page view" },

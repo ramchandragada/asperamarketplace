@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   actorHasSellerCapability,
+  actorIsAdmin,
+  requireAdmin,
   requireSellerCapability,
   AuthorizationError,
   type Actor,
@@ -17,6 +19,40 @@ function makeActor(
     roles,
   };
 }
+
+describe("admin role checks", () => {
+  it("treats admin and super_admin as administrators", () => {
+    expect(actorIsAdmin(makeActor([{ key: "admin", sellerId: null }]))).toBe(
+      true,
+    );
+    expect(
+      actorIsAdmin(makeActor([{ key: "super_admin", sellerId: null }])),
+    ).toBe(true);
+    expect(() =>
+      requireAdmin(makeActor([{ key: "admin", sellerId: null }])),
+    ).not.toThrow();
+  });
+
+  it("rejects customers and seller staff as administrators", () => {
+    expect(
+      actorIsAdmin(makeActor([{ key: "customer", sellerId: null }])),
+    ).toBe(false);
+    expect(
+      actorIsAdmin(
+        makeActor([{ key: "seller_owner", sellerId: "seller-1" }]),
+      ),
+    ).toBe(false);
+    expect(() =>
+      requireAdmin(makeActor([{ key: "customer", sellerId: null }])),
+    ).toThrow(AuthorizationError);
+  });
+
+  it("does not treat auditor as administrator", () => {
+    const auditor = makeActor([{ key: "auditor", sellerId: null }]);
+    expect(actorIsAdmin(auditor)).toBe(false);
+    expect(() => requireAdmin(auditor)).toThrow(AuthorizationError);
+  });
+});
 
 describe("seller RBAC capabilities", () => {
   const sellerId = "seller-1";

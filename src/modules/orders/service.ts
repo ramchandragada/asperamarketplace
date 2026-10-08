@@ -21,8 +21,7 @@ import type {
   MockCompletePaymentInput,
   StartPaymentInput,
 } from "@/modules/orders/schema";
-import { LocalObjectStorage } from "@/platform/storage/local";
-import path from "node:path";
+import { createDocumentStorage } from "@/platform/storage/local";
 import {
   ensureChartOfAccounts,
   postOrderPaidLedger,
@@ -592,10 +591,8 @@ async function markPaymentSucceeded(
         "Development invoice document. Not a legally reviewed tax invoice. Seller-of-record and GST treatment remain open (A-21, A-24).",
     };
 
-    const storageRoot =
-      process.env.DOCUMENT_STORAGE_PATH ??
-      path.join(process.cwd(), "uploads", "invoices");
-    const storage = new LocalObjectStorage(storageRoot);
+    // Vercel functions are read-only except /tmp — use shared storage root.
+    const storage = createDocumentStorage();
     const bytes = Buffer.from(JSON.stringify(document, null, 2), "utf8");
     const stored = await storage.put({
       namespace: "invoices",

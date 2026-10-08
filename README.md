@@ -31,6 +31,7 @@ App: http://localhost:3000
 
 | Account | Email | Password |
 | --- | --- | --- |
+| Customer (shopper) | `customer@aspera.local` | `AsperaCustomerDevOnly1!` |
 | Admin | `admin@aspera.local` | `AsperaAdminDevOnly1!` |
 | Seller owner (home) | `seller@aspera.local` | `AsperaSellerDevOnly1!` |
 | Seller fashion | `seller.fashion@aspera.local` | `AsperaFashionDevOnly1!` |

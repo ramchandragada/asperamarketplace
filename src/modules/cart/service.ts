@@ -21,6 +21,7 @@ import {
 } from "@/platform/idempotency/store";
 import { clampMergedQuantity } from "@/modules/cart/merge-qty";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
+import { NotFoundError } from "@/platform/http/errors";
 
 const RESERVATION_MINUTES = 15;
 
@@ -455,6 +456,28 @@ export async function listAddresses(actor: Actor) {
   });
 }
 
+export async function deleteAddress(actor: Actor, addressId: string) {
+  const address = await prisma.customerAddress.findFirst({
+    where: { id: addressId, userId: actor.userId },
+  });
+  if (!address) {
+    throw new NotFoundError("Address not found");
+  }
+  const inUse = await prisma.checkoutSession.count({
+    where: {
+      addressId,
+      status: { in: ["draft", "reserved"] },
+    },
+  });
+  if (inUse > 0) {
+    throw new CartValidationError(
+      "Address is used by an active checkout — finish or cancel that checkout first",
+    );
+  }
+  await prisma.customerAddress.delete({ where: { id: addressId } });
+  return { deleted: true as const };
+}
+
 export async function createAddress(
   actor: Actor,
   input: CreateAddressInput,
@@ -803,8 +826,13 @@ export async function confirmCheckout(
 }
 
 export async function getLatestReservedCheckout(actor: Actor) {
+  const now = new Date();
   return prisma.checkoutSession.findFirst({
-    where: { userId: actor.userId, status: "reserved" },
+    where: {
+      userId: actor.userId,
+      status: "reserved",
+      OR: [{ reservedUntil: null }, { reservedUntil: { gt: now } }],
+    },
     orderBy: { createdAt: "desc" },
     include: { address: true },
   });

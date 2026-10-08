@@ -72,9 +72,11 @@ export default async function AccountPage({
           fullName: address.fullName,
           phone: address.phone,
           line1: address.line1,
+          line2: address.line2,
           city: address.city,
           state: address.state,
           postalCode: address.postalCode,
+          isDefault: address.isDefault,
         }))}
         profile={{
           displayName: actor.displayName,

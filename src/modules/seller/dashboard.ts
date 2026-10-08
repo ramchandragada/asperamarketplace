@@ -254,8 +254,8 @@ export async function getSellerActionDashboard(
       id: "drafts",
       priority: "info",
       title: `${drafts.length} catalogue item(s) need attention`,
-      detail: "Draft, submitted, or rejected listings",
-      href: "/seller/catalogue?status=draft",
+      detail: "Draft, submitted, or rejected listings — filter on the catalogue page",
+      href: "/seller/catalogue",
     });
   }
   if (!taxProfile) {

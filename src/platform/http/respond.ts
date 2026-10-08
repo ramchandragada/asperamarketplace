@@ -242,7 +242,7 @@ export function jsonError(
   logger.error("API internal error", {
     requestId,
     name: error instanceof Error ? error.name : "UnknownError",
-    message: error instanceof Error ? error.message : String(error),
+    errorMessage: error instanceof Error ? error.message : String(error),
   });
 
   return NextResponse.json(

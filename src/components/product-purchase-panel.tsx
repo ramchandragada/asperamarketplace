@@ -65,6 +65,21 @@ export function ProductPurchasePanel({
     variants.find((variant) => variant.id === selectedId) ??
     (requiresSize ? undefined : variants[0]);
   const priceVariant = selected ?? variants[0];
+  const minSellingPaise = Math.min(
+    ...variants.map((variant) => variant.sellingPricePaise),
+  );
+  const maxSellingPaise = Math.max(
+    ...variants.map((variant) => variant.sellingPricePaise),
+  );
+  const showFromPrice =
+    requiresSize && !sizeChosen && minSellingPaise !== maxSellingPaise;
+  const displaySellingPaise = showFromPrice
+    ? minSellingPaise
+    : (priceVariant?.sellingPricePaise ?? minSellingPaise);
+  const displayMrpPaise = showFromPrice
+    ? (variants.find((variant) => variant.sellingPricePaise === minSellingPaise)
+        ?.mrpPaise ?? priceVariant?.mrpPaise)
+    : priceVariant?.mrpPaise;
 
   const colorOptions = useMemo(() => {
     const colors = new Set<string>();
@@ -148,15 +163,20 @@ export function ProductPurchasePanel({
     <div className="flex flex-col gap-5">
       <div>
         <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          {showFromPrice ? (
+            <span className="text-sm font-medium text-muted">From</span>
+          ) : null}
           <span className="text-3xl font-bold tracking-tight md:text-4xl">
-            {formatPaise(priceVariant.sellingPricePaise)}
+            {formatPaise(displaySellingPaise)}
           </span>
-          {priceVariant.mrpPaise > priceVariant.sellingPricePaise ? (
+          {displayMrpPaise != null && displayMrpPaise > displaySellingPaise ? (
             <span className="text-base font-normal text-muted line-through">
-              {formatPaise(priceVariant.mrpPaise)}
+              {formatPaise(displayMrpPaise)}
             </span>
           ) : null}
-          {discountPercent(
+          {!showFromPrice &&
+          priceVariant &&
+          discountPercent(
             priceVariant.mrpPaise,
             priceVariant.sellingPricePaise,
           ) ? (
@@ -169,7 +189,12 @@ export function ProductPurchasePanel({
             </span>
           ) : null}
         </p>
-        <p className="mt-1 text-sm text-muted">Inclusive of taxes</p>
+        <p className="mt-1 text-sm text-muted">
+          Inclusive of taxes
+          {showFromPrice
+            ? ` · select a size (up to ${formatPaise(maxSellingPaise)})`
+            : ""}
+        </p>
       </div>
 
       {colorOptions.length > 0 ? (

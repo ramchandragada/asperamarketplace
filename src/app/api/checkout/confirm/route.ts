@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const body = confirmCheckoutSchema.parse(await request.json());
     const result = await confirmCheckout(actor, body, requestId);
     return jsonOk(result, requestId, {
-      message: "Checkout reserved. Payment arrives in a later phase.",
+      message: "Stock reserved. Place the order to continue to payment.",
     });
   } catch (error) {
     return jsonError(requestId, error);

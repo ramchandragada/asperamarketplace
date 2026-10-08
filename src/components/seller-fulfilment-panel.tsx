@@ -10,7 +10,12 @@ type FulfilmentGroup = {
   carrier: string | null;
   trackingNumber: string | null;
   trackingUrl: string | null;
-  order: { id: string; orderNumber: string; status: string };
+  order: {
+    id: string;
+    orderNumber: string;
+    status: string;
+    totalPaise: number;
+  };
   lines: Array<{
     id: string;
     productTitle: string;
@@ -150,8 +155,12 @@ export function SellerFulfilmentPanel({
                     {group.order.orderNumber} · {group.status}
                   </p>
                   <p className="text-sm text-muted">
-                    Order {group.order.status} ·{" "}
+                    Merchandise (your payout base):{" "}
                     {formatPaise(group.lineTotalPaise)}
+                  </p>
+                  <p className="text-sm text-muted">
+                    Customer order total: {formatPaise(group.order.totalPaise)}{" "}
+                    · order {group.order.status}
                   </p>
                 </div>
                 {group.trackingNumber ? (

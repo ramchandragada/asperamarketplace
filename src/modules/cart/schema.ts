@@ -45,8 +45,11 @@ export const confirmCheckoutSchema = z.object({
   expectedCartVersion: z.number().int().positive(),
 });
 
+export const updateAddressSchema = createAddressSchema;
+
 export type AddCartItemInput = z.infer<typeof addCartItemSchema>;
 export type UpdateCartItemInput = z.infer<typeof updateCartItemSchema>;
 export type CreateAddressInput = z.infer<typeof createAddressSchema>;
+export type UpdateAddressInput = z.infer<typeof updateAddressSchema>;
 export type PreviewCheckoutInput = z.infer<typeof previewCheckoutSchema>;
 export type ConfirmCheckoutInput = z.infer<typeof confirmCheckoutSchema>;

@@ -13,6 +13,7 @@ import type {
   ConfirmCheckoutInput,
   CreateAddressInput,
   PreviewCheckoutInput,
+  UpdateAddressInput,
   UpdateCartItemInput,
 } from "@/modules/cart/schema";
 import {
@@ -476,6 +477,67 @@ export async function deleteAddress(actor: Actor, addressId: string) {
   }
   await prisma.customerAddress.delete({ where: { id: addressId } });
   return { deleted: true as const };
+}
+
+export async function updateAddress(
+  actor: Actor,
+  addressId: string,
+  input: UpdateAddressInput,
+  correlationId: string,
+) {
+  const existing = await prisma.customerAddress.findFirst({
+    where: { id: addressId, userId: actor.userId },
+  });
+  if (!existing) {
+    throw new NotFoundError("Address not found");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    if (input.isDefault) {
+      await tx.customerAddress.updateMany({
+        where: { userId: actor.userId, isDefault: true, NOT: { id: addressId } },
+        data: { isDefault: false },
+      });
+    }
+    const updated = await tx.customerAddress.update({
+      where: { id: addressId },
+      data: {
+        label: input.label,
+        fullName: input.fullName,
+        phone: input.phone,
+        line1: input.line1,
+        line2: input.line2 ?? null,
+        city: input.city,
+        state: input.state,
+        postalCode: input.postalCode,
+        country: input.country,
+        isDefault: input.isDefault ?? existing.isDefault,
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "address.updated",
+        targetType: "customer_address",
+        targetId: updated.id,
+        beforeState: {
+          city: existing.city,
+          state: existing.state,
+          postalCode: existing.postalCode,
+          phone: existing.phone,
+        },
+        afterState: {
+          city: updated.city,
+          state: updated.state,
+          postalCode: updated.postalCode,
+          phone: updated.phone,
+        },
+        reason: "Customer updated delivery address",
+        correlationId,
+      },
+    });
+    return updated;
+  });
 }
 
 export async function createAddress(

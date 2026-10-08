@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { EVENT_TAXONOMY } from "@/modules/analytics/schema";
 import {
@@ -74,6 +75,11 @@ export default async function AdminAnalyticsPage() {
 
       <section>
         <h2 className="text-lg font-semibold">Orders by status</h2>
+        <p className="mt-1 text-sm text-muted">
+          <Link href="/admin/orders" className="underline">
+            Open order list
+          </Link>
+        </p>
         {dashboard.ordersByStatus.length === 0 ? (
           <p className="mt-2 text-sm text-muted">
             No orders in this window yet.

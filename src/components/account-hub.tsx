@@ -18,9 +18,11 @@ type AddressRow = {
   fullName: string;
   phone: string;
   line1: string;
+  line2?: string | null;
   city: string;
   state: string;
   postalCode: string;
+  isDefault?: boolean;
 };
 
 type Tab = "orders" | "addresses" | "profile";
@@ -44,6 +46,7 @@ export function AccountHub({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   function switchTab(next: Tab) {
     setTab(next);
@@ -128,11 +131,54 @@ export function AccountHub({
       return;
     }
     setAddresses((current) => current.filter((row) => row.id !== addressId));
+    if (editingId === addressId) setEditingId(null);
     setMessage("Address deleted");
     router.refresh();
   }
 
-  const defaultPhone = addresses[0]?.phone;
+  async function saveEditedAddress(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editingId) return;
+    setPending(true);
+    setError(null);
+    setMessage(null);
+    const form = new FormData(event.currentTarget);
+    const payload = {
+      label: String(form.get("label") ?? "Home"),
+      fullName: String(form.get("fullName") ?? ""),
+      phone: String(form.get("phone") ?? ""),
+      line1: String(form.get("line1") ?? ""),
+      line2: String(form.get("line2") ?? "") || undefined,
+      city: String(form.get("city") ?? ""),
+      state: String(form.get("state") ?? ""),
+      postalCode: String(form.get("postalCode") ?? ""),
+      isDefault: form.get("isDefault") === "on",
+    };
+    const response = await fetch(`/api/checkout/addresses/${editingId}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const body = (await response.json()) as {
+      data?: { address: AddressRow };
+      message?: string;
+    };
+    setPending(false);
+    if (!response.ok || !body.data) {
+      setError(body.message ?? "Could not update address");
+      return;
+    }
+    setAddresses((current) =>
+      current.map((row) => (row.id === editingId ? body.data!.address : row)),
+    );
+    setEditingId(null);
+    setMessage("Address updated");
+    router.refresh();
+  }
+
+  const defaultPhone =
+    addresses.find((row) => row.isDefault)?.phone ?? addresses[0]?.phone;
+  const editing = addresses.find((row) => row.id === editingId) ?? null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -222,18 +268,136 @@ export function AccountHub({
                     {address.line1}, {address.city}, {address.state}{" "}
                     {address.postalCode}
                   </p>
-                  <button
-                    type="button"
-                    disabled={pending}
-                    className="mt-3 text-sm text-red-700 underline disabled:opacity-60"
-                    onClick={() => void removeAddress(address.id)}
-                  >
-                    Delete
-                  </button>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      disabled={pending}
+                      className="text-sm text-accent underline disabled:opacity-60"
+                      onClick={() => setEditingId(address.id)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      disabled={pending}
+                      className="text-sm text-red-700 underline disabled:opacity-60"
+                      onClick={() => void removeAddress(address.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
+          {editing ? (
+            <form
+              key={editing.id}
+              onSubmit={saveEditedAddress}
+              className="grid gap-3 rounded-[var(--radius)] border border-accent/40 bg-surface p-4 sm:grid-cols-2"
+            >
+              <h3 className="text-sm font-semibold sm:col-span-2">
+                Edit address
+              </h3>
+              <label className="text-sm">
+                Full name
+                <input
+                  name="fullName"
+                  required
+                  defaultValue={editing.fullName}
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+                />
+              </label>
+              <label className="text-sm">
+                Phone
+                <input
+                  name="phone"
+                  required
+                  pattern="[6-9]\d{9}"
+                  defaultValue={editing.phone}
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+                />
+              </label>
+              <label className="text-sm sm:col-span-2">
+                Line 1
+                <input
+                  name="line1"
+                  required
+                  defaultValue={editing.line1}
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+                />
+              </label>
+              <label className="text-sm sm:col-span-2">
+                Line 2
+                <input
+                  name="line2"
+                  defaultValue={editing.line2 ?? ""}
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+                />
+              </label>
+              <label className="text-sm">
+                City
+                <input
+                  name="city"
+                  required
+                  defaultValue={editing.city}
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+                />
+              </label>
+              <label className="text-sm">
+                State
+                <input
+                  name="state"
+                  required
+                  defaultValue={editing.state}
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+                />
+              </label>
+              <label className="text-sm">
+                Postal code
+                <input
+                  name="postalCode"
+                  required
+                  pattern="\d{6}"
+                  defaultValue={editing.postalCode}
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+                />
+              </label>
+              <label className="text-sm">
+                Label
+                <input
+                  name="label"
+                  defaultValue={editing.label}
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                <input
+                  type="checkbox"
+                  name="isDefault"
+                  defaultChecked={Boolean(editing.isDefault)}
+                />
+                Default address
+              </label>
+              <div className="flex flex-wrap gap-2 sm:col-span-2">
+                <button
+                  type="submit"
+                  disabled={pending}
+                  className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground disabled:opacity-60"
+                >
+                  Save changes
+                </button>
+                <button
+                  type="button"
+                  disabled={pending}
+                  className="rounded-lg border border-border px-4 py-2 text-sm disabled:opacity-60"
+                  onClick={() => setEditingId(null)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : null}
           <form
             onSubmit={saveAddress}
             className="grid gap-3 rounded-[var(--radius)] border border-border bg-surface p-4 sm:grid-cols-2"
@@ -343,7 +507,9 @@ export function AccountHub({
               <dt className="text-muted">Phone</dt>
               <dd className="font-medium">
                 {defaultPhone ?? (
-                  <span className="text-muted">Add via Addresses</span>
+                  <span className="text-muted">
+                    Managed on Addresses (no separate account phone field)
+                  </span>
                 )}
               </dd>
             </div>

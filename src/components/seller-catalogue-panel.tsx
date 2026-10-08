@@ -233,6 +233,148 @@ export function SellerCataloguePanel({
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="text-lg font-semibold">Your listings</h2>
+          <form
+            className="flex flex-wrap gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const form = new FormData(event.currentTarget);
+              void refresh({
+                page: 1,
+                q: String(form.get("q") ?? ""),
+                status: String(form.get("status") ?? ""),
+              });
+            }}
+          >
+            <input
+              name="q"
+              defaultValue={query}
+              placeholder="Search title or SKU"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+            <select
+              name="status"
+              defaultValue={status}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            >
+              {statusOptions.map((value) => (
+                <option key={value || "all"} value={value}>
+                  {value || "All statuses"}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="rounded-lg border border-border px-3 py-2 text-sm"
+            >
+              Filter
+            </button>
+          </form>
+        </div>
+        <p className="text-sm text-muted">
+          {total} listing{total === 1 ? "" : "s"} · page {page} of {pageCount}
+        </p>
+        {products.map((product) => {
+          const variant = product.variants[0];
+          const available = Math.max(
+            (variant?.inventory?.onHand ?? 0) -
+              (variant?.inventory?.reserved ?? 0),
+            0,
+          );
+          const off =
+            variant != null
+              ? discountPercent(variant.mrpPaise, variant.sellingPricePaise)
+              : null;
+          return (
+            <article
+              key={product.id}
+              className="rounded-card border border-border bg-surface p-4"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold">
+                    <Link
+                      href={`/seller/catalogue/${product.id}`}
+                      className="text-accent hover:underline"
+                    >
+                      {product.title}
+                    </Link>
+                  </h3>
+                  <p className="text-sm text-muted">
+                    {product.status} · {product.category.name} · {product.slug}
+                  </p>
+                  {product.status === "rejected" && product.statusReason ? (
+                    <p className="mt-1 text-sm text-red-700">
+                      Rejected: {product.statusReason}
+                    </p>
+                  ) : null}
+                  {variant ? (
+                    <p className="mt-1 text-sm">
+                      {variant.sku} · {formatPaise(variant.sellingPricePaise)}
+                      {variant.mrpPaise > variant.sellingPricePaise ? (
+                        <span className="ml-2 text-muted line-through">
+                          {formatPaise(variant.mrpPaise)}
+                        </span>
+                      ) : null}
+                      {off ? (
+                        <span className="ml-2 text-accent">{off}% off</span>
+                      ) : null}
+                      {" · "}
+                      {available} available
+                    </p>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/seller/catalogue/${product.id}`}
+                    className="rounded-lg border border-border px-3 py-2 text-sm"
+                  >
+                    Edit
+                  </Link>
+                  {product.status === "draft" || product.status === "rejected" ? (
+                    <button
+                      type="button"
+                      className="rounded-lg border border-border px-3 py-2 text-sm"
+                      onClick={() => void submitProduct(product.id)}
+                    >
+                      Submit for review
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </article>
+          );
+        })}
+        {products.length === 0 ? (
+          <p className="text-sm text-muted">No products match this filter.</p>
+        ) : null}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            disabled={page <= 1}
+            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40"
+            onClick={() => void refresh({ page: page - 1 })}
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            disabled={page >= pageCount}
+            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40"
+            onClick={() => void refresh({ page: page + 1 })}
+          >
+            Next
+          </button>
+        </div>
+      </section>
+
+      <details className="rounded-card border border-border bg-surface p-4">
+        <summary className="cursor-pointer text-lg font-semibold">
+          Add product
+        </summary>
+        <div className="mt-4 flex flex-col gap-6">
       <form
         onSubmit={createOffer}
         className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-2"
@@ -304,7 +446,6 @@ export function SellerCataloguePanel({
           Create offer draft
         </button>
       </form>
-
       <form
         onSubmit={createDraft}
         className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-2"
@@ -456,143 +597,9 @@ export function SellerCataloguePanel({
           Create draft
         </button>
       </form>
+        </div>
+      </details>
 
-      <section className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="text-lg font-semibold">Your listings</h2>
-          <form
-            className="flex flex-wrap gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const form = new FormData(event.currentTarget);
-              void refresh({
-                page: 1,
-                q: String(form.get("q") ?? ""),
-                status: String(form.get("status") ?? ""),
-              });
-            }}
-          >
-            <input
-              name="q"
-              defaultValue={query}
-              placeholder="Search title or SKU"
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            />
-            <select
-              name="status"
-              defaultValue={status}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            >
-              {statusOptions.map((value) => (
-                <option key={value || "all"} value={value}>
-                  {value || "All statuses"}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="rounded-lg border border-border px-3 py-2 text-sm"
-            >
-              Filter
-            </button>
-          </form>
-        </div>
-        <p className="text-sm text-muted">
-          {total} listing{total === 1 ? "" : "s"} · page {page} of {pageCount}
-        </p>
-        {products.map((product) => {
-          const variant = product.variants[0];
-          const available = Math.max(
-            (variant?.inventory?.onHand ?? 0) -
-              (variant?.inventory?.reserved ?? 0),
-            0,
-          );
-          const off =
-            variant != null
-              ? discountPercent(variant.mrpPaise, variant.sellingPricePaise)
-              : null;
-          return (
-            <article
-              key={product.id}
-              className="rounded-card border border-border bg-surface p-4"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold">
-                    <Link
-                      href={`/seller/catalogue/${product.id}`}
-                      className="text-accent hover:underline"
-                    >
-                      {product.title}
-                    </Link>
-                  </h3>
-                  <p className="text-sm text-muted">
-                    {product.status} · {product.category.name} · {product.slug}
-                  </p>
-                  {product.status === "rejected" && product.statusReason ? (
-                    <p className="mt-1 text-sm text-red-700">
-                      Rejected: {product.statusReason}
-                    </p>
-                  ) : null}
-                  {variant ? (
-                    <p className="mt-1 text-sm">
-                      {variant.sku} · {formatPaise(variant.sellingPricePaise)}
-                      {variant.mrpPaise > variant.sellingPricePaise ? (
-                        <span className="ml-2 text-muted line-through">
-                          {formatPaise(variant.mrpPaise)}
-                        </span>
-                      ) : null}
-                      {off ? (
-                        <span className="ml-2 text-accent">{off}% off</span>
-                      ) : null}
-                      {" · "}
-                      {available} available
-                    </p>
-                  ) : null}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Link
-                    href={`/seller/catalogue/${product.id}`}
-                    className="rounded-lg border border-border px-3 py-2 text-sm"
-                  >
-                    Edit
-                  </Link>
-                  {product.status === "draft" || product.status === "rejected" ? (
-                    <button
-                      type="button"
-                      className="rounded-lg border border-border px-3 py-2 text-sm"
-                      onClick={() => void submitProduct(product.id)}
-                    >
-                      Submit for review
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            </article>
-          );
-        })}
-        {products.length === 0 ? (
-          <p className="text-sm text-muted">No products match this filter.</p>
-        ) : null}
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={page <= 1}
-            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40"
-            onClick={() => void refresh({ page: page - 1 })}
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            disabled={page >= pageCount}
-            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40"
-            onClick={() => void refresh({ page: page + 1 })}
-          >
-            Next
-          </button>
-        </div>
-      </section>
     </div>
   );
 }

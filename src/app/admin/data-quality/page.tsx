@@ -1,3 +1,4 @@
+import { DataQualityCleanupButton } from "@/components/data-quality-cleanup-button";
 import { getOptionalActor } from "@/modules/identity/service";
 import { buildCatalogueDataQualityReport } from "@/modules/admin/data-quality";
 
@@ -10,12 +11,15 @@ export default async function AdminDataQualityPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-semibold">Catalogue data quality</h1>
-        <p className="mt-2 text-muted">
-          Flags duplicate titles per seller, placeholder images, and demo
-          contact / copy strings.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold">Catalogue data quality</h1>
+          <p className="mt-2 text-muted">
+            Flags duplicate titles per seller, placeholder images, and demo
+            contact / copy strings.
+          </p>
+        </div>
+        <DataQualityCleanupButton />
       </div>
 
       <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

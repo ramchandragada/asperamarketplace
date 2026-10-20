@@ -376,6 +376,11 @@ export async function createSettlementBatch(
     };
   });
 
+  const { computeMarketplaceTcs } = await import("@/modules/tax/gst");
+  const preTcsNet = gross - commission;
+  const tcs = computeMarketplaceTcs(preTcsNet);
+  const netAfterTcs = preTcsNet - tcs;
+
   return prisma.$transaction(async (tx) => {
     const batch = await tx.settlementBatch.create({
       data: {
@@ -386,7 +391,8 @@ export async function createSettlementBatch(
         periodEnd,
         grossPaise: gross,
         commissionPaise: commission,
-        netPaise: gross - commission,
+        tcsPaise: tcs,
+        netPaise: netAfterTcs,
         lines: { create: lineCreates },
       },
       include: { lines: true },
@@ -400,9 +406,10 @@ export async function createSettlementBatch(
         afterState: {
           batchNumber: batch.batchNumber,
           netPaise: batch.netPaise,
+          tcsPaise: batch.tcsPaise,
           lines: batch.lines.length,
         },
-        reason: "Finance created settlement batch",
+        reason: "Finance created settlement batch (GST settlement + TCS withhold)",
         correlationId,
       },
     });
@@ -464,23 +471,47 @@ export async function releaseSettlementBatch(
       include: { lines: true },
     });
 
+    const tcsPaise = batch.tcsPaise ?? 0;
+    const payoutPaise = batch.netPaise;
+    const payableClearPaise = payoutPaise + tcsPaise;
+    const releaseLines =
+      tcsPaise > 0
+        ? [
+            {
+              accountCode: "2000",
+              debitPaise: payableClearPaise,
+              sellerId: batch.sellerId,
+            },
+            {
+              accountCode: "1000",
+              creditPaise: payoutPaise,
+              sellerId: batch.sellerId,
+            },
+            {
+              accountCode: "2300",
+              creditPaise: tcsPaise,
+              sellerId: batch.sellerId,
+            },
+          ]
+        : [
+            {
+              accountCode: "2000",
+              debitPaise: payoutPaise,
+              sellerId: batch.sellerId,
+            },
+            {
+              accountCode: "1000",
+              creditPaise: payoutPaise,
+              sellerId: batch.sellerId,
+            },
+          ];
+
     await postBalancedEntry({
-      memo: `Settlement ${batch.batchNumber} released (mock payout)`,
+      memo: `Settlement ${batch.batchNumber} released (mock payout${tcsPaise > 0 ? " + TCS" : ""})`,
       correlationId,
       sellerId: batch.sellerId,
       sourceEvent: "settlement.released",
-      lines: [
-        {
-          accountCode: "2000",
-          debitPaise: batch.netPaise,
-          sellerId: batch.sellerId,
-        },
-        {
-          accountCode: "1000",
-          creditPaise: batch.netPaise,
-          sellerId: batch.sellerId,
-        },
-      ],
+      lines: releaseLines,
       tx,
     });
 

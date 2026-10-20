@@ -28,7 +28,12 @@ export const LEDGER_ACCOUNTS = [
   },
   {
     code: "2200",
-    name: "Tax collected",
+    name: "Tax collected (GST)",
+    accountType: "liability" as const,
+  },
+  {
+    code: "2300",
+    name: "TCS payable (u/s 206C(1H))",
     accountType: "liability" as const,
   },
 ] as const;

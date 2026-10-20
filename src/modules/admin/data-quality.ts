@@ -153,3 +153,76 @@ export async function buildCatalogueDataQualityReport(actor: Actor) {
 
   return { summary, issues: issues.slice(0, 200) };
 }
+
+/**
+ * Archive duplicate catalogue listings (keep the oldest id per title+seller)
+ * and soft-archive products whose only images are placeholders.
+ */
+export async function cleanupCatalogueDataQuality(
+  actor: Actor,
+  correlationId: string,
+) {
+  requireAdmin(actor);
+
+  const products = await prisma.product.findMany({
+    where: { status: { not: "archived" } },
+    select: {
+      id: true,
+      title: true,
+      sellerId: true,
+      createdAt: true,
+      images: { select: { url: true, altText: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const keep = new Set<string>();
+  const archiveIds = new Set<string>();
+  const seen = new Map<string, string>();
+
+  for (const product of products) {
+    const key = `${product.sellerId}::${product.title.trim().toLowerCase()}`;
+    const existing = seen.get(key);
+    if (existing) {
+      archiveIds.add(product.id);
+    } else {
+      seen.set(key, product.id);
+      keep.add(product.id);
+    }
+  }
+
+  for (const product of products) {
+    if (archiveIds.has(product.id) || product.images.length === 0) continue;
+    const allPlaceholder = product.images.every((image) =>
+      PLACEHOLDER_IMAGE_RE.test(`${image.url} ${image.altText ?? ""}`),
+    );
+    if (allPlaceholder) {
+      archiveIds.add(product.id);
+    }
+  }
+
+  const ids = [...archiveIds];
+  if (ids.length === 0) {
+    return { archivedCount: 0, archivedIds: [] as string[] };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.product.updateMany({
+      where: { id: { in: ids } },
+      data: { status: "archived" },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "catalogue.data_quality_cleanup",
+        targetType: "product",
+        targetId: null,
+        afterState: { archivedCount: ids.length, archivedIds: ids.slice(0, 50) },
+        reason: "Admin catalogue cleanup: duplicates + placeholder-only images",
+        correlationId,
+      },
+    });
+  });
+
+  return { archivedCount: ids.length, archivedIds: ids };
+}

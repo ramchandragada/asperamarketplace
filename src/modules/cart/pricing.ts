@@ -1,3 +1,5 @@
+import { splitGst, type GstSplit } from "@/modules/tax/gst";
+
 export type TaxTrace = {
   policyKey: string;
   policyVersion: number;
@@ -5,6 +7,11 @@ export type TaxTrace = {
   rateBps: number;
   taxablePaise: number;
   taxPaise: number;
+  cgstPaise: number;
+  sgstPaise: number;
+  igstPaise: number;
+  supplyType: "intra_state" | "inter_state" | "mixed";
+  components: GstSplit[];
 };
 
 export type CouponTrace = {
@@ -55,13 +62,13 @@ export type CheckoutSnapshot = {
   calculatedAt: string;
 };
 
-/** Configurable stub — not a legal GST determination (A-24 remains open). */
+/** India GST engine — CGST/SGST vs IGST from seller origin vs ship-to state. */
 export const TAX_POLICY = {
-  key: "india_placeholder_gst_trace",
-  version: 1,
+  key: "india_gst_v2",
+  version: 2,
   rateBps: 1800,
   explanation:
-    "Placeholder 18% applied on taxable merchandise for development trace only. Not a production GST engine.",
+    "India GST at the configured rate: intra-state supplies split CGST+SGST; inter-state supplies use IGST. Confirm HSN rates with a tax professional for production filings.",
 } as const;
 
 export const SHIPPING_POLICY = {
@@ -96,15 +103,31 @@ export function computeTax(
     rateBps: number;
     explanation: string;
   } = TAX_POLICY,
+  opts?: {
+    originState?: string;
+    destinationState?: string;
+  },
 ): TaxTrace {
-  const taxPaise = Math.floor((taxablePaise * policy.rateBps) / 10_000);
+  const originState = opts?.originState ?? opts?.destinationState ?? "Maharashtra";
+  const destinationState = opts?.destinationState ?? originState;
+  const split = splitGst({
+    taxablePaise,
+    rateBps: policy.rateBps,
+    originState,
+    destinationState,
+  });
   return {
     policyKey: policy.key,
     policyVersion: policy.version,
-    explanation: `${policy.explanation} Requires review by a qualified Indian tax professional before production use.`,
+    explanation: policy.explanation,
     rateBps: policy.rateBps,
-    taxablePaise,
-    taxPaise,
+    taxablePaise: split.taxablePaise,
+    taxPaise: split.taxPaise,
+    cgstPaise: split.cgstPaise,
+    sgstPaise: split.sgstPaise,
+    igstPaise: split.igstPaise,
+    supplyType: split.supplyType,
+    components: [split],
   };
 }
 
@@ -171,6 +194,8 @@ export function buildCheckoutSnapshot(input: {
   couponCode?: string;
   destinationState: string;
   totalWeightGrams: number;
+  /** sellerId → registered / origin state for GST place-of-supply */
+  sellerStates?: Record<string, string | null | undefined>;
   taxPolicy?: {
     key: string;
     version: number;
@@ -193,9 +218,8 @@ export function buildCheckoutSnapshot(input: {
     weightGrams: input.totalWeightGrams,
     destinationState: input.destinationState,
   });
-  const tax = computeTax(afterDiscount, input.taxPolicy);
-  const totalPaise = afterDiscount + shipping.shippingPaise + tax.taxPaise;
 
+  const policy = input.taxPolicy ?? TAX_POLICY;
   const groupMap = new Map<
     string,
     { sellerId: string; sellerName: string; lineTotalPaise: number }
@@ -212,11 +236,63 @@ export function buildCheckoutSnapshot(input: {
       });
     }
   }
+  const groups = [...groupMap.values()];
+
+  const components: GstSplit[] = [];
+  let allocated = 0;
+  groups.forEach((group, index) => {
+    const share =
+      subtotalPaise === 0
+        ? 0
+        : index === groups.length - 1
+          ? afterDiscount - allocated
+          : Math.floor(
+              (afterDiscount * group.lineTotalPaise) / subtotalPaise,
+            );
+    allocated += share;
+    const originState =
+      input.sellerStates?.[group.sellerId]?.trim() ||
+      input.destinationState;
+    components.push(
+      splitGst({
+        taxablePaise: share,
+        rateBps: policy.rateBps,
+        originState,
+        destinationState: input.destinationState,
+      }),
+    );
+  });
+
+  const cgstPaise = components.reduce((s, c) => s + c.cgstPaise, 0);
+  const sgstPaise = components.reduce((s, c) => s + c.sgstPaise, 0);
+  const igstPaise = components.reduce((s, c) => s + c.igstPaise, 0);
+  const taxPaise = cgstPaise + sgstPaise + igstPaise;
+  const supplyTypes = new Set(components.map((c) => c.supplyType));
+  const supplyType =
+    supplyTypes.size === 1
+      ? ([...supplyTypes][0] as "intra_state" | "inter_state")
+      : "mixed";
+
+  const tax: TaxTrace = {
+    policyKey: policy.key,
+    policyVersion: policy.version,
+    explanation: policy.explanation,
+    rateBps: policy.rateBps,
+    taxablePaise: afterDiscount,
+    taxPaise,
+    cgstPaise,
+    sgstPaise,
+    igstPaise,
+    supplyType,
+    components,
+  };
+
+  const totalPaise = afterDiscount + shipping.shippingPaise + tax.taxPaise;
 
   return {
     currencyCode: "INR",
     lines,
-    groups: [...groupMap.values()],
+    groups,
     subtotalPaise,
     discountPaise: coupon.discountPaise,
     shippingPaise: shipping.shippingPaise,

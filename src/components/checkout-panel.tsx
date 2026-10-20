@@ -430,9 +430,27 @@ export function CheckoutPanel({
               <dd>{formatPaise(snapshot.shippingPaise)}</dd>
             </div>
             <div>
-              <dt className="text-muted">Tax (placeholder)</dt>
+              <dt className="text-muted">GST</dt>
               <dd>{formatPaise(snapshot.taxPaise)}</dd>
             </div>
+            {snapshot.tax.cgstPaise > 0 ? (
+              <div>
+                <dt className="text-muted">CGST</dt>
+                <dd>{formatPaise(snapshot.tax.cgstPaise)}</dd>
+              </div>
+            ) : null}
+            {snapshot.tax.sgstPaise > 0 ? (
+              <div>
+                <dt className="text-muted">SGST</dt>
+                <dd>{formatPaise(snapshot.tax.sgstPaise)}</dd>
+              </div>
+            ) : null}
+            {snapshot.tax.igstPaise > 0 ? (
+              <div>
+                <dt className="text-muted">IGST</dt>
+                <dd>{formatPaise(snapshot.tax.igstPaise)}</dd>
+              </div>
+            ) : null}
             <div className="sm:col-span-2">
               <dt className="text-muted">Total</dt>
               <dd className="text-lg font-semibold">

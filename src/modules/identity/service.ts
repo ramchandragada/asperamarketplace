@@ -8,6 +8,7 @@ import {
 } from "@/modules/identity/crypto";
 import {
   AuthenticationError,
+  actorIsAdmin,
   type Actor,
 } from "@/modules/identity/policy";
 import { isRoleKey, type RoleKey } from "@/modules/identity/roles";
@@ -21,6 +22,16 @@ import {
   isLoginLocked,
   LOGIN_LOCK_WINDOW_MS,
 } from "@/modules/identity/login-guard";
+import { assertDemoLoginAllowed } from "@/modules/identity/demo-gate";
+import {
+  decryptTotpSecret,
+  encryptTotpSecret,
+  generateTotpSecret,
+  issueTotpChallenge,
+  totpUri,
+  verifyTotpChallenge,
+  verifyTotpCode,
+} from "@/modules/identity/totp";
 
 export const SESSION_COOKIE = "aspera_session";
 const SESSION_DAYS = 14;
@@ -78,6 +89,7 @@ export async function registerUser(
 ) {
   await ensureSystemRoles();
   const email = input.email.trim().toLowerCase();
+  assertDemoLoginAllowed(email);
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     throw new ConflictError("An account with this email already exists");
@@ -154,11 +166,26 @@ export async function updateProfile(
   return updated;
 }
 
+export type LoginResult =
+  | {
+      kind: "session";
+      token: string;
+      sessionId: string;
+      userId: string;
+      expiresAt: Date;
+    }
+  | {
+      kind: "totp_required";
+      challengeToken: string;
+      userId: string;
+    };
+
 export async function loginUser(
   input: LoginInput,
   meta: { ipAddress?: string; userAgent?: string; correlationId: string },
-) {
+): Promise<LoginResult> {
   const email = input.email.trim().toLowerCase();
+  assertDemoLoginAllowed(email);
   const since = new Date(Date.now() - LOGIN_LOCK_WINDOW_MS);
   const recentFailures = await prisma.loginAttempt.count({
     where: { email, success: false, createdAt: { gte: since } },
@@ -178,7 +205,10 @@ export async function loginUser(
     );
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: { roles: { include: { role: true } } },
+  });
   const valid =
     user && user.status === "active"
       ? await verifyPassword(input.password, user.passwordHash)
@@ -198,11 +228,126 @@ export async function loginUser(
     throw new AuthenticationError("Invalid email or password");
   }
 
+  const actorRoles = user.roles.map((row) => ({
+    key: row.role.key,
+    sellerId: row.sellerId,
+  }));
+  const isAdmin = actorRoles.some((role) => role.key === "admin");
+
+  if (isAdmin && user.totpEnabledAt && user.totpSecretEnc) {
+    logger.info("auth.login_totp_required", {
+      requestId: meta.correlationId,
+      userId: user.id,
+    });
+    return {
+      kind: "totp_required",
+      challengeToken: issueTotpChallenge(user.id),
+      userId: user.id,
+    };
+  }
+
   logger.info("auth.login", {
     requestId: meta.correlationId,
     userId: user.id,
   });
+  const session = await createSessionForUser(user.id, meta);
+  return { kind: "session", ...session };
+}
+
+export async function completeTotpLogin(
+  challengeToken: string,
+  code: string,
+  meta: { ipAddress?: string; userAgent?: string; correlationId: string },
+) {
+  const userId = verifyTotpChallenge(challengeToken);
+  if (!userId) {
+    throw new AuthenticationError("Sign-in challenge expired. Try again.");
+  }
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user?.totpSecretEnc || !user.totpEnabledAt) {
+    throw new AuthenticationError("Authenticator is not enabled for this account");
+  }
+  const secret = decryptTotpSecret(user.totpSecretEnc);
+  if (!verifyTotpCode(secret, code)) {
+    await prisma.loginAttempt.create({
+      data: {
+        email: user.email,
+        success: false,
+        ipAddress: meta.ipAddress,
+        userAgent: meta.userAgent,
+        reason: "invalid_totp",
+      },
+    });
+    throw new AuthenticationError("Invalid authenticator code");
+  }
+  await prisma.loginAttempt.create({
+    data: {
+      email: user.email,
+      success: true,
+      ipAddress: meta.ipAddress,
+      userAgent: meta.userAgent,
+      reason: "totp_ok",
+    },
+  });
+  logger.info("auth.login_totp", {
+    requestId: meta.correlationId,
+    userId: user.id,
+  });
   return createSessionForUser(user.id, meta);
+}
+
+export async function beginAdminTotpEnrollment(actor: Actor) {
+  if (!actorIsAdmin(actor)) {
+    throw new AuthenticationError("Administrator role required");
+  }
+  const secret = generateTotpSecret();
+  await prisma.user.update({
+    where: { id: actor.userId },
+    data: {
+      totpSecretEnc: encryptTotpSecret(secret),
+      totpEnabledAt: null,
+    },
+  });
+  return {
+    secret,
+    otpauthUrl: totpUri({ secret, email: actor.email }),
+  };
+}
+
+export async function confirmAdminTotpEnrollment(actor: Actor, code: string) {
+  if (!actorIsAdmin(actor)) {
+    throw new AuthenticationError("Administrator role required");
+  }
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: actor.userId },
+  });
+  if (!user.totpSecretEnc) {
+    throw new AuthenticationError("Start authenticator setup first");
+  }
+  const secret = decryptTotpSecret(user.totpSecretEnc);
+  if (!verifyTotpCode(secret, code)) {
+    throw new AuthenticationError("Invalid authenticator code");
+  }
+  await prisma.user.update({
+    where: { id: actor.userId },
+    data: { totpEnabledAt: new Date() },
+  });
+  return { enabled: true as const };
+}
+
+export function adminTotpRequiredInProduction(actor: Actor): boolean {
+  if (!actorIsAdmin(actor)) return false;
+  if (process.env.VERCEL_ENV !== "production") return false;
+  if (process.env.REQUIRE_ADMIN_TOTP === "false") return false;
+  return true;
+}
+
+export async function adminHasTotpEnabled(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { totpEnabledAt: true, totpSecretEnc: true },
+  });
+  return Boolean(user?.totpEnabledAt && user.totpSecretEnc);
 }
 
 async function createSessionForUser(

@@ -6,6 +6,7 @@ import {
   computeShipping,
   computeTax,
   CouponRejectedError,
+  TAX_POLICY,
 } from "@/modules/cart/pricing";
 
 describe("cart pricing helpers", () => {
@@ -14,7 +15,7 @@ describe("cart pricing helpers", () => {
     expect(availableQuantity(2, 5)).toBe(0);
   });
 
-  it("builds a multi-seller snapshot with tax shipping and coupon traces", () => {
+  it("builds a multi-seller snapshot with GST shipping and coupon traces", () => {
     const snapshot = buildCheckoutSnapshot({
       lines: [
         {
@@ -44,22 +45,48 @@ describe("cart pricing helpers", () => {
       ],
       couponCode: "ASPERA10",
       destinationState: "Karnataka",
+      sellerStates: {
+        "33333333-3333-3333-3333-333333333333": "Karnataka",
+        "66666666-6666-6666-6666-666666666666": "Maharashtra",
+      },
       totalWeightGrams: 1200,
     });
 
     expect(snapshot.subtotalPaise).toBe(39900 * 2 + 69900);
     expect(snapshot.discountPaise).toBe(14970);
     expect(snapshot.groups).toHaveLength(2);
-    expect(snapshot.tax.policyKey).toBe("india_placeholder_gst_trace");
-    expect(snapshot.tax.explanation).toContain(
-      "qualified Indian tax professional",
+    expect(snapshot.tax.policyKey).toBe(TAX_POLICY.key);
+    expect(snapshot.tax.cgstPaise + snapshot.tax.sgstPaise + snapshot.tax.igstPaise).toBe(
+      snapshot.taxPaise,
     );
+    expect(snapshot.tax.supplyType).toBe("mixed");
     expect(snapshot.totalPaise).toBe(
       snapshot.subtotalPaise -
         snapshot.discountPaise +
         snapshot.shippingPaise +
         snapshot.taxPaise,
     );
+  });
+
+  it("splits CGST/SGST for intra-state supply", () => {
+    const tax = computeTax(10_000, TAX_POLICY, {
+      originState: "Karnataka",
+      destinationState: "Karnataka",
+    });
+    expect(tax.taxPaise).toBe(1800);
+    expect(tax.cgstPaise + tax.sgstPaise).toBe(1800);
+    expect(tax.igstPaise).toBe(0);
+    expect(tax.supplyType).toBe("intra_state");
+  });
+
+  it("uses IGST for inter-state supply", () => {
+    const tax = computeTax(10_000, TAX_POLICY, {
+      originState: "Maharashtra",
+      destinationState: "Karnataka",
+    });
+    expect(tax.igstPaise).toBe(1800);
+    expect(tax.cgstPaise).toBe(0);
+    expect(tax.supplyType).toBe("inter_state");
   });
 
   it("rejects unknown coupons", () => {

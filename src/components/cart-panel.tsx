@@ -296,7 +296,7 @@ export function CartPanel({
                 </dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-muted">Estimated tax</dt>
+                <dt className="text-muted">Estimated GST</dt>
                 <dd>{formatPaise(snapshot?.taxPaise ?? 0)}</dd>
               </div>
               <div className="flex justify-between gap-4 border-t border-border pt-2 text-base font-semibold">

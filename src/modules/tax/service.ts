@@ -24,20 +24,29 @@ export async function ensureDefaultTaxProfiles() {
     where: { key: TAX_POLICY.key },
     create: {
       key: TAX_POLICY.key,
-      name: "India GST (standard)",
+      name: "India GST (CGST/SGST/IGST)",
       description:
-        "Default marketplace tax profile for settlements. Not a legal GST/TCS determination.",
+        "Active GST profile: splits CGST+SGST for intra-state and IGST for inter-state based on seller registered state vs ship-to state.",
       rateBps: TAX_POLICY.rateBps,
       active: true,
       version: TAX_POLICY.version,
       explanation: TAX_POLICY.explanation,
     },
     update: {
-      name: "India GST (standard)",
+      name: "India GST (CGST/SGST/IGST)",
       description:
-        "Default marketplace tax profile for settlements. Not a legal GST/TCS determination.",
+        "Active GST profile: splits CGST+SGST for intra-state and IGST for inter-state based on seller registered state vs ship-to state.",
+      rateBps: TAX_POLICY.rateBps,
+      version: TAX_POLICY.version,
       explanation: TAX_POLICY.explanation,
+      active: true,
     },
+  });
+
+  // Retire the old placeholder profile if it is still marked active.
+  await prisma.taxProfile.updateMany({
+    where: { key: "india_placeholder_gst_trace", active: true },
+    data: { active: false },
   });
 
   await upsertTaxProfile({
@@ -50,7 +59,7 @@ export async function ensureDefaultTaxProfiles() {
       active: false,
       version: 1,
       explanation:
-        "Zero-rate placeholder for engineering tests. Do not treat as legally exempt merchandise.",
+        "Zero-rate profile for engineering tests. Do not treat as legally exempt merchandise.",
     },
     update: {},
   });

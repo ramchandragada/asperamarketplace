@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { OperatorChrome } from "@/components/operator-chrome";
 import { SellerNav } from "@/components/seller-nav";
 import { PageShell } from "@/components/ui/page-shell";
 import { getOptionalActor } from "@/modules/identity/service";
@@ -47,18 +48,24 @@ export default async function SellerLayout({
   };
 
   return (
-    <PageShell>
-      <div className="grid gap-6 md:grid-cols-[15rem_minmax(0,1fr)]">
-        <aside className="md:sticky md:top-6 md:self-start">
-          <SellerNav
-            sellerName={sellerName}
-            displayName={actor.displayName}
-            showAdmin={actorIsAdmin(actor)}
-            capabilities={capabilities}
-          />
-        </aside>
-        <div className="min-w-0">{children}</div>
-      </div>
-    </PageShell>
+    <OperatorChrome
+      surface="seller"
+      title={sellerName}
+      subtitle={actor.displayName}
+    >
+      <PageShell>
+        <div className="grid gap-6 md:grid-cols-[15rem_minmax(0,1fr)]">
+          <aside className="md:sticky md:top-6 md:self-start">
+            <SellerNav
+              sellerName={sellerName}
+              displayName={actor.displayName}
+              showAdmin={actorIsAdmin(actor)}
+              capabilities={capabilities}
+            />
+          </aside>
+          <div className="min-w-0">{children}</div>
+        </div>
+      </PageShell>
+    </OperatorChrome>
   );
 }

@@ -17,33 +17,31 @@ export default async function OrdersPage() {
   const orders = await listOrdersForActor(actor);
 
   return (
-    <PageShell narrow>
-      <div>
-        <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
-          Shopping
-        </p>
-        <h1 className="mt-1 font-display text-3xl font-semibold">
-          Your orders
-        </h1>
-        <p className="mt-2 text-muted">
-          Track, return, cancel, or buy again. Mock payments are available on
-          unpaid orders.
-        </p>
-        <p className="mt-3 rounded-[var(--radius-sm)] border border-border bg-accent-soft/40 px-3 py-2 text-sm text-muted">
-          Easy returns on delivered items ·{" "}
-          <Link href="/account/returns" className="text-accent underline">
+    <PageShell>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
+            Account
+          </p>
+          <h1 className="mt-1 font-display text-3xl font-semibold">
+            Your Orders
+          </h1>
+          <p className="mt-2 max-w-2xl text-muted">
+            Track shipments, download invoices, reorder, or start a return —
+            filters on the left help you find the right order fast.
+          </p>
+        </div>
+        <p className="text-sm text-muted">
+          <Link href="/account" className="text-accent hover:underline">
+            Back to account
+          </Link>
+          {" · "}
+          <Link href="/account/returns" className="text-accent hover:underline">
             Returns inbox
-          </Link>
-          {" · "}
-          <Link href="/support" className="text-accent underline">
-            Contact support
-          </Link>
-          {" · "}
-          <Link href="/returns" className="text-accent underline">
-            Return policy
           </Link>
         </p>
       </div>
+
       <Suspense fallback={<p className="text-muted">Loading orders…</p>}>
         <OrdersPanel
           initialOrders={orders.map((order) => ({
@@ -52,6 +50,7 @@ export default async function OrdersPage() {
             status: order.status,
             totalPaise: order.totalPaise,
             createdAt: order.createdAt.toISOString(),
+            paidAt: order.paidAt?.toISOString() ?? null,
             payments: order.payments.map((payment) => ({
               id: payment.id,
               status: payment.status,
@@ -64,17 +63,38 @@ export default async function OrdersPage() {
             lines: order.lines.map((line) => ({
               id: line.id,
               productTitle: line.productTitle,
+              variantTitle: line.variantTitle,
               quantity: line.quantity,
               variantId: line.variantId,
+              unitPricePaise: line.unitPricePaise,
+              lineTotalPaise: line.lineTotalPaise,
+              productSlug: line.productSlug,
+              imageUrl: line.imageUrl,
+              imageAlt: line.imageAlt,
+            })),
+            address: order.address
+              ? {
+                  fullName: order.address.fullName,
+                  city: order.address.city,
+                  state: order.address.state,
+                }
+              : null,
+            groups: order.groups.map((group) => ({
+              id: group.id,
+              status: group.status,
+              shippedAt: group.shippedAt?.toISOString() ?? null,
+              deliveredAt: group.deliveredAt?.toISOString() ?? null,
+              trackingUrl: group.trackingUrl,
+              trackingNumber: group.trackingNumber,
+              carrier: group.carrier,
+            })),
+            returnRequests: order.returnRequests.map((entry) => ({
+              id: entry.id,
+              status: entry.status,
             })),
           }))}
         />
       </Suspense>
-      <p className="text-sm">
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
-      </p>
     </PageShell>
   );
 }

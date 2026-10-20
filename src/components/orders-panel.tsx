@@ -300,7 +300,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-      <aside className="h-fit rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] lg:sticky lg:top-24">
+      <aside className="h-fit rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] lg:sticky lg:top-36">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-base font-semibold">Filters</h2>
           {statusFilters.size > 0 || timeFilters.size > 0 ? (

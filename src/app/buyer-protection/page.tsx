@@ -44,7 +44,7 @@ export default function BuyerProtectionPage() {
       <section className="mt-8 space-y-4 text-sm leading-7">
         <h2 className="text-lg font-semibold">How claims are decided</h2>
         <p className="text-muted">
-          Our trust team reviews your order, messages, and return history. If
+          Our trust team reviews your order details and return history. If
           approved, we issue a refund and record a seller-side debit. Frequency
           limits apply to keep the programme fair.
         </p>

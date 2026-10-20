@@ -47,6 +47,12 @@ const TILES: Tile[] = [
     group: "account",
   },
   {
+    href: "/account/business",
+    title: "Business settings",
+    blurb: "GSTIN, tax invoice preference, purchase defaults.",
+    group: "account",
+  },
+  {
     href: "/account/payments",
     title: "Payment options",
     blurb: "Mock pay today · saved UPI/cards after Razorpay.",
@@ -55,8 +61,26 @@ const TILES: Tile[] = [
   {
     href: "/account/coupons",
     title: "My Coupons",
-    blurb: "View available checkout discount codes.",
+    blurb: "Available, used, and expired discount codes.",
     group: "money",
+  },
+  {
+    href: "/account/spend",
+    title: "Spend analytics",
+    blurb: "Download order reports and analyse spend.",
+    group: "money",
+  },
+  {
+    href: "/account/reviews",
+    title: "My Reviews & Ratings",
+    blurb: "Pending ratings and reviews you have written.",
+    group: "activity",
+  },
+  {
+    href: "/account/notifications",
+    title: "All Notifications",
+    blurb: "Order and account messages in one place.",
+    group: "activity",
   },
   {
     href: "/support",
@@ -70,7 +94,7 @@ const GROUP_LABEL: Record<Tile["group"], string> = {
   shopping: "Shopping",
   account: "Account settings",
   money: "Payments & savings",
-  activity: "Help",
+  activity: "Activity & help",
 };
 
 export function AccountHub({

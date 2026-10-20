@@ -29,6 +29,20 @@ export default async function OrdersPage() {
           Track, return, cancel, or buy again. Mock payments are available on
           unpaid orders.
         </p>
+        <p className="mt-3 rounded-[var(--radius-sm)] border border-border bg-accent-soft/40 px-3 py-2 text-sm text-muted">
+          Easy returns on delivered items ·{" "}
+          <Link href="/account/returns" className="text-accent underline">
+            Returns inbox
+          </Link>
+          {" · "}
+          <Link href="/support" className="text-accent underline">
+            Contact support
+          </Link>
+          {" · "}
+          <Link href="/returns" className="text-accent underline">
+            Return policy
+          </Link>
+        </p>
       </div>
       <Suspense fallback={<p className="text-muted">Loading orders…</p>}>
         <OrdersPanel

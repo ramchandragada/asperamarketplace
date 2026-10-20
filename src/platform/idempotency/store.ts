@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/platform/db/prisma";
 
 export class IdempotencyConflictError extends Error {
@@ -31,15 +32,39 @@ export async function beginIdempotentCommand<T>(input: {
   });
 
   if (!existing) {
-    await prisma.idempotencyRecord.create({
-      data: {
-        key: input.key,
-        scope: input.scope,
-        requestHash,
-        status: "started",
-      },
-    });
-    return { kind: "fresh" };
+    try {
+      await prisma.idempotencyRecord.create({
+        data: {
+          key: input.key,
+          scope: input.scope,
+          requestHash,
+          status: "started",
+        },
+      });
+      return { kind: "fresh" };
+    } catch (error) {
+      if (
+        !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+        error.code !== "P2002"
+      ) {
+        throw error;
+      }
+      const raced = await prisma.idempotencyRecord.findUnique({
+        where: { key_scope: { key: input.key, scope: input.scope } },
+      });
+      if (!raced) throw error;
+      if (raced.requestHash !== requestHash) {
+        throw new IdempotencyConflictError(
+          "Idempotency key was reused with a different request body",
+        );
+      }
+      if (raced.status === "completed" && raced.responseBody != null) {
+        return { kind: "cached", body: raced.responseBody as T };
+      }
+      throw new IdempotencyConflictError(
+        "This request is already in progress. Retry shortly.",
+      );
+    }
   }
 
   if (existing.requestHash !== requestHash) {

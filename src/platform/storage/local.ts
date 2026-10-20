@@ -88,9 +88,17 @@ export class StorageValidationError extends Error {
   }
 }
 
+/** Writable root for KYC files. Vercel functions can only write under /tmp. */
+export function defaultDocumentStorageRoot() {
+  if (process.env.DOCUMENT_STORAGE_PATH) {
+    return process.env.DOCUMENT_STORAGE_PATH;
+  }
+  if (process.env.VERCEL) {
+    return path.join("/tmp", "aspera-uploads");
+  }
+  return path.join(process.cwd(), "uploads", "kyc");
+}
+
 export function createDocumentStorage(): ObjectStorage {
-  const root =
-    process.env.DOCUMENT_STORAGE_PATH ??
-    path.join(process.cwd(), "uploads", "kyc");
-  return new LocalObjectStorage(root);
+  return new LocalObjectStorage(defaultDocumentStorageRoot());
 }

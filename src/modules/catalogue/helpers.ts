@@ -3,9 +3,10 @@ import { ProductStatus } from "@prisma/client";
 const ALLOWED: Record<ProductStatus, ProductStatus[]> = {
   draft: ["submitted", "archived"],
   submitted: ["approved", "rejected"],
-  approved: ["archived"],
+  /** Content edits on live listings return them to moderation. */
+  approved: ["archived", "submitted"],
   rejected: ["draft", "submitted", "archived"],
-  archived: [],
+  archived: ["draft"],
 };
 
 export function canTransitionProductStatus(
@@ -64,12 +65,41 @@ export function buildSearchDocument(input: {
 }
 
 export function formatPaise(paise: number): string {
-  return `₹${(paise / 100).toFixed(2)}`;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+  }).format(paise / 100);
+}
+
+/** Convert a rupee amount typed by a seller (e.g. 699 or 699.50) into integer paise. */
+export function paiseFromRupees(rupees: number): number {
+  if (!Number.isFinite(rupees) || rupees < 0) {
+    throw new Error("Rupee amount must be a non-negative number");
+  }
+  return Math.round(rupees * 100);
+}
+
+export function rupeesFromPaise(paise: number): string {
+  return (paise / 100).toFixed(2);
 }
 
 export function discountPercent(mrp: number, price: number) {
   if (!mrp || mrp <= price) return null;
   return Math.round(((mrp - price) / mrp) * 100);
+}
+
+/** Merge a partial price PATCH with stored variant values before MRP checks. */
+export function mergeVariantPrices(
+  stored: { mrpPaise: number; sellingPricePaise: number },
+  patch: { mrpPaise?: number; sellingPricePaise?: number },
+) {
+  const mrpPaise = patch.mrpPaise ?? stored.mrpPaise;
+  const sellingPricePaise = patch.sellingPricePaise ?? stored.sellingPricePaise;
+  return {
+    mrpPaise,
+    sellingPricePaise,
+    withinMrp: mrpPaise >= sellingPricePaise,
+  };
 }
 
 export type ProductCardBadge =

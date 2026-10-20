@@ -13,7 +13,7 @@ export default function ComingSoonPage({
       <h1 className="font-display text-3xl font-semibold">{title}</h1>
       <p className="mt-3 text-muted">
         {description ??
-          "This page is coming soon. Meanwhile, keep shopping on Aspera."}
+          "This page is coming soon."}
       </p>
       <Link
         href="/shop"

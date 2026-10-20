@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { headers } from "next/headers";
+import { Suspense } from "react";
+import { AnalyticsBeacon } from "@/components/analytics-beacon";
 import { BackToTopButton } from "@/components/back-to-top";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
@@ -39,25 +42,42 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headerList = await headers();
+  const surface = headerList.get("x-aspera-surface") ?? "shopper";
+  const isPanel = surface === "admin" || surface === "seller";
+
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         <a className="skip-link" href="#content">
           Skip to content
         </a>
-        <SiteHeader />
-        <div id="content" className="flex-1 pb-16 md:pb-0">
+        {isPanel ? null : <SiteHeader />}
+        <div
+          id="content"
+          tabIndex={-1}
+          className={isPanel ? "flex-1" : "flex-1 pb-[5.75rem] md:pb-0"}
+        >
           {children}
         </div>
-        <SiteFooter />
-        <MobileBottomNav />
-        <BackToTopButton />
+        {isPanel ? null : (
+          <>
+            <SiteFooter />
+            <MobileBottomNav />
+            <BackToTopButton />
+          </>
+        )}
         <ToastHost />
+        {isPanel ? null : (
+          <Suspense fallback={null}>
+            <AnalyticsBeacon />
+          </Suspense>
+        )}
       </body>
     </html>
   );

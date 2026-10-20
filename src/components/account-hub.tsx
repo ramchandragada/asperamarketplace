@@ -1,144 +1,151 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { formatPaise } from "@/modules/catalogue/helpers";
 
-type OrderRow = {
-  id: string;
-  status: string;
-  totalPaise: number;
-  createdAt: string;
+type Tile = {
+  href: string;
+  title: string;
+  blurb: string;
+  group: "shopping" | "account" | "money" | "activity";
 };
 
-type AddressRow = {
-  id: string;
-  label: string;
-  fullName: string;
-  phone: string;
-  line1: string;
-  city: string;
-  state: string;
-  postalCode: string;
+const TILES: Tile[] = [
+  {
+    href: "/orders",
+    title: "Your Orders",
+    blurb: "Track, return, cancel, or buy things again.",
+    group: "shopping",
+  },
+  {
+    href: "/orders?tab=buy-again",
+    title: "Buy Again",
+    blurb: "Reorder items from past purchases.",
+    group: "shopping",
+  },
+  {
+    href: "/wishlist",
+    title: "Wishlist",
+    blurb: "Saved products for later.",
+    group: "shopping",
+  },
+  {
+    href: "/account/returns",
+    title: "Returns",
+    blurb: "See return requests and their status.",
+    group: "shopping",
+  },
+  {
+    href: "/account/profile",
+    title: "Login & security",
+    blurb: "Edit your name and account details.",
+    group: "account",
+  },
+  {
+    href: "/account/addresses",
+    title: "Your Addresses",
+    blurb: "Add, edit, or remove delivery addresses.",
+    group: "account",
+  },
+  {
+    href: "/account/business",
+    title: "Business settings",
+    blurb: "GSTIN, tax invoice preference, purchase defaults.",
+    group: "account",
+  },
+  {
+    href: "/account/payments",
+    title: "Payment options",
+    blurb: "Mock pay today · saved UPI/cards after Razorpay.",
+    group: "money",
+  },
+  {
+    href: "/account/coupons",
+    title: "My Coupons",
+    blurb: "Available, used, and expired discount codes.",
+    group: "money",
+  },
+  {
+    href: "/account/spend",
+    title: "Spend analytics",
+    blurb: "Download order reports and analyse spend.",
+    group: "money",
+  },
+  {
+    href: "/account/reviews",
+    title: "My Reviews & Ratings",
+    blurb: "Pending ratings and reviews you have written.",
+    group: "activity",
+  },
+  {
+    href: "/account/notifications",
+    title: "All Notifications",
+    blurb: "Order and account messages in one place.",
+    group: "activity",
+  },
+  {
+    href: "/support",
+    title: "Help & support",
+    blurb: "Open a ticket or ask about an order.",
+    group: "activity",
+  },
+];
+
+const GROUP_LABEL: Record<Tile["group"], string> = {
+  shopping: "Shopping",
+  account: "Account settings",
+  money: "Payments & savings",
+  activity: "Activity & help",
 };
 
 export function AccountHub({
-  orders,
-  addresses,
-  profile,
+  stats,
 }: {
-  orders: OrderRow[];
-  addresses: AddressRow[];
-  profile: { displayName: string; email: string };
+  stats: {
+    orderCount: number;
+    addressCount: number;
+    wishlistCount: number;
+    openReturnCount: number;
+  };
 }) {
-  const [tab, setTab] = useState<"orders" | "addresses" | "profile">("orders");
+  const groups = (["shopping", "account", "money", "activity"] as const).map(
+    (key) => ({
+      key,
+      label: GROUP_LABEL[key],
+      tiles: TILES.filter((tile) => tile.group === key),
+    }),
+  );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2 border-b border-border pb-2">
-        {(
-          [
-            ["orders", "My orders"],
-            ["addresses", "My addresses"],
-            ["profile", "Profile"],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTab(key)}
-            className={`rounded-[var(--radius-sm)] px-3 py-1.5 text-sm font-medium ${
-              tab === key
-                ? "bg-accent text-accent-foreground"
-                : "bg-accent-soft/60 text-foreground hover:bg-accent-soft"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+    <div className="flex flex-col gap-8">
+      <p className="text-sm text-muted">
+        {stats.orderCount} order{stats.orderCount === 1 ? "" : "s"} ·{" "}
+        {stats.addressCount} address
+        {stats.addressCount === 1 ? "" : "es"} · {stats.wishlistCount} wishlist
+        · {stats.openReturnCount} open return
+        {stats.openReturnCount === 1 ? "" : "s"}
+      </p>
 
-      {tab === "orders" ? (
-        orders.length === 0 ? (
-          <p className="rounded-[var(--radius)] border border-border bg-surface p-6 text-sm text-muted">
-            No orders yet.{" "}
-            <Link href="/shop" className="text-accent underline">
-              Start shopping
-            </Link>
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {orders.map((order) => (
-              <li
-                key={order.id}
-                className="rounded-[var(--radius)] border border-border bg-surface p-4"
+      {groups.map((group) => (
+        <section key={group.key} className="flex flex-col gap-3">
+          <h2 className="text-sm font-semibold tracking-wide text-muted uppercase">
+            {group.label}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {group.tiles.map((tile) => (
+              <Link
+                key={tile.href + tile.title}
+                href={tile.href}
+                className="flex flex-col gap-1 rounded-[var(--radius)] border border-border bg-surface p-4 transition hover:border-accent/40 hover:bg-accent-soft/40"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <Link
-                    href={`/orders/${order.id}`}
-                    className="font-medium text-accent hover:underline"
-                  >
-                    Order {order.id.slice(0, 8)}…
-                  </Link>
-                  <span className="text-sm capitalize text-muted">{order.status}</span>
-                </div>
-                <p className="mt-1 text-sm">
-                  {formatPaise(order.totalPaise)} ·{" "}
-                  {new Date(order.createdAt).toLocaleDateString("en-IN")}
-                </p>
-              </li>
+                <span className="font-semibold text-foreground">
+                  {tile.title}
+                </span>
+                <span className="text-sm text-muted">{tile.blurb}</span>
+              </Link>
             ))}
-          </ul>
-        )
-      ) : null}
-
-      {tab === "addresses" ? (
-        addresses.length === 0 ? (
-          <p className="rounded-[var(--radius)] border border-border bg-surface p-6 text-sm text-muted">
-            No saved addresses. Add one during{" "}
-            <Link href="/checkout" className="text-accent underline">
-              checkout
-            </Link>
-            .
-          </p>
-        ) : (
-          <ul className="grid gap-3 md:grid-cols-2">
-            {addresses.map((address) => (
-              <li
-                key={address.id}
-                className="rounded-[var(--radius)] border border-border bg-surface p-4 text-sm"
-              >
-                <p className="font-semibold">{address.label}</p>
-                <p className="mt-1">{address.fullName}</p>
-                <p className="text-muted">{address.phone}</p>
-                <p className="mt-2 text-muted">
-                  {address.line1}, {address.city}, {address.state}{" "}
-                  {address.postalCode}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )
-      ) : null}
-
-      {tab === "profile" ? (
-        <div className="rounded-[var(--radius)] border border-border bg-surface p-6">
-          <dl className="grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-muted">Name</dt>
-              <dd className="font-medium">{profile.displayName}</dd>
-            </div>
-            <div>
-              <dt className="text-muted">Email</dt>
-              <dd className="font-medium">{profile.email}</dd>
-            </div>
-            <div>
-              <dt className="text-muted">Phone</dt>
-              <dd className="font-medium text-muted">Add during checkout</dd>
-            </div>
-          </dl>
-        </div>
-      ) : null}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

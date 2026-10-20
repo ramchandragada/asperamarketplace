@@ -11,7 +11,6 @@ export function PageShell({
 }) {
   return (
     <main
-      id="content"
       className={`container-shell flex min-h-[70vh] w-full flex-col gap-8 py-8 md:py-12 ${narrow ? "max-w-3xl" : ""} ${className}`}
     >
       {children}

@@ -146,7 +146,7 @@ export function CatalogueBrowse({
   initialMaxPricePaise?: number;
   heading?: string;
   browseBasePath?: string;
-  /** `home` hides breadcrumb and uses Picked for you chrome */
+  /** `home` hides breadcrumb/top sort; Meesho-style Products For You chrome */
   variant?: "page" | "home";
   enableLoadMore?: boolean;
   /** Auto-load next page when sentinel enters viewport */
@@ -406,6 +406,15 @@ export function CatalogueBrowse({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- loadMore closes over latest page/items
   }, [useInfinite, items.length, total, loadingMore, pending, page]);
 
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [filtersOpen]);
+
   function applyAndClose() {
     startTransition(() => {
       void runSearch();
@@ -534,7 +543,7 @@ export function CatalogueBrowse({
               void runSearch({ sort: event.target.value, page: 1 });
             });
           }}
-          className="min-w-0 flex-1 border-0 bg-transparent text-[13px] font-medium text-[#333] outline-none"
+          className="min-h-11 min-w-0 flex-1 border-0 bg-transparent text-base font-medium text-[#333] outline-none lg:min-h-0 lg:text-[13px]"
           aria-label="Sort by"
         >
           {SORT_OPTIONS.map((option) => (
@@ -558,7 +567,7 @@ export function CatalogueBrowse({
         </div>
         <button
           type="button"
-          className="text-xs font-medium text-accent hover:underline"
+          className="inline-flex min-h-11 items-center text-xs font-medium text-accent hover:underline lg:min-h-0"
           onClick={clearAll}
         >
           Clear all
@@ -582,12 +591,12 @@ export function CatalogueBrowse({
             value={categorySearch}
             onChange={(event) => setCategorySearch(event.target.value)}
             placeholder="Search"
-            className="w-full rounded-md border border-[#ddd] bg-white py-1.5 pr-2.5 pl-8 text-[13px] outline-none placeholder:text-[#999] focus:border-accent"
+            className="min-h-11 w-full rounded-md border border-[#ddd] bg-white py-1.5 pr-2.5 pl-8 text-base outline-none placeholder:text-[#999] focus:border-accent lg:min-h-0 lg:text-[13px]"
           />
         </div>
         <ul className="space-y-2">
           <li>
-            <label className="flex cursor-pointer items-center gap-2 text-[13px] text-[#333]">
+            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-[13px] text-[#333] lg:min-h-0">
               <input
                 type="checkbox"
                 checked={!categorySlug}
@@ -607,7 +616,7 @@ export function CatalogueBrowse({
             : filteredCategories.slice(0, 6)
           ).map((category) => (
             <li key={category.slug}>
-              <label className="flex cursor-pointer items-center gap-2 text-[13px] text-[#333]">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-[13px] text-[#333] lg:min-h-0">
                 <input
                   type="checkbox"
                   checked={categorySlug === category.slug}
@@ -700,7 +709,7 @@ export function CatalogueBrowse({
         <ul className="space-y-1.5">
           {COLOR_OPTIONS.map((option) => (
             <li key={option}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm lg:min-h-0">
                 <input
                   type="radio"
                   name="color"
@@ -729,7 +738,7 @@ export function CatalogueBrowse({
         <ul className="space-y-1.5">
           {FABRIC_OPTIONS.map((option) => (
             <li key={option}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm lg:min-h-0">
                 <input
                   type="radio"
                   name="fabric"
@@ -761,13 +770,13 @@ export function CatalogueBrowse({
             value={brandSearch}
             onChange={(event) => setBrandSearch(event.target.value)}
             placeholder="Search"
-            className="mb-2 w-full rounded-md border border-[#ddd] bg-white px-2.5 py-1.5 text-[13px] outline-none placeholder:text-[#999] focus:border-accent"
+            className="mb-2 min-h-11 w-full rounded-md border border-[#ddd] bg-white px-2.5 py-1.5 text-base outline-none placeholder:text-[#999] focus:border-accent lg:min-h-0 lg:text-[13px]"
           />
           <ul className="space-y-2">
             {(brandShowAll ? filteredBrands : filteredBrands.slice(0, 6)).map(
               (brand) => (
                 <li key={brand.slug}>
-                  <label className="flex cursor-pointer items-center gap-2 text-[13px] text-[#333]">
+                  <label className="flex min-h-11 cursor-pointer items-center gap-2 text-[13px] text-[#333] lg:min-h-0">
                     <input
                       type="checkbox"
                       checked={brandSlug === brand.slug}
@@ -809,7 +818,7 @@ export function CatalogueBrowse({
         <ul className="space-y-1.5">
           {PRICE_PRESETS.map((preset) => (
             <li key={preset.key}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm lg:min-h-0">
                 <input
                   type="radio"
                   name="price"
@@ -846,7 +855,7 @@ export function CatalogueBrowse({
                   void runSearch({ minPrice, maxPrice });
                 });
               }}
-              className="mt-1 w-full rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
+              className="mt-1 min-h-11 w-full rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1.5 text-base text-foreground lg:min-h-0 lg:text-sm"
             />
           </label>
           <label className="text-xs text-muted">
@@ -863,7 +872,7 @@ export function CatalogueBrowse({
                   void runSearch({ minPrice, maxPrice });
                 });
               }}
-              className="mt-1 w-full rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
+              className="mt-1 min-h-11 w-full rounded-[var(--radius-sm)] border border-border bg-surface px-2 py-1.5 text-base text-foreground lg:min-h-0 lg:text-sm"
             />
           </label>
         </div>
@@ -912,7 +921,7 @@ export function CatalogueBrowse({
         <ul className="space-y-1.5">
           {RATING_OPTIONS.map((option) => (
             <li key={option.value}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm lg:min-h-0">
                 <input
                   type="radio"
                   name="rating"
@@ -955,7 +964,7 @@ export function CatalogueBrowse({
         <ul className="space-y-1.5">
           {DISCOUNT_OPTIONS.map((option) => (
             <li key={option.value}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm lg:min-h-0">
                 <input
                   type="radio"
                   name="discount"
@@ -1041,11 +1050,11 @@ export function CatalogueBrowse({
       <div className="flex flex-col gap-1">
         {!isHome ? (
           <nav aria-label="Breadcrumb" className="text-xs text-muted">
-            <Link href="/" className="hover:text-accent">
+            <Link href="/" className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0">
               Home
             </Link>
             <span aria-hidden> › </span>
-            <Link href={browseBasePath} className="hover:text-accent">
+            <Link href={browseBasePath} className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0">
               Shop
             </Link>
             {categorySlug ? (
@@ -1060,57 +1069,77 @@ export function CatalogueBrowse({
           <div>
             <h1
               className={`font-display font-semibold tracking-tight ${
-                isHome ? "text-2xl md:text-3xl" : "text-3xl"
+                isHome ? "text-[22px] md:text-[28px]" : "text-3xl"
               }`}
             >
               {isHome
-                ? (heading ?? "Picked for you")
+                ? (heading ?? "Products For You")
                 : query.trim()
                   ? `Results for “${query.trim()}”`
                   : categoryName}
             </h1>
-            <p className="mt-1 text-sm text-muted">
-              {total >= 1000
-                ? "1000+ Products"
-                : `Showing ${items.length === 0 ? 0 : 1}–${items.length} of ${total} products`}
-            </p>
+            {!isHome ? (
+              <p className="mt-1 text-sm text-muted">
+                {total >= 1000
+                  ? "1000+ Products"
+                  : `Showing ${items.length === 0 ? 0 : 1}–${items.length} of ${total} products`}
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-muted">
+                Sort and filter live catalogue picks — shop by category, price,
+                and more.
+              </p>
+            )}
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <span className="text-muted">Sort by:</span>
-            <select
-              value={sort}
-              onChange={(event) => {
-                setSort(event.target.value);
-                startTransition(() => {
-                  void runSearch({ sort: event.target.value, page: 1 });
-                });
-              }}
-              className="rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-1.5 font-medium"
-              aria-label="Sort by"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {!isHome ? (
+            <label className="flex items-center gap-2 text-sm">
+              <span className="text-muted">Sort by:</span>
+              <select
+                value={sort}
+                onChange={(event) => {
+                  setSort(event.target.value);
+                  startTransition(() => {
+                    void runSearch({ sort: event.target.value, page: 1 });
+                  });
+                }}
+                className="min-h-11 rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-1.5 text-base font-medium md:min-h-0 md:text-sm"
+                aria-label="Sort by"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </div>
       </div>
 
       <div className="flex items-center gap-2 md:hidden">
-        <form onSubmit={onSearch} className="flex min-w-0 flex-1 gap-2">
+        <form onSubmit={onSearch} className="flex min-w-0 flex-1 gap-2" role="search">
+          <label className="sr-only" htmlFor="browse-search">
+            Search products
+          </label>
           <input
+            id="browse-search"
             name="q"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Try Saree, Kurti or Search by Product Code"
-            className="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-2 text-sm"
+            className="min-h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2 text-base"
           />
+          <button
+            type="submit"
+            className="inline-flex min-h-11 items-center rounded-full bg-brand-accent px-3 text-sm font-semibold text-white"
+          >
+            Search
+          </button>
         </form>
         <Button
           type="button"
           variant="secondary"
+          className="min-h-11"
           onClick={() => setFiltersOpen(true)}
         >
           Filter
@@ -1126,14 +1155,14 @@ export function CatalogueBrowse({
               key={chip.key}
               type="button"
               onClick={() => clearChip(chip.key)}
-              className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2.5 py-1 text-xs hover:border-accent"
+              className="inline-flex min-h-11 items-center gap-1 rounded-full border border-border bg-surface px-2.5 py-1 text-xs hover:border-accent md:min-h-0"
             >
               {chip.label} ✕
             </button>
           ))}
           <button
             type="button"
-            className="text-xs font-medium text-accent hover:underline"
+            className="inline-flex min-h-11 items-center text-xs font-medium text-accent hover:underline md:min-h-0"
             onClick={clearAll}
           >
             Clear all
@@ -1149,11 +1178,11 @@ export function CatalogueBrowse({
             aria-label="Close filters"
             onClick={() => setFiltersOpen(false)}
           />
-          <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-surface p-4 shadow-[var(--shadow-mega)]">
+          <div className="absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-3xl bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[var(--shadow-mega)]">
             <div className="mb-2 flex justify-end">
               <button
                 type="button"
-                className="text-sm text-muted hover:text-foreground"
+                className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-muted hover:text-foreground"
                 onClick={() => setFiltersOpen(false)}
               >
                 Close
@@ -1165,8 +1194,10 @@ export function CatalogueBrowse({
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="hidden border-r border-[#eee] pr-4 lg:block">
-          <div className="sticky top-24 bg-white py-1">{filterPanel}</div>
+        <aside className="hidden lg:block">
+          <div className="sticky top-36 rounded-2xl bg-surface p-3 shadow-[var(--shadow-card)]">
+            {filterPanel}
+          </div>
         </aside>
 
         <div className="flex flex-col gap-4">

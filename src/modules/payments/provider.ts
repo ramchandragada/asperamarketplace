@@ -35,11 +35,30 @@ export interface PaymentProviderPort {
   parseWebhook(rawBody: string): MockWebhookPayload;
 }
 
+export const DEV_MOCK_WEBHOOK_SECRET =
+  "aspera-mock-webhook-dev-only-not-secret";
+
+/**
+ * Production must not sign or accept webhooks with the documented dev default.
+ * Returns null when the secret is missing or still the public placeholder.
+ */
+export function resolveMockWebhookSecret(
+  env: { NODE_ENV?: string; MOCK_PAYMENT_WEBHOOK_SECRET?: string } = process.env,
+): string | null {
+  const configured = env.MOCK_PAYMENT_WEBHOOK_SECRET?.trim() ?? "";
+  if (env.NODE_ENV === "production") {
+    if (!configured || configured === DEV_MOCK_WEBHOOK_SECRET) return null;
+    return configured;
+  }
+  return configured || DEV_MOCK_WEBHOOK_SECRET;
+}
+
 function getMockWebhookSecret(): string {
-  return (
-    process.env.MOCK_PAYMENT_WEBHOOK_SECRET ??
-    "aspera-mock-webhook-dev-only-not-secret"
-  );
+  const secret = resolveMockWebhookSecret();
+  if (!secret) {
+    throw new Error("MOCK_PAYMENT_WEBHOOK_SECRET is not configured");
+  }
+  return secret;
 }
 
 export class MockPaymentProvider implements PaymentProviderPort {

@@ -334,7 +334,7 @@ export function FinanceConsolePanel({
         <h2 className="text-lg font-semibold">Recent journal entries</h2>
         {entries.length === 0 ? (
           <p className="text-sm text-muted">
-            Journals post automatically when mock payments succeed.
+            Journals post when payments succeed.
           </p>
         ) : (
           entries.slice(0, 20).map((entry) => (

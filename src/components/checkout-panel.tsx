@@ -2,6 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import type { CheckoutSnapshot } from "@/modules/cart/pricing";
 
@@ -24,31 +25,38 @@ type CartView = {
   items: Array<{ variantId: string; quantity: number }>;
 };
 
+type ReservedView = {
+  id: string;
+  totalPaise: number;
+  reservedUntil: string | null;
+  snapshot?: CheckoutSnapshot | null;
+};
+
 export function CheckoutPanel({
   initialCart,
   initialAddresses,
+  initialReserved = null,
 }: {
   initialCart: CartView;
   initialAddresses: Address[];
+  initialReserved?: ReservedView | null;
 }) {
+  const router = useRouter();
   const [addresses, setAddresses] = useState(initialAddresses);
   const [addressId, setAddressId] = useState(initialAddresses[0]?.id ?? "");
   const [couponCode, setCouponCode] = useState("");
   const [cartVersion, setCartVersion] = useState(initialCart.version);
-  const [snapshot, setSnapshot] = useState<CheckoutSnapshot | null>(null);
-  const [reserved, setReserved] = useState<{
-    id: string;
-    totalPaise: number;
-    reservedUntil: string | null;
-  } | null>(null);
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const [snapshot, setSnapshot] = useState<CheckoutSnapshot | null>(
+    initialReserved?.snapshot ?? null,
+  );
+  const [reserved, setReserved] = useState<ReservedView | null>(
+    initialReserved,
+  );
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const [idempotencyKey] = useState(
-    () => `chk-${crypto.randomUUID()}`,
-  );
+  const [idempotencyKey] = useState(() => `chk-${crypto.randomUUID()}`);
 
   async function saveAddress(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -120,68 +128,16 @@ export function CheckoutPanel({
     if (body.data) {
       setSnapshot(body.data.snapshot);
       setCartVersion(body.data.cart.version);
-      setMessage("Server snapshot refreshed");
+      setMessage("Totals refreshed from the server");
     }
   }
 
-  async function confirm() {
-    if (!addressId || !snapshot) {
-      setError("Preview checkout before confirming");
-      return;
-    }
-    setPending(true);
-    setError(null);
-    setMessage(null);
-    const response = await fetch("/api/checkout/confirm", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        addressId,
-        couponCode: couponCode.trim() || undefined,
-        clientTotalPaise: snapshot.totalPaise,
-        expectedCartVersion: cartVersion,
-        idempotencyKey,
-      }),
-    });
-    const body = (await response.json()) as {
-      data?: {
-        checkout: {
-          id: string;
-          totalPaise: number;
-          reservedUntil: string | null;
-        };
-        snapshot: CheckoutSnapshot;
-      };
-      message?: string;
-    };
-    setPending(false);
-    if (!response.ok) {
-      setError(body.message ?? "Confirm failed");
-      return;
-    }
-    if (body.data) {
-      setSnapshot(body.data.snapshot);
-      setReserved({
-        id: body.data.checkout.id,
-        totalPaise: body.data.checkout.totalPaise,
-        reservedUntil: body.data.checkout.reservedUntil,
-      });
-      setMessage(body.message ?? "Reserved");
-    }
-  }
-
-  async function createOrder() {
-    if (!reserved) {
-      return;
-    }
-    setPending(true);
-    setError(null);
-    setMessage(null);
+  async function placeOrderFromReserved(checkoutId: string) {
     const response = await fetch("/api/orders", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        checkoutSessionId: reserved.id,
+        checkoutSessionId: checkoutId,
         idempotencyKey: `ord-${crypto.randomUUID()}`,
       }),
     });
@@ -189,13 +145,80 @@ export function CheckoutPanel({
       data?: { order: { id: string; orderNumber: string } };
       message?: string;
     };
-    setPending(false);
     if (!response.ok || !body.data) {
-      setError(body.message ?? "Could not create order");
+      throw new Error(body.message ?? "Could not place order");
+    }
+    return body.data.order;
+  }
+
+  async function confirmAndPlace() {
+    if (!addressId || !snapshot) {
+      setError("Preview totals before placing the order");
       return;
     }
-    setOrderId(body.data.order.id);
-    setMessage(`Order ${body.data.order.orderNumber} created`);
+    setPending(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const confirmResponse = await fetch("/api/checkout/confirm", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          addressId,
+          couponCode: couponCode.trim() || undefined,
+          clientTotalPaise: snapshot.totalPaise,
+          expectedCartVersion: cartVersion,
+          idempotencyKey,
+        }),
+      });
+      const confirmBody = (await confirmResponse.json()) as {
+        data?: {
+          checkout: {
+            id: string;
+            totalPaise: number;
+            reservedUntil: string | null;
+          };
+          snapshot: CheckoutSnapshot;
+        };
+        message?: string;
+      };
+      if (!confirmResponse.ok || !confirmBody.data) {
+        setError(confirmBody.message ?? "Could not reserve stock");
+        setPending(false);
+        return;
+      }
+      setSnapshot(confirmBody.data.snapshot);
+      setReserved({
+        id: confirmBody.data.checkout.id,
+        totalPaise: confirmBody.data.checkout.totalPaise,
+        reservedUntil: confirmBody.data.checkout.reservedUntil,
+        snapshot: confirmBody.data.snapshot,
+      });
+      setMessage("Stock reserved — placing order…");
+      const order = await placeOrderFromReserved(confirmBody.data.checkout.id);
+      setMessage(`Order ${order.orderNumber} created — continue to payment`);
+      router.push(`/orders/${order.id}`);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not place order");
+      setPending(false);
+    }
+  }
+
+  async function placeReservedOrder() {
+    if (!reserved) return;
+    setPending(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const order = await placeOrderFromReserved(reserved.id);
+      setMessage(`Order ${order.orderNumber} created — continue to payment`);
+      router.push(`/orders/${order.id}`);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not place order");
+      setPending(false);
+    }
   }
 
   if (initialCart.items.length === 0 && !reserved) {
@@ -212,44 +235,33 @@ export function CheckoutPanel({
   return (
     <div className="flex flex-col gap-8">
       {message ? <p className="text-sm text-accent">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
 
       {reserved ? (
-        <section className="rounded-card border border-border bg-surface p-4">
-          <h2 className="text-lg font-semibold">Stock reserved</h2>
+        <section className="rounded-card border border-accent/40 bg-accent-soft/40 p-4">
+          <h2 className="text-lg font-semibold">Ready to place order</h2>
           <p className="mt-2 text-sm">
-            Checkout {reserved.id.slice(0, 8)}… · Total{" "}
-            {formatPaise(reserved.totalPaise)}
+            Stock is reserved · Total {formatPaise(reserved.totalPaise)}
           </p>
           {reserved.reservedUntil ? (
             <p className="text-sm text-muted">
               Hold until {new Date(reserved.reservedUntil).toLocaleString()}
             </p>
           ) : null}
-          {!orderId ? (
-            <button
-              type="button"
-              disabled={pending}
-              className="mt-3 rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground disabled:opacity-60"
-              onClick={() => void createOrder()}
-            >
-              Create order
-            </button>
-          ) : (
-            <p className="mt-3 text-sm">
-              Order ready.{" "}
-              <Link href={`/orders/${orderId}`} className="underline">
-                Open order
-              </Link>{" "}
-              or{" "}
-              <Link href="/orders" className="underline">
-                pay with mock
-              </Link>
-              .
-            </p>
-          )}
+          <button
+            type="button"
+            disabled={pending}
+            className="mt-4 inline-flex min-h-11 items-center rounded-full bg-brand-accent px-5 py-2 font-semibold text-white disabled:opacity-60"
+            onClick={() => void placeReservedOrder()}
+          >
+            {pending ? "Placing order…" : "Place order"}
+          </button>
           <p className="mt-3 text-sm text-muted">
-            Payment uses a signed mock webhook. No live card charges.
+            Next you&apos;ll pay with the development mock on the order page.
           </p>
         </section>
       ) : null}
@@ -278,7 +290,7 @@ export function CheckoutPanel({
               onSubmit={saveAddress}
               className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-2"
             >
-              <h3 className="sm:col-span-2 font-medium">Add address</h3>
+              <h3 className="font-medium sm:col-span-2">Add address</h3>
               <label className="text-sm">
                 Full name
                 <input
@@ -348,7 +360,7 @@ export function CheckoutPanel({
               <button
                 type="submit"
                 disabled={pending}
-                className="sm:col-span-2 rounded-lg border border-border px-4 py-2 text-sm"
+                className="rounded-lg border border-border px-4 py-2 text-sm sm:col-span-2"
               >
                 Save address
               </button>
@@ -368,26 +380,30 @@ export function CheckoutPanel({
                 type="button"
                 disabled={pending}
                 onClick={() => void preview()}
-                className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground disabled:opacity-60"
+                className="rounded-lg border border-border px-4 py-2 font-medium disabled:opacity-60"
               >
                 Preview totals
               </button>
               <button
                 type="button"
                 disabled={pending || !snapshot}
-                onClick={() => void confirm()}
-                className="rounded-lg border border-border px-4 py-2 font-medium disabled:opacity-60"
+                onClick={() => void confirmAndPlace()}
+                className="min-h-11 rounded-full bg-brand-accent px-5 py-2 font-semibold text-white disabled:opacity-60"
               >
-                Confirm & reserve stock
+                {pending ? "Placing…" : "Place order"}
               </button>
             </div>
+            <p className="text-xs text-muted">
+              Place order reserves stock, creates your order, then takes you to
+              mock payment.
+            </p>
           </section>
         </>
       ) : null}
 
       {snapshot ? (
         <section className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4">
-          <h2 className="text-lg font-semibold">Server snapshot</h2>
+          <h2 className="text-lg font-semibold">Order summary</h2>
           <ul className="text-sm">
             {snapshot.lines.map((line) => (
               <li key={line.variantId}>

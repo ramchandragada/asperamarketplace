@@ -10,6 +10,8 @@ const DEV_ADMIN_EMAIL = "admin@aspera.local";
 const DEV_ADMIN_PASSWORD = "AsperaAdminDevOnly1!";
 const DEV_SELLER_EMAIL = "seller@aspera.local";
 const DEV_SELLER_PASSWORD = "AsperaSellerDevOnly1!";
+const DEV_CUSTOMER_EMAIL = "customer@aspera.local";
+const DEV_CUSTOMER_PASSWORD = "AsperaCustomerDevOnly1!";
 
 async function ensureSeller(input: {
   email: string;
@@ -67,7 +69,7 @@ async function ensureSeller(input: {
         reviewedAt: new Date(),
         reviewedByUserId: input.adminId,
         approvedAt: new Date(),
-        statusReason: "Seeded approved demo seller for catalogue density",
+        statusReason: null,
       },
     });
   } else {
@@ -80,7 +82,7 @@ async function ensureSeller(input: {
         approvedAt: seller.approvedAt ?? new Date(),
         reviewedAt: new Date(),
         reviewedByUserId: input.adminId,
-        statusReason: "Seeded approved demo seller for catalogue density",
+        statusReason: null,
       },
     });
   }
@@ -304,6 +306,38 @@ async function main() {
   const { ensureDefaultTaxProfiles } = await import("../src/modules/tax/service");
   await ensureDefaultTaxProfiles();
 
+  const customerRole = await prisma.role.findUniqueOrThrow({
+    where: { key: "customer" },
+  });
+  const customerUser = await prisma.user.upsert({
+    where: { email: DEV_CUSTOMER_EMAIL },
+    create: {
+      email: DEV_CUSTOMER_EMAIL,
+      displayName: "Aspera Shopper",
+      passwordHash: await hashPassword(DEV_CUSTOMER_PASSWORD),
+      emailVerifiedAt: new Date(),
+    },
+    update: {
+      displayName: "Aspera Shopper",
+      passwordHash: await hashPassword(DEV_CUSTOMER_PASSWORD),
+    },
+  });
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId_scopeKey: {
+        userId: customerUser.id,
+        roleId: customerRole.id,
+        scopeKey: "global",
+      },
+    },
+    create: {
+      userId: customerUser.id,
+      roleId: customerRole.id,
+      scopeKey: "global",
+    },
+    update: {},
+  });
+
   const approvedPublic = SEED_PRODUCTS.filter(
     (product) => (product.status ?? "approved") === "approved",
   ).length;
@@ -314,6 +348,10 @@ async function main() {
         seeded: true,
         environment: "development-or-preview-only",
         admin: { email: DEV_ADMIN_EMAIL, password: DEV_ADMIN_PASSWORD },
+        customer: {
+          email: DEV_CUSTOMER_EMAIL,
+          password: DEV_CUSTOMER_PASSWORD,
+        },
         sellers: [
           { key: "home", email: DEV_SELLER_EMAIL, password: DEV_SELLER_PASSWORD },
           {

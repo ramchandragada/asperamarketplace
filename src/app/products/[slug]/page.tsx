@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { safeJsonLd } from "@/lib/json-ld";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
@@ -8,8 +9,10 @@ import { ProductReviewsPanel } from "@/components/product-reviews-panel";
 import { ProductShareBar } from "@/components/product-share";
 import { PdpTrustBadgeRow } from "@/components/pdp-trust-badge-row";
 import { PageShell } from "@/components/ui/page-shell";
+import { OtherSellersPanel } from "@/components/other-sellers-panel";
 import {
   getPublicProductBySlug,
+  listSiblingSellerOffers,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
 import { getOptionalActor } from "@/modules/identity/service";
@@ -81,25 +84,32 @@ export default async function ProductDetailPage({
   }
 
   const actor = await getOptionalActor();
-  const [reviews, sellerProductCount, similar, alsoBought, shareUrl] =
-    await Promise.all([
-      listApprovedReviewsForProduct(product.id),
-      prisma.product.count({
-        where: { sellerId: product.sellerId, status: "approved" },
-      }),
-      searchApprovedProducts({
-        categorySlug: product.category.slug,
-        page: 1,
-        pageSize: 10,
-        sort: "newest",
-      }),
-      searchApprovedProducts({
-        page: 1,
-        pageSize: 12,
-        sort: "rating",
-      }),
-      absoluteProductUrl(product.slug),
-    ]);
+  const [
+    reviews,
+    sellerProductCount,
+    siblingOffers,
+    similar,
+    alsoBought,
+    shareUrl,
+  ] = await Promise.all([
+    listApprovedReviewsForProduct(product.id),
+    prisma.product.count({
+      where: { sellerId: product.sellerId, status: "approved" },
+    }),
+    listSiblingSellerOffers(product.id),
+    searchApprovedProducts({
+      categorySlug: product.category.slug,
+      page: 1,
+      pageSize: 10,
+      sort: "newest",
+    }),
+    searchApprovedProducts({
+      page: 1,
+      pageSize: 12,
+      sort: "rating",
+    }),
+    absoluteProductUrl(product.slug),
+  ]);
 
   const sellerName = product.seller.tradeName ?? product.seller.legalName;
   const sellerVerified = product.seller.status === "approved";
@@ -179,6 +189,20 @@ export default async function ProductDetailPage({
     Number.POSITIVE_INFINITY,
   );
   const inStock = variants.some((v) => v.availableQty > 0);
+  const siblingOfferNodes = siblingOffers.map((offer) => ({
+    "@type": "Offer",
+    url: `${siteUrl}/products/${offer.slug}`,
+    priceCurrency: "INR",
+    price: (offer.sellingPricePaise / 100).toFixed(2),
+    availability:
+      offer.availableQty > 0
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+    seller: {
+      "@type": "Organization",
+      name: offer.sellerName,
+    },
+  }));
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -189,21 +213,35 @@ export default async function ProductDetailPage({
     brand: product.brand
       ? { "@type": "Brand", name: product.brand.name }
       : undefined,
-    offers: {
-      "@type": "Offer",
-      url: `${siteUrl}/products/${product.slug}`,
-      priceCurrency: "INR",
-      price: Number.isFinite(lowestPrice)
-        ? (lowestPrice / 100).toFixed(2)
-        : undefined,
-      availability: inStock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-      seller: {
-        "@type": "Organization",
-        name: sellerName,
-      },
-    },
+    offers:
+      siblingOfferNodes.length > 1
+        ? {
+            "@type": "AggregateOffer",
+            priceCurrency: "INR",
+            lowPrice: (
+              Math.min(...siblingOffers.map((o) => o.sellingPricePaise)) / 100
+            ).toFixed(2),
+            highPrice: (
+              Math.max(...siblingOffers.map((o) => o.sellingPricePaise)) / 100
+            ).toFixed(2),
+            offerCount: siblingOfferNodes.length,
+            offers: siblingOfferNodes,
+          }
+        : {
+            "@type": "Offer",
+            url: `${siteUrl}/products/${product.slug}`,
+            priceCurrency: "INR",
+            price: Number.isFinite(lowestPrice)
+              ? (lowestPrice / 100).toFixed(2)
+              : undefined,
+            availability: inStock
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+            seller: {
+              "@type": "Organization",
+              name: sellerName,
+            },
+          },
     ...(average != null && reviews.length > 0
       ? {
           aggregateRating: {
@@ -245,13 +283,13 @@ export default async function ProductDetailPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([productJsonLd, breadcrumbJsonLd]),
+          __html: safeJsonLd([productJsonLd, breadcrumbJsonLd]),
         }}
       />
       <nav aria-label="Breadcrumb" className="text-xs text-muted">
         <ol className="flex flex-wrap items-center gap-1">
           <li>
-            <Link href="/" className="hover:text-accent">
+            <Link href="/" className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0">
               Home
             </Link>
           </li>
@@ -259,7 +297,7 @@ export default async function ProductDetailPage({
             &gt;
           </li>
           <li>
-            <Link href="/shop" className="hover:text-accent">
+            <Link href="/shop" className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0">
               Shop
             </Link>
           </li>
@@ -269,7 +307,7 @@ export default async function ProductDetailPage({
           <li>
             <Link
               href={`/browse?categorySlug=${encodeURIComponent(product.category.slug)}`}
-              className="hover:text-accent"
+              className="inline-flex min-h-11 items-center hover:text-accent md:min-h-0"
             >
               {product.category.name}
             </Link>
@@ -296,7 +334,7 @@ export default async function ProductDetailPage({
 
         <div className="flex flex-col gap-5">
           <div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
+            <h1 className="font-display text-[1.75rem] leading-tight font-semibold tracking-tight md:text-4xl">
               {product.title}
             </h1>
             <p className="mt-2 text-base text-muted">{product.summary}</p>
@@ -320,12 +358,13 @@ export default async function ProductDetailPage({
           </div>
 
           <ProductPurchasePanel
+            productId={product.id}
             variants={variants}
             highlights={highlights}
             productTitle={product.title}
           />
 
-          <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
+          <div className="rounded-2xl bg-surface p-4 shadow-[var(--shadow-card)]">
             <p className="text-xs font-semibold tracking-wide text-muted uppercase">
               Sold by
             </p>
@@ -351,6 +390,8 @@ export default async function ProductDetailPage({
               </Link>
             </div>
           </div>
+
+          <OtherSellersPanel offers={siblingOffers} />
 
           <section className="text-sm leading-7 text-muted">
             <h2 className="text-lg font-semibold text-foreground">

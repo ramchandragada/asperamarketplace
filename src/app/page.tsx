@@ -1,4 +1,8 @@
 import Link from "next/link";
+import {
+  CatalogueBrowse,
+  type BrowseProduct,
+} from "@/components/catalogue-browse";
 import { ProductCard } from "@/components/product-card";
 import { TrendingProductsRail } from "@/components/trending-products-rail";
 import { SectionHeading } from "@/components/ui/page-shell";
@@ -15,6 +19,7 @@ import {
   TrustSignalBar,
 } from "@/components/home-storefront";
 import {
+  listActiveBrands,
   listActiveCategories,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
@@ -43,7 +48,7 @@ const DISCOVERY_LANES = [
   {
     id: "rated",
     label: "Top rated picks",
-    href: "/browse?sort=relevance",
+    href: "/browse?sort=rating",
     imageUrl:
       "https://images.unsplash.com/photo-1534235187448-833893dfe3e0?auto=format&fit=crop&w=800&q=85",
   },
@@ -143,7 +148,10 @@ const PRICE_COLLECTIONS = [
 ] as const;
 
 export default async function Home() {
-  const categories = await listActiveCategories();
+  const [categories, brands] = await Promise.all([
+    listActiveCategories(),
+    listActiveBrands(),
+  ]);
   const categorySlugSet = new Set(categories.map((c) => c.slug));
 
   const campaignTiles = CAMPAIGN_TILES.filter((tile) =>
@@ -159,6 +167,7 @@ export default async function Home() {
   const [
     newest,
     trendingPool,
+    productsForYou,
     under299,
     under599,
     under999,
@@ -176,6 +185,12 @@ export default async function Home() {
       sort: "newest",
       inStockOnly: true,
       categorySlug: categorySlugSet.has("fashion") ? "fashion" : undefined,
+    }),
+    searchApprovedProducts({
+      page: 1,
+      pageSize: 24,
+      sort: "relevance",
+      inStockOnly: true,
     }),
     searchApprovedProducts({
       page: 1,
@@ -291,7 +306,8 @@ export default async function Home() {
       <CampaignTiles tiles={campaignTiles} />
 
       {trending.length > 0 ? (
-        <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
+        <section className="studio-band">
+          <div className="container-shell flex flex-col gap-3 py-5 md:gap-3.5 md:py-6">
           <SectionHeading
             title="Picked for you"
             description="Personalised finds from live catalogue"
@@ -305,6 +321,7 @@ export default async function Home() {
             }
           />
           <TrendingProductsRail products={trending} />
+          </div>
         </section>
       ) : null}
 
@@ -345,10 +362,10 @@ export default async function Home() {
       />
 
       {newArrivals.length > 0 ? (
-        <section className="container-shell flex flex-col gap-3 py-4 md:gap-3.5 md:py-5">
+        <section className="studio-band">
+          <div className="container-shell flex flex-col gap-3 py-5 md:gap-3.5 md:py-6">
           <SectionHeading
             title="New arrivals"
-            description="Recently listed on Aspera"
             action={
               <Link
                 href="/shop?sort=newest"
@@ -362,6 +379,36 @@ export default async function Home() {
             {newArrivals.map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}
+          </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Added below existing merchandising — does not replace any prior section */}
+      {productsForYou.items.length > 0 ? (
+        <section
+          id="products-for-you"
+          className="bg-background"
+        >
+          <div className="container-shell py-5 md:py-7">
+            <CatalogueBrowse
+              variant="home"
+              heading="Products For You"
+              browseBasePath="/browse"
+              initialItems={productsForYou.items as BrowseProduct[]}
+              initialQuery=""
+              initialTotal={productsForYou.total}
+              initialSort="relevance"
+              categories={categories.map((category) => ({
+                slug: category.slug,
+                name: category.name,
+                productCount: category.productCount,
+              }))}
+              brands={brands}
+              enableLoadMore
+              infiniteScroll
+              updateUrl={false}
+            />
           </div>
         </section>
       ) : null}

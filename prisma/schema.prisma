@@ -137,8 +137,27 @@ model User {
   orders            Order[]
   paymentAttempts   PaymentAttempt[]
   wishlistItems     WishlistItem[]
+  buyerProfile      BuyerProfile?
 
   @@map("users")
+}
+
+/// Buyer business / purchase preferences (Sprint D account hub).
+model BuyerProfile {
+  id                     String   @id @default(uuid()) @db.Uuid
+  userId                 String   @unique @map("user_id") @db.Uuid
+  businessName           String?  @map("business_name")
+  /// Full GSTIN when provided for tax invoices. Display via maskGstin.
+  gstin                  String?
+  taxInvoicePreferred    Boolean  @default(false) @map("tax_invoice_preferred")
+  /// mock | online | cod — online reserved for live Razorpay.
+  preferredPaymentMethod String   @default("mock") @map("preferred_payment_method")
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("buyer_profiles")
 }
 
 model Role {
@@ -324,6 +343,9 @@ model Product {
   statusReason     String?       @map("status_reason")
   countryOfOrigin  String?       @map("country_of_origin")
   hsnCode          String?       @map("hsn_code")
+  /// Groups seller-owned listings that are the same shopper-facing product.
+  /// Each seller keeps their own Product + Variant + Inventory; the PDP lists siblings.
+  sharedListingKey String?       @map("shared_listing_key")
   attributes       Json?
   searchDocument   String        @default("") @map("search_document")
   submittedAt      DateTime?     @map("submitted_at") @db.Timestamptz(6)
@@ -345,6 +367,8 @@ model Product {
   @@index([sellerId])
   @@index([categoryId])
   @@index([status])
+  @@index([sharedListingKey])
+  @@unique([sharedListingKey, sellerId])
   @@map("products")
 }
 

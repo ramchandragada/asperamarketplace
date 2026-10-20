@@ -229,17 +229,24 @@ export function jsonError(
         : error instanceof Prisma.PrismaClientInitializationError
           ? error.errorCode
           : undefined;
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const quotaExceeded = /exceeded the quota|compute time quota/i.test(
+      rawMessage,
+    );
     logger.error("API database error", {
       requestId,
       prismaCode,
+      quotaExceeded,
       name: error instanceof Error ? error.name : "PrismaError",
-      message: error instanceof Error ? error.message : String(error),
+      message: rawMessage,
     });
     return NextResponse.json(
       fail({
         requestId,
         code: "SERVICE_UNAVAILABLE",
-        message: "Cart service is temporarily unavailable. Please try again.",
+        message: quotaExceeded
+          ? "Database capacity is temporarily unavailable. Please try again later."
+          : "Service is temporarily unavailable. Please try again.",
       }),
       { status: 503, headers: { [REQUEST_ID_HEADER]: requestId } },
     );

@@ -121,6 +121,9 @@ model User {
   passwordHash    String    @map("password_hash")
   displayName     String    @map("display_name")
   status          UserStatus @default(active)
+  /// AES-GCM ciphertext of TOTP secret (admins). Null until enrolled.
+  totpSecretEnc   String?   @map("totp_secret_enc")
+  totpEnabledAt   DateTime? @map("totp_enabled_at") @db.Timestamptz(6)
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -1065,6 +1068,8 @@ model SettlementBatch {
   periodEnd       DateTime         @map("period_end") @db.Timestamptz(6)
   grossPaise      Int              @map("gross_paise")
   commissionPaise Int              @map("commission_paise")
+  /// Marketplace TCS u/s 206C(1H) withheld from seller net (paise).
+  tcsPaise        Int              @default(0) @map("tcs_paise")
   netPaise        Int              @map("net_paise")
   holdReason      String?          @map("hold_reason")
   releasedAt      DateTime?        @map("released_at") @db.Timestamptz(6)

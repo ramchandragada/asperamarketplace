@@ -12,6 +12,7 @@ import {
   ConflictError as IdentityConflictError,
   RateLimitError,
 } from "@/modules/identity/service";
+import { DemoLoginBlockedError } from "@/modules/identity/demo-gate";
 import {
   ConflictError as SellerConflictError,
   ValidationError,
@@ -133,6 +134,17 @@ export function jsonError(
         message: error.message,
       }),
       { status: 401, headers: { [REQUEST_ID_HEADER]: requestId } },
+    );
+  }
+
+  if (error instanceof DemoLoginBlockedError) {
+    return NextResponse.json(
+      fail({
+        requestId,
+        code: error.code,
+        message: error.message,
+      }),
+      { status: 403, headers: { [REQUEST_ID_HEADER]: requestId } },
     );
   }
 

@@ -165,6 +165,7 @@ const cartInclude = {
                   legalName: true,
                   tradeName: true,
                   status: true,
+                  registeredState: true,
                 },
               },
             },
@@ -601,6 +602,7 @@ async function loadPricedLines(cartId: string) {
   }
 
   const lines = [];
+  const sellerStates: Record<string, string | null> = {};
   let totalWeightGrams = 0;
   for (const item of cart.items) {
     const { variant } = item;
@@ -624,6 +626,8 @@ async function loadPricedLines(cartId: string) {
       );
     }
     totalWeightGrams += (variant.weightGrams ?? 500) * item.quantity;
+    sellerStates[variant.product.seller.id] =
+      variant.product.seller.registeredState ?? null;
     lines.push({
       variantId: variant.id,
       productId: variant.product.id,
@@ -639,7 +643,7 @@ async function loadPricedLines(cartId: string) {
     });
   }
 
-  return { cart, lines, totalWeightGrams };
+  return { cart, lines, totalWeightGrams, sellerStates };
 }
 
 function assertClientTotal(
@@ -684,6 +688,7 @@ export async function estimateCart(
     couponCode: input.couponCode,
     destinationState: input.destinationState?.trim() || "Maharashtra",
     totalWeightGrams: priced.totalWeightGrams,
+    sellerStates: priced.sellerStates,
     taxPolicy,
   });
   const mrpTotal = priced.cart.items.reduce(
@@ -721,6 +726,7 @@ export async function previewCheckout(
     couponCode: input.couponCode,
     destinationState: address.state,
     totalWeightGrams: priced.totalWeightGrams,
+    sellerStates: priced.sellerStates,
     taxPolicy,
   });
   assertClientTotal(snapshot, input.clientTotalPaise);
@@ -789,6 +795,7 @@ export async function confirmCheckout(
     couponCode: input.couponCode,
     destinationState: address.state,
     totalWeightGrams: priced.totalWeightGrams,
+    sellerStates: priced.sellerStates,
     taxPolicy,
   });
   assertClientTotal(snapshot, input.clientTotalPaise);

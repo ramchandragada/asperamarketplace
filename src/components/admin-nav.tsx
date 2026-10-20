@@ -16,6 +16,7 @@ const LINKS = [
   { href: "/admin/finance", label: "Finance" },
   { href: "/admin/analytics", label: "Analytics" },
   { href: "/admin/audit", label: "Audit log" },
+  { href: "/admin/security", label: "Security" },
 ] as const;
 
 export function AdminNav({

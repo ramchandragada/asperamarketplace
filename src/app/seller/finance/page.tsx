@@ -47,8 +47,9 @@ export default async function SellerFinancePage() {
         <p className="mt-2 text-sm text-muted">
           Read-only settlement batches for{" "}
           {seller.tradeName ?? seller.legalName}. Releases remain admin-operated.
-          Tax figures shown elsewhere are placeholders — not a legal GST/TCS
-          determination.
+          Settlements withhold marketplace TCS (0.5%). Checkout GST splits
+          CGST/SGST or IGST by place of supply — confirm filings with a tax
+          professional.
         </p>
       </header>
       {batches.length === 0 ? (

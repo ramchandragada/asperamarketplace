@@ -12,6 +12,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [totpChallenge, setTotpChallenge] = useState<string | null>(null);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,6 +20,30 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
     setError(null);
     const form = new FormData(event.currentTarget);
     const intent = String(form.get("intent") ?? "customer");
+
+    if (totpChallenge) {
+      const response = await fetch("/api/auth/totp/verify", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          challengeToken: totpChallenge,
+          code: String(form.get("totp") ?? ""),
+        }),
+      });
+      const body = (await response.json()) as {
+        message?: string;
+        error?: string;
+      };
+      setPending(false);
+      if (!response.ok) {
+        setError(body.message ?? body.error ?? "Invalid authenticator code");
+        return;
+      }
+      router.push(nextPath ?? "/account");
+      router.refresh();
+      return;
+    }
+
     const payload =
       mode === "register"
         ? {
@@ -40,10 +65,15 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
     const body = (await response.json()) as {
       message?: string;
       error?: string;
+      data?: { requiresTotp?: boolean; challengeToken?: string };
     };
     setPending(false);
     if (!response.ok) {
       setError(body.message ?? body.error ?? "Request failed");
+      return;
+    }
+    if (body.data?.requiresTotp && body.data.challengeToken) {
+      setTotpChallenge(body.data.challengeToken);
       return;
     }
     const destination =
@@ -56,50 +86,70 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="flex max-w-md flex-col gap-4">
-      {mode === "register" ? (
+      {totpChallenge ? (
         <label className="flex flex-col gap-1 text-sm">
-          Display name
+          Authenticator code
           <input
-            name="displayName"
+            name="totp"
+            inputMode="numeric"
+            autoComplete="one-time-code"
             required
+            minLength={6}
+            maxLength={8}
             className="rounded-lg border border-border bg-surface px-3 py-2"
+            placeholder="6-digit code"
           />
         </label>
-      ) : null}
-      <label className="flex flex-col gap-1 text-sm">
-        Email
-        <input
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          className="rounded-lg border border-border bg-surface px-3 py-2"
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        Password
-        <input
-          name="password"
-          type="password"
-          required
-          minLength={12}
-          autoComplete={mode === "login" ? "current-password" : "new-password"}
-          className="rounded-lg border border-border bg-surface px-3 py-2"
-        />
-      </label>
-      {mode === "register" ? (
-        <label className="flex flex-col gap-1 text-sm">
-          Account intent
-          <select
-            name="intent"
-            defaultValue="customer"
-            className="rounded-lg border border-border bg-surface px-3 py-2"
-          >
-            <option value="seller">Seller</option>
-            <option value="customer">Customer</option>
-          </select>
-        </label>
-      ) : null}
+      ) : (
+        <>
+          {mode === "register" ? (
+            <label className="flex flex-col gap-1 text-sm">
+              Display name
+              <input
+                name="displayName"
+                required
+                className="rounded-lg border border-border bg-surface px-3 py-2"
+              />
+            </label>
+          ) : null}
+          <label className="flex flex-col gap-1 text-sm">
+            Email
+            <input
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              className="rounded-lg border border-border bg-surface px-3 py-2"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            Password
+            <input
+              name="password"
+              type="password"
+              required
+              minLength={12}
+              autoComplete={
+                mode === "login" ? "current-password" : "new-password"
+              }
+              className="rounded-lg border border-border bg-surface px-3 py-2"
+            />
+          </label>
+          {mode === "register" ? (
+            <label className="flex flex-col gap-1 text-sm">
+              Account intent
+              <select
+                name="intent"
+                defaultValue="customer"
+                className="rounded-lg border border-border bg-surface px-3 py-2"
+              >
+                <option value="seller">Seller</option>
+                <option value="customer">Customer</option>
+              </select>
+            </label>
+          ) : null}
+        </>
+      )}
       {error ? (
         <p role="alert" className="text-sm text-red-700">
           {error}
@@ -110,7 +160,13 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
         disabled={pending}
         className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground disabled:opacity-60"
       >
-        {pending ? "Working…" : mode === "login" ? "Sign in" : "Create account"}
+        {pending
+          ? "Working…"
+          : totpChallenge
+            ? "Verify code"
+            : mode === "login"
+              ? "Sign in"
+              : "Create account"}
       </button>
     </form>
   );

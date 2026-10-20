@@ -225,7 +225,7 @@ export function CartPanel({
                           {!item.inStock ? " · stock issue" : ""}
                         </p>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <label className="text-sm">
+                          <label className="inline-flex items-center gap-2 text-sm text-muted">
                             Qty
                             <input
                               key={`${item.variantId}-${item.quantity}`}
@@ -234,7 +234,7 @@ export function CartPanel({
                               max={Math.min(99, item.availableQty)}
                               defaultValue={item.quantity}
                               disabled={pending}
-                              className="ml-2 h-11 w-20 rounded-full border border-border bg-background px-3 text-base md:h-auto md:py-1 md:text-sm"
+                              className="h-11 w-16 rounded-[var(--radius-sm)] border border-border bg-background px-2 text-center text-sm font-semibold text-foreground md:h-9"
                               onBlur={(event) => {
                                 const next = Number(event.target.value);
                                 if (
@@ -248,7 +248,7 @@ export function CartPanel({
                           </label>
                           <button
                             type="button"
-                            className="inline-flex min-h-11 items-center text-sm font-medium text-danger underline md:min-h-0"
+                            className="btn-cta btn-cta-ghost h-11 px-3 text-danger md:h-9"
                             disabled={pending}
                             onClick={() => void setQuantity(item.variantId, 0)}
                           >
@@ -319,19 +319,19 @@ export function CartPanel({
               </p>
             ) : null}
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               <input
                 value={couponCode}
                 onChange={(event) => setCouponCode(event.target.value)}
                 placeholder="Coupon code (e.g. ASPERA10)"
-                className="min-h-11 min-w-0 flex-1 rounded-full border border-border bg-background px-3 text-sm"
+                className="h-11 min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border bg-background px-3 text-sm"
                 disabled={pending}
               />
               <button
                 type="button"
                 disabled={pending}
                 onClick={() => void applyCoupon()}
-                className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium disabled:opacity-60"
+                className="btn-cta btn-cta-ghost"
               >
                 Apply
               </button>
@@ -346,7 +346,7 @@ export function CartPanel({
             </p>
             <Link
               href="/checkout"
-              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-accent px-4 py-2.5 font-semibold text-white sm:w-fit"
+              className="btn-cta btn-cta-primary mt-4 w-full sm:w-auto"
             >
               Continue to checkout
             </Link>

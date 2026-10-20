@@ -259,7 +259,7 @@ export function CheckoutPanel({
           <button
             type="button"
             disabled={pending}
-            className="mt-4 inline-flex min-h-11 items-center rounded-full bg-brand-accent px-5 py-2 font-semibold text-white disabled:opacity-60"
+            className="btn-cta btn-cta-primary mt-4"
             onClick={() => void placeReservedOrder()}
           >
             {pending ? "Placing order…" : "Place order"}
@@ -379,12 +379,12 @@ export function CheckoutPanel({
               placeholder="ASPERA10"
               className="rounded-lg border border-border bg-surface px-3 py-2"
             />
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 disabled={pending}
                 onClick={() => void preview()}
-                className="rounded-lg border border-border px-4 py-2 font-medium disabled:opacity-60"
+                className="btn-cta btn-cta-ghost"
               >
                 Preview totals
               </button>
@@ -392,7 +392,7 @@ export function CheckoutPanel({
                 type="button"
                 disabled={pending || !snapshot}
                 onClick={() => void confirmAndPlace()}
-                className="min-h-11 rounded-full bg-brand-accent px-5 py-2 font-semibold text-white disabled:opacity-60"
+                className="btn-cta btn-cta-primary"
               >
                 {pending ? "Placing…" : "Place order"}
               </button>

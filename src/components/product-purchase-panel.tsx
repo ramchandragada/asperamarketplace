@@ -282,34 +282,46 @@ export function ProductPurchasePanel({
       {highlights.length > 0 ? (
         <div>
           <p className="mb-2 text-sm font-semibold">Product highlights</p>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          <dl className="grid gap-2 text-sm">
             {highlights.map((row) => (
-              <div key={row.label} className="contents">
+              <div
+                key={row.label}
+                className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]"
+              >
                 <dt className="text-muted">{row.label}</dt>
-                <dd className="font-medium">{row.value}</dd>
+                <dd className="font-medium text-foreground">{row.value}</dd>
               </div>
             ))}
           </dl>
         </div>
       ) : null}
 
-      <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
-        <p className="text-sm font-semibold">Delivery & services</p>
-        <div className="mt-2">
+      <div className="rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
+        <p className="text-sm font-semibold tracking-tight">Delivery & services</p>
+        <div className="mt-3">
           <PincodeField showCheckButton required={false} name="pdpPostalCode" />
         </div>
         <p className="mt-2 text-sm text-muted">
           Free Delivery on eligible orders · Cash on Delivery available
         </p>
-        <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-border pt-3 text-[11px] text-muted">
-          <li className="inline-flex items-center gap-1">
-            <span className="font-semibold text-success">✓</span> 7 Days Return
+        <ul className="mt-3 grid grid-cols-1 gap-2 border-t border-border pt-3 text-xs text-muted sm:grid-cols-3">
+          <li className="inline-flex items-center gap-1.5">
+            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-success-soft text-[10px] font-bold text-success">
+              ✓
+            </span>
+            7 Days Return
           </li>
-          <li className="inline-flex items-center gap-1">
-            <span className="font-semibold text-success">✓</span> COD Available
+          <li className="inline-flex items-center gap-1.5">
+            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-success-soft text-[10px] font-bold text-success">
+              ✓
+            </span>
+            COD Available
           </li>
-          <li className="inline-flex items-center gap-1">
-            <span className="font-semibold text-success">✓</span> Fast Delivery
+          <li className="inline-flex items-center gap-1.5">
+            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-success-soft text-[10px] font-bold text-success">
+              ✓
+            </span>
+            Fast Delivery
           </li>
         </ul>
         {sizeVariants.length > 1 ? (
@@ -322,10 +334,11 @@ export function ProductPurchasePanel({
         ) : null}
       </div>
 
-      {/* Single CTA instance: sticky on mobile, inline on desktop */}
-      <div className="fixed inset-x-3 bottom-[calc(5.85rem+env(safe-area-inset-bottom))] z-50 flex gap-2 rounded-2xl border border-border bg-surface p-2 shadow-[0_-8px_24px_rgba(23,33,38,0.08)] [overflow-anchor:none] md:static md:inset-auto md:bottom-auto md:z-auto md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
-        <div className="min-w-0 flex-1 sm:flex-none">
+      {/* Fixed-height CTAs: never stretch with sibling feedback (prevents circular Buy now). */}
+      <div className="fixed inset-x-3 bottom-[calc(5.85rem+env(safe-area-inset-bottom))] z-50 rounded-[var(--radius)] border border-border bg-surface/95 p-3 shadow-[0_-8px_24px_rgba(23,33,38,0.1)] backdrop-blur-sm [overflow-anchor:none] md:static md:inset-auto md:bottom-auto md:z-auto md:border-0 md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-none">
+        <div className="flex flex-wrap items-center gap-2">
           <AddToCartButton
+            compact
             variantId={activeVariantId}
             productId={productId}
             availableQty={selected?.availableQty ?? priceVariant.availableQty}
@@ -333,33 +346,32 @@ export function ProductPurchasePanel({
             selectionRequired={selectionRequired}
             selectionHint="Please select a size before adding to cart"
           />
-        </div>
-        {selectionRequired ? (
           <button
             type="button"
-            disabled
-            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-brand-accent px-4 py-2 text-sm font-semibold text-white opacity-60 sm:flex-none"
-          >
-            Buy now
-          </button>
-        ) : (
-          <button
-            type="button"
-            disabled={buyPending}
+            disabled={selectionRequired || buyPending}
             onClick={() => void buyNow()}
-            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-brand-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 sm:flex-none"
+            className="btn-cta btn-cta-primary min-w-0 flex-1 basis-[8.5rem] md:min-w-[9.5rem] md:flex-none"
           >
             {buyPending ? "Starting…" : "Buy now"}
           </button>
-        )}
+        </div>
+        <div className="mt-2 hidden items-center justify-between gap-3 md:flex">
+          <a
+            href="/cart"
+            className="text-sm font-medium text-accent underline-offset-2 hover:underline"
+          >
+            View cart
+          </a>
+          <p className="text-xs text-muted">Secure checkout · Buyer Protection</p>
+        </div>
+        {buyError ? (
+          <p className="mt-2 text-sm text-red-700" role="alert">
+            {buyError}
+          </p>
+        ) : null}
       </div>
-      {buyError ? (
-        <p className="text-sm text-red-700" role="alert">
-          {buyError}
-        </p>
-      ) : null}
       {/* Spacer so the fixed bar sits above the mobile tab nav */}
-      <div className="h-40 md:hidden" aria-hidden />
+      <div className="h-28 md:hidden" aria-hidden />
     </div>
   );
 }

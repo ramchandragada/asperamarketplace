@@ -10,6 +10,8 @@ export function AddToCartButton({
   productTitle,
   selectionRequired = false,
   selectionHint = "Please select a size",
+  /** Compact PDP sticky bar: no inline View cart / success text (toast handles it). */
+  compact = false,
 }: {
   variantId: string;
   productId?: string;
@@ -18,22 +20,25 @@ export function AddToCartButton({
   /** When true, block add-to-cart until the shopper chooses a required option. */
   selectionRequired?: boolean;
   selectionHint?: string;
+  compact?: boolean;
 }) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  function clampQty(value: number) {
+    const max = Math.min(99, availableQty);
+    return Math.max(1, Math.min(max, value));
+  }
 
   async function add() {
     if (selectionRequired) {
       setError(selectionHint);
-      setMessage(null);
       return;
     }
     setPending(true);
     setError(null);
-    setMessage(null);
     try {
       const response = await fetch("/api/cart", {
         method: "POST",
@@ -52,7 +57,6 @@ export function AddToCartButton({
         setError(body.message ?? "Could not add to cart");
         return;
       }
-      setMessage(body.message ?? "Added");
       if (productId) {
         void import("@/components/analytics-beacon").then(({ trackAddToCart }) => {
           trackAddToCart(productId);
@@ -61,13 +65,15 @@ export function AddToCartButton({
       void import("@/components/toast-host").then(({ showToast }) => {
         showToast(
           productTitle
-            ? `✓ Added to cart — ${productTitle}`
-            : "✓ Added to cart",
+            ? `Added to cart — ${productTitle}`
+            : "Added to cart",
         );
       });
       router.refresh();
     } catch {
-      setError("Could not reach the cart service. Check your connection and try again.");
+      setError(
+        "Could not reach the cart service. Check your connection and try again.",
+      );
     } finally {
       setPending(false);
     }
@@ -78,34 +84,67 @@ export function AddToCartButton({
   }
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <div className="flex w-full flex-wrap items-center gap-2">
-        <label className="hidden text-sm md:inline">
-          Qty
+    <div className={compact ? "contents" : "flex w-full flex-col gap-2"}>
+      <div
+        className={
+          compact
+            ? "contents"
+            : "flex w-full flex-wrap items-center gap-2"
+        }
+      >
+        <div className="qty-stepper" aria-label="Quantity">
+          <button
+            type="button"
+            aria-label="Decrease quantity"
+            disabled={quantity <= 1 || pending}
+            onClick={() => setQuantity((q) => clampQty(q - 1))}
+          >
+            −
+          </button>
           <input
             type="number"
             min={1}
             max={Math.min(99, availableQty)}
             value={quantity}
-            onChange={(event) => setQuantity(Number(event.target.value) || 1)}
-            className="ml-2 w-20 rounded-full border border-border bg-background px-3 py-1"
+            aria-label="Quantity"
+            onChange={(event) =>
+              setQuantity(clampQty(Number(event.target.value) || 1))
+            }
           />
-        </label>
+          <button
+            type="button"
+            aria-label="Increase quantity"
+            disabled={quantity >= Math.min(99, availableQty) || pending}
+            onClick={() => setQuantity((q) => clampQty(q + 1))}
+          >
+            +
+          </button>
+        </div>
         <button
           type="button"
           disabled={pending}
           onClick={() => void add()}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-60 md:w-auto"
+          className={`btn-cta btn-cta-secondary ${compact ? "min-w-0 flex-1" : "min-w-[9.5rem]"}`}
         >
           {pending ? "Adding…" : "Add to cart"}
         </button>
-        <a href="/cart" className="hidden text-sm underline md:inline">
-          View cart
-        </a>
+        {!compact ? (
+          <a
+            href="/cart"
+            className="text-sm font-medium text-accent underline-offset-2 hover:underline"
+          >
+            View cart
+          </a>
+        ) : null}
       </div>
-      {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div
+          className={
+            compact
+              ? "basis-full text-sm text-red-700"
+              : "flex flex-wrap items-center gap-2"
+          }
+        >
           <p className="text-sm text-red-700" role="alert">
             {error}
           </p>

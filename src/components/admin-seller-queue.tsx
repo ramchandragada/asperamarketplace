@@ -25,6 +25,8 @@ type AdminSeller = {
   panLast4: string | null;
   gstinMasked: string | null;
   registeredState: string | null;
+  ratingAvg?: number;
+  ratingCount?: number;
   owner: { email: string; displayName: string };
   documents: Array<{
     id: string;
@@ -132,15 +134,19 @@ export function AdminSellerQueue({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [sortByRating, setSortByRating] = useState(true);
 
   const counts = useMemo(
     () => countSellers(initialSellers),
     [initialSellers],
   );
-  const visible = useMemo(
-    () => filterSellers(sellers, tab),
-    [sellers, tab],
-  );
+  const visible = useMemo(() => {
+    const filtered = filterSellers(sellers, tab);
+    if (!sortByRating) return filtered;
+    return [...filtered].sort(
+      (a, b) => (b.ratingAvg ?? 0) - (a.ratingAvg ?? 0),
+    );
+  }, [sellers, tab, sortByRating]);
 
   function openConfirm(seller: AdminSeller, decision: ReviewDecision) {
     setError(null);
@@ -214,7 +220,7 @@ export function AdminSellerQueue({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2 text-sm">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
         {TABS.map(({ key, label }) => (
           <Link
             key={key}
@@ -229,6 +235,14 @@ export function AdminSellerQueue({
             </span>
           </Link>
         ))}
+        <label className="ml-auto flex items-center gap-2 text-muted">
+          <input
+            type="checkbox"
+            checked={sortByRating}
+            onChange={(event) => setSortByRating(event.target.checked)}
+          />
+          Sort by rating
+        </label>
       </div>
 
       {message ? <p className="text-sm text-green-800">{message}</p> : null}
@@ -260,6 +274,9 @@ export function AdminSellerQueue({
                   </p>
                   <p className="mt-1 text-sm">
                     Status: <span className="font-medium">{seller.status}</span>
+                    {(seller.ratingCount ?? 0) > 0
+                      ? ` · ${(seller.ratingAvg ?? 0).toFixed(1)}★ (${seller.ratingCount})`
+                      : " · No ratings"}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">

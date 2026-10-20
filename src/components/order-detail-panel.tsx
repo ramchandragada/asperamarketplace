@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
+import { BuyerProtectionBadge } from "@/components/buyer-protection-badge";
 
 type OrderDetail = {
   id: string;
@@ -26,6 +27,7 @@ type OrderDetail = {
   groups: Array<{
     id: string;
     sellerId: string;
+    sellerName: string;
     status: string;
     carrier: string | null;
     trackingNumber: string | null;
@@ -62,6 +64,12 @@ type OrderDetail = {
     orderLineId: string | null;
     sellerId: string;
   }>;
+  protectionClaims: Array<{
+    id: string;
+    orderLineId: string;
+    status: string;
+    claimType: string;
+  }>;
   address: {
     fullName: string;
     phone: string;
@@ -72,7 +80,10 @@ type OrderDetail = {
   } | null;
 };
 
-function timelineSteps(order: OrderDetail) {
+function groupTimelineSteps(
+  order: OrderDetail,
+  group: OrderDetail["groups"][number],
+) {
   const steps: Array<{ label: string; at: string | null; done: boolean }> = [
     {
       label: "Ordered",
@@ -82,45 +93,31 @@ function timelineSteps(order: OrderDetail) {
     {
       label: "Paid",
       at: order.paidAt ? String(order.paidAt) : null,
-      done: Boolean(order.paidAt) || ["paid", "fulfilled", "partially_cancelled"].includes(order.status),
+      done:
+        Boolean(order.paidAt) ||
+        ["paid", "fulfilled", "partially_cancelled"].includes(order.status),
+    },
+    {
+      label: "Processing",
+      at: null,
+      done: ["processing", "shipped", "delivered"].includes(group.status),
+    },
+    {
+      label: "Shipped",
+      at: group.shippedAt ? String(group.shippedAt) : null,
+      done: group.status === "shipped" || group.status === "delivered",
+    },
+    {
+      label: "Delivered",
+      at: group.deliveredAt ? String(group.deliveredAt) : null,
+      done: group.status === "delivered",
     },
   ];
 
-  const anyProcessing = order.groups.some(
-    (g) =>
-      g.status === "processing" ||
-      g.status === "shipped" ||
-      g.status === "delivered",
-  );
-  const anyShipped = order.groups.some(
-    (g) => g.status === "shipped" || g.status === "delivered",
-  );
-  const anyDelivered = order.groups.some((g) => g.status === "delivered");
-  const shippedAt =
-    order.groups.map((g) => g.shippedAt).find(Boolean) ?? null;
-  const deliveredAt =
-    order.groups.map((g) => g.deliveredAt).find(Boolean) ?? null;
-
-  steps.push({
-    label: "Processing",
-    at: null,
-    done: anyProcessing || anyShipped || anyDelivered,
-  });
-  steps.push({
-    label: "Shipped",
-    at: shippedAt ? String(shippedAt) : null,
-    done: anyShipped || anyDelivered,
-  });
-  steps.push({
-    label: "Delivered",
-    at: deliveredAt ? String(deliveredAt) : null,
-    done: anyDelivered || order.status === "fulfilled",
-  });
-
-  if (order.status === "cancelled" || order.cancelledAt) {
+  if (group.status === "cancelled" || group.cancelledAt) {
     steps.push({
       label: "Cancelled",
-      at: order.cancelledAt ? String(order.cancelledAt) : null,
+      at: group.cancelledAt ? String(group.cancelledAt) : null,
       done: true,
     });
   }
@@ -138,10 +135,20 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
       order.groups.some(
         (g) => g.sellerId === line.sellerId && g.status === "delivered",
       ),
-    )?.id ?? order.lines[0]?.id ?? "",
+    )?.id ??
+      order.lines[0]?.id ??
+      "",
   );
   const [reviewProductId, setReviewProductId] = useState(
     order.lines[0]?.productId ?? "",
+  );
+  const [claimLineId, setClaimLineId] = useState(order.lines[0]?.id ?? "");
+  const [sellerFeedbackLineId, setSellerFeedbackLineId] = useState(
+    order.lines.find((line) =>
+      order.groups.some(
+        (g) => g.sellerId === line.sellerId && g.status === "delivered",
+      ),
+    )?.id ?? "",
   );
 
   const canCancel =
@@ -158,6 +165,11 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
     order.groups.some(
       (g) => g.sellerId === line.sellerId && g.status === "delivered",
     ),
+  );
+
+  const claimableLines = order.lines.filter(
+    (line) =>
+      !order.protectionClaims.some((claim) => claim.orderLineId === line.id),
   );
 
   async function cancelOrder() {
@@ -263,12 +275,66 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
     event.currentTarget.reset();
   }
 
-  const steps = timelineSteps(order);
+  async function submitClaim(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPending(true);
+    setError(null);
+    setMessage(null);
+    const form = new FormData(event.currentTarget);
+    const response = await fetch("/api/claims", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        orderId: order.id,
+        orderLineId: claimLineId,
+        claimType: String(form.get("claimType") ?? "other"),
+        description: String(form.get("description") ?? ""),
+      }),
+    });
+    const body = (await response.json()) as { message?: string };
+    setPending(false);
+    if (!response.ok) {
+      setError(body.message ?? "Could not submit claim");
+      return;
+    }
+    setMessage(body.message ?? "Buyer Protection claim submitted");
+    router.refresh();
+  }
+
+  async function submitSellerFeedback(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPending(true);
+    setError(null);
+    setMessage(null);
+    const form = new FormData(event.currentTarget);
+    const response = await fetch("/api/trust/seller-feedback", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        orderLineId: sellerFeedbackLineId,
+        rating: Number(form.get("rating") ?? 5),
+        text: String(form.get("text") ?? "") || undefined,
+        shippingRating: Number(form.get("shippingRating") || 0) || undefined,
+        packagingRating: Number(form.get("packagingRating") || 0) || undefined,
+        accuracyRating: Number(form.get("accuracyRating") || 0) || undefined,
+      }),
+    });
+    const body = (await response.json()) as { message?: string };
+    setPending(false);
+    if (!response.ok) {
+      setError(body.message ?? "Could not submit seller feedback");
+      return;
+    }
+    setMessage(body.message ?? "Seller feedback submitted");
+    event.currentTarget.reset();
+  }
 
   return (
     <div className="flex flex-col gap-8">
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
+
+      <BuyerProtectionBadge />
 
       <div className="flex flex-wrap gap-2">
         <button
@@ -297,66 +363,75 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
         </Link>
       </div>
 
-      <section>
-        <h2 className="text-lg font-semibold">Tracking</h2>
-        <ol className="mt-3 flex flex-col gap-3 border-l border-border pl-4">
-          {steps.map((step) => (
-            <li key={step.label} className="relative text-sm">
-              <span
-                className={`absolute -left-[1.35rem] top-1 h-2.5 w-2.5 rounded-full ${
-                  step.done ? "bg-accent" : "bg-border"
-                }`}
-              />
-              <p className={step.done ? "font-medium" : "text-muted"}>
-                {step.label}
-              </p>
-              {step.at ? (
-                <p className="text-muted">
-                  {new Date(step.at).toLocaleString("en-IN")}
-                </p>
-              ) : null}
-            </li>
-          ))}
-        </ol>
-        <ul className="mt-4 flex flex-col gap-2 text-sm">
-          {order.groups.map((group) => (
-            <li
+      <section className="flex flex-col gap-6">
+        <h2 className="text-lg font-semibold">Shipments</h2>
+        {order.groups.map((group) => {
+          const steps = groupTimelineSteps(order, group);
+          const groupLines = order.lines.filter(
+            (line) => line.sellerId === group.sellerId,
+          );
+          return (
+            <article
               key={group.id}
-              className="rounded-[var(--radius)] border border-border bg-surface p-3"
+              className="rounded-[var(--radius)] border border-border bg-surface p-4"
             >
-              <p className="capitalize">
-                {group.status.replaceAll("_", " ")}
-                {group.carrier ? ` · ${group.carrier}` : ""}
-                {group.trackingNumber ? ` ${group.trackingNumber}` : ""}
-              </p>
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="font-semibold">
+                  {group.sellerName}
+                </h3>
+                <p className="text-sm capitalize text-muted">
+                  {group.status.replaceAll("_", " ")}
+                </p>
+              </div>
+              <ol className="mt-3 flex flex-col gap-3 border-l border-border pl-4">
+                {steps.map((step) => (
+                  <li key={`${group.id}-${step.label}`} className="relative text-sm">
+                    <span
+                      className={`absolute -left-[1.35rem] top-1 h-2.5 w-2.5 rounded-full ${
+                        step.done ? "bg-accent" : "bg-border"
+                      }`}
+                    />
+                    <p className={step.done ? "font-medium" : "text-muted"}>
+                      {step.label}
+                    </p>
+                    {step.at ? (
+                      <p className="text-muted">
+                        {new Date(step.at).toLocaleString("en-IN")}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+              {(group.carrier || group.trackingNumber) && (
+                <p className="mt-3 text-sm">
+                  {group.carrier ? `${group.carrier} · ` : ""}
+                  {group.trackingNumber ?? ""}
+                </p>
+              )}
               {group.trackingUrl || group.shipment?.trackingUrl ? (
                 <a
                   href={group.trackingUrl ?? group.shipment?.trackingUrl ?? "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-accent underline"
+                  className="mt-1 inline-block text-sm text-accent underline"
                 >
                   Open tracking link
                 </a>
               ) : null}
-            </li>
-          ))}
-          {order.groups.length === 0 ? (
-            <li className="text-muted">No fulfilment groups yet.</li>
-          ) : null}
-        </ul>
-      </section>
-
-      <section>
-        <h2 className="text-lg font-semibold">Items</h2>
-        <ul className="mt-2 flex flex-col gap-2 text-sm">
-          {order.lines.map((line) => (
-            <li key={line.id}>
-              {line.productTitle} / {line.variantTitle} × {line.quantity} ·{" "}
-              {formatPaise(line.lineTotalPaise)}
-            </li>
-          ))}
-        </ul>
+              <ul className="mt-3 space-y-1 text-sm">
+                {groupLines.map((line) => (
+                  <li key={line.id}>
+                    {line.productTitle} / {line.variantTitle} × {line.quantity} ·{" "}
+                    {formatPaise(line.lineTotalPaise)}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          );
+        })}
+        {order.groups.length === 0 ? (
+          <p className="text-sm text-muted">No fulfilment groups yet.</p>
+        ) : null}
       </section>
 
       {order.address ? (
@@ -434,6 +509,20 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
         </section>
       ) : null}
 
+      {order.protectionClaims.length > 0 ? (
+        <section>
+          <h2 className="text-lg font-semibold">Buyer Protection claims</h2>
+          <ul className="mt-2 text-sm">
+            {order.protectionClaims.map((claim) => (
+              <li key={claim.id}>
+                {claim.claimType.replaceAll("_", " ")} ·{" "}
+                {claim.status.replaceAll("_", " ")}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {returnableLines.length > 0 ? (
         <section className="rounded-[var(--radius)] border border-border bg-surface p-4">
           <h2 className="text-lg font-semibold">Request a return</h2>
@@ -478,6 +567,62 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
               className="w-fit rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-medium text-accent-foreground disabled:opacity-60"
             >
               Submit return
+            </button>
+          </form>
+        </section>
+      ) : null}
+
+      {order.paidAt && claimableLines.length > 0 ? (
+        <section className="rounded-[var(--radius)] border border-border bg-surface p-4">
+          <h2 className="text-lg font-semibold">File Buyer Protection claim</h2>
+          <p className="mt-1 text-sm text-muted">
+            Eligible when delivery SLA is missed, an item is not as described,
+            or a return is not honoured.
+          </p>
+          <form onSubmit={submitClaim} className="mt-3 flex flex-col gap-3">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">Item</span>
+              <select
+                value={claimLineId}
+                onChange={(event) => setClaimLineId(event.target.value)}
+                className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2"
+              >
+                {claimableLines.map((line) => (
+                  <option key={line.id} value={line.id}>
+                    {line.productTitle} / {line.variantTitle}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">Claim type</span>
+              <select
+                name="claimType"
+                defaultValue="not_as_described"
+                className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2"
+              >
+                <option value="not_delivered">Not delivered</option>
+                <option value="not_as_described">Not as described</option>
+                <option value="return_not_honored">Return not honoured</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">Describe the issue</span>
+              <textarea
+                name="description"
+                required
+                minLength={20}
+                rows={4}
+                className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={pending}
+              className="w-fit rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-medium text-accent-foreground disabled:opacity-60"
+            >
+              Submit claim
             </button>
           </form>
         </section>
@@ -540,6 +685,96 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
               className="w-fit rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-medium text-accent-foreground disabled:opacity-60"
             >
               Submit review
+            </button>
+          </form>
+        </section>
+      ) : null}
+
+      {returnableLines.length > 0 ? (
+        <section className="rounded-[var(--radius)] border border-border bg-surface p-4">
+          <h2 className="text-lg font-semibold">Rate the seller</h2>
+          <p className="mt-1 text-sm text-muted">
+            Separate from product reviews — helps shoppers choose reliable
+            sellers.
+          </p>
+          <form
+            onSubmit={submitSellerFeedback}
+            className="mt-3 flex flex-col gap-3"
+          >
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">Item / seller</span>
+              <select
+                value={sellerFeedbackLineId}
+                onChange={(event) =>
+                  setSellerFeedbackLineId(event.target.value)
+                }
+                className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2"
+              >
+                {returnableLines.map((line) => {
+                  const group = order.groups.find(
+                    (entry) => entry.sellerId === line.sellerId,
+                  );
+                  return (
+                    <option key={line.id} value={line.id}>
+                      {group?.sellerName ?? "Seller"} · {line.productTitle}
+                    </option>
+                  );
+                })}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">Overall rating</span>
+              <select
+                name="rating"
+                defaultValue={5}
+                className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2"
+              >
+                {[5, 4, 3, 2, 1].map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {(
+                [
+                  ["shippingRating", "Shipping"],
+                  ["packagingRating", "Packaging"],
+                  ["accuracyRating", "Accuracy"],
+                ] as const
+              ).map(([name, label]) => (
+                <label key={name} className="flex flex-col gap-1 text-sm">
+                  <span className="font-medium">{label}</span>
+                  <select
+                    name={name}
+                    defaultValue={5}
+                    className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2"
+                  >
+                    {[5, 4, 3, 2, 1].map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+            </div>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">Comment (optional)</span>
+              <textarea
+                name="text"
+                rows={2}
+                maxLength={1000}
+                className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={pending}
+              className="w-fit rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-medium text-accent-foreground disabled:opacity-60"
+            >
+              Submit seller rating
             </button>
           </form>
         </section>

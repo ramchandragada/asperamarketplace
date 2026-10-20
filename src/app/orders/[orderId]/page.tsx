@@ -56,6 +56,8 @@ export default async function OrderDetailPage({
           groups: order.groups.map((group) => ({
             id: group.id,
             sellerId: group.sellerId,
+            sellerName:
+              group.seller.tradeName ?? group.seller.legalName ?? "Seller",
             status: group.status,
             carrier: group.carrier,
             trackingNumber: group.trackingNumber,
@@ -96,6 +98,12 @@ export default async function OrderDetailPage({
             quantity: entry.quantity,
             orderLineId: entry.orderLineId,
             sellerId: entry.sellerId,
+          })),
+          protectionClaims: order.protectionClaims.map((claim) => ({
+            id: claim.id,
+            orderLineId: claim.orderLineId,
+            status: claim.status,
+            claimType: claim.claimType,
           })),
           address: order.address
             ? {

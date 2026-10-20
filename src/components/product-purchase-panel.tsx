@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { trackProductView } from "@/components/analytics-beacon";
+import { PincodeField } from "@/components/pincode-field";
 import { discountPercent, formatPaise } from "@/modules/catalogue/helpers";
 
 type VariantView = {
@@ -48,8 +49,6 @@ export function ProductPurchasePanel({
     requiresSize ? "" : (variants[0]?.id ?? ""),
   );
   const [sizeChosen, setSizeChosen] = useState(!requiresSize);
-  const [pincode, setPincode] = useState("");
-  const [deliveryNote, setDeliveryNote] = useState<string | null>(null);
   const [buyError, setBuyError] = useState<string | null>(null);
   const [buyPending, setBuyPending] = useState(false);
   const router = useRouter();
@@ -135,24 +134,6 @@ export function ProductPurchasePanel({
     } finally {
       setBuyPending(false);
     }
-  }
-
-  function checkDelivery() {
-    const clean = pincode.replace(/\D/g, "");
-    if (clean.length !== 6) {
-      setDeliveryNote("Enter a valid 6-digit pincode");
-      return;
-    }
-    const day = new Date();
-    day.setDate(day.getDate() + 3 + (Number(clean) % 3));
-    const label = day.toLocaleDateString("en-IN", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    });
-    setDeliveryNote(
-      `Delivery by ${label} · Cash on Delivery available · 7 Day Easy Returns`,
-    );
   }
 
   if (!priceVariant) {
@@ -314,31 +295,12 @@ export function ProductPurchasePanel({
 
       <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
         <p className="text-sm font-semibold">Delivery & services</p>
-        <div className="mt-2 flex gap-2">
-          <input
-            value={pincode}
-            onChange={(event) => setPincode(event.target.value)}
-            inputMode="numeric"
-            maxLength={6}
-            placeholder="Enter pincode"
-            className="min-h-11 min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border px-3 py-2 text-base md:min-h-0 md:text-sm"
-            aria-label="Pincode"
-          />
-          <button
-            type="button"
-            onClick={checkDelivery}
-            className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground md:min-h-0"
-          >
-            Check
-          </button>
+        <div className="mt-2">
+          <PincodeField showCheckButton required={false} name="pdpPostalCode" />
         </div>
-        {deliveryNote ? (
-          <p className="mt-2 text-sm text-muted">{deliveryNote}</p>
-        ) : (
-          <p className="mt-2 text-sm text-muted">
-            Free Delivery on eligible orders · Cash on Delivery available
-          </p>
-        )}
+        <p className="mt-2 text-sm text-muted">
+          Free Delivery on eligible orders · Cash on Delivery available
+        </p>
         <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-border pt-3 text-[11px] text-muted">
           <li className="inline-flex items-center gap-1">
             <span className="font-semibold text-success">✓</span> 7 Days Return

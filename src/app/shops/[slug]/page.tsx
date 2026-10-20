@@ -135,6 +135,9 @@ export default async function PublicSellerShopPage({
         <h1 className="mt-2 font-display text-3xl font-semibold">{name}</h1>
         <p className="mt-2 text-sm text-muted">
           Verified seller · {items.length} products
+          {seller.ratingCount > 0
+            ? ` · ${seller.ratingAvg.toFixed(1)}★ from ${seller.ratingCount} ratings`
+            : " · No seller ratings yet"}
         </p>
       </header>
       {items.length > 0 ? (

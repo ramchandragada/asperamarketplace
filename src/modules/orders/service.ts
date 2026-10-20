@@ -825,10 +825,24 @@ export async function getOrderForActor(actor: Actor, orderId: string) {
       payments: { orderBy: { createdAt: "desc" } },
       invoices: true,
       lines: true,
-      groups: { include: { shipment: true } },
+      groups: {
+        include: {
+          shipment: true,
+          seller: {
+            select: {
+              id: true,
+              tradeName: true,
+              legalName: true,
+              ratingAvg: true,
+              ratingCount: true,
+            },
+          },
+        },
+      },
       address: true,
       returnRequests: true,
       refunds: true,
+      protectionClaims: true,
     },
   });
   if (!order) {

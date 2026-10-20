@@ -8,6 +8,7 @@ import { ProductPurchasePanel } from "@/components/product-purchase-panel";
 import { ProductReviewsPanel } from "@/components/product-reviews-panel";
 import { ProductShareBar } from "@/components/product-share";
 import { PdpTrustBadgeRow } from "@/components/pdp-trust-badge-row";
+import { BuyerProtectionBadge } from "@/components/buyer-protection-badge";
 import { PageShell } from "@/components/ui/page-shell";
 import { OtherSellersPanel } from "@/components/other-sellers-panel";
 import {
@@ -374,6 +375,9 @@ export default async function ProductDetailPage({
                 <p className="mt-1 text-sm text-muted">
                   {sellerVerified ? "Verified seller" : "Seller"} ·{" "}
                   {sellerProductCount} products
+                  {product.seller.ratingCount > 0
+                    ? ` · ${product.seller.ratingAvg.toFixed(1)}★ (${product.seller.ratingCount})`
+                    : ""}
                 </p>
               </div>
               <Link
@@ -390,6 +394,8 @@ export default async function ProductDetailPage({
               </Link>
             </div>
           </div>
+
+          <BuyerProtectionBadge />
 
           <OtherSellersPanel offers={siblingOffers} />
 

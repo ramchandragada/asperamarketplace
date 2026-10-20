@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@/platform/db/prisma";
 import type { Actor } from "@/modules/identity/policy";
 import type { CheckoutSnapshot } from "@/modules/cart/pricing";
@@ -835,4 +835,204 @@ export async function getOrderForActor(actor: Actor, orderId: string) {
     throw new OrderValidationError("Order not found");
   }
   return order;
+}
+
+/** Buyer cancel: unpaid orders, or paid orders still pending/processing (pre-ship). */
+export async function cancelBuyerOrder(
+  actor: Actor,
+  orderId: string,
+  reason: string,
+  correlationId: string,
+) {
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId: actor.userId },
+    include: {
+      groups: { include: { lines: true } },
+      payments: true,
+    },
+  });
+  if (!order) {
+    throw new OrderValidationError("Order not found");
+  }
+
+  if (
+    order.status === "awaiting_payment" ||
+    order.status === "payment_failed"
+  ) {
+    assertOrderTransition(order.status, "cancelled");
+    return prisma.$transaction(async (tx) => {
+      const updated = await tx.order.update({
+        where: { id: order.id, version: order.version },
+        data: {
+          status: "cancelled",
+          statusReason: reason,
+          cancelledAt: new Date(),
+          version: { increment: 1 },
+        },
+      });
+      for (const payment of order.payments) {
+        if (payment.status === "created" || payment.status === "pending") {
+          assertPaymentTransition(payment.status, "cancelled");
+          await tx.paymentAttempt.update({
+            where: { id: payment.id },
+            data: { status: "cancelled", failureReason: reason },
+          });
+        }
+      }
+      await tx.auditLog.create({
+        data: {
+          actorId: actor.userId,
+          action: "order.buyer_cancelled",
+          targetType: "order",
+          targetId: order.id,
+          beforeState: { status: order.status },
+          afterState: { status: "cancelled" },
+          reason,
+          correlationId,
+        },
+      });
+      await tx.outboxEvent.create({
+        data: {
+          eventType: "OrderCancelled",
+          aggregateType: "order",
+          aggregateId: order.id,
+          payload: { reason, by: "buyer" },
+        },
+      });
+      return updated;
+    });
+  }
+
+  if (order.status !== "paid" && order.status !== "partially_cancelled") {
+    throw new OrderValidationError(
+      "This order can no longer be cancelled. Use returns for delivered items.",
+    );
+  }
+
+  const cancellable = order.groups.filter(
+    (group) => group.status === "pending" || group.status === "processing",
+  );
+  if (cancellable.length === 0) {
+    throw new OrderValidationError(
+      "Items are already shipped or delivered. Cancel is unavailable — request a return instead.",
+    );
+  }
+  const blocked = order.groups.filter(
+    (group) =>
+      group.status === "shipped" || group.status === "delivered",
+  );
+  if (blocked.length > 0 && cancellable.length < order.groups.length) {
+    // Partial: cancel only unshipped groups
+  }
+
+  for (const group of cancellable) {
+    await prisma.$transaction(async (tx) => {
+      await tx.orderFulfilmentGroup.update({
+        where: { id: group.id, version: group.version },
+        data: {
+          status: "cancelled",
+          statusReason: reason,
+          cancelledAt: new Date(),
+          version: { increment: 1 },
+        },
+      });
+      for (const line of group.lines) {
+        const inventory = await tx.inventoryItem.findUnique({
+          where: { variantId: line.variantId },
+        });
+        if (!inventory) continue;
+        await tx.inventoryItem.update({
+          where: { id: inventory.id },
+          data: {
+            onHand: { increment: line.quantity },
+            version: { increment: 1 },
+          },
+        });
+        await tx.stockMovement.create({
+          data: {
+            inventoryItemId: inventory.id,
+            movementType: "return_to_stock",
+            quantity: line.quantity,
+            reason: `Buyer cancel ${order.orderNumber}: ${reason}`,
+            actorId: actor.userId,
+            correlationId,
+          },
+        });
+      }
+      await tx.refund.create({
+        data: {
+          orderId: group.orderId,
+          amountPaise: group.lineTotalPaise,
+          status: "succeeded",
+          provider: "mock",
+          providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
+          reason,
+          completedAt: new Date(),
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorId: actor.userId,
+          action: "fulfilment.buyer_cancelled",
+          targetType: "fulfilment_group",
+          targetId: group.id,
+          afterState: { status: "cancelled", reason },
+          reason,
+          correlationId,
+        },
+      });
+      await tx.outboxEvent.create({
+        data: {
+          eventType: "FulfilmentCancelled",
+          aggregateType: "fulfilment_group",
+          aggregateId: group.id,
+          payload: { orderId: group.orderId, reason, by: "buyer" },
+        },
+      });
+    });
+  }
+
+  // Sync order status from groups
+  const fresh = await prisma.order.findUniqueOrThrow({
+    where: { id: order.id },
+    include: { groups: true },
+  });
+  const statuses = fresh.groups.map((g) => g.status);
+  let next = fresh.status;
+  if (statuses.every((s) => s === "cancelled")) {
+    next = "cancelled";
+  } else if (statuses.some((s) => s === "cancelled")) {
+    next = "partially_cancelled";
+  }
+  if (next !== fresh.status) {
+    assertOrderTransition(fresh.status, next);
+    return prisma.order.update({
+      where: { id: fresh.id, version: fresh.version },
+      data: {
+        status: next,
+        statusReason: reason,
+        cancelledAt: next === "cancelled" ? new Date() : fresh.cancelledAt,
+        version: { increment: 1 },
+      },
+    });
+  }
+  return fresh;
+}
+
+export async function getInvoiceForActor(
+  actor: Actor,
+  orderId: string,
+  invoiceId: string,
+) {
+  const invoice = await prisma.invoice.findFirst({
+    where: {
+      id: invoiceId,
+      orderId,
+      order: { userId: actor.userId },
+    },
+  });
+  if (!invoice) {
+    throw new OrderValidationError("Invoice not found");
+  }
+  return invoice;
 }

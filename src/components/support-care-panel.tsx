@@ -68,6 +68,7 @@ export function SupportCarePanel({
     const payload = {
       orderId: String(form.get("orderId") ?? ""),
       sellerId: String(form.get("sellerId") ?? ""),
+      orderLineId: String(form.get("orderLineId") ?? ""),
       quantity: Number(form.get("quantity") ?? 1),
       reason: String(form.get("reason") ?? ""),
     };
@@ -187,6 +188,14 @@ export function SupportCarePanel({
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
+            Order line id
+            <input
+              name="orderLineId"
+              required
+              className="border border-black/20 bg-transparent px-3 py-2 font-mono text-xs"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
             Quantity
             <input
               name="quantity"
@@ -206,6 +215,10 @@ export function SupportCarePanel({
               className="border border-black/20 bg-transparent px-3 py-2"
             />
           </label>
+          <p className="text-xs text-muted">
+            Prefer starting returns from the order page — it picks the line for
+            you.
+          </p>
           <button type="submit" className="w-fit underline">
             Submit return
           </button>

@@ -515,7 +515,7 @@ export function SiteHeaderClient({
             className="hidden min-h-11 min-w-[44px] flex-col items-center justify-center gap-0.5 px-1 text-foreground hover:text-accent sm:inline-flex"
           >
             <OrdersIcon className="h-5 w-5" />
-            <span className="text-[12px] leading-none">Orders</span>
+            <span className="text-[12px] leading-none">Returns & Orders</span>
           </Link>
           <Link
             href="/cart"

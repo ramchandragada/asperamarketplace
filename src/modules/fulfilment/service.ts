@@ -681,6 +681,17 @@ export async function listReturnsForSeller(actor: Actor, sellerId: string) {
   });
 }
 
+export async function listReturnsForBuyer(actor: Actor) {
+  return prisma.returnRequest.findMany({
+    where: { userId: actor.userId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      refund: true,
+      order: { select: { orderNumber: true, id: true } },
+    },
+  });
+}
+
 export async function listTicketsForActor(actor: Actor) {
   if (actorIsAdmin(actor)) {
     return prisma.supportTicket.findMany({ orderBy: { createdAt: "desc" } });

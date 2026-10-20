@@ -137,8 +137,27 @@ model User {
   orders            Order[]
   paymentAttempts   PaymentAttempt[]
   wishlistItems     WishlistItem[]
+  buyerProfile      BuyerProfile?
 
   @@map("users")
+}
+
+/// Buyer business / purchase preferences (Sprint D account hub).
+model BuyerProfile {
+  id                     String   @id @default(uuid()) @db.Uuid
+  userId                 String   @unique @map("user_id") @db.Uuid
+  businessName           String?  @map("business_name")
+  /// Full GSTIN when provided for tax invoices. Display via maskGstin.
+  gstin                  String?
+  taxInvoicePreferred    Boolean  @default(false) @map("tax_invoice_preferred")
+  /// mock | online | cod — online reserved for live Razorpay.
+  preferredPaymentMethod String   @default("mock") @map("preferred_payment_method")
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("buyer_profiles")
 }
 
 model Role {

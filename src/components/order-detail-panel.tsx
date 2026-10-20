@@ -690,6 +690,17 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
         </section>
       ) : null}
 
+      {order.paidAt && returnableLines.length === 0 ? (
+        <section className="rounded-[var(--radius)] border border-dashed border-border bg-surface/60 p-4 text-sm text-muted">
+          <h2 className="text-lg font-semibold text-foreground">
+            Rate the seller
+          </h2>
+          <p className="mt-1">
+            Seller ratings unlock after a shipment is marked delivered.
+          </p>
+        </section>
+      ) : null}
+
       {returnableLines.length > 0 ? (
         <section className="rounded-[var(--radius)] border border-border bg-surface p-4">
           <h2 className="text-lg font-semibold">Rate the seller</h2>

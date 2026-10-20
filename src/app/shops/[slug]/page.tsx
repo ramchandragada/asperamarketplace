@@ -56,18 +56,23 @@ export default async function PublicSellerShopPage({
   if (!seller) notFound();
 
   const name = seller.tradeName ?? seller.legalName;
-  const products = await prisma.product.findMany({
-    where: { sellerId: seller.id, status: "approved" },
-    take: 48,
-    orderBy: { publishedAt: "desc" },
-    include: {
-      category: true,
-      brand: { select: { slug: true, name: true } },
-      seller: { select: { legalName: true, tradeName: true, status: true } },
-      images: { where: { isPrimary: true }, take: 1 },
-      variants: { where: { isActive: true }, include: { inventory: true } },
-    },
-  });
+  const [productCount, products] = await Promise.all([
+    prisma.product.count({
+      where: { sellerId: seller.id, status: "approved" },
+    }),
+    prisma.product.findMany({
+      where: { sellerId: seller.id, status: "approved" },
+      take: 48,
+      orderBy: { publishedAt: "desc" },
+      include: {
+        category: true,
+        brand: { select: { slug: true, name: true } },
+        seller: { select: { legalName: true, tradeName: true, status: true } },
+        images: { where: { isPrimary: true }, take: 1 },
+        variants: { where: { isActive: true }, include: { inventory: true } },
+      },
+    }),
+  ]);
 
   const items = products.map((product) => {
     const prices = product.variants.map((v) => v.sellingPricePaise);
@@ -134,7 +139,7 @@ export default async function PublicSellerShopPage({
         </p>
         <h1 className="mt-2 font-display text-3xl font-semibold">{name}</h1>
         <p className="mt-2 text-sm text-muted">
-          Verified seller · {items.length} products
+          Verified seller · {productCount} products
           {seller.ratingCount > 0
             ? ` · ${seller.ratingAvg.toFixed(1)}★ from ${seller.ratingCount} ratings`
             : " · No seller ratings yet"}

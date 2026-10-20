@@ -128,7 +128,7 @@ export function PincodeField({
             type="button"
             disabled={pending}
             onClick={() => void runCheck(value)}
-            className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-60 md:min-h-0"
+            className="btn-cta btn-cta-secondary shrink-0 px-4"
           >
             {pending ? "…" : "Check"}
           </button>

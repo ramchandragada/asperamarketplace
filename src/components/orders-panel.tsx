@@ -300,7 +300,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-      <aside className="h-fit rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] lg:sticky lg:top-24">
+      <aside className="h-fit rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] lg:sticky lg:top-36">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-base font-semibold">Filters</h2>
           {statusFilters.size > 0 || timeFilters.size > 0 ? (
@@ -497,7 +497,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                 </div>
               </header>
 
-              <div className="grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_12rem]">
+              <div className="grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_15rem]">
                 <div className="min-w-0">
                   <p className="text-base font-semibold">
                     {statusHeadline(order)}
@@ -554,7 +554,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                             type="button"
                             disabled={pending || !line.variantId}
                             onClick={() => void buyAgainLine(line)}
-                            className="mt-2 inline-flex min-h-9 items-center rounded-full bg-highlight px-3 text-xs font-semibold text-foreground disabled:opacity-60"
+                            className="btn-cta mt-2 h-9 bg-highlight px-3 text-xs text-foreground"
                           >
                             Buy it again
                           </button>
@@ -567,7 +567,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                 <div className="flex flex-col gap-2">
                   <Link
                     href={`/orders/${order.id}`}
-                    className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-accent px-3 text-sm font-semibold text-white"
+                    className="btn-cta btn-cta-primary h-10 w-full"
                   >
                     Track package
                   </Link>
@@ -576,7 +576,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                       href={trackingGroup.trackingUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex min-h-10 items-center justify-center rounded-full border border-border bg-surface px-3 text-sm font-medium hover:bg-accent-soft"
+                      className="btn-cta btn-cta-ghost h-10 w-full"
                     >
                       Carrier tracking
                     </a>
@@ -584,14 +584,14 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                   {canReturn ? (
                     <Link
                       href={`/orders/${order.id}`}
-                      className="inline-flex min-h-10 items-center justify-center rounded-full border border-border bg-surface px-3 text-sm font-medium hover:bg-accent-soft"
+                      className="btn-cta btn-cta-ghost h-10 w-full"
                     >
                       Return or replace
                     </Link>
                   ) : null}
                   <Link
                     href={`/support?orderId=${order.id}`}
-                    className="inline-flex min-h-10 items-center justify-center rounded-full border border-border bg-surface px-3 text-sm font-medium hover:bg-accent-soft"
+                    className="btn-cta btn-cta-ghost h-10 w-full"
                   >
                     Get help
                   </Link>
@@ -600,7 +600,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                       <button
                         type="button"
                         disabled={pending}
-                        className="inline-flex min-h-10 items-center justify-center rounded-full bg-accent px-3 text-sm font-semibold text-accent-foreground disabled:opacity-60"
+                        className="btn-cta btn-cta-secondary h-10 w-full"
                         onClick={() => void startAndSucceed(order.id)}
                       >
                         Pay with mock
@@ -608,7 +608,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                       <button
                         type="button"
                         disabled={pending}
-                        className="inline-flex min-h-10 items-center justify-center rounded-full border border-border px-3 text-sm disabled:opacity-60"
+                        className="btn-cta btn-cta-ghost h-10 w-full"
                         onClick={() => void startAndFail(order.id)}
                       >
                         Simulate failure

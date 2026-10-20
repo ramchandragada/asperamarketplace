@@ -72,11 +72,11 @@ export function OrderPayButtons({
           {error}
         </p>
       ) : null}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           disabled={pending}
-          className="min-h-11 rounded-full bg-brand-accent px-5 py-2 font-semibold text-white disabled:opacity-60"
+          className="btn-cta btn-cta-primary"
           onClick={() => void pay("succeeded")}
         >
           {pending ? "Paying…" : "Pay with mock"}
@@ -84,7 +84,7 @@ export function OrderPayButtons({
         <button
           type="button"
           disabled={pending}
-          className="rounded-lg border border-border px-4 py-2 text-sm disabled:opacity-60"
+          className="btn-cta btn-cta-ghost"
           onClick={() => void pay("failed")}
         >
           Simulate failure

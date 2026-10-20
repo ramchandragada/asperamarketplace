@@ -301,6 +301,101 @@ h2,
   line-height: 1;
 }
 
+/* Marketplace CTAs — fixed height so rounded pills never collapse into circles */
+.btn-cta {
+  display: inline-flex;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  padding-inline: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.btn-cta:disabled {
+  opacity: 0.6;
+}
+
+.btn-cta-primary {
+  background: var(--brand-accent);
+  color: #fff;
+}
+
+.btn-cta-primary:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--brand-accent) 88%, black);
+}
+
+.btn-cta-secondary {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.btn-cta-secondary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-cta-ghost {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.btn-cta-ghost:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.qty-stepper {
+  display: inline-flex;
+  height: 2.75rem;
+  flex-shrink: 0;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.qty-stepper button {
+  display: inline-flex;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground);
+  transition: background-color 140ms ease;
+}
+
+.qty-stepper button:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+
+.qty-stepper button:disabled {
+  opacity: 0.4;
+}
+
+.qty-stepper input {
+  width: 2.75rem;
+  border: 0;
+  border-inline: 1px solid var(--border);
+  background: transparent;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  outline: none;
+}
+
 .card-photo {
   transition: transform 280ms ease;
 }

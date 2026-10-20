@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { dbUuid } from "@/platform/validation/id";
 
 export const trackEventSchema = z.object({
   eventName: z.string().trim().min(2).max(80),
-  productId: z.uuid().optional(),
-  orderId: z.uuid().optional(),
-  sellerId: z.uuid().optional(),
+  productId: dbUuid.optional(),
+  orderId: dbUuid.optional(),
+  sellerId: dbUuid.optional(),
   searchQuery: z.string().trim().min(1).max(200).optional(),
   properties: z.record(z.string(), z.unknown()).optional(),
 });
@@ -25,7 +26,7 @@ export const createExperimentSchema = z.object({
 });
 
 export const updateExperimentSchema = z.object({
-  experimentId: z.uuid(),
+  experimentId: dbUuid,
   status: z.enum(["draft", "running", "paused", "concluded"]),
 });
 

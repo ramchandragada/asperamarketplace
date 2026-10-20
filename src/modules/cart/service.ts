@@ -12,15 +12,19 @@ import type {
   AddCartItemInput,
   ConfirmCheckoutInput,
   CreateAddressInput,
+  EstimateCartInput,
   PreviewCheckoutInput,
+  UpdateAddressInput,
   UpdateCartItemInput,
 } from "@/modules/cart/schema";
+import { assertServiceablePostalCode } from "@/modules/fulfilment/pincode";
 import {
   beginIdempotentCommand,
   completeIdempotentCommand,
 } from "@/platform/idempotency/store";
 import { clampMergedQuantity } from "@/modules/cart/merge-qty";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
+import { NotFoundError } from "@/platform/http/errors";
 
 const RESERVATION_MINUTES = 15;
 
@@ -455,11 +459,96 @@ export async function listAddresses(actor: Actor) {
   });
 }
 
+export async function deleteAddress(actor: Actor, addressId: string) {
+  const address = await prisma.customerAddress.findFirst({
+    where: { id: addressId, userId: actor.userId },
+  });
+  if (!address) {
+    throw new NotFoundError("Address not found");
+  }
+  const inUse = await prisma.checkoutSession.count({
+    where: {
+      addressId,
+      status: { in: ["draft", "reserved"] },
+    },
+  });
+  if (inUse > 0) {
+    throw new CartValidationError(
+      "Address is used by an active checkout — finish or cancel that checkout first",
+    );
+  }
+  await prisma.customerAddress.delete({ where: { id: addressId } });
+  return { deleted: true as const };
+}
+
+export async function updateAddress(
+  actor: Actor,
+  addressId: string,
+  input: UpdateAddressInput,
+  correlationId: string,
+) {
+  assertServiceablePostalCode(input.postalCode);
+  const existing = await prisma.customerAddress.findFirst({
+    where: { id: addressId, userId: actor.userId },
+  });
+  if (!existing) {
+    throw new NotFoundError("Address not found");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    if (input.isDefault) {
+      await tx.customerAddress.updateMany({
+        where: { userId: actor.userId, isDefault: true, NOT: { id: addressId } },
+        data: { isDefault: false },
+      });
+    }
+    const updated = await tx.customerAddress.update({
+      where: { id: addressId },
+      data: {
+        label: input.label,
+        fullName: input.fullName,
+        phone: input.phone,
+        line1: input.line1,
+        line2: input.line2 ?? null,
+        city: input.city,
+        state: input.state,
+        postalCode: input.postalCode,
+        country: input.country,
+        isDefault: input.isDefault ?? existing.isDefault,
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "address.updated",
+        targetType: "customer_address",
+        targetId: updated.id,
+        beforeState: {
+          city: existing.city,
+          state: existing.state,
+          postalCode: existing.postalCode,
+          phone: existing.phone,
+        },
+        afterState: {
+          city: updated.city,
+          state: updated.state,
+          postalCode: updated.postalCode,
+          phone: updated.phone,
+        },
+        reason: "Customer updated delivery address",
+        correlationId,
+      },
+    });
+    return updated;
+  });
+}
+
 export async function createAddress(
   actor: Actor,
   input: CreateAddressInput,
   correlationId: string,
 ) {
+  assertServiceablePostalCode(input.postalCode);
   const address = await prisma.$transaction(async (tx) => {
     if (input.isDefault) {
       await tx.customerAddress.updateMany({
@@ -565,6 +654,50 @@ function assertClientTotal(
       "Browser total does not match server checkout snapshot",
     );
   }
+}
+
+/**
+ * Server-computed cart estimate for the cart page (Ticket 3).
+ * Uses Maharashtra as default destination when no address is chosen yet.
+ */
+export async function estimateCart(
+  identity: CartIdentity,
+  input: EstimateCartInput = {},
+) {
+  const cart = await getOrCreateOpenCart(identity);
+  const full = await prisma.cart.findUniqueOrThrow({
+    where: { id: cart.id },
+    include: cartInclude,
+  });
+  if (full.items.length === 0) {
+    return {
+      cart: serializeCart(full),
+      snapshot: null as CheckoutSnapshot | null,
+      savingsPaise: 0,
+    };
+  }
+
+  const priced = await loadPricedLines(cart.id);
+  const taxPolicy = await resolveActiveTaxPolicy();
+  const snapshot = buildCheckoutSnapshot({
+    lines: priced.lines,
+    couponCode: input.couponCode,
+    destinationState: input.destinationState?.trim() || "Maharashtra",
+    totalWeightGrams: priced.totalWeightGrams,
+    taxPolicy,
+  });
+  const mrpTotal = priced.cart.items.reduce(
+    (sum, item) => sum + item.variant.mrpPaise * item.quantity,
+    0,
+  );
+  const listSavings = Math.max(0, mrpTotal - snapshot.subtotalPaise);
+  const savingsPaise = listSavings + snapshot.discountPaise;
+
+  return {
+    cart: serializeCart(priced.cart),
+    snapshot,
+    savingsPaise,
+  };
 }
 
 export async function previewCheckout(
@@ -803,8 +936,13 @@ export async function confirmCheckout(
 }
 
 export async function getLatestReservedCheckout(actor: Actor) {
+  const now = new Date();
   return prisma.checkoutSession.findFirst({
-    where: { userId: actor.userId, status: "reserved" },
+    where: {
+      userId: actor.userId,
+      status: "reserved",
+      OR: [{ reservedUntil: null }, { reservedUntil: { gt: now } }],
+    },
     orderBy: { createdAt: "desc" },
     include: { address: true },
   });

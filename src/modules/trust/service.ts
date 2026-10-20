@@ -294,7 +294,7 @@ export async function listApprovedReviewsForProduct(productId: string) {
 
   return reviews.map((review) => ({
     ...review,
-    authorName: names.get(review.userId) ?? "Aspera shopper",
+    authorName: names.get(review.userId) ?? "Shopper",
   }));
 }
 

@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 
 export function AddToCartButton({
   variantId,
+  productId,
   availableQty,
   productTitle,
   selectionRequired = false,
   selectionHint = "Please select a size",
 }: {
   variantId: string;
+  productId?: string;
   availableQty: number;
   productTitle?: string;
   /** When true, block add-to-cart until the shopper chooses a required option. */
@@ -51,6 +53,11 @@ export function AddToCartButton({
         return;
       }
       setMessage(body.message ?? "Added");
+      if (productId) {
+        void import("@/components/analytics-beacon").then(({ trackAddToCart }) => {
+          trackAddToCart(productId);
+        });
+      }
       void import("@/components/toast-host").then(({ showToast }) => {
         showToast(
           productTitle

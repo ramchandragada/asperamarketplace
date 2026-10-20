@@ -6,6 +6,7 @@ import { SiteHeaderClient } from "@/components/site-header-client";
 import { MEGA_MENU } from "@/lib/mega-menu";
 import { readGuestCartToken } from "@/modules/cart/guest";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
+import { siteContact } from "@/platform/config/site-contact";
 
 async function cartCount(userId: string | undefined, guestToken: string | null) {
   try {
@@ -99,19 +100,19 @@ const SEO_BLOCKS = [
 const COMMUNITY_BLOCKS = [
   {
     title: "Join the Aspera Community",
-    body: "Shop with confidence across categories, follow order updates, and save favourites to your wishlist. A marketplace built for value-seeking Indian households.",
+    body: "Follow order updates and save favourites to your wishlist.",
     href: "/shop",
     cta: "Start shopping",
   },
   {
     title: "Download Aspera App Now",
-    body: "Get faster discovery, deal alerts, and a smoother checkout experience on mobile. Download the app for exclusive first-order offers.",
+    body: "iOS and Android builds are coming soon.",
     href: "/download-app",
     cta: "Download app",
   },
   {
     title: "More Than Just Shopping",
-    body: "Sell to shoppers nationwide with verified listings, transparent fees, and a dedicated seller dashboard. Grow your catalogue on Aspera.",
+    body: "Sell to shoppers nationwide with verified listings, transparent fees, and a dedicated seller dashboard.",
     href: "/seller/onboarding",
     cta: "Become a Supplier",
   },
@@ -143,7 +144,7 @@ const ONLINE_SHOPPING_GROUPS = [
     heading: "Women Accessories",
     links: [
       { label: "Scarves", href: "/browse?categorySlug=fashion&audience=women&q=scarf" },
-      { label: "Handbags", href: "/browse?categorySlug=bags-footwear&q=sling" },
+      { label: "Handbags", href: "/browse?categorySlug=bags-footwear&q=handbag" },
       { label: "Earrings", href: "/browse?q=earring" },
       { label: "Belts", href: "/browse?categorySlug=bags-footwear&q=belt" },
     ],
@@ -201,7 +202,7 @@ const ONLINE_SHOPPING_GROUPS = [
     heading: "Baby",
     links: [
       { label: "Swaddles", href: "/browse?categorySlug=baby-kids&audience=kids&q=swaddle" },
-      { label: "Feeding", href: "/browse?categorySlug=baby-kids&audience=kids&q=bib" },
+      { label: "Feeding", href: "/browse?categorySlug=baby-kids&audience=kids&q=feeding" },
       { label: "Soft toys", href: "/browse?categorySlug=baby-kids&audience=kids&q=plush" },
     ],
   },
@@ -245,35 +246,38 @@ const ONLINE_SHOPPING_GROUPS = [
 export function SiteFooter() {
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-auto border-t border-border bg-surface">
+    <footer className="mt-auto border-t border-border bg-surface pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0">
       <div className="container-shell grid gap-8 py-10 text-sm md:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
           <p className="font-display text-lg font-bold text-accent">
-            Aspera Marketplace
+            {siteContact.brandName}
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
-            A multi-vendor marketplace for everyday shopping from independent
-            Indian sellers — clear pricing, easy discovery, and secure checkout.
+            Multi-vendor marketplace of independent Indian sellers.
           </p>
           <div className="mt-4 space-y-1 text-xs text-muted">
             <p>
               Support:{" "}
               <a
-                href="mailto:support@asperamarketplace.example"
+                href={`mailto:${siteContact.supportEmail}`}
                 className="font-medium text-accent hover:underline"
               >
-                support@asperamarketplace.example
+                {siteContact.supportEmail}
               </a>
             </p>
             <p>
               Phone:{" "}
               <a
-                href="tel:+910000000000"
+                href={`tel:${siteContact.supportPhoneTel}`}
                 className="font-medium text-accent hover:underline"
               >
-                +91 00000 00000
-              </a>{" "}
-              <span className="text-muted">(demo contact)</span>
+                {siteContact.supportPhoneDisplay}
+              </a>
+            </p>
+            <p>
+              <Link href="/buyer-protection" className="font-medium text-accent hover:underline">
+                Buyer Protection
+              </Link>
             </p>
           </div>
         </div>
@@ -395,10 +399,7 @@ export function SiteFooter() {
       <div className="border-t border-border bg-background/70">
         <div className="container-shell space-y-8 py-8">
           <div>
-            <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
-              Shop with Aspera
-            </p>
-            <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {SEO_BLOCKS.map((block) => (
                 <article key={block.title} className="text-sm">
                   <Link
@@ -434,9 +435,6 @@ export function SiteFooter() {
         <div className="container-shell py-8">
           <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
             Online Shopping
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            Browse popular categories and subcategories across Aspera Marketplace.
           </p>
           <div className="mt-5 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {ONLINE_SHOPPING_GROUPS.map((group) => (
@@ -494,14 +492,14 @@ export function SiteFooter() {
       <div className="border-t border-border">
         <div className="container-shell flex flex-col gap-2 py-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <p>© {year} Aspera Marketplace. All rights reserved.</p>
+            <p>© {year} {siteContact.brandName}. All rights reserved.</p>
             <p>
-              Registered entity (demo): Aspera Marketplace Private Limited ·
-              India
+              Registered entity: {siteContact.legalEntity} ·{" "}
+              {siteContact.registeredRegion}
             </p>
           </div>
           <p className="flex flex-wrap gap-3">
-            <Link href="/support" className="hover:text-foreground">
+            <Link href="/terms" className="hover:text-foreground">
               Terms
             </Link>
             <Link href="/privacy" className="hover:text-foreground">

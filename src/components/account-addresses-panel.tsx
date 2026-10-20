@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { PincodeField } from "@/components/pincode-field";
 
 type AddressRow = {
   id: string;
@@ -120,7 +121,6 @@ export function AccountAddressesPanel({
             ["line2", "Address line 2", ""],
             ["city", "City", ""],
             ["state", "State", ""],
-            ["postalCode", "PIN code", ""],
           ] as const
         ).map(([name, label, placeholder]) => (
           <label key={name} className="flex flex-col gap-1 text-sm">
@@ -133,6 +133,10 @@ export function AccountAddressesPanel({
             />
           </label>
         ))}
+        <label className="flex flex-col gap-1 text-sm sm:col-span-2">
+          <span className="font-medium">PIN code</span>
+          <PincodeField autofillCityState />
+        </label>
         <label className="flex items-center gap-2 text-sm sm:col-span-2">
           <input type="checkbox" name="isDefault" />
           Set as default delivery address

@@ -111,7 +111,14 @@ export async function listSellerFulfilment(actor: Actor, sellerId: string) {
     },
     orderBy: { createdAt: "desc" },
     include: {
-      order: { select: { id: true, orderNumber: true, status: true } },
+      order: {
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          totalPaise: true,
+        },
+      },
       lines: true,
       shipment: true,
     },

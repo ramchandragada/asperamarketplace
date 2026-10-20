@@ -1,17 +1,18 @@
 import { z } from "zod";
+import { dbUuid } from "@/platform/validation/id";
 
 export const createOrderFromCheckoutSchema = z.object({
-  checkoutSessionId: z.uuid(),
+  checkoutSessionId: dbUuid,
   idempotencyKey: z.string().trim().min(8).max(120),
 });
 
 export const startPaymentSchema = z.object({
-  orderId: z.uuid(),
+  orderId: dbUuid,
   idempotencyKey: z.string().trim().min(8).max(120),
 });
 
 export const mockCompletePaymentSchema = z.object({
-  paymentAttemptId: z.uuid(),
+  paymentAttemptId: dbUuid,
   outcome: z.enum(["succeeded", "failed"]),
   failureReason: z.string().trim().min(3).max(200).optional(),
 });

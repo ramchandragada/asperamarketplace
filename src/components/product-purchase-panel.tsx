@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { trackProductView } from "@/components/analytics-beacon";
+import { PincodeField } from "@/components/pincode-field";
 import { discountPercent, formatPaise } from "@/modules/catalogue/helpers";
 
 type VariantView = {
@@ -16,14 +18,22 @@ type VariantView = {
 };
 
 export function ProductPurchasePanel({
+  productId,
   variants,
   highlights,
   productTitle,
 }: {
+  productId: string;
   variants: VariantView[];
   highlights: Array<{ label: string; value: string }>;
   productTitle?: string;
 }) {
+  const viewedRef = useRef(false);
+  useEffect(() => {
+    if (viewedRef.current) return;
+    viewedRef.current = true;
+    trackProductView(productId);
+  }, [productId]);
   const sizeVariants = useMemo(() => {
     return variants.filter((variant) => {
       const opts = variant.optionValues ?? {};
@@ -39,8 +49,6 @@ export function ProductPurchasePanel({
     requiresSize ? "" : (variants[0]?.id ?? ""),
   );
   const [sizeChosen, setSizeChosen] = useState(!requiresSize);
-  const [pincode, setPincode] = useState("");
-  const [deliveryNote, setDeliveryNote] = useState<string | null>(null);
   const [buyError, setBuyError] = useState<string | null>(null);
   const [buyPending, setBuyPending] = useState(false);
   const router = useRouter();
@@ -56,6 +64,21 @@ export function ProductPurchasePanel({
     variants.find((variant) => variant.id === selectedId) ??
     (requiresSize ? undefined : variants[0]);
   const priceVariant = selected ?? variants[0];
+  const minSellingPaise = Math.min(
+    ...variants.map((variant) => variant.sellingPricePaise),
+  );
+  const maxSellingPaise = Math.max(
+    ...variants.map((variant) => variant.sellingPricePaise),
+  );
+  const showFromPrice =
+    requiresSize && !sizeChosen && minSellingPaise !== maxSellingPaise;
+  const displaySellingPaise = showFromPrice
+    ? minSellingPaise
+    : (priceVariant?.sellingPricePaise ?? minSellingPaise);
+  const displayMrpPaise = showFromPrice
+    ? (variants.find((variant) => variant.sellingPricePaise === minSellingPaise)
+        ?.mrpPaise ?? priceVariant?.mrpPaise)
+    : priceVariant?.mrpPaise;
 
   const colorOptions = useMemo(() => {
     const colors = new Set<string>();
@@ -113,24 +136,6 @@ export function ProductPurchasePanel({
     }
   }
 
-  function checkDelivery() {
-    const clean = pincode.replace(/\D/g, "");
-    if (clean.length !== 6) {
-      setDeliveryNote("Enter a valid 6-digit pincode");
-      return;
-    }
-    const day = new Date();
-    day.setDate(day.getDate() + 3 + (Number(clean) % 3));
-    const label = day.toLocaleDateString("en-IN", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    });
-    setDeliveryNote(
-      `Delivery by ${label} · Cash on Delivery available · 7 Day Easy Returns`,
-    );
-  }
-
   if (!priceVariant) {
     return <p className="text-sm text-muted">No active variants.</p>;
   }
@@ -139,15 +144,20 @@ export function ProductPurchasePanel({
     <div className="flex flex-col gap-5">
       <div>
         <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          {showFromPrice ? (
+            <span className="text-sm font-medium text-muted">From</span>
+          ) : null}
           <span className="text-3xl font-bold tracking-tight md:text-4xl">
-            {formatPaise(priceVariant.sellingPricePaise)}
+            {formatPaise(displaySellingPaise)}
           </span>
-          {priceVariant.mrpPaise > priceVariant.sellingPricePaise ? (
+          {displayMrpPaise != null && displayMrpPaise > displaySellingPaise ? (
             <span className="text-base font-normal text-muted line-through">
-              {formatPaise(priceVariant.mrpPaise)}
+              {formatPaise(displayMrpPaise)}
             </span>
           ) : null}
-          {discountPercent(
+          {!showFromPrice &&
+          priceVariant &&
+          discountPercent(
             priceVariant.mrpPaise,
             priceVariant.sellingPricePaise,
           ) ? (
@@ -160,7 +170,12 @@ export function ProductPurchasePanel({
             </span>
           ) : null}
         </p>
-        <p className="mt-1 text-sm text-muted">Inclusive of taxes</p>
+        <p className="mt-1 text-sm text-muted">
+          Inclusive of taxes
+          {showFromPrice
+            ? ` · select a size (up to ${formatPaise(maxSellingPaise)})`
+            : ""}
+        </p>
       </div>
 
       {colorOptions.length > 0 ? (
@@ -180,7 +195,7 @@ export function ProductPurchasePanel({
                 type="button"
                 title={color}
                 onClick={() => selectColor(color)}
-                className={`h-9 w-9 rounded-full border-2 shadow-sm ${
+                className={`h-11 w-11 rounded-full border-2 shadow-sm md:h-9 md:w-9 ${
                   active
                     ? "border-accent ring-2 ring-accent/30"
                     : "border-border hover:border-accent"
@@ -220,7 +235,7 @@ export function ProductPurchasePanel({
                     setSelectedId(variant.id);
                     setSizeChosen(true);
                   }}
-                  className={`min-w-[2.75rem] rounded-[var(--radius-sm)] border px-3 py-2 text-sm font-medium ${
+                  className={`min-h-11 min-w-[2.75rem] rounded-[var(--radius-sm)] border px-3 py-2 text-sm font-medium md:min-h-0 ${
                     active
                       ? "border-accent bg-accent-soft font-semibold text-accent"
                       : soldOut
@@ -249,7 +264,7 @@ export function ProductPurchasePanel({
                     setSelectedId(variant.id);
                     setSizeChosen(true);
                   }}
-                  className={`rounded-[var(--radius-sm)] border px-3 py-2 text-sm ${
+                  className={`min-h-11 rounded-[var(--radius-sm)] border px-3 py-2 text-sm md:min-h-0 ${
                     active
                       ? "border-accent bg-accent-soft font-semibold text-accent"
                       : "border-border hover:border-accent"
@@ -280,31 +295,12 @@ export function ProductPurchasePanel({
 
       <div className="rounded-[var(--radius)] border border-border bg-surface p-4">
         <p className="text-sm font-semibold">Delivery & services</p>
-        <div className="mt-2 flex gap-2">
-          <input
-            value={pincode}
-            onChange={(event) => setPincode(event.target.value)}
-            inputMode="numeric"
-            maxLength={6}
-            placeholder="Enter pincode"
-            className="min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border px-3 py-2 text-sm"
-            aria-label="Pincode"
-          />
-          <button
-            type="button"
-            onClick={checkDelivery}
-            className="rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground"
-          >
-            Check
-          </button>
+        <div className="mt-2">
+          <PincodeField showCheckButton required={false} name="pdpPostalCode" />
         </div>
-        {deliveryNote ? (
-          <p className="mt-2 text-sm text-muted">{deliveryNote}</p>
-        ) : (
-          <p className="mt-2 text-sm text-muted">
-            Free Delivery on eligible orders · Cash on Delivery available
-          </p>
-        )}
+        <p className="mt-2 text-sm text-muted">
+          Free Delivery on eligible orders · Cash on Delivery available
+        </p>
         <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-border pt-3 text-[11px] text-muted">
           <li className="inline-flex items-center gap-1">
             <span className="font-semibold text-success">✓</span> 7 Days Return
@@ -327,10 +323,11 @@ export function ProductPurchasePanel({
       </div>
 
       {/* Single CTA instance: sticky on mobile, inline on desktop */}
-      <div className="fixed inset-x-3 bottom-[calc(5.85rem+env(safe-area-inset-bottom))] z-50 flex gap-2 rounded-2xl border border-border bg-surface/95 p-2 shadow-[0_-8px_24px_rgba(23,33,38,0.08)] backdrop-blur-md md:static md:inset-auto md:bottom-auto md:z-auto md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+      <div className="fixed inset-x-3 bottom-[calc(5.85rem+env(safe-area-inset-bottom))] z-50 flex gap-2 rounded-2xl border border-border bg-surface p-2 shadow-[0_-8px_24px_rgba(23,33,38,0.08)] [overflow-anchor:none] md:static md:inset-auto md:bottom-auto md:z-auto md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
         <div className="min-w-0 flex-1 sm:flex-none">
           <AddToCartButton
             variantId={activeVariantId}
+            productId={productId}
             availableQty={selected?.availableQty ?? priceVariant.availableQty}
             productTitle={productTitle}
             selectionRequired={selectionRequired}

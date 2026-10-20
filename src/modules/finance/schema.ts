@@ -1,13 +1,14 @@
 import { z } from "zod";
+import { dbUuid } from "@/platform/validation/id";
 
 export const createSettlementSchema = z.object({
-  sellerId: z.uuid(),
+  sellerId: dbUuid,
   periodStart: z.string().datetime(),
   periodEnd: z.string().datetime(),
 });
 
 export const releaseSettlementSchema = z.object({
-  batchId: z.uuid(),
+  batchId: dbUuid,
   reason: z.string().trim().min(3).max(500).default("Finance released mock settlement"),
 });
 
@@ -24,7 +25,7 @@ export const createReconciliationSchema = z.object({
 });
 
 export const resolveReconciliationSchema = z.object({
-  exceptionId: z.uuid(),
+  exceptionId: dbUuid,
   resolution: z.string().trim().min(3).max(1000),
   status: z.enum(["resolved", "written_off"]).default("resolved"),
 });

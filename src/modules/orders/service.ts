@@ -21,8 +21,7 @@ import type {
   MockCompletePaymentInput,
   StartPaymentInput,
 } from "@/modules/orders/schema";
-import { LocalObjectStorage } from "@/platform/storage/local";
-import path from "node:path";
+import { createDocumentStorage } from "@/platform/storage/local";
 import {
   ensureChartOfAccounts,
   postOrderPaidLedger,
@@ -592,10 +591,8 @@ async function markPaymentSucceeded(
         "Development invoice document. Not a legally reviewed tax invoice. Seller-of-record and GST treatment remain open (A-21, A-24).",
     };
 
-    const storageRoot =
-      process.env.DOCUMENT_STORAGE_PATH ??
-      path.join(process.cwd(), "uploads", "invoices");
-    const storage = new LocalObjectStorage(storageRoot);
+    // Vercel functions are read-only except /tmp — use shared storage root.
+    const storage = createDocumentStorage();
     const bytes = Buffer.from(JSON.stringify(document, null, 2), "utf8");
     const stored = await storage.put({
       namespace: "invoices",
@@ -810,15 +807,65 @@ async function serializeOrder(orderId: string) {
 }
 
 export async function listOrdersForActor(actor: Actor) {
-  return prisma.order.findMany({
+  const orders = await prisma.order.findMany({
     where: { userId: actor.userId },
     orderBy: { createdAt: "desc" },
     include: {
       payments: { orderBy: { createdAt: "desc" }, take: 1 },
       invoices: true,
       lines: true,
+      address: true,
+      groups: {
+        select: {
+          id: true,
+          sellerId: true,
+          status: true,
+          shippedAt: true,
+          deliveredAt: true,
+          cancelledAt: true,
+          trackingNumber: true,
+          trackingUrl: true,
+          carrier: true,
+        },
+      },
+      returnRequests: {
+        select: { id: true, status: true, orderLineId: true },
+      },
     },
   });
+
+  const productIds = [
+    ...new Set(orders.flatMap((order) => order.lines.map((line) => line.productId))),
+  ];
+  const products =
+    productIds.length === 0
+      ? []
+      : await prisma.product.findMany({
+          where: { id: { in: productIds } },
+          select: {
+            id: true,
+            slug: true,
+            images: {
+              where: { isPrimary: true },
+              take: 1,
+              select: { url: true, altText: true },
+            },
+          },
+        });
+  const productById = new Map(products.map((product) => [product.id, product]));
+
+  return orders.map((order) => ({
+    ...order,
+    lines: order.lines.map((line) => {
+      const product = productById.get(line.productId);
+      return {
+        ...line,
+        productSlug: product?.slug ?? null,
+        imageUrl: product?.images[0]?.url ?? null,
+        imageAlt: product?.images[0]?.altText ?? null,
+      };
+    }),
+  }));
 }
 
 export async function getOrderForActor(actor: Actor, orderId: string) {
@@ -828,10 +875,24 @@ export async function getOrderForActor(actor: Actor, orderId: string) {
       payments: { orderBy: { createdAt: "desc" } },
       invoices: true,
       lines: true,
-      groups: { include: { shipment: true } },
+      groups: {
+        include: {
+          shipment: true,
+          seller: {
+            select: {
+              id: true,
+              tradeName: true,
+              legalName: true,
+              ratingAvg: true,
+              ratingCount: true,
+            },
+          },
+        },
+      },
       address: true,
       returnRequests: true,
       refunds: true,
+      protectionClaims: true,
     },
   });
   if (!order) {

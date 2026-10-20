@@ -129,6 +129,31 @@ export async function registerUser(
   return createSessionForUser(user.id, meta);
 }
 
+export async function updateProfile(
+  actor: Actor,
+  input: UpdateProfileInput,
+  correlationId: string,
+) {
+  const displayName = input.displayName.trim();
+  const updated = await prisma.user.update({
+    where: { id: actor.userId },
+    data: { displayName },
+    select: { id: true, email: true, displayName: true },
+  });
+  await prisma.auditLog.create({
+    data: {
+      actorId: actor.userId,
+      action: "user.profile_updated",
+      targetType: "user",
+      targetId: actor.userId,
+      afterState: { displayName },
+      reason: "Customer updated profile",
+      correlationId,
+    },
+  });
+  return updated;
+}
+
 export async function loginUser(
   input: LoginInput,
   meta: { ipAddress?: string; userAgent?: string; correlationId: string },

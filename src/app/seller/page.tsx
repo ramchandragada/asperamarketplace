@@ -62,8 +62,7 @@ export default async function SellerDashboardPage() {
           </Badge>
         </div>
         <p className="text-sm text-muted">
-          Recent shipped/delivered (7d): {formatPaise(dash.recentSalesPaise)}. Not
-          inventing vanity metrics—empty sections stay empty.
+          Recent shipped/delivered (7d): {formatPaise(dash.recentSalesPaise)}.
         </p>
       </header>
 
@@ -95,7 +94,7 @@ export default async function SellerDashboardPage() {
                 Add / edit catalogue
               </Link>
               <Link
-                href="/seller/catalogue"
+                href="/seller/inventory"
                 className="rounded-[var(--radius-sm)] border border-border px-3 py-2 text-sm"
               >
                 Manage inventory
@@ -168,9 +167,30 @@ export default async function SellerDashboardPage() {
         </Card>
 
         <Card className="p-4">
+          <h2 className="font-semibold">Out of stock</h2>
+          {dash.outOfStock.length === 0 ? (
+            <p className="mt-3 text-sm text-muted">No SKUs at zero availability.</p>
+          ) : (
+            <ul className="mt-3 space-y-2 text-sm">
+              {dash.outOfStock.map((row) => (
+                <li key={row.inventoryItemId} className="border-b border-border py-2">
+                  {row.productTitle} ({row.sku}) · avail 0
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link
+            href="/seller/inventory?filter=out_of_stock"
+            className="mt-3 inline-block text-sm font-medium text-accent underline"
+          >
+            Open inventory
+          </Link>
+        </Card>
+
+        <Card className="p-4">
           <h2 className="font-semibold">Low stock</h2>
           {dash.lowStock.length === 0 ? (
-            <p className="mt-3 text-sm text-muted">No SKUs at or below threshold.</p>
+            <p className="mt-3 text-sm text-muted">No SKUs between 1 and 5 available.</p>
           ) : (
             <ul className="mt-3 space-y-2 text-sm">
               {dash.lowStock.map((row) => (
@@ -180,6 +200,12 @@ export default async function SellerDashboardPage() {
               ))}
             </ul>
           )}
+          <Link
+            href="/seller/inventory?filter=low_stock"
+            className="mt-3 inline-block text-sm font-medium text-accent underline"
+          >
+            Open inventory
+          </Link>
         </Card>
 
         <Card className="p-4">

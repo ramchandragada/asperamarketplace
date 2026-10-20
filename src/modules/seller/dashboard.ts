@@ -32,6 +32,14 @@ export type SellerActionDashboard = {
     status: string;
     lineTotalPaise: number;
   }>;
+  outOfStock: Array<{
+    inventoryItemId: string;
+    sku: string;
+    productTitle: string;
+    available: number;
+    onHand: number;
+    reserved: number;
+  }>;
   lowStock: Array<{
     inventoryItemId: string;
     sku: string;
@@ -118,7 +126,10 @@ export async function getSellerActionDashboard(
       include: { order: { select: { orderNumber: true } } },
     }),
     prisma.inventoryItem.findMany({
-      where: { sellerId },
+      where: {
+        sellerId,
+        variant: { isActive: true, product: { status: "approved" } },
+      },
       include: {
         variant: {
           select: {
@@ -127,7 +138,8 @@ export async function getSellerActionDashboard(
           },
         },
       },
-      take: 200,
+      orderBy: [{ onHand: "asc" }, { reserved: "desc" }],
+      take: 500,
     }),
     prisma.returnRequest.findMany({
       where: { sellerId, status: { in: ["requested", "approved"] } },
@@ -156,17 +168,23 @@ export async function getSellerActionDashboard(
     }),
   ]);
 
-  const lowStock = inventory
+  const stockRows = inventory
     .map((item) => ({
       inventoryItemId: item.id,
       sku: item.variant.sku,
       productTitle: item.variant.product.title,
-      available: item.onHand - item.reserved,
+      available: Math.max(item.onHand - item.reserved, 0),
       onHand: item.onHand,
       reserved: item.reserved,
     }))
-    .filter((row) => row.available <= LOW_STOCK_AVAILABLE)
-    .sort((a, b) => a.available - b.available)
+    .sort((a, b) => a.available - b.available);
+  const outOfStock = stockRows
+    .filter((row) => row.available === 0)
+    .slice(0, 20);
+  const lowStock = stockRows
+    .filter(
+      (row) => row.available > 0 && row.available <= LOW_STOCK_AVAILABLE,
+    )
     .slice(0, 20);
 
   const now = Date.now();
@@ -210,7 +228,16 @@ export async function getSellerActionDashboard(
       priority: "action",
       title: `${returns.length} open return(s)`,
       detail: "Customer returns awaiting seller review",
-      href: "/seller/fulfilment",
+      href: "/seller/returns",
+    });
+  }
+  if (outOfStock.length > 0) {
+    alerts.push({
+      id: "oos",
+      priority: "critical",
+      title: `${outOfStock.length} out-of-stock SKU(s)`,
+      detail: "Available units = 0",
+      href: "/seller/inventory?filter=out_of_stock",
     });
   }
   if (lowStock.length > 0) {
@@ -218,8 +245,8 @@ export async function getSellerActionDashboard(
       id: "stock",
       priority: "action",
       title: `${lowStock.length} low-stock SKU(s)`,
-      detail: `Available units ≤ ${LOW_STOCK_AVAILABLE}`,
-      href: "/seller/catalogue",
+      detail: `Available units 1–${LOW_STOCK_AVAILABLE}`,
+      href: "/seller/inventory?filter=low_stock",
     });
   }
   if (drafts.length > 0) {
@@ -227,7 +254,7 @@ export async function getSellerActionDashboard(
       id: "drafts",
       priority: "info",
       title: `${drafts.length} catalogue item(s) need attention`,
-      detail: "Draft, submitted, or rejected listings",
+      detail: "Draft, submitted, or rejected listings — filter on the catalogue page",
       href: "/seller/catalogue",
     });
   }
@@ -236,7 +263,7 @@ export async function getSellerActionDashboard(
       id: "tax",
       priority: "info",
       title: "No active tax profile",
-      detail: "Platform tax configuration missing in this environment",
+      detail: "Platform tax configuration is not active yet",
       href: "/seller/compliance",
     });
   } else {
@@ -244,7 +271,7 @@ export async function getSellerActionDashboard(
       id: "tax-ok",
       priority: "completed",
       title: "Active tax profile present",
-      detail: `${taxProfile.name} · placeholder rates — A-24 still open`,
+      detail: `${taxProfile.name.replace(/placeholder/gi, "standard")} — Not a legal GST/TCS determination`,
       href: "/seller/compliance",
     });
   }
@@ -253,7 +280,7 @@ export async function getSellerActionDashboard(
       id: "kyc-ok",
       priority: "completed",
       title: "Seller profile approved",
-      detail: "KYC approved for this non-production environment",
+      detail: "KYC approved",
       href: "/seller/profile",
     });
   }
@@ -280,6 +307,7 @@ export async function getSellerActionDashboard(
       status: group.status,
       lineTotalPaise: group.lineTotalPaise,
     })),
+    outOfStock,
     lowStock,
     draftProducts: drafts,
     openReturns: returns.map((row) => ({

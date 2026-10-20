@@ -604,7 +604,7 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         heading: "Home care",
         links: [
           link("Tissue & paper", "household-essentials", { q: "tissue" }),
-          link("Freshners", "household-essentials", { q: "freshner" }),
+          link("Fresheners", "household-essentials", { q: "freshener" }),
           { label: "Shop all grocery", href: browse("household-essentials") },
         ],
       },

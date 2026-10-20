@@ -47,6 +47,8 @@ export default async function SellerFinancePage() {
         <p className="mt-2 text-sm text-muted">
           Read-only settlement batches for{" "}
           {seller.tradeName ?? seller.legalName}. Releases remain admin-operated.
+          Tax figures shown elsewhere are placeholders — not a legal GST/TCS
+          determination.
         </p>
       </header>
       {batches.length === 0 ? (

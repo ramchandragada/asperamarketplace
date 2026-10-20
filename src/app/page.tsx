@@ -366,7 +366,6 @@ export default async function Home() {
           <div className="container-shell flex flex-col gap-3 py-5 md:gap-3.5 md:py-6">
           <SectionHeading
             title="New arrivals"
-            description="Recently listed on Aspera"
             action={
               <Link
                 href="/shop?sort=newest"

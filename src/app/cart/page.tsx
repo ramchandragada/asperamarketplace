@@ -3,6 +3,7 @@ import { CartPanel } from "@/components/cart-panel";
 import { PageShell } from "@/components/ui/page-shell";
 import {
   emptyCartView,
+  estimateCart,
   getCartForIdentity,
 } from "@/modules/cart/service";
 import { readGuestCartToken } from "@/modules/cart/guest";
@@ -29,14 +30,35 @@ export default async function CartPage() {
   let cart: Awaited<ReturnType<typeof getCartForIdentity>> | ReturnType<
     typeof emptyCartView
   > = emptyCartView();
+  let initialSnapshot = null as Awaited<
+    ReturnType<typeof estimateCart>
+  >["snapshot"];
+  let initialSavingsPaise = 0;
+
   try {
     if (actor) {
-      cart = await getCartForIdentity({ type: "user", userId: actor.userId });
+      const identity = { type: "user" as const, userId: actor.userId };
+      cart = await getCartForIdentity(identity);
+      if (cart.items.length > 0) {
+        const estimate = await estimateCart(identity);
+        cart = estimate.cart;
+        initialSnapshot = estimate.snapshot;
+        initialSavingsPaise = estimate.savingsPaise;
+      }
     } else if (guestToken) {
-      cart = await getCartForIdentity({ type: "guest", guestToken });
+      const identity = { type: "guest" as const, guestToken };
+      cart = await getCartForIdentity(identity);
+      if (cart.items.length > 0) {
+        const estimate = await estimateCart(identity);
+        cart = estimate.cart;
+        initialSnapshot = estimate.snapshot;
+        initialSavingsPaise = estimate.savingsPaise;
+      }
     }
   } catch {
     cart = emptyCartView();
+    initialSnapshot = null;
+    initialSavingsPaise = 0;
   }
 
   return (
@@ -48,7 +70,11 @@ export default async function CartPage() {
           checkout.
         </p>
       </div>
-      <CartPanel initialCart={cart} />
+      <CartPanel
+        initialCart={cart}
+        initialSnapshot={initialSnapshot}
+        initialSavingsPaise={initialSavingsPaise}
+      />
       {!actor && cart.items.length > 0 ? (
         <p className="rounded-lg border border-border bg-accent-soft px-4 py-3 text-sm text-foreground">
           You&apos;re shopping as a guest.{" "}

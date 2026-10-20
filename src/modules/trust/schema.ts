@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dbUuid } from "@/platform/validation/id";
 
 export const openRiskCaseSchema = z.object({
   subjectType: z.enum(["user", "seller", "order", "product", "payment"]),
@@ -9,34 +10,34 @@ export const openRiskCaseSchema = z.object({
 });
 
 export const updateRiskCaseSchema = z.object({
-  riskCaseId: z.uuid(),
+  riskCaseId: dbUuid,
   status: z.enum(["investigating", "mitigated", "closed"]),
   reason: z.string().trim().min(3).max(500),
 });
 
 export const reportCounterfeitSchema = z.object({
-  productId: z.uuid(),
-  sellerId: z.uuid(),
+  productId: dbUuid,
+  sellerId: dbUuid,
   brandClaim: z.string().trim().min(2).max(120),
   evidenceNote: z.string().trim().min(10).max(4000),
 });
 
 export const reviewCounterfeitSchema = z.object({
-  caseId: z.uuid(),
+  caseId: dbUuid,
   decision: z.enum(["uphold", "dismiss"]),
   reason: z.string().trim().min(3).max(500),
 });
 
 export const createReviewSchema = z.object({
-  productId: z.uuid(),
-  orderId: z.uuid().optional(),
+  productId: dbUuid,
+  orderId: dbUuid.optional(),
   rating: z.number().int().min(1).max(5),
   title: z.string().trim().min(3).max(120),
   body: z.string().trim().min(10).max(4000),
 });
 
 export const moderateReviewSchema = z.object({
-  reviewId: z.uuid(),
+  reviewId: dbUuid,
   decision: z.enum(["approve", "reject", "hide"]),
   reason: z.string().trim().min(3).max(500),
 });
@@ -47,7 +48,7 @@ export const createPrivacyRequestSchema = z.object({
 });
 
 export const updatePrivacyRequestSchema = z.object({
-  privacyRequestId: z.uuid(),
+  privacyRequestId: dbUuid,
   status: z.enum(["in_progress", "completed", "rejected"]),
   reason: z.string().trim().min(3).max(500),
 });
@@ -60,7 +61,7 @@ export const createComplianceEvidenceSchema = z.object({
 });
 
 export const submitComplianceEvidenceSchema = z.object({
-  evidenceId: z.uuid(),
+  evidenceId: dbUuid,
   decision: z.enum(["submit", "accept", "reject"]),
   reason: z.string().trim().min(3).max(500).default("Compliance register update"),
 });

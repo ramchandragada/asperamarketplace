@@ -145,6 +145,14 @@ h2,
   }
 }
 
+@media (max-width: 767px) {
+  footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+}
+
 .hide-scroll {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -189,7 +197,6 @@ h2,
   gap: 1rem;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 0.25rem;
   padding-bottom: 0.25rem;

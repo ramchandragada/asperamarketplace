@@ -26,8 +26,12 @@ export async function POST(request: Request) {
     const jar = await cookies();
     const guestToken = jar.get(GUEST_CART_COOKIE)?.value;
     if (guestToken) {
-      await mergeGuestCartIntoUser(guestToken, session.userId, requestId);
-      await clearGuestCartCookie();
+      try {
+        await mergeGuestCartIntoUser(guestToken, session.userId, requestId);
+        await clearGuestCartCookie();
+      } catch {
+        // Sign-in must succeed even if guest-cart merge fails (DB blip, etc.).
+      }
     }
 
     const response = jsonOk(

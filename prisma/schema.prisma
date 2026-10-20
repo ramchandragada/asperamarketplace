@@ -138,6 +138,8 @@ model User {
   paymentAttempts   PaymentAttempt[]
   wishlistItems     WishlistItem[]
   buyerProfile      BuyerProfile?
+  protectionClaims  ProtectionClaim[]
+  sellerFeedback    SellerFeedback[]
 
   @@map("users")
 }
@@ -238,6 +240,9 @@ model Seller {
   reviewedAt        DateTime?    @map("reviewed_at") @db.Timestamptz(6)
   reviewedByUserId  String?      @map("reviewed_by_user_id") @db.Uuid
   approvedAt        DateTime?    @map("approved_at") @db.Timestamptz(6)
+  /// Denormalized average of moderated SellerFeedback ratings (1–5).
+  ratingAvg         Float        @default(0) @map("rating_avg")
+  ratingCount       Int          @default(0) @map("rating_count")
   createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
   version           Int          @default(1)
@@ -250,9 +255,12 @@ model Seller {
   products    Product[]
   inventory   InventoryItem[]
   fulfilmentGroups OrderFulfilmentGroup[]
+  feedback    SellerFeedback[]
+  protectionClaims ProtectionClaim[]
 
   @@index([status])
   @@index([ownerUserId])
+  @@index([ratingAvg])
   @@map("sellers")
 }
 
@@ -608,8 +616,9 @@ model Order {
   invoices        Invoice[]
   returnRequests  ReturnRequest[]
   refunds         Refund[]
-  tickets         SupportTicket[]
-  disputes        Dispute[]
+  tickets          SupportTicket[]
+  disputes         Dispute[]
+  protectionClaims ProtectionClaim[]
 
   @@index([userId, status])
   @@index([status])
@@ -877,6 +886,74 @@ model Dispute {
   @@index([orderId])
   @@index([sellerId, status])
   @@map("disputes")
+}
+
+enum ProtectionClaimType {
+  not_delivered
+  not_as_described
+  return_not_honored
+  other
+}
+
+enum ProtectionClaimStatus {
+  submitted
+  under_review
+  approved
+  rejected
+  seller_resolved
+}
+
+/// Buyer Protection (A-to-z style) claim against an order line / seller.
+model ProtectionClaim {
+  id               String                @id @default(uuid()) @db.Uuid
+  orderId          String                @map("order_id") @db.Uuid
+  orderLineId      String                @map("order_line_id") @db.Uuid
+  userId           String                @map("user_id") @db.Uuid
+  sellerId         String                @map("seller_id") @db.Uuid
+  claimType        ProtectionClaimType   @map("claim_type")
+  description      String
+  /// JSON string array of evidence URLs or notes.
+  evidenceUrls     Json                  @default("[]") @map("evidence_urls")
+  status           ProtectionClaimStatus @default(submitted)
+  resolutionNote   String?               @map("resolution_note")
+  refundId         String?               @map("refund_id") @db.Uuid
+  sellerDebitPaise Int?                  @map("seller_debit_paise")
+  decidedByUserId  String?               @map("decided_by_user_id") @db.Uuid
+  createdAt        DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  decidedAt        DateTime?             @map("decided_at") @db.Timestamptz(6)
+
+  order Order  @relation(fields: [orderId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
+  seller Seller @relation(fields: [sellerId], references: [id])
+
+  @@index([userId, status])
+  @@index([sellerId, status])
+  @@index([orderId])
+  @@index([orderLineId])
+  @@index([status, createdAt])
+  @@map("protection_claims")
+}
+
+/// Post-delivery seller quality feedback (separate from ProductReview).
+model SellerFeedback {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  sellerId         String   @map("seller_id") @db.Uuid
+  orderLineId      String   @unique @map("order_line_id") @db.Uuid
+  rating           Int
+  text             String?
+  shippingRating   Int?     @map("shipping_rating")
+  packagingRating  Int?     @map("packaging_rating")
+  accuracyRating   Int?     @map("accuracy_rating")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user   User   @relation(fields: [userId], references: [id])
+  seller Seller @relation(fields: [sellerId], references: [id])
+
+  @@index([sellerId, createdAt])
+  @@index([userId])
+  @@map("seller_feedback")
 }
 
 enum LedgerAccountType {

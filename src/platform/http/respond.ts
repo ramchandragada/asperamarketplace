@@ -47,6 +47,9 @@ import {
   FinanceValidationError,
 } from "@/modules/finance/service";
 import { TrustValidationError } from "@/modules/trust/service";
+import { SellerFeedbackValidationError } from "@/modules/trust/seller-feedback";
+import { ProtectionValidationError } from "@/modules/protection/service";
+import { PincodeNotServiceableError } from "@/modules/fulfilment/pincode";
 import { AnalyticsValidationError } from "@/modules/analytics/service";
 import { IdempotencyConflictError } from "@/platform/idempotency/store";
 import { StorageValidationError } from "@/platform/storage/local";
@@ -204,6 +207,9 @@ export function jsonError(
     error instanceof FulfilmentTransitionError ||
     error instanceof FinanceValidationError ||
     error instanceof TrustValidationError ||
+    error instanceof SellerFeedbackValidationError ||
+    error instanceof ProtectionValidationError ||
+    error instanceof PincodeNotServiceableError ||
     error instanceof AnalyticsValidationError
   ) {
     return NextResponse.json(

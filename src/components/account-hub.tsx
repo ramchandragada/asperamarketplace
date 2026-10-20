@@ -17,7 +17,7 @@ const TILES: Tile[] = [
     group: "shopping",
   },
   {
-    href: "/orders?tab=buy-again",
+    href: "/orders",
     title: "Buy Again",
     blurb: "Reorder items from past purchases.",
     group: "shopping",

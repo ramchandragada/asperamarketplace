@@ -1087,6 +1087,8 @@ export async function getPublicProductBySlug(slug: string) {
           legalName: true,
           tradeName: true,
           status: true,
+          ratingAvg: true,
+          ratingCount: true,
         },
       },
       category: true,

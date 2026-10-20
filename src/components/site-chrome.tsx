@@ -6,6 +6,7 @@ import { SiteHeaderClient } from "@/components/site-header-client";
 import { MEGA_MENU } from "@/lib/mega-menu";
 import { readGuestCartToken } from "@/modules/cart/guest";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
+import { siteContact } from "@/platform/config/site-contact";
 
 async function cartCount(userId: string | undefined, guestToken: string | null) {
   try {
@@ -249,7 +250,7 @@ export function SiteFooter() {
       <div className="container-shell grid gap-8 py-10 text-sm md:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
           <p className="font-display text-lg font-bold text-accent">
-            Aspera Marketplace
+            {siteContact.brandName}
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
             Multi-vendor marketplace of independent Indian sellers.
@@ -258,21 +259,25 @@ export function SiteFooter() {
             <p>
               Support:{" "}
               <a
-                href="mailto:support@asperamarketplace.example"
+                href={`mailto:${siteContact.supportEmail}`}
                 className="font-medium text-accent hover:underline"
               >
-                support@asperamarketplace.example
+                {siteContact.supportEmail}
               </a>
             </p>
             <p>
               Phone:{" "}
               <a
-                href="tel:+910000000000"
+                href={`tel:${siteContact.supportPhoneTel}`}
                 className="font-medium text-accent hover:underline"
               >
-                +91 00000 00000
-              </a>{" "}
-              <span className="text-muted">(demo contact)</span>
+                {siteContact.supportPhoneDisplay}
+              </a>
+            </p>
+            <p>
+              <Link href="/buyer-protection" className="font-medium text-accent hover:underline">
+                Buyer Protection
+              </Link>
             </p>
           </div>
         </div>
@@ -487,10 +492,10 @@ export function SiteFooter() {
       <div className="border-t border-border">
         <div className="container-shell flex flex-col gap-2 py-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <p>© {year} Aspera Marketplace. All rights reserved.</p>
+            <p>© {year} {siteContact.brandName}. All rights reserved.</p>
             <p>
-              Registered entity (demo): Aspera Marketplace Private Limited ·
-              India
+              Registered entity: {siteContact.legalEntity} ·{" "}
+              {siteContact.registeredRegion}
             </p>
           </div>
           <p className="flex flex-wrap gap-3">

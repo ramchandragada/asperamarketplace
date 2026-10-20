@@ -37,6 +37,12 @@ export const previewCheckoutSchema = z.object({
   clientTotalPaise: z.number().int().nonnegative().optional(),
 });
 
+/** Cart-page estimate — no address required; defaults destination to Maharashtra. */
+export const estimateCartSchema = z.object({
+  couponCode: z.string().trim().min(3).max(40).optional(),
+  destinationState: z.string().trim().min(2).max(100).optional(),
+});
+
 export const confirmCheckoutSchema = z.object({
   addressId: dbUuid,
   couponCode: z.string().trim().min(3).max(40).optional(),
@@ -53,3 +59,4 @@ export type CreateAddressInput = z.infer<typeof createAddressSchema>;
 export type UpdateAddressInput = z.infer<typeof updateAddressSchema>;
 export type PreviewCheckoutInput = z.infer<typeof previewCheckoutSchema>;
 export type ConfirmCheckoutInput = z.infer<typeof confirmCheckoutSchema>;
+export type EstimateCartInput = z.infer<typeof estimateCartSchema>;

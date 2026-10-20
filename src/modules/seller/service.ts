@@ -224,7 +224,7 @@ export async function submitSellerForReview(
 export async function listSellersForAdmin(actor: Actor) {
   requireAdmin(actor);
   return prisma.seller.findMany({
-    orderBy: [{ createdAt: "desc" }],
+    orderBy: [{ ratingAvg: "desc" }, { createdAt: "desc" }],
     include: {
       owner: { select: { id: true, email: true, displayName: true } },
       documents: {

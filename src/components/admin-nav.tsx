@@ -10,6 +10,8 @@ const LINKS = [
   { href: "/admin/sellers", label: "Sellers" },
   { href: "/admin/products", label: "Products" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/claims", label: "Buyer Protection" },
+  { href: "/admin/data-quality", label: "Data quality" },
   { href: "/admin/trust", label: "Trust & safety" },
   { href: "/admin/finance", label: "Finance" },
   { href: "/admin/analytics", label: "Analytics" },

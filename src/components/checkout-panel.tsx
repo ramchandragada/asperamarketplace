@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import type { CheckoutSnapshot } from "@/modules/cart/pricing";
+import { PincodeField } from "@/components/pincode-field";
+import { BuyerProtectionBadge } from "@/components/buyer-protection-badge";
 
 type Address = {
   id: string;
@@ -241,6 +243,8 @@ export function CheckoutPanel({
         </p>
       ) : null}
 
+      <BuyerProtectionBadge compact />
+
       {reserved ? (
         <section className="rounded-card border border-accent/40 bg-accent-soft/40 p-4">
           <h2 className="text-lg font-semibold">Ready to place order</h2>
@@ -340,14 +344,14 @@ export function CheckoutPanel({
                   className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
                 />
               </label>
-              <label className="text-sm">
+              <label className="text-sm sm:col-span-2">
                 Postal code
-                <input
-                  name="postalCode"
-                  required
-                  pattern="\d{6}"
-                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-                />
+                <div className="mt-1">
+                  <PincodeField
+                    autofillCityState
+                    className="min-h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-base md:min-h-0 md:text-sm"
+                  />
+                </div>
               </label>
               <label className="text-sm">
                 Label

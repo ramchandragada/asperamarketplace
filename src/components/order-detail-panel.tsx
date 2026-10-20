@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
 
 type OrderDetail = {
@@ -128,6 +129,7 @@ function timelineSteps(order: OrderDetail) {
 }
 
 export function OrderDetailPanel({ order }: { order: OrderDetail }) {
+  const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -174,7 +176,7 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
       return;
     }
     setMessage(body.message ?? "Order cancelled");
-    window.location.reload();
+    router.refresh();
   }
 
   async function buyAgain() {
@@ -198,7 +200,7 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
       setError("Could not add items to cart");
       return;
     }
-    window.location.href = "/cart";
+    router.push("/cart");
   }
 
   async function submitReturn(event: FormEvent<HTMLFormElement>) {
@@ -231,7 +233,7 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
       return;
     }
     setMessage(body.message ?? "Return requested");
-    window.location.reload();
+    router.refresh();
   }
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {

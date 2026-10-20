@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
 
 type OrderSummary = {
@@ -56,6 +56,7 @@ function matchesTab(order: OrderSummary, tab: TabKey) {
 }
 
 export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get("tab") as TabKey | null) ?? "all";
   const [tab, setTab] = useState<TabKey>(
@@ -181,7 +182,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
       return;
     }
     setMessage(`Added ${added} item${added === 1 ? "" : "s"} to cart`);
-    window.location.href = "/cart";
+    router.push("/cart");
   }
 
   return (

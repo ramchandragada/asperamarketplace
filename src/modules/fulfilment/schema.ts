@@ -22,7 +22,7 @@ export const cancelGroupSchema = z.object({
 
 export const createReturnSchema = z.object({
   orderId: z.uuid(),
-  orderLineId: z.uuid().optional(),
+  orderLineId: z.uuid(),
   sellerId: z.uuid(),
   quantity: z.number().int().min(1).max(99).default(1),
   reason: z.string().trim().min(5).max(500),

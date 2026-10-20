@@ -11,7 +11,11 @@ import {
   type Actor,
 } from "@/modules/identity/policy";
 import { isRoleKey, type RoleKey } from "@/modules/identity/roles";
-import type { LoginInput, RegisterInput } from "@/modules/identity/schema";
+import type {
+  LoginInput,
+  RegisterInput,
+  UpdateProfileInput,
+} from "@/modules/identity/schema";
 import { logger } from "@/platform/logging/logger";
 import {
   isLoginLocked,
@@ -276,6 +280,32 @@ export async function getOptionalActor(): Promise<Actor | null> {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
   return resolveActorFromToken(token);
+}
+
+export async function updateActorProfile(
+  actor: Actor,
+  input: UpdateProfileInput,
+  correlationId: string,
+) {
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.user.update({
+      where: { id: actor.userId },
+      data: { displayName: input.displayName },
+      select: { id: true, displayName: true, email: true },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "profile.updated",
+        targetType: "user",
+        targetId: actor.userId,
+        afterState: { displayName: updated.displayName },
+        reason: "Customer updated profile display name",
+        correlationId,
+      },
+    });
+    return updated;
+  });
 }
 
 export function sessionCookieOptions(expiresAt: Date) {

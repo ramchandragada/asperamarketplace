@@ -51,6 +51,11 @@ export function ProductPurchasePanel({
   const [sizeChosen, setSizeChosen] = useState(!requiresSize);
   const [buyError, setBuyError] = useState<string | null>(null);
   const [buyPending, setBuyPending] = useState(false);
+  const [delivery, setDelivery] = useState<{
+    serviceable: boolean;
+    etaLabel: string | null;
+    codAvailable: boolean;
+  } | null>(null);
   const router = useRouter();
 
   function variantColor(variant: VariantView) {
@@ -299,11 +304,35 @@ export function ProductPurchasePanel({
       <div className="rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-soft)]">
         <p className="text-sm font-semibold tracking-tight">Delivery & services</p>
         <div className="mt-3">
-          <PincodeField showCheckButton required={false} name="pdpPostalCode" />
+          <PincodeField
+            showCheckButton
+            required={false}
+            name="pdpPostalCode"
+            onResolved={(check) =>
+              setDelivery({
+                serviceable: check.serviceable,
+                etaLabel: check.etaLabel,
+                codAvailable: check.codAvailable,
+              })
+            }
+          />
         </div>
-        <p className="mt-2 text-sm text-muted">
-          Free Delivery on eligible orders · Cash on Delivery available
-        </p>
+        {delivery?.serviceable && delivery.etaLabel ? (
+          <div className="mt-3 rounded-[var(--radius-sm)] bg-success-soft/60 px-3 py-2">
+            <p className="text-sm font-semibold text-foreground">
+              Delivery by {delivery.etaLabel}
+            </p>
+            <p className="text-xs text-muted">
+              {delivery.codAvailable
+                ? "Cash on Delivery available at this pincode"
+                : "Prepaid delivery available at this pincode"}
+            </p>
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-muted">
+            Enter your pincode for a delivery date · Cash on Delivery available
+          </p>
+        )}
         <ul className="mt-3 grid grid-cols-1 gap-2 border-t border-border pt-3 text-xs text-muted sm:grid-cols-3">
           <li className="inline-flex items-center gap-1.5">
             <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-success-soft text-[10px] font-bold text-success">

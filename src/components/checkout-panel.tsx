@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
@@ -47,13 +47,12 @@ export function CheckoutPanel({
   const [addresses, setAddresses] = useState(initialAddresses);
   const [addressId, setAddressId] = useState(initialAddresses[0]?.id ?? "");
   const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState("");
   const [cartVersion, setCartVersion] = useState(initialCart.version);
   const [snapshot, setSnapshot] = useState<CheckoutSnapshot | null>(
     initialReserved?.snapshot ?? null,
   );
-  const [reserved, setReserved] = useState<ReservedView | null>(
-    initialReserved,
-  );
+  const [reserved] = useState<ReservedView | null>(initialReserved);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -98,41 +97,40 @@ export function CheckoutPanel({
     }
   }
 
-  async function preview() {
-    if (!addressId) {
-      setError("Add a delivery address first");
-      return;
-    }
-    setPending(true);
-    setError(null);
-    setMessage(null);
-    const response = await fetch("/api/checkout/preview", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        addressId,
-        couponCode: couponCode.trim() || undefined,
-        clientTotalPaise: snapshot?.totalPaise,
-      }),
-    });
-    const body = (await response.json()) as {
-      data?: {
-        snapshot: CheckoutSnapshot;
-        cart: { version: number };
+  // Price the order on the server whenever the address or applied coupon
+  // changes, so the shopper always sees a live, authoritative total without a
+  // manual "preview" step. All state updates happen after the awaited fetch.
+  useEffect(() => {
+    if (reserved || !addressId) return;
+    let active = true;
+    (async () => {
+      const response = await fetch("/api/checkout/preview", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          addressId,
+          couponCode: appliedCoupon.trim() || undefined,
+        }),
+      });
+      const body = (await response.json()) as {
+        data?: { snapshot: CheckoutSnapshot; cart: { version: number } };
+        message?: string;
       };
-      message?: string;
+      if (!active) return;
+      if (!response.ok) {
+        setError(body.message ?? "Could not price this order");
+        return;
+      }
+      if (body.data) {
+        setError(null);
+        setSnapshot(body.data.snapshot);
+        setCartVersion(body.data.cart.version);
+      }
+    })();
+    return () => {
+      active = false;
     };
-    setPending(false);
-    if (!response.ok) {
-      setError(body.message ?? "Preview failed");
-      return;
-    }
-    if (body.data) {
-      setSnapshot(body.data.snapshot);
-      setCartVersion(body.data.cart.version);
-      setMessage("Totals refreshed from the server");
-    }
-  }
+  }, [addressId, appliedCoupon, reserved]);
 
   async function placeOrderFromReserved(checkoutId: string) {
     const response = await fetch("/api/orders", {
@@ -153,68 +151,46 @@ export function CheckoutPanel({
     return body.data.order;
   }
 
-  async function confirmAndPlace() {
-    if (!addressId || !snapshot) {
-      setError("Preview totals before placing the order");
+  async function placeOrder() {
+    if (!addressId) {
+      setError("Add a delivery address first");
       return;
     }
     setPending(true);
     setError(null);
     setMessage(null);
     try {
+      // If stock is already reserved, just create the order from it.
+      if (reserved) {
+        const order = await placeOrderFromReserved(reserved.id);
+        router.push(`/orders/${order.id}`);
+        router.refresh();
+        return;
+      }
       const confirmResponse = await fetch("/api/checkout/confirm", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           addressId,
-          couponCode: couponCode.trim() || undefined,
-          clientTotalPaise: snapshot.totalPaise,
+          couponCode: appliedCoupon.trim() || undefined,
+          clientTotalPaise: snapshot?.totalPaise,
           expectedCartVersion: cartVersion,
           idempotencyKey,
         }),
       });
       const confirmBody = (await confirmResponse.json()) as {
         data?: {
-          checkout: {
-            id: string;
-            totalPaise: number;
-            reservedUntil: string | null;
-          };
+          checkout: { id: string; totalPaise: number; reservedUntil: string | null };
           snapshot: CheckoutSnapshot;
         };
         message?: string;
       };
       if (!confirmResponse.ok || !confirmBody.data) {
-        setError(confirmBody.message ?? "Could not reserve stock");
+        setError(confirmBody.message ?? "Could not place the order");
         setPending(false);
         return;
       }
-      setSnapshot(confirmBody.data.snapshot);
-      setReserved({
-        id: confirmBody.data.checkout.id,
-        totalPaise: confirmBody.data.checkout.totalPaise,
-        reservedUntil: confirmBody.data.checkout.reservedUntil,
-        snapshot: confirmBody.data.snapshot,
-      });
-      setMessage("Stock reserved — placing order…");
       const order = await placeOrderFromReserved(confirmBody.data.checkout.id);
-      setMessage(`Order ${order.orderNumber} created — continue to payment`);
-      router.push(`/orders/${order.id}`);
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not place order");
-      setPending(false);
-    }
-  }
-
-  async function placeReservedOrder() {
-    if (!reserved) return;
-    setPending(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const order = await placeOrderFromReserved(reserved.id);
-      setMessage(`Order ${order.orderNumber} created — continue to payment`);
       router.push(`/orders/${order.id}`);
       router.refresh();
     } catch (err) {
@@ -234,67 +210,45 @@ export function CheckoutPanel({
     );
   }
 
+  const canPlace = Boolean(addressId) && !pending;
+
   return (
     <div className="flex flex-col gap-8">
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       ) : null}
 
       <BuyerProtectionBadge compact />
 
-      {reserved ? (
-        <section className="rounded-card border border-accent/40 bg-accent-soft/40 p-4">
-          <h2 className="text-lg font-semibold">Ready to place order</h2>
-          <p className="mt-2 text-sm">
-            Stock is reserved · Total {formatPaise(reserved.totalPaise)}
-          </p>
-          {reserved.reservedUntil ? (
-            <p className="text-sm text-muted">
-              Hold until {new Date(reserved.reservedUntil).toLocaleString()}
-            </p>
-          ) : null}
-          <button
-            type="button"
-            disabled={pending}
-            className="btn-cta btn-cta-primary mt-4"
-            onClick={() => void placeReservedOrder()}
-          >
-            {pending ? "Placing order…" : "Place order"}
-          </button>
-          <p className="mt-3 text-sm text-muted">
-            Next you&apos;ll pay with the development mock on the order page.
-          </p>
-        </section>
-      ) : null}
-
       {!reserved ? (
-        <>
-          <section className="flex flex-col gap-3">
-            <h2 className="text-lg font-semibold">Delivery address</h2>
-            {addresses.length > 0 ? (
-              <select
-                value={addressId}
-                onChange={(event) => setAddressId(event.target.value)}
-                className="rounded-lg border border-border bg-surface px-3 py-2"
-              >
-                {addresses.map((address) => (
-                  <option key={address.id} value={address.id}>
-                    {address.label}: {address.fullName}, {address.line1},{" "}
-                    {address.city}, {address.state} {address.postalCode}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <p className="text-sm text-muted">No saved addresses yet.</p>
-            )}
-            <form
-              onSubmit={saveAddress}
-              className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-2"
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold">Delivery address</h2>
+          {addresses.length > 0 ? (
+            <select
+              value={addressId}
+              onChange={(event) => setAddressId(event.target.value)}
+              className="min-h-11 rounded-lg border border-border bg-surface px-3 py-2 text-base md:min-h-0 md:text-sm"
             >
-              <h3 className="font-medium sm:col-span-2">Add address</h3>
+              {addresses.map((address) => (
+                <option key={address.id} value={address.id}>
+                  {address.label}: {address.fullName}, {address.line1},{" "}
+                  {address.city}, {address.state} {address.postalCode}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="text-sm text-muted">
+              Add a delivery address to continue.
+            </p>
+          )}
+          <details className="rounded-card border border-border bg-surface p-4">
+            <summary className="cursor-pointer text-sm font-medium">
+              {addresses.length > 0 ? "Add a new address" : "Add address"}
+            </summary>
+            <form onSubmit={saveAddress} className="mt-3 grid gap-3 sm:grid-cols-2">
               <label className="text-sm">
                 Full name
                 <input
@@ -369,102 +323,120 @@ export function CheckoutPanel({
                 Save address
               </button>
             </form>
-          </section>
+          </details>
+        </section>
+      ) : null}
 
-          <section className="flex flex-col gap-3">
-            <h2 className="text-lg font-semibold">Coupon (optional)</h2>
-            <input
-              value={couponCode}
-              onChange={(event) => setCouponCode(event.target.value)}
-              placeholder="ASPERA10"
-              className="rounded-lg border border-border bg-surface px-3 py-2"
-            />
-            <div className="flex flex-wrap items-center gap-2">
+      <section className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4">
+        <h2 className="text-lg font-semibold">Order summary</h2>
+
+        {snapshot ? (
+          <>
+            <ul className="flex flex-col gap-1 text-sm">
+              {snapshot.lines.map((line) => (
+                <li key={line.variantId} className="flex justify-between gap-3">
+                  <span className="text-muted">
+                    {line.productTitle} × {line.quantity}
+                  </span>
+                  <span>{formatPaise(line.lineTotalPaise)}</span>
+                </li>
+              ))}
+            </ul>
+            <dl className="flex flex-col gap-1 border-t border-border pt-3 text-sm">
+              <Row label="Subtotal" value={formatPaise(snapshot.subtotalPaise)} />
+              {snapshot.discountPaise > 0 ? (
+                <Row
+                  label="Discount"
+                  value={`− ${formatPaise(snapshot.discountPaise)}`}
+                  accent
+                />
+              ) : null}
+              <Row
+                label="Shipping"
+                value={
+                  snapshot.shippingPaise > 0
+                    ? formatPaise(snapshot.shippingPaise)
+                    : "FREE"
+                }
+              />
+              <Row label="GST" value={formatPaise(snapshot.taxPaise)} />
+              <div className="mt-1 flex justify-between border-t border-border pt-2 text-base font-semibold">
+                <span>Total</span>
+                <span>{formatPaise(snapshot.totalPaise)}</span>
+              </div>
+            </dl>
+            <p className="text-xs text-muted">{snapshot.tax.explanation}</p>
+          </>
+        ) : (
+          <p className="text-sm text-muted">
+            Select a delivery address to see your total.
+          </p>
+        )}
+
+        {!reserved ? (
+          <div className="mt-1 flex flex-col gap-2">
+            <label className="text-sm font-medium" htmlFor="coupon">
+              Have a coupon?
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="coupon"
+                value={couponCode}
+                onChange={(event) => setCouponCode(event.target.value)}
+                placeholder="ASPERA10"
+                className="min-h-11 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-base md:min-h-0 md:text-sm"
+              />
               <button
                 type="button"
                 disabled={pending}
-                onClick={() => void preview()}
-                className="btn-cta btn-cta-ghost"
+                onClick={() => setAppliedCoupon(couponCode)}
+                className="btn-cta btn-cta-secondary shrink-0 px-4"
               >
-                Preview totals
-              </button>
-              <button
-                type="button"
-                disabled={pending || !snapshot}
-                onClick={() => void confirmAndPlace()}
-                className="btn-cta btn-cta-primary"
-              >
-                {pending ? "Placing…" : "Place order"}
+                Apply
               </button>
             </div>
-            <p className="text-xs text-muted">
-              Place order reserves stock, creates your order, then takes you to
-              mock payment.
-            </p>
-          </section>
-        </>
-      ) : null}
+            {snapshot?.coupon.code ? (
+              <p className="text-xs text-accent">{snapshot.coupon.reason}</p>
+            ) : null}
+          </div>
+        ) : null}
+      </section>
 
-      {snapshot ? (
-        <section className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4">
-          <h2 className="text-lg font-semibold">Order summary</h2>
-          <ul className="text-sm">
-            {snapshot.lines.map((line) => (
-              <li key={line.variantId}>
-                {line.productTitle} × {line.quantity} ·{" "}
-                {formatPaise(line.lineTotalPaise)}
-              </li>
-            ))}
-          </ul>
-          <dl className="grid gap-1 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-muted">Subtotal</dt>
-              <dd>{formatPaise(snapshot.subtotalPaise)}</dd>
-            </div>
-            <div>
-              <dt className="text-muted">Discount</dt>
-              <dd>{formatPaise(snapshot.discountPaise)}</dd>
-            </div>
-            <div>
-              <dt className="text-muted">Shipping</dt>
-              <dd>{formatPaise(snapshot.shippingPaise)}</dd>
-            </div>
-            <div>
-              <dt className="text-muted">GST</dt>
-              <dd>{formatPaise(snapshot.taxPaise)}</dd>
-            </div>
-            {snapshot.tax.cgstPaise > 0 ? (
-              <div>
-                <dt className="text-muted">CGST</dt>
-                <dd>{formatPaise(snapshot.tax.cgstPaise)}</dd>
-              </div>
-            ) : null}
-            {snapshot.tax.sgstPaise > 0 ? (
-              <div>
-                <dt className="text-muted">SGST</dt>
-                <dd>{formatPaise(snapshot.tax.sgstPaise)}</dd>
-              </div>
-            ) : null}
-            {snapshot.tax.igstPaise > 0 ? (
-              <div>
-                <dt className="text-muted">IGST</dt>
-                <dd>{formatPaise(snapshot.tax.igstPaise)}</dd>
-              </div>
-            ) : null}
-            <div className="sm:col-span-2">
-              <dt className="text-muted">Total</dt>
-              <dd className="text-lg font-semibold">
-                {formatPaise(snapshot.totalPaise)}
-              </dd>
-            </div>
-          </dl>
-          <p className="text-xs text-muted">{snapshot.tax.explanation}</p>
-          <p className="text-xs text-muted">{snapshot.shipping.explanation}</p>
-          {snapshot.coupon.code ? (
-            <p className="text-xs text-muted">{snapshot.coupon.reason}</p>
-          ) : null}
-        </section>
-      ) : null}
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          disabled={!canPlace}
+          className="btn-cta btn-cta-primary h-12 w-full text-base"
+          onClick={() => void placeOrder()}
+        >
+          {pending
+            ? "Placing order…"
+            : snapshot
+              ? `Place order · ${formatPaise(snapshot.totalPaise)}`
+              : "Place order"}
+        </button>
+        <p className="text-center text-xs text-muted">
+          You’ll choose how to pay on the next step. Your stock is reserved when
+          you place the order.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="flex justify-between">
+      <dt className="text-muted">{label}</dt>
+      <dd className={accent ? "text-accent" : undefined}>{value}</dd>
     </div>
   );
 }

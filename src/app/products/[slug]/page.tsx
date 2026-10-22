@@ -348,8 +348,8 @@ export default async function ProductDetailPage({
                   ★ {average.toFixed(1)}
                 </span>
                 <span className="text-muted">
-                  {reviews.length.toLocaleString("en-IN")} ratings ·{" "}
-                  {reviews.length} reviews
+                  {reviews.length.toLocaleString("en-IN")}{" "}
+                  {reviews.length === 1 ? "rating" : "ratings"}
                 </span>
               </p>
             ) : null}

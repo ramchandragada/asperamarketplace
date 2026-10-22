@@ -294,12 +294,20 @@ export function TrustOpsPanel({
             Open case
           </button>
         </form>
+        <p className="text-sm font-medium">
+          Risk cases ({risk.length}
+          {risk.length >= 100 ? "+" : ""})
+        </p>
         <ul className="text-sm">
-          {risk.slice(0, 10).map((row) => (
-            <li key={row.id}>
-              {row.severity} · {row.status} · {row.title}
-            </li>
-          ))}
+          {risk.length === 0 ? (
+            <li className="text-muted">No risk cases.</li>
+          ) : (
+            risk.map((row) => (
+              <li key={row.id}>
+                {row.severity} · {row.status} · {row.title}
+              </li>
+            ))
+          )}
         </ul>
       </section>
 

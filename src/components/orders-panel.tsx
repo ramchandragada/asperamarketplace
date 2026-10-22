@@ -600,18 +600,19 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                       <button
                         type="button"
                         disabled={pending}
-                        className="btn-cta btn-cta-secondary h-10 w-full"
+                        className="btn-cta btn-cta-primary h-10 w-full"
                         onClick={() => void startAndSucceed(order.id)}
                       >
-                        Pay with mock
+                        Pay now
                       </button>
                       <button
                         type="button"
                         disabled={pending}
-                        className="btn-cta btn-cta-ghost h-10 w-full"
+                        className="btn-cta btn-cta-ghost h-10 w-full text-xs"
                         onClick={() => void startAndFail(order.id)}
+                        title="Test tool: simulate a failed payment"
                       >
-                        Simulate failure
+                        Test failed payment
                       </button>
                     </>
                   ) : null}

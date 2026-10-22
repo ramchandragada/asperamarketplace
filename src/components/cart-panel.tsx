@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { formatPaise } from "@/modules/catalogue/helpers";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type CartItem = {
   variantId: string;
@@ -173,14 +174,17 @@ export function CartPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
       {cart.items.length === 0 ? (
-        <p className="text-muted">
-          Your cart is empty.{" "}
-          <Link href="/browse" className="underline">
-            Browse listings
-          </Link>
-        </p>
+        <EmptyState
+          title="Your cart is empty"
+          description="Browse thousands of products from verified Indian sellers and add your favourites here."
+          action={
+            <Link href="/browse" className="btn-cta btn-cta-primary px-6">
+              Start shopping
+            </Link>
+          }
+        />
       ) : (
         <>
           <div className="flex flex-col gap-6">

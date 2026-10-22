@@ -25,7 +25,10 @@ import { createDocumentStorage } from "@/platform/storage/local";
 import {
   ensureChartOfAccounts,
   postOrderPaidLedger,
+  postRefundLedger,
+  resolveCommissionRateBps,
 } from "@/modules/finance/service";
+import { refundBreakdown } from "@/modules/finance/refund-math";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
 
 export class OrderValidationError extends Error {
@@ -990,6 +993,13 @@ export async function cancelBuyerOrder(
   }
 
   for (const group of cancellable) {
+    const commissionRateBps = await resolveCommissionRateBps(group.sellerId);
+    const breakdown = refundBreakdown({
+      merchandisePaise: group.lineTotalPaise,
+      orderSubtotalPaise: order.subtotalPaise,
+      orderTaxPaise: order.taxPaise,
+      commissionRateBps,
+    });
     await prisma.$transaction(async (tx) => {
       await tx.orderFulfilmentGroup.update({
         where: { id: group.id, version: group.version },
@@ -1023,17 +1033,28 @@ export async function cancelBuyerOrder(
           },
         });
       }
-      await tx.refund.create({
-        data: {
+      if (breakdown.totalPaise > 0) {
+        await tx.refund.create({
+          data: {
+            orderId: group.orderId,
+            amountPaise: breakdown.totalPaise,
+            merchandisePaise: breakdown.merchandisePaise,
+            status: "succeeded",
+            provider: "mock",
+            providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
+            reason,
+            completedAt: new Date(),
+          },
+        });
+        await postRefundLedger({
           orderId: group.orderId,
-          amountPaise: group.lineTotalPaise,
-          status: "succeeded",
-          provider: "mock",
-          providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
-          reason,
-          completedAt: new Date(),
-        },
-      });
+          sellerId: group.sellerId,
+          reason: `Buyer cancellation refund ${order.orderNumber}`,
+          correlationId,
+          breakdown,
+          tx,
+        });
+      }
       await tx.auditLog.create({
         data: {
           actorId: actor.userId,

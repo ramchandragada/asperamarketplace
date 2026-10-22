@@ -40,8 +40,8 @@ export default async function CheckoutPage() {
         </p>
         <h1 className="mt-2 font-display text-3xl font-semibold">Checkout</h1>
         <p className="mt-2 text-muted">
-          Confirm your address, reserve stock, place the order, then pay with
-          the development mock (no live charges).
+          Confirm your delivery address, review your total, and place your
+          order. You’ll choose how to pay on the next step.
         </p>
       </div>
       <CheckoutPanel

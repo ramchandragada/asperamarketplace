@@ -5,6 +5,15 @@ import {
   AuthorizationError,
   type Actor,
 } from "@/modules/identity/policy";
+import {
+  cappedMerchandisePaise,
+  refundBreakdown,
+} from "@/modules/finance/refund-math";
+import {
+  alreadyRefundedMerchandisePaise,
+  postRefundLedger,
+  resolveCommissionRateBps,
+} from "@/modules/finance/service";
 import type {
   CreateProtectionClaimInput,
   DecideProtectionClaimInput,
@@ -256,32 +265,55 @@ export async function decideProtectionClaim(
 
   const nextStatus = input.decision as ProtectionClaimStatus;
   const line = claim.order.lines.find((entry) => entry.id === claim.orderLineId);
-  const refundAmount = line?.lineTotalPaise ?? 0;
+  const commissionRateBps = line
+    ? await resolveCommissionRateBps(claim.sellerId)
+    : 0;
 
   return prisma.$transaction(async (tx) => {
     let refundId: string | null = claim.refundId;
     let sellerDebitPaise: number | null = claim.sellerDebitPaise;
 
-    if (input.decision === "approved" && refundAmount > 0) {
-      const refund = await tx.refund.create({
-        data: {
+    if (input.decision === "approved" && line) {
+      // Cap against anything already refunded on this line (e.g. a prior
+      // return), so an approved claim can never refund the line twice.
+      const alreadyRefunded = await alreadyRefundedMerchandisePaise(line.id, tx);
+      const merchandisePaise = cappedMerchandisePaise({
+        desiredMerchandisePaise: line.lineTotalPaise,
+        lineMerchandisePaise: line.lineTotalPaise,
+        alreadyRefundedMerchandisePaise: alreadyRefunded,
+      });
+      const breakdown = refundBreakdown({
+        merchandisePaise,
+        orderSubtotalPaise: claim.order.subtotalPaise,
+        orderTaxPaise: claim.order.taxPaise,
+        commissionRateBps,
+      });
+
+      if (breakdown.totalPaise > 0) {
+        const refund = await tx.refund.create({
+          data: {
+            orderId: claim.orderId,
+            orderLineId: line.id,
+            amountPaise: breakdown.totalPaise,
+            merchandisePaise: breakdown.merchandisePaise,
+            status: "succeeded",
+            provider: "mock",
+            providerReference: `protection:${claim.id}`,
+            completedAt: new Date(),
+            reason: `Buyer Protection approved: ${input.resolutionNote.slice(0, 180)}`,
+          },
+        });
+        refundId = refund.id;
+        sellerDebitPaise = breakdown.sellerDebitPaise;
+        await postRefundLedger({
           orderId: claim.orderId,
-          amountPaise: refundAmount,
-          status: "pending",
-          provider: "mock",
-          reason: `Buyer Protection approved: ${input.resolutionNote.slice(0, 180)}`,
-        },
-      });
-      refundId = refund.id;
-      sellerDebitPaise = refundAmount;
-      await tx.refund.update({
-        where: { id: refund.id },
-        data: {
-          status: "succeeded",
-          completedAt: new Date(),
-          providerReference: `protection:${claim.id}`,
-        },
-      });
+          sellerId: claim.sellerId,
+          reason: `Protection refund ${claim.id}`,
+          correlationId,
+          breakdown,
+          tx,
+        });
+      }
     }
 
     const updated = await tx.protectionClaim.update({

@@ -260,6 +260,7 @@ model Seller {
   fulfilmentGroups OrderFulfilmentGroup[]
   feedback    SellerFeedback[]
   protectionClaims ProtectionClaim[]
+  offers      SellerOffer[]
 
   @@index([status])
   @@index([ownerUserId])
@@ -325,6 +326,7 @@ model Category {
   parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
   children Category[] @relation("CategoryTree")
   products Product[]
+  catalogueProducts CatalogueProduct[]
 
   @@map("categories")
 }
@@ -337,6 +339,7 @@ model Brand {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   products Product[]
+  catalogueProducts CatalogueProduct[]
 
   @@map("brands")
 }
@@ -1318,4 +1321,126 @@ model TaxProfile {
 
   @@index([active])
   @@map("tax_profiles")
+}
+
+// --- Catalogue v2: shared catalogue + seller offers (behind CATALOGUE_V2) ---
+// Additive only. Nothing reads these tables yet; see docs/CATALOGUE_V2_PLAN.md.
+
+enum OfferCondition {
+  new
+  refurbished
+  used
+}
+
+/// Marketplace-owned canonical product. Catalogue facts live here; sellers
+/// attach SellerOffers and cannot edit these fields.
+model CatalogueProduct {
+  id              String        @id @default(uuid()) @db.Uuid
+  slug            String        @unique
+  categoryId      String        @map("category_id") @db.Uuid
+  brandId         String?       @map("brand_id") @db.Uuid
+  title           String
+  summary         String
+  description     String
+  status          ProductStatus @default(draft)
+  statusReason    String?       @map("status_reason")
+  countryOfOrigin String?       @map("country_of_origin")
+  hsnCode         String?       @map("hsn_code")
+  attributes      Json?
+  searchDocument  String        @default("") @map("search_document")
+  publishedAt     DateTime?     @map("published_at") @db.Timestamptz(6)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version         Int           @default(1)
+
+  category Category           @relation(fields: [categoryId], references: [id])
+  brand    Brand?             @relation(fields: [brandId], references: [id])
+  variants CatalogueVariant[]
+  images   CatalogueImage[]
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([status])
+  @@map("catalogue_products")
+}
+
+model CatalogueImage {
+  id                 String   @id @default(uuid()) @db.Uuid
+  catalogueProductId String   @map("catalogue_product_id") @db.Uuid
+  url                String
+  altText            String   @map("alt_text")
+  sortOrder          Int      @default(0) @map("sort_order")
+  isPrimary          Boolean  @default(false) @map("is_primary")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  catalogueProduct CatalogueProduct @relation(fields: [catalogueProductId], references: [id], onDelete: Cascade)
+
+  @@index([catalogueProductId, sortOrder])
+  @@map("catalogue_images")
+}
+
+/// Shared variant definition (e.g. "Blue / 128GB"). No price and no SKU —
+/// those belong to each SellerOffer.
+model CatalogueVariant {
+  id                 String   @id @default(uuid()) @db.Uuid
+  catalogueProductId String   @map("catalogue_product_id") @db.Uuid
+  title              String
+  optionValues       Json?    @map("option_values")
+  mrpPaise           Int?     @map("mrp_paise")
+  weightGrams        Int?     @map("weight_grams")
+  gtin               String?
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  catalogueProduct CatalogueProduct @relation(fields: [catalogueProductId], references: [id])
+  offers           SellerOffer[]
+
+  @@index([catalogueProductId])
+  @@map("catalogue_variants")
+}
+
+/// A seller's offer for one shared variant: their price, SKU, condition,
+/// dispatch terms, and status. Reuses ProductStatus for the moderation state.
+model SellerOffer {
+  id                 String         @id @default(uuid()) @db.Uuid
+  sellerId           String         @map("seller_id") @db.Uuid
+  catalogueVariantId String         @map("catalogue_variant_id") @db.Uuid
+  sku                String         @unique
+  sellingPricePaise  Int            @map("selling_price_paise")
+  mrpPaise           Int            @map("mrp_paise")
+  currencyCode       String         @default("INR") @map("currency_code")
+  condition          OfferCondition @default(new)
+  dispatchDays       Int?           @map("dispatch_days")
+  status             ProductStatus  @default(draft)
+  statusReason       String?        @map("status_reason")
+  version            Int            @default(1)
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  seller           Seller           @relation(fields: [sellerId], references: [id])
+  catalogueVariant CatalogueVariant @relation(fields: [catalogueVariantId], references: [id])
+  inventory        OfferInventory?
+
+  @@unique([sellerId, catalogueVariantId])
+  @@index([sellerId])
+  @@index([catalogueVariantId])
+  @@index([status])
+  @@map("seller_offers")
+}
+
+/// Stock for a single offer. Mirrors InventoryItem but keyed by offer so the
+/// reservation logic can move to offers in the money-path phase.
+model OfferInventory {
+  id        String   @id @default(uuid()) @db.Uuid
+  offerId   String   @unique @map("offer_id") @db.Uuid
+  onHand    Int      @default(0) @map("on_hand")
+  reserved  Int      @default(0)
+  damaged   Int      @default(0)
+  version   Int      @default(1)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  offer SellerOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@map("offer_inventory")
 }

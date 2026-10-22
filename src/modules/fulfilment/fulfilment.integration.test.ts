@@ -33,6 +33,7 @@ import {
   shipGroup,
   startProcessing,
 } from "@/modules/fulfilment/service";
+import { decideProtectionClaim } from "@/modules/protection/service";
 import { MockPaymentProvider } from "@/modules/payments/provider";
 import { rm } from "node:fs/promises";
 import path from "node:path";
@@ -311,13 +312,68 @@ describe.runIf(hasDatabase)("fulfilment and care integration", () => {
     const refund = await prisma.refund.findFirst({
       where: { returnRequestId: returnRequest.id },
     });
+    const paidOrder = await prisma.order.findUniqueOrThrow({
+      where: { id: orderResult.order.id },
+    });
     expect(refund?.status).toBe("succeeded");
-    expect(refund?.amountPaise).toBe(34900);
+    expect(refund?.merchandisePaise).toBe(34900);
+    // Refund returns item price + the GST paid on it (single-line order → full tax).
+    expect(refund?.amountPaise).toBe(34900 + paidOrder.taxPaise);
+    expect(refund?.orderLineId).toBe(line.id);
+
+    // The refund is posted to the double-entry ledger, and it balances.
+    const refundEntry = await prisma.journalEntry.findFirst({
+      where: { orderId: orderResult.order.id, sourceEvent: "refund.posted" },
+      include: { lines: true },
+    });
+    expect(refundEntry).toBeTruthy();
+    const refundDebits = refundEntry!.lines.reduce((s, l) => s + l.debitPaise, 0);
+    const refundCredits = refundEntry!.lines.reduce(
+      (s, l) => s + l.creditPaise,
+      0,
+    );
+    expect(refundDebits).toBe(refundCredits);
+    expect(refundCredits).toBe(34900 + paidOrder.taxPaise);
 
     const inventory = await prisma.inventoryItem.findUniqueOrThrow({
       where: { variantId: created.variant.id },
     });
     expect(inventory.onHand).toBe(10);
+
+    // A buyer-protection claim on the SAME line must not refund it a second
+    // time: the line is already fully refunded, so the payout caps to zero.
+    const dupeClaim = await prisma.protectionClaim.create({
+      data: {
+        orderId: orderResult.order.id,
+        orderLineId: line.id,
+        userId: buyerActor.userId,
+        sellerId: sellerDraft.id,
+        claimType: "not_as_described",
+        description:
+          "Fictional duplicate-refund guard test: item already returned.",
+        status: "submitted",
+      },
+    });
+    await decideProtectionClaim(
+      adminActor,
+      {
+        claimId: dupeClaim.id,
+        decision: "approved",
+        resolutionNote: "Approved, but line already refunded via return",
+      },
+      crypto.randomUUID(),
+    );
+    const decidedClaim = await prisma.protectionClaim.findUniqueOrThrow({
+      where: { id: dupeClaim.id },
+    });
+    expect(decidedClaim.refundId).toBeNull();
+    const refundsForLine = await prisma.refund.aggregate({
+      where: { orderLineId: line.id, status: { in: ["succeeded", "pending"] } },
+      _sum: { merchandisePaise: true },
+      _count: true,
+    });
+    expect(refundsForLine._count).toBe(1);
+    expect(refundsForLine._sum.merchandisePaise).toBe(34900);
 
     const ticket = await createSupportTicket(
       buyerActor,

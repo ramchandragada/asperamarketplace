@@ -674,6 +674,7 @@ model OrderLine {
 
   order           Order                @relation(fields: [orderId], references: [id])
   fulfilmentGroup OrderFulfilmentGroup @relation(fields: [fulfilmentGroupId], references: [id])
+  refunds         Refund[]
 
   @@index([orderId])
   @@index([fulfilmentGroupId])
@@ -837,7 +838,10 @@ model Refund {
   id              String       @id @default(uuid()) @db.Uuid
   orderId         String       @map("order_id") @db.Uuid
   returnRequestId String?      @unique @map("return_request_id") @db.Uuid
+  orderLineId     String?      @map("order_line_id") @db.Uuid
   amountPaise     Int          @map("amount_paise")
+  /// Merchandise portion of amountPaise (excludes GST). Used for settlement netting and refund caps.
+  merchandisePaise Int         @default(0) @map("merchandise_paise")
   status          RefundStatus @default(pending)
   provider        String       @default("mock")
   providerReference String?    @map("provider_reference")
@@ -848,8 +852,10 @@ model Refund {
 
   order         Order          @relation(fields: [orderId], references: [id])
   returnRequest ReturnRequest? @relation(fields: [returnRequestId], references: [id])
+  orderLine     OrderLine?     @relation(fields: [orderLineId], references: [id])
 
   @@index([orderId])
+  @@index([orderLineId])
   @@map("refunds")
 }
 

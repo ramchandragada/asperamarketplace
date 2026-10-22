@@ -285,16 +285,75 @@ export async function postOrderPaidLedger(
   });
 }
 
+/**
+ * Sum of merchandise already refunded against an order line (across returns,
+ * cancels, and protection claims). Used to cap further refunds on the line.
+ */
+export async function alreadyRefundedMerchandisePaise(
+  orderLineId: string,
+  tx: Prisma.TransactionClient = prisma,
+): Promise<number> {
+  const agg = await tx.refund.aggregate({
+    where: { orderLineId, status: { in: ["succeeded", "pending"] } },
+    _sum: { merchandisePaise: true },
+  });
+  return agg._sum.merchandisePaise ?? 0;
+}
+
+/**
+ * Post a refund to the double-entry ledger. Cash clearing is credited the full
+ * amount returned to the buyer; seller payable, commission revenue, and GST
+ * collected are each debited (reversed) by their portion. The breakdown is
+ * balanced by construction (sellerDebit + commission + gst === total).
+ */
 export async function postRefundLedger(params: {
   orderId: string;
-  amountPaise: number;
   sellerId?: string | null;
   reason: string;
   correlationId: string;
+  breakdown: {
+    totalPaise: number;
+    gstPaise: number;
+    commissionPaise: number;
+    sellerDebitPaise: number;
+  };
+  tx?: Prisma.TransactionClient;
 }) {
   await ensureChartOfAccounts();
-  if (params.amountPaise <= 0) {
+  const { breakdown } = params;
+  if (breakdown.totalPaise <= 0) {
     throw new FinanceValidationError("Refund amount must be positive");
+  }
+
+  const lines: LedgerLineInput[] = [
+    {
+      accountCode: "1000",
+      creditPaise: breakdown.totalPaise,
+      orderId: params.orderId,
+    },
+  ];
+  if (breakdown.sellerDebitPaise > 0) {
+    lines.push({
+      accountCode: "2000",
+      debitPaise: breakdown.sellerDebitPaise,
+      orderId: params.orderId,
+      sellerId: params.sellerId,
+    });
+  }
+  if (breakdown.commissionPaise > 0) {
+    lines.push({
+      accountCode: "4000",
+      debitPaise: breakdown.commissionPaise,
+      orderId: params.orderId,
+      sellerId: params.sellerId,
+    });
+  }
+  if (breakdown.gstPaise > 0) {
+    lines.push({
+      accountCode: "2200",
+      debitPaise: breakdown.gstPaise,
+      orderId: params.orderId,
+    });
   }
 
   return postBalancedEntry({
@@ -303,19 +362,8 @@ export async function postRefundLedger(params: {
     orderId: params.orderId,
     sellerId: params.sellerId,
     sourceEvent: "refund.posted",
-    lines: [
-      {
-        accountCode: "2000",
-        debitPaise: params.amountPaise,
-        orderId: params.orderId,
-        sellerId: params.sellerId,
-      },
-      {
-        accountCode: "1000",
-        creditPaise: params.amountPaise,
-        orderId: params.orderId,
-      },
-    ],
+    lines,
+    tx: params.tx,
   });
 }
 
@@ -350,7 +398,7 @@ export async function createSettlementBatch(
       deliveredAt: { gte: periodStart, lte: periodEnd },
       settlementLines: { none: {} },
     },
-    include: { order: true },
+    include: { order: true, lines: { select: { id: true } } },
   });
 
   if (groups.length === 0) {
@@ -359,18 +407,43 @@ export async function createSettlementBatch(
     );
   }
 
+  // Net out merchandise already refunded against these groups' lines, so a
+  // delivered-then-returned line is not settled (and paid out) at full value.
+  const allLineIds = groups.flatMap((group) => group.lines.map((line) => line.id));
+  const refundAgg = allLineIds.length
+    ? await prisma.refund.groupBy({
+        by: ["orderLineId"],
+        where: {
+          orderLineId: { in: allLineIds },
+          status: { in: ["succeeded", "pending"] },
+        },
+        _sum: { merchandisePaise: true },
+      })
+    : [];
+  const refundedByLine = new Map(
+    refundAgg.map((row) => [row.orderLineId, row._sum.merchandisePaise ?? 0]),
+  );
+
   const rateBps = await resolveCommissionRateBps(input.sellerId);
   let gross = 0;
   let commission = 0;
   const lineCreates = groups.map((group) => {
-    const commissionAmount = commissionPaise(group.lineTotalPaise, rateBps);
-    const net = group.lineTotalPaise - commissionAmount;
-    gross += group.lineTotalPaise;
+    const refundedMerchandise = group.lines.reduce(
+      (sum, line) => sum + (refundedByLine.get(line.id) ?? 0),
+      0,
+    );
+    const settleableGross = Math.max(
+      0,
+      group.lineTotalPaise - refundedMerchandise,
+    );
+    const commissionAmount = commissionPaise(settleableGross, rateBps);
+    const net = settleableGross - commissionAmount;
+    gross += settleableGross;
     commission += commissionAmount;
     return {
       orderId: group.orderId,
       fulfilmentGroupId: group.id,
-      grossPaise: group.lineTotalPaise,
+      grossPaise: settleableGross,
       commissionPaise: commissionAmount,
       netPaise: net,
     };

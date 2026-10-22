@@ -1,5 +1,15 @@
 import { randomBytes } from "node:crypto";
-import { cappedReturnQuantity, returnRefundPaise } from "@/modules/fulfilment/refund";
+import { cappedReturnQuantity } from "@/modules/fulfilment/refund";
+import {
+  cappedMerchandisePaise,
+  refundBreakdown,
+  unitMerchandisePaise,
+} from "@/modules/finance/refund-math";
+import {
+  alreadyRefundedMerchandisePaise,
+  postRefundLedger,
+  resolveCommissionRateBps,
+} from "@/modules/finance/service";
 import type { OrderStatus } from "@prisma/client";
 import { prisma } from "@/platform/db/prisma";
 import {
@@ -310,6 +320,14 @@ export async function cancelFulfilmentGroup(
   await assertFulfilmentWrite(actor, group.sellerId);
   assertFulfilmentTransition(group.status, "cancelled");
 
+  const cancelCommissionRateBps = await resolveCommissionRateBps(group.sellerId);
+  const cancelBreakdown = refundBreakdown({
+    merchandisePaise: group.lineTotalPaise,
+    orderSubtotalPaise: group.order.subtotalPaise,
+    orderTaxPaise: group.order.taxPaise,
+    commissionRateBps: cancelCommissionRateBps,
+  });
+
   const updated = await prisma.$transaction(async (tx) => {
     const fulfilment = await tx.orderFulfilmentGroup.update({
       where: { id: group.id, version: group.version },
@@ -350,17 +368,28 @@ export async function cancelFulfilmentGroup(
       }
     }
 
-    await tx.refund.create({
-      data: {
+    if (cancelBreakdown.totalPaise > 0) {
+      await tx.refund.create({
+        data: {
+          orderId: group.orderId,
+          amountPaise: cancelBreakdown.totalPaise,
+          merchandisePaise: cancelBreakdown.merchandisePaise,
+          status: "succeeded",
+          provider: "mock",
+          providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
+          reason: input.reason,
+          completedAt: new Date(),
+        },
+      });
+      await postRefundLedger({
         orderId: group.orderId,
-        amountPaise: group.lineTotalPaise,
-        status: "succeeded",
-        provider: "mock",
-        providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
-        reason: input.reason,
-        completedAt: new Date(),
-      },
-    });
+        sellerId: group.sellerId,
+        reason: `Cancellation refund ${group.order.orderNumber}`,
+        correlationId,
+        breakdown: cancelBreakdown,
+        tx,
+      });
+    }
 
     await tx.auditLog.create({
       data: {
@@ -487,6 +516,7 @@ export async function reviewReturnRequest(
   }
 
   const nextStatus = input.decision === "approve" ? "approved" : "rejected";
+  const commissionRateBps = await resolveCommissionRateBps(request.sellerId);
 
   return prisma.$transaction(async (tx) => {
     const updated = await tx.returnRequest.update({
@@ -512,47 +542,78 @@ export async function reviewReturnRequest(
         );
       }
       const quantity = cappedReturnQuantity(line.quantity, request.quantity);
-      const amountPaise = returnRefundPaise({
-        lineTotalPaise: line.lineTotalPaise,
-        purchasedQuantity: line.quantity,
-        requestedQuantity: quantity,
+      // Cap the refund to what this line still has refundable, across every
+      // path (prior returns, cancels, or protection claims on the same line).
+      const desiredMerchandise =
+        unitMerchandisePaise(line.lineTotalPaise, line.quantity) * quantity;
+      const alreadyRefunded = await alreadyRefundedMerchandisePaise(line.id, tx);
+      const merchandisePaise = cappedMerchandisePaise({
+        desiredMerchandisePaise: desiredMerchandise,
+        lineMerchandisePaise: line.lineTotalPaise,
+        alreadyRefundedMerchandisePaise: alreadyRefunded,
+      });
+      const breakdown = refundBreakdown({
+        merchandisePaise,
+        orderSubtotalPaise: request.order.subtotalPaise,
+        orderTaxPaise: request.order.taxPaise,
+        commissionRateBps,
       });
 
-      await tx.refund.create({
-        data: {
-          orderId: request.orderId,
-          returnRequestId: request.id,
-          amountPaise,
-          status: "succeeded",
-          provider: "mock",
-          providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
-          reason: input.reason,
-          completedAt: new Date(),
-        },
-      });
-
-      if (quantity > 0) {
-        const inventory = await tx.inventoryItem.findUnique({
-          where: { variantId: line.variantId },
+      if (breakdown.totalPaise > 0) {
+        await tx.refund.create({
+          data: {
+            orderId: request.orderId,
+            returnRequestId: request.id,
+            orderLineId: line.id,
+            amountPaise: breakdown.totalPaise,
+            merchandisePaise: breakdown.merchandisePaise,
+            status: "succeeded",
+            provider: "mock",
+            providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
+            reason: input.reason,
+            completedAt: new Date(),
+          },
         });
-        if (inventory) {
-          await tx.inventoryItem.update({
-            where: { id: inventory.id },
-            data: {
-              onHand: { increment: quantity },
-              version: { increment: 1 },
-            },
+        await postRefundLedger({
+          orderId: request.orderId,
+          sellerId: request.sellerId,
+          reason: `Return refund ${request.id}`,
+          correlationId,
+          breakdown,
+          tx,
+        });
+
+        const refundedUnits = unitMerchandisePaise(
+          line.lineTotalPaise,
+          line.quantity,
+        );
+        const restockQuantity =
+          refundedUnits > 0
+            ? Math.floor(breakdown.merchandisePaise / refundedUnits)
+            : quantity;
+        if (restockQuantity > 0) {
+          const inventory = await tx.inventoryItem.findUnique({
+            where: { variantId: line.variantId },
           });
-          await tx.stockMovement.create({
-            data: {
-              inventoryItemId: inventory.id,
-              movementType: "customer_return",
-              quantity,
-              reason: `Return approved ${request.id}`,
-              actorId: actor.userId,
-              correlationId,
-            },
-          });
+          if (inventory) {
+            await tx.inventoryItem.update({
+              where: { id: inventory.id },
+              data: {
+                onHand: { increment: restockQuantity },
+                version: { increment: 1 },
+              },
+            });
+            await tx.stockMovement.create({
+              data: {
+                inventoryItemId: inventory.id,
+                movementType: "customer_return",
+                quantity: restockQuantity,
+                reason: `Return approved ${request.id}`,
+                actorId: actor.userId,
+                correlationId,
+              },
+            });
+          }
         }
       }
 

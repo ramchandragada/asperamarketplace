@@ -70,7 +70,7 @@ export function AccountBusinessForm({
   return (
     <div className="flex flex-col gap-4">
       {message ? <p className="text-sm text-accent">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <form
         onSubmit={onSubmit}

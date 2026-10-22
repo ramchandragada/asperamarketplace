@@ -52,7 +52,7 @@ export function PrivacyRequestPanel({
   return (
     <div className="flex flex-col gap-6">
       {message ? <p className="text-sm">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
       <form onSubmit={submit} className="flex flex-col gap-3">
         <label className="flex flex-col gap-1 text-sm">
           Request type

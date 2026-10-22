@@ -394,7 +394,7 @@ export function ProductPurchasePanel({
           <p className="text-xs text-muted">Secure checkout · Buyer Protection</p>
         </div>
         {buyError ? (
-          <p className="mt-2 text-sm text-red-700" role="alert">
+          <p className="mt-2 text-sm text-danger" role="alert">
             {buyError}
           </p>
         ) : null}

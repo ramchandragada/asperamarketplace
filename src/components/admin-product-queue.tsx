@@ -293,7 +293,7 @@ export function AdminProductQueue({
 
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error && !confirm ? (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       ) : null}
@@ -542,7 +542,7 @@ export function AdminProductQueue({
               </p>
             )}
             {error ? (
-              <p role="alert" className="mt-3 text-sm text-red-700">
+              <p role="alert" className="mt-3 text-sm text-danger">
                 {error}
               </p>
             ) : null}
@@ -563,7 +563,7 @@ export function AdminProductQueue({
                 className={`rounded-lg px-3 py-2 text-sm font-medium ${
                   confirm.decision === "approve"
                     ? "bg-accent text-accent-foreground"
-                    : "border border-red-700 text-red-800"
+                    : "border border-danger text-danger"
                 }`}
                 disabled={busy}
                 onClick={() => void submitReview()}

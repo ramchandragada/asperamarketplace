@@ -137,7 +137,7 @@ export function PincodeField({
       {note ? (
         <p
           className={`text-sm ${
-            ok === false ? "text-red-700" : "text-muted"
+            ok === false ? "text-danger" : "text-muted"
           }`}
         >
           {note}

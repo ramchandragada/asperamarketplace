@@ -225,7 +225,7 @@ export function TrustOpsPanel({
   return (
     <div className="flex flex-col gap-10">
       {message ? <p className="text-sm">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <section className="text-sm text-muted">
         Open risk {summary.risk} · Counterfeit {summary.counterfeit} · Reviews{" "}

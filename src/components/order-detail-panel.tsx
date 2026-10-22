@@ -5,6 +5,12 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { BuyerProtectionBadge } from "@/components/buyer-protection-badge";
+import {
+  fulfilmentStatusLabel,
+  paymentProviderLabel,
+  paymentStatusLabel,
+  refundStatusLabel,
+} from "@/lib/status-labels";
 
 type OrderDetail = {
   id: string;
@@ -346,7 +352,7 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
   return (
     <div className="flex flex-col gap-8">
       {message ? <p className="text-sm text-accent">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <BuyerProtectionBadge />
 
@@ -393,8 +399,8 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
                 <h3 className="font-semibold">
                   {group.sellerName}
                 </h3>
-                <p className="text-sm capitalize text-muted">
-                  {group.status.replaceAll("_", " ")}
+                <p className="text-sm text-muted">
+                  {fulfilmentStatusLabel(group.status)}
                 </p>
               </div>
               <ol className="mt-3 flex flex-col gap-3 border-l border-border pl-4">
@@ -469,7 +475,8 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
         <ul className="mt-2 text-sm">
           {order.payments.map((payment) => (
             <li key={payment.id}>
-              {payment.provider} · {payment.status} ·{" "}
+              {paymentProviderLabel(payment.provider)} ·{" "}
+              {paymentStatusLabel(payment.status)} ·{" "}
               {formatPaise(payment.amountPaise)}
             </li>
           ))}
@@ -478,8 +485,8 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
           ) : null}
           {order.refunds.map((refund) => (
             <li key={refund.id}>
-              Refund {refund.status} · {formatPaise(refund.amountPaise)} ·{" "}
-              {refund.reason}
+              {refundStatusLabel(refund.status)} ·{" "}
+              {formatPaise(refund.amountPaise)} · {refund.reason}
             </li>
           ))}
         </ul>

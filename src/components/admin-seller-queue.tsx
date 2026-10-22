@@ -245,9 +245,9 @@ export function AdminSellerQueue({
         </label>
       </div>
 
-      {message ? <p className="text-sm text-green-800">{message}</p> : null}
+      {message ? <p className="text-sm text-success">{message}</p> : null}
       {error && !confirm ? (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       ) : null}
@@ -308,7 +308,7 @@ export function AdminSellerQueue({
                   {seller.status === "approved" ? (
                     <button
                       type="button"
-                      className="rounded-lg border border-red-700 px-3 py-2 text-sm text-red-800"
+                      className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
                       onClick={() => openConfirm(seller, "suspend")}
                     >
                       Suspend
@@ -407,7 +407,7 @@ export function AdminSellerQueue({
               />
             </label>
             {error ? (
-              <p role="alert" className="mt-3 text-sm text-red-700">
+              <p role="alert" className="mt-3 text-sm text-danger">
                 {error}
               </p>
             ) : null}
@@ -428,7 +428,7 @@ export function AdminSellerQueue({
                 className={`rounded-lg px-3 py-2 text-sm font-medium ${
                   confirm.decision === "reject" ||
                   confirm.decision === "suspend"
-                    ? "border border-red-700 text-red-800"
+                    ? "border border-danger text-danger"
                     : "bg-accent text-accent-foreground"
                 }`}
                 disabled={busy}

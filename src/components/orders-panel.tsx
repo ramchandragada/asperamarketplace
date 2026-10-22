@@ -403,7 +403,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
         </p>
 
         {message ? <p className="text-sm text-accent">{message}</p> : null}
-        {error ? <p className="text-sm text-red-700">{error}</p> : null}
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {visible.length === 0 ? (
           <div className="rounded-[var(--radius)] border border-border bg-surface p-8 text-center shadow-[var(--shadow-card)]">

@@ -75,7 +75,7 @@ export function PanelAccountMenu({
           ) : null}
           <button
             type="button"
-            className="px-3 py-2 text-left text-sm text-red-700 hover:bg-accent-soft/60"
+            className="px-3 py-2 text-left text-sm text-danger hover:bg-accent-soft/60"
             onClick={() => void signOut()}
           >
             Sign out

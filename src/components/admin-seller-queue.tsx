@@ -122,6 +122,9 @@ export function AdminSellerQueue({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [sortByRating, setSortByRating] = useState(true);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkReason, setBulkReason] = useState("");
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   // The server already filters by tab + search; just sort the current page.
   const visible = useMemo(() => {
@@ -130,6 +133,71 @@ export function AdminSellerQueue({
       (a, b) => (b.ratingAvg ?? 0) - (a.ratingAvg ?? 0),
     );
   }, [initialSellers, sortByRating]);
+
+  const pendingVisible = useMemo(
+    () => visible.filter((seller) => isPending(seller.status)),
+    [visible],
+  );
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelected((prev) =>
+      prev.size === pendingVisible.length
+        ? new Set()
+        : new Set(pendingVisible.map((seller) => seller.id)),
+    );
+  }
+
+  async function runBulk(decision: "approve" | "reject") {
+    const targets = pendingVisible.filter((seller) => selected.has(seller.id));
+    if (targets.length === 0) return;
+    const trimmed = bulkReason.trim();
+    if (decision === "reject" && trimmed.length < 3) {
+      setError("Add a rejection reason (min 3 characters) for the selected sellers.");
+      return;
+    }
+    setBulkBusy(true);
+    setError(null);
+    setMessage(null);
+    let ok = 0;
+    let failed = 0;
+    for (const seller of targets) {
+      try {
+        const response = await fetch("/api/admin/sellers/review", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            sellerId: seller.id,
+            decision,
+            reason: (
+              trimmed ||
+              (decision === "approve" ? "Bulk approved from queue" : "")
+            ).slice(0, 500),
+            expectedVersion: seller.version,
+          }),
+        });
+        if (response.ok) ok += 1;
+        else failed += 1;
+      } catch {
+        failed += 1;
+      }
+    }
+    setBulkBusy(false);
+    setSelected(new Set());
+    setBulkReason("");
+    setMessage(
+      `${decision === "approve" ? "Approved" : "Rejected"} ${ok} seller${ok === 1 ? "" : "s"}${failed ? `, ${failed} failed (someone else may have changed them).` : "."}`,
+    );
+    await refresh();
+  }
 
   function openConfirm(seller: AdminSeller, decision: ReviewDecision) {
     setError(null);
@@ -248,6 +316,47 @@ export function AdminSellerQueue({
         </label>
       </div>
 
+      {tab === "pending" && pendingVisible.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface p-3 text-sm">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={
+                selected.size === pendingVisible.length &&
+                pendingVisible.length > 0
+              }
+              onChange={toggleSelectAll}
+              aria-label="Select all pending sellers"
+            />
+            Select all ({pendingVisible.length})
+          </label>
+          <span className="text-muted">{selected.size} selected</span>
+          <input
+            value={bulkReason}
+            onChange={(event) => setBulkReason(event.target.value)}
+            placeholder="Reason (required to reject)"
+            aria-label="Bulk decision reason"
+            className="min-h-9 flex-1 rounded-lg border border-border bg-background px-3 py-1.5"
+          />
+          <button
+            type="button"
+            disabled={bulkBusy || selected.size === 0}
+            onClick={() => void runBulk("approve")}
+            className="rounded-lg bg-accent px-3 py-1.5 font-medium text-accent-foreground disabled:opacity-50"
+          >
+            {bulkBusy ? "Working…" : `Approve${selected.size ? ` ${selected.size}` : ""}`}
+          </button>
+          <button
+            type="button"
+            disabled={bulkBusy || selected.size === 0}
+            onClick={() => void runBulk("reject")}
+            className="rounded-lg border border-danger px-3 py-1.5 text-danger disabled:opacity-50"
+          >
+            {`Reject${selected.size ? ` ${selected.size}` : ""}`}
+          </button>
+        </div>
+      ) : null}
+
       {message ? <p className="text-sm text-success">{message}</p> : null}
       {error && !confirm ? (
         <p role="alert" className="text-sm text-danger">
@@ -293,9 +402,18 @@ export function AdminSellerQueue({
                       : " · No ratings"}
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {isPending(seller.status) ? (
                     <>
+                      <label className="flex items-center gap-1 text-xs text-muted">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(seller.id)}
+                          onChange={() => toggleSelected(seller.id)}
+                          aria-label={`Select ${seller.tradeName ?? seller.legalName} for bulk action`}
+                        />
+                        Select
+                      </label>
                       <button
                         type="button"
                         className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground"

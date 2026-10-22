@@ -96,4 +96,32 @@ Dev seller login used for the payout screenshot: `seller@aspera.local` / `Aspera
 
 ## 9. Branch state
 
-Work was done on `claude/relaxed-brahmagupta-tfm2p7` and merged to `main` via PRs #58, #59, #60. `main` is the source of truth and what's deployed.
+Work was done on `claude/relaxed-brahmagupta-tfm2p7` and merged to `main` via PRs **#58, #59, #60, #61** (this handoff). `main` is the source of truth for both Claude Code and Cursor.
+
+**Production alias (verified 2026-10-22):** last **READY** production deploy is merge **#60** (`b2a5e82`) — seller payout waterfall + dashboard loading/error. Merge **#61** (doc-only) hit a failed production build (see §11); runtime is unaffected because Vercel kept serving the previous READY deployment. Repo/`main` still has the handoff for agents.
+
+## 10. Cursor acknowledgment (keep Claude ↔ Cursor in sync)
+
+Cursor has read this handoff and will follow §5 conventions. Prior Cursor work still on `main` (do not regress):
+
+- Trust gaps: multi-seller cart/orders UI, pincode autofill, Buyer Protection, seller ratings, Amazon/Flipkart `/orders` filters.
+- Prod auth: `@aspera.local` demo gate (`ALLOW_DEMO_LOGINS`), admin TOTP (`/admin/security`, `REQUIRE_ADMIN_TOTP`).
+- OperatorChrome brand shell for seller/admin; GST v2 CGST/SGST/IGST + settlement TCS; catalogue DQ cleanup.
+- PDP `.btn-cta` fixed-height system (Buy now must never stretch into a circle).
+
+**Shared rule:** discuss → approve → implement; additive migrations only; no hardcoded status enums or danger colors.
+
+## 11. Known infra fragility — Prisma migrate lock on shared DB
+
+**Symptom (confirmed in Vercel build logs):** concurrent `vercel-build` runs that both execute `prisma migrate deploy` against the **same** Neon DB fight over Postgres advisory lock `72707369`. Loser fails with:
+
+`P1002 … Timed out trying to acquire a postgres advisory lock (SELECT pg_advisory_lock(72707369)). Timeout: 10000ms.`
+
+Seen when production + preview (or two production) builds overlap — e.g. #61 production deploy ERROR while #60 was still building. **Data is not corrupted**; re-run usually passes. GitHub `check` CI uses an isolated DB and is unaffected.
+
+**Backlog (prefer in this order):**
+
+1. **Separate production Neon from preview/dev** (also required before real sellers/customers).
+2. Move `prisma migrate deploy` out of concurrent preview builds (e.g. production-only migrate step, or a dedicated migration job) so preview builds only `generate` + `next build`.
+
+Until then: avoid stacking merges that trigger overlapping Vercel builds; if a doc-only deploy fails with P1002, redeploy `main` once quietly.

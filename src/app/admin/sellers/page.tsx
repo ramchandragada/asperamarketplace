@@ -20,12 +20,16 @@ function parseTab(raw: string | undefined): AdminSellerTab {
 export default async function AdminSellersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string }>;
 }) {
   const actor = await getOptionalActor();
   const params = await searchParams;
   const tab = parseTab(params.tab);
-  const sellers = await listSellersForAdmin(actor!);
+  const search = typeof params.q === "string" ? params.q : "";
+  const { sellers, counts, hasMore } = await listSellersForAdmin(actor!, {
+    tab,
+    search,
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,9 +41,12 @@ export default async function AdminSellersPage({
         </p>
       </div>
       <AdminSellerQueue
-        key={`${tab}:${sellers.map((seller) => `${seller.id}:${seller.version}`).join(",")}`}
+        key={`${tab}:${search}:${sellers.map((seller) => `${seller.id}:${seller.version}`).join(",")}`}
         initialSellers={sellers}
         tab={tab}
+        counts={counts}
+        hasMore={hasMore}
+        search={search}
       />
     </div>
   );

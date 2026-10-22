@@ -1,4 +1,4 @@
-import { KycCaseStatus, KycStage } from "@prisma/client";
+import { KycCaseStatus, KycStage, type Prisma } from "@prisma/client";
 import { prisma } from "@/platform/db/prisma";
 import {
   AuthorizationError,
@@ -221,24 +221,89 @@ export async function submitSellerForReview(
   });
 }
 
-export async function listSellersForAdmin(actor: Actor) {
+export type AdminSellerTab = "pending" | "approved" | "suspended" | "all";
+export type AdminSellerCounts = {
+  pending: number;
+  approved: number;
+  suspended: number;
+  all: number;
+};
+
+/**
+ * Admin seller queue: server-side filtered (by tab + search) and bounded.
+ * Previously this loaded every seller and filtered in the browser.
+ */
+export async function listSellersForAdmin(
+  actor: Actor,
+  options: { tab?: AdminSellerTab; search?: string; take?: number } = {},
+) {
   requireAdmin(actor);
-  return prisma.seller.findMany({
-    orderBy: [{ ratingAvg: "desc" }, { createdAt: "desc" }],
-    include: {
-      owner: { select: { id: true, email: true, displayName: true } },
-      documents: {
-        select: {
-          id: true,
-          documentType: true,
-          fileName: true,
-          contentType: true,
-          storageKey: true,
-          createdAt: true,
+  const take = Math.min(Math.max(options.take ?? 50, 1), 200);
+  const tab = options.tab ?? "pending";
+
+  const statusWhere: Prisma.SellerWhereInput =
+    tab === "approved"
+      ? { status: "approved" }
+      : tab === "suspended"
+        ? { status: "suspended" }
+        : tab === "pending"
+          ? { status: { in: ["submitted", "under_review"] } }
+          : {};
+
+  const search = options.search?.trim();
+  const searchWhere: Prisma.SellerWhereInput = search
+    ? {
+        OR: [
+          { legalName: { contains: search, mode: "insensitive" } },
+          { tradeName: { contains: search, mode: "insensitive" } },
+          { contactEmail: { contains: search, mode: "insensitive" } },
+          { gstinMasked: { contains: search, mode: "insensitive" } },
+          { owner: { email: { contains: search, mode: "insensitive" } } },
+        ],
+      }
+    : {};
+
+  const [rows, grouped] = await Promise.all([
+    prisma.seller.findMany({
+      where: { AND: [statusWhere, searchWhere] },
+      orderBy: [{ ratingAvg: "desc" }, { createdAt: "desc" }],
+      take: take + 1,
+      include: {
+        owner: { select: { id: true, email: true, displayName: true } },
+        documents: {
+          select: {
+            id: true,
+            documentType: true,
+            fileName: true,
+            contentType: true,
+            storageKey: true,
+            createdAt: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.seller.groupBy({ by: ["status"], _count: { _all: true } }),
+  ]);
+
+  const hasMore = rows.length > take;
+  const sellers = hasMore ? rows.slice(0, take) : rows;
+
+  const counts: AdminSellerCounts = {
+    pending: 0,
+    approved: 0,
+    suspended: 0,
+    all: 0,
+  };
+  for (const group of grouped) {
+    const n = group._count._all;
+    counts.all += n;
+    if (group.status === "approved") counts.approved += n;
+    else if (group.status === "suspended") counts.suspended += n;
+    else if (group.status === "submitted" || group.status === "under_review")
+      counts.pending += n;
+  }
+
+  return { sellers, counts, hasMore };
 }
 
 export async function getSellerDocumentForAdmin(

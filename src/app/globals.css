@@ -405,6 +405,23 @@ h2,
   transform: scale(1.045);
 }
 
+/* Skeleton loading shimmer (used by ui/skeleton.tsx). */
+@keyframes shimmer {
+  0% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

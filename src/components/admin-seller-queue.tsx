@@ -86,30 +86,12 @@ function isPending(status: string) {
   return status === "submitted" || status === "under_review";
 }
 
-function filterSellers(sellers: AdminSeller[], tab: AdminSellerTab) {
-  switch (tab) {
-    case "pending":
-      return sellers.filter((seller) => isPending(seller.status));
-    case "approved":
-      return sellers.filter((seller) => seller.status === "approved");
-    case "suspended":
-      return sellers.filter((seller) => seller.status === "suspended");
-    default:
-      return sellers;
-  }
-}
-
-function countSellers(sellers: AdminSeller[]): Counts {
-  return {
-    pending: sellers.filter((seller) => isPending(seller.status)).length,
-    approved: sellers.filter((seller) => seller.status === "approved").length,
-    suspended: sellers.filter((seller) => seller.status === "suspended").length,
-    all: sellers.length,
-  };
-}
-
-function buildHref(tab: AdminSellerTab) {
-  return tab === "pending" ? "/admin/sellers" : `/admin/sellers?tab=${tab}`;
+function buildHref(tab: AdminSellerTab, search?: string) {
+  const params = new URLSearchParams();
+  if (tab !== "pending") params.set("tab", tab);
+  if (search && search.trim()) params.set("q", search.trim());
+  const qs = params.toString();
+  return qs ? `/admin/sellers?${qs}` : "/admin/sellers";
 }
 
 function formatPan(panLast4: string | null) {
@@ -120,12 +102,17 @@ function formatPan(panLast4: string | null) {
 export function AdminSellerQueue({
   initialSellers,
   tab,
+  counts,
+  hasMore,
+  search,
 }: {
   initialSellers: AdminSeller[];
   tab: AdminSellerTab;
+  counts: Counts;
+  hasMore: boolean;
+  search: string;
 }) {
   const router = useRouter();
-  const [sellers, setSellers] = useState(initialSellers);
   const [confirm, setConfirm] = useState<{
     seller: AdminSeller;
     decision: ReviewDecision;
@@ -136,17 +123,13 @@ export function AdminSellerQueue({
   const [message, setMessage] = useState<string | null>(null);
   const [sortByRating, setSortByRating] = useState(true);
 
-  const counts = useMemo(
-    () => countSellers(initialSellers),
-    [initialSellers],
-  );
+  // The server already filters by tab + search; just sort the current page.
   const visible = useMemo(() => {
-    const filtered = filterSellers(sellers, tab);
-    if (!sortByRating) return filtered;
-    return [...filtered].sort(
+    if (!sortByRating) return initialSellers;
+    return [...initialSellers].sort(
       (a, b) => (b.ratingAvg ?? 0) - (a.ratingAvg ?? 0),
     );
-  }, [sellers, tab, sortByRating]);
+  }, [initialSellers, sortByRating]);
 
   function openConfirm(seller: AdminSeller, decision: ReviewDecision) {
     setError(null);
@@ -162,16 +145,8 @@ export function AdminSellerQueue({
   }
 
   async function refresh() {
-    const response = await fetch("/api/admin/sellers");
-    const body = (await response.json()) as {
-      data?: { sellers: AdminSeller[] };
-      message?: string;
-    };
-    if (!response.ok) {
-      setError(body.message ?? "Unable to load queue");
-      return;
-    }
-    setSellers(body.data?.sellers ?? []);
+    // The server component re-queries the current tab/search on refresh, and
+    // the page key (seller versions) remounts this list with fresh data.
     router.refresh();
   }
 
@@ -220,11 +195,39 @@ export function AdminSellerQueue({
 
   return (
     <div className="flex flex-col gap-4">
+      <form
+        method="get"
+        action="/admin/sellers"
+        className="flex flex-wrap items-center gap-2"
+      >
+        {tab !== "pending" ? (
+          <input type="hidden" name="tab" value={tab} />
+        ) : null}
+        <input
+          type="search"
+          name="q"
+          defaultValue={search}
+          placeholder="Search name, email, or GSTIN"
+          aria-label="Search sellers"
+          className="min-h-10 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm"
+        />
+        <button
+          type="submit"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
+        >
+          Search
+        </button>
+        {search ? (
+          <Link href={buildHref(tab)} className="text-sm text-muted hover:underline">
+            Clear
+          </Link>
+        ) : null}
+      </form>
       <div className="flex flex-wrap items-center gap-2 text-sm">
         {TABS.map(({ key, label }) => (
           <Link
             key={key}
-            href={buildHref(key)}
+            href={buildHref(key, search)}
             className={`rounded-lg border px-3 py-1.5 ${
               tab === key ? "border-accent bg-accent-soft" : "border-border"
             }`}
@@ -252,8 +255,19 @@ export function AdminSellerQueue({
         </p>
       ) : null}
 
+      {hasMore ? (
+        <p className="text-sm text-muted">
+          Showing the first {visible.length}. Refine with search to narrow the
+          list.
+        </p>
+      ) : null}
+
       {visible.length === 0 ? (
-        <p className="text-sm text-muted">No sellers in this view.</p>
+        <p className="text-sm text-muted">
+          {search
+            ? "No sellers match your search in this view."
+            : "No sellers in this view."}
+        </p>
       ) : (
         <ul className="flex flex-col gap-3">
           {visible.map((seller) => (

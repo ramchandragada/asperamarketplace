@@ -119,9 +119,9 @@ Cursor has read this handoff and will follow §5 conventions. Prior Cursor work 
 
 Seen when production + preview (or two production) builds overlap — e.g. #61 production deploy ERROR while #60 was still building. **Data is not corrupted**; re-run usually passes. GitHub `check` CI uses an isolated DB and is unaffected.
 
-**Backlog (prefer in this order):**
+**Status:** item 2 is **done** (see below). Item 1 remains.
 
-1. **Separate production Neon from preview/dev** (also required before real sellers/customers).
-2. Move `prisma migrate deploy` out of concurrent preview builds (e.g. production-only migrate step, or a dedicated migration job) so preview builds only `generate` + `next build`.
+1. **Separate production Neon from preview/dev** (also required before real sellers/customers). Still open — needs Neon + Vercel env work (a production `DATABASE_URL` distinct from preview/dev).
+2. ~~Move `prisma migrate deploy` out of concurrent preview builds~~ **DONE** — `vercel-build` now runs `node scripts/vercel-build.mjs`, which applies migrations **only when `VERCEL_ENV=production`**. Preview builds just `prisma generate` + `next build`, so they can no longer contend for the migrate lock. Caveat until item 1 lands: preview still shares the prod DB, so a PR that *adds* a migration won't see it on its own preview until it's merged and the production deploy applies it — fine for our additive-only migrations.
 
-Until then: avoid stacking merges that trigger overlapping Vercel builds; if a doc-only deploy fails with P1002, redeploy `main` once quietly.
+With item 2 done, overlapping builds no longer cause P1002. If a production deploy ever still fails, redeploy `main` once from the Vercel dashboard.

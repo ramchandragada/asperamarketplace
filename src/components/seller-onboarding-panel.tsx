@@ -148,9 +148,9 @@ export function SellerOnboardingPanel({
         </section>
       ) : null}
 
-      {message ? <p className="text-sm text-green-800">{message}</p> : null}
+      {message ? <p className="text-sm text-success">{message}</p> : null}
       {error ? (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       ) : null}

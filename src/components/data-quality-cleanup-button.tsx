@@ -10,6 +10,13 @@ export function DataQualityCleanupButton() {
   const [error, setError] = useState<string | null>(null);
 
   async function runCleanup() {
+    if (
+      !window.confirm(
+        "Archive all duplicate and placeholder-only products flagged here? Archived listings are removed from the storefront. This is a bulk action.",
+      )
+    ) {
+      return;
+    }
     setPending(true);
     setError(null);
     setMessage(null);
@@ -45,7 +52,7 @@ export function DataQualityCleanupButton() {
       </button>
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       ) : null}

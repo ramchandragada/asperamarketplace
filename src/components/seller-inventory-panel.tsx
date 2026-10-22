@@ -155,7 +155,7 @@ export function SellerInventoryPanel({
 
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       ) : null}

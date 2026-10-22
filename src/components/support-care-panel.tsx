@@ -113,7 +113,7 @@ export function SupportCarePanel({
   return (
     <div className="flex flex-col gap-10">
       {message ? <p className="text-sm">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Open a support ticket</h2>

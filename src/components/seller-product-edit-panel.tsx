@@ -149,7 +149,7 @@ export function SellerProductEditPanel({
             <p
               className={`text-sm ${
                 product.status === "rejected"
-                  ? "text-red-700"
+                  ? "text-danger"
                   : "text-muted"
               }`}
             >
@@ -163,10 +163,10 @@ export function SellerProductEditPanel({
       </div>
 
       {message ? <p className="text-sm text-accent">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       {product.status === "approved" ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+        <p className="rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 text-sm text-warning">
           Changing title, summary, description, or image will unpublish this
           listing until an admin re-approves it. Price and stock-only edits keep
           it live.

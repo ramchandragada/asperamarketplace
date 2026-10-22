@@ -141,11 +141,11 @@ export function AddToCartButton({
         <div
           className={
             compact
-              ? "basis-full text-sm text-red-700"
+              ? "basis-full text-sm text-danger"
               : "flex flex-wrap items-center gap-2"
           }
         >
-          <p className="text-sm text-red-700" role="alert">
+          <p className="text-sm text-danger" role="alert">
             {error}
           </p>
           {!selectionRequired ? (

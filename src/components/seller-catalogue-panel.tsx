@@ -231,7 +231,7 @@ export function SellerCataloguePanel({
   return (
     <div className="flex flex-col gap-8">
       {message ? <p className="text-sm text-accent">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <section className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -306,7 +306,7 @@ export function SellerCataloguePanel({
                     {product.status} · {product.category.name} · {product.slug}
                   </p>
                   {product.status === "rejected" && product.statusReason ? (
-                    <p className="mt-1 text-sm text-red-700">
+                    <p className="mt-1 text-sm text-danger">
                       Rejected: {product.statusReason}
                     </p>
                   ) : null}

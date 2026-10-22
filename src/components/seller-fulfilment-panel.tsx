@@ -136,7 +136,7 @@ export function SellerFulfilmentPanel({
   return (
     <div className="flex flex-col gap-8">
       {message ? <p className="text-sm text-foreground">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       {returnsOnly ? null : (
       <section className="flex flex-col gap-4">

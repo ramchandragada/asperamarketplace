@@ -5,6 +5,12 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { BuyerProtectionBadge } from "@/components/buyer-protection-badge";
+import {
+  fulfilmentStatusLabel,
+  paymentProviderLabel,
+  paymentStatusLabel,
+  refundStatusLabel,
+} from "@/lib/status-labels";
 
 type OrderDetail = {
   id: string;
@@ -173,6 +179,13 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
   );
 
   async function cancelOrder() {
+    if (
+      !window.confirm(
+        "Cancel this order? Unshipped items will be cancelled and refunded. This can’t be undone.",
+      )
+    ) {
+      return;
+    }
     setPending(true);
     setError(null);
     setMessage(null);
@@ -209,7 +222,14 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
     }
     setPending(false);
     if (added === 0) {
-      setError("Could not add items to cart");
+      setError("These items are no longer available to reorder.");
+      return;
+    }
+    if (added < order.lines.length) {
+      // Don't navigate silently — tell the buyer some items didn't make it.
+      setMessage(
+        `Added ${added} of ${order.lines.length} items to your cart — the rest are no longer available. Open your cart to continue.`,
+      );
       return;
     }
     router.push("/cart");
@@ -332,7 +352,7 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
   return (
     <div className="flex flex-col gap-8">
       {message ? <p className="text-sm text-accent">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <BuyerProtectionBadge />
 
@@ -379,8 +399,8 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
                 <h3 className="font-semibold">
                   {group.sellerName}
                 </h3>
-                <p className="text-sm capitalize text-muted">
-                  {group.status.replaceAll("_", " ")}
+                <p className="text-sm text-muted">
+                  {fulfilmentStatusLabel(group.status)}
                 </p>
               </div>
               <ol className="mt-3 flex flex-col gap-3 border-l border-border pl-4">
@@ -455,7 +475,8 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
         <ul className="mt-2 text-sm">
           {order.payments.map((payment) => (
             <li key={payment.id}>
-              {payment.provider} · {payment.status} ·{" "}
+              {paymentProviderLabel(payment.provider)} ·{" "}
+              {paymentStatusLabel(payment.status)} ·{" "}
               {formatPaise(payment.amountPaise)}
             </li>
           ))}
@@ -464,8 +485,8 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
           ) : null}
           {order.refunds.map((refund) => (
             <li key={refund.id}>
-              Refund {refund.status} · {formatPaise(refund.amountPaise)} ·{" "}
-              {refund.reason}
+              {refundStatusLabel(refund.status)} ·{" "}
+              {formatPaise(refund.amountPaise)} · {refund.reason}
             </li>
           ))}
         </ul>
@@ -544,9 +565,14 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium">Quantity</span>
               <input
+                key={returnLineId}
                 name="quantity"
                 type="number"
                 min={1}
+                max={
+                  returnableLines.find((line) => line.id === returnLineId)
+                    ?.quantity ?? 1
+                }
                 defaultValue={1}
                 className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2"
               />

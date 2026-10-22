@@ -72,7 +72,7 @@ export function AdminClaimsPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {claims.length === 0 ? (
         <p className="text-sm text-muted">No claims yet.</p>

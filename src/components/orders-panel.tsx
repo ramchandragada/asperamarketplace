@@ -403,7 +403,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
         </p>
 
         {message ? <p className="text-sm text-accent">{message}</p> : null}
-        {error ? <p className="text-sm text-red-700">{error}</p> : null}
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
 
         {visible.length === 0 ? (
           <div className="rounded-[var(--radius)] border border-border bg-surface p-8 text-center shadow-[var(--shadow-card)]">
@@ -605,15 +605,17 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                       >
                         Pay now
                       </button>
-                      <button
-                        type="button"
-                        disabled={pending}
-                        className="btn-cta btn-cta-ghost h-10 w-full text-xs"
-                        onClick={() => void startAndFail(order.id)}
-                        title="Test tool: simulate a failed payment"
-                      >
-                        Test failed payment
-                      </button>
+                      {process.env.NODE_ENV !== "production" ? (
+                        <button
+                          type="button"
+                          disabled={pending}
+                          className="btn-cta btn-cta-ghost h-10 w-full text-xs"
+                          onClick={() => void startAndFail(order.id)}
+                          title="Test tool: simulate a failed payment (non-production only)"
+                        >
+                          Test failed payment
+                        </button>
+                      ) : null}
                     </>
                   ) : null}
                 </div>

@@ -115,7 +115,14 @@ export function FinanceConsolePanel({
     await refresh();
   }
 
-  async function releaseSettlement(batchId: string) {
+  async function releaseSettlement(batchId: string, netPaise: number) {
+    if (
+      !window.confirm(
+        `Release this settlement payout of ${formatPaise(netPaise)} to the seller? This marks it paid and cannot be undone.`,
+      )
+    ) {
+      return;
+    }
     setError(null);
     setMessage(null);
     const response = await fetch("/api/finance/settlements/release", {
@@ -160,12 +167,21 @@ export function FinanceConsolePanel({
   }
 
   async function resolveException(exceptionId: string) {
+    const resolution = window.prompt(
+      "Resolution note for this exception (recorded in the audit log):",
+      "",
+    );
+    if (resolution === null) return;
+    if (resolution.trim().length < 5) {
+      setError("Enter a resolution note of at least 5 characters.");
+      return;
+    }
     const response = await fetch("/api/finance/reconcile", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         exceptionId,
-        resolution: "Mock finance resolved",
+        resolution: resolution.trim(),
         status: "resolved",
       }),
     });
@@ -181,7 +197,7 @@ export function FinanceConsolePanel({
   return (
     <div className="flex flex-col gap-10">
       {message ? <p className="text-sm">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Summary</h2>
@@ -261,7 +277,7 @@ export function FinanceConsolePanel({
                 <button
                   type="button"
                   className="w-fit underline"
-                  onClick={() => void releaseSettlement(batch.id)}
+                  onClick={() => void releaseSettlement(batch.id, batch.netPaise)}
                 >
                   Release mock payout
                 </button>
@@ -350,7 +366,8 @@ export function FinanceConsolePanel({
                 {entry.lines.map((line, index) => (
                   <li key={`${entry.id}-${index}`}>
                     {line.account.code} {line.account.name}: Dr{" "}
-                    {line.debitPaise} / Cr {line.creditPaise}
+                    {formatPaise(line.debitPaise)} / Cr{" "}
+                    {formatPaise(line.creditPaise)}
                   </li>
                 ))}
               </ul>

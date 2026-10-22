@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { OrderDetailPanel } from "@/components/order-detail-panel";
 import { PageShell } from "@/components/ui/page-shell";
 import { formatPaise } from "@/modules/catalogue/helpers";
-import { getOrderForActor } from "@/modules/orders/service";
+import { getOrderForActor, OrderValidationError } from "@/modules/orders/service";
 import { getOptionalActor } from "@/modules/identity/service";
+import { orderStatusLabel } from "@/lib/status-labels";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,16 @@ export default async function OrderDetailPage({
     redirect("/login");
   }
   const { orderId } = await params;
-  const order = await getOrderForActor(actor, orderId);
+  let order;
+  try {
+    order = await getOrderForActor(actor, orderId);
+  } catch (error) {
+    // An unknown or someone else's order id is a 404, not a server error.
+    if (error instanceof OrderValidationError) {
+      notFound();
+    }
+    throw error;
+  }
 
   return (
     <PageShell narrow>
@@ -30,7 +40,7 @@ export default async function OrderDetailPage({
           {order.orderNumber}
         </h1>
         <p className="mt-2 text-muted">
-          {order.status.replaceAll("_", " ")} · {formatPaise(order.totalPaise)}
+          {orderStatusLabel(order.status)} · {formatPaise(order.totalPaise)}
         </p>
       </div>
 

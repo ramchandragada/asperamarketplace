@@ -37,8 +37,14 @@ backfilling divergent copies.
       `getCatalogueProductBySlug`, `listOffersForCatalogueVariant`,
       `rankOffers` buy-box, `bestOfferPricePaise`) + `flags.ts`
       (`catalogueV2Enabled`, default OFF) + unit and integration tests.
-- [ ] **P3 — Re-point reads.** PDP, search, sibling-offer comparison read v2
+- [~] **P3 — Re-point reads.** PDP, search, sibling-offer comparison read v2
       when `CATALOGUE_V2=true`. Flip on preview → prod. Rollback = flip off.
+      - [x] **Backfill ready** (`catalogue-v2-backfill.ts`, `pnpm db:backfill:v2`):
+        idempotently maps existing approved products (grouped by
+        `sharedListingKey`) into catalogue products + variants + offers. Run
+        this once against a DB before flipping the flag so v2 has data.
+      - [ ] Adapt PDP / search / "other sellers" to read v2 behind the flag
+        (offer-centric display). **Not done — larger UX change, do supervised.**
 - [ ] **P4 — Re-point writes (money path).** Seller offer creation, cart,
       checkout, order lines, inventory reservation reference `offerId`. Heavy
       integration tests; shipped alone.

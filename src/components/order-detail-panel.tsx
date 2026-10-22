@@ -173,6 +173,13 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
   );
 
   async function cancelOrder() {
+    if (
+      !window.confirm(
+        "Cancel this order? Unshipped items will be cancelled and refunded. This can’t be undone.",
+      )
+    ) {
+      return;
+    }
     setPending(true);
     setError(null);
     setMessage(null);
@@ -209,7 +216,14 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
     }
     setPending(false);
     if (added === 0) {
-      setError("Could not add items to cart");
+      setError("These items are no longer available to reorder.");
+      return;
+    }
+    if (added < order.lines.length) {
+      // Don't navigate silently — tell the buyer some items didn't make it.
+      setMessage(
+        `Added ${added} of ${order.lines.length} items to your cart — the rest are no longer available. Open your cart to continue.`,
+      );
       return;
     }
     router.push("/cart");
@@ -544,9 +558,14 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium">Quantity</span>
               <input
+                key={returnLineId}
                 name="quantity"
                 type="number"
                 min={1}
+                max={
+                  returnableLines.find((line) => line.id === returnLineId)
+                    ?.quantity ?? 1
+                }
                 defaultValue={1}
                 className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2"
               />

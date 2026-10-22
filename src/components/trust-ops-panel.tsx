@@ -141,13 +141,22 @@ export function TrustOpsPanel({
   }
 
   async function moderate(reviewId: string, decision: "approve" | "reject") {
+    const reason = window.prompt(
+      "Reason for this moderation decision (recorded in the audit log):",
+      decision === "approve" ? "Meets guidelines" : "Policy violation",
+    );
+    if (reason === null) return;
+    if (reason.trim().length < 3) {
+      setError("Enter a reason for the audit log.");
+      return;
+    }
     const response = await fetch("/api/trust/reviews", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         reviewId,
         decision,
-        reason: decision === "approve" ? "Meets guidelines" : "Policy violation",
+        reason: reason.trim(),
       }),
     });
     const body = (await response.json()) as { message?: string };
@@ -163,16 +172,22 @@ export function TrustOpsPanel({
     caseId: string,
     decision: "uphold" | "dismiss",
   ) {
+    const reason = window.prompt(
+      "Reason for this counterfeit decision (recorded in the audit log):",
+      decision === "uphold" ? "Brand claim upheld" : "Insufficient evidence",
+    );
+    if (reason === null) return;
+    if (reason.trim().length < 3) {
+      setError("Enter a reason for the audit log.");
+      return;
+    }
     const response = await fetch("/api/trust/counterfeit", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         caseId,
         decision,
-        reason:
-          decision === "uphold"
-            ? "Brand claim upheld"
-            : "Insufficient evidence",
+        reason: reason.trim(),
       }),
     });
     const body = (await response.json()) as { message?: string };

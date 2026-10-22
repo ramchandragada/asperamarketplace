@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { OrderDetailPanel } from "@/components/order-detail-panel";
 import { PageShell } from "@/components/ui/page-shell";
 import { formatPaise } from "@/modules/catalogue/helpers";
-import { getOrderForActor } from "@/modules/orders/service";
+import { getOrderForActor, OrderValidationError } from "@/modules/orders/service";
 import { getOptionalActor } from "@/modules/identity/service";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,16 @@ export default async function OrderDetailPage({
     redirect("/login");
   }
   const { orderId } = await params;
-  const order = await getOrderForActor(actor, orderId);
+  let order;
+  try {
+    order = await getOrderForActor(actor, orderId);
+  } catch (error) {
+    // An unknown or someone else's order id is a 404, not a server error.
+    if (error instanceof OrderValidationError) {
+      notFound();
+    }
+    throw error;
+  }
 
   return (
     <PageShell narrow>

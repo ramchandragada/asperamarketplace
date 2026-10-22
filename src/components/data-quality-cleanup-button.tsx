@@ -10,6 +10,13 @@ export function DataQualityCleanupButton() {
   const [error, setError] = useState<string | null>(null);
 
   async function runCleanup() {
+    if (
+      !window.confirm(
+        "Archive all duplicate and placeholder-only products flagged here? Archived listings are removed from the storefront. This is a bulk action.",
+      )
+    ) {
+      return;
+    }
     setPending(true);
     setError(null);
     setMessage(null);

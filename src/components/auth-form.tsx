@@ -14,6 +14,27 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
   const [pending, setPending] = useState(false);
   const [totpChallenge, setTotpChallenge] = useState<string | null>(null);
 
+  // Where to send the user once signed in. An explicit ?next= wins; otherwise
+  // admins land on the admin console and sellers on their workspace, so nobody
+  // has to hunt for the right link from the shopper account page.
+  async function resolveDestination(): Promise<string> {
+    if (nextPath) return nextPath;
+    try {
+      const response = await fetch("/api/auth/me");
+      const body = (await response.json()) as {
+        data?: { roles?: { key: string; sellerId?: string | null }[] };
+      };
+      const roles = body.data?.roles ?? [];
+      if (roles.some((role) => role.key === "admin")) return "/admin";
+      if (roles.some((role) => role.key === "seller_owner" || role.sellerId)) {
+        return "/seller";
+      }
+    } catch {
+      // Fall back to the shopper account page if the lookup fails.
+    }
+    return "/account";
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
@@ -39,7 +60,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
         setError(body.message ?? body.error ?? "Invalid authenticator code");
         return;
       }
-      router.push(nextPath ?? "/account");
+      router.push(await resolveDestination());
       router.refresh();
       return;
     }
@@ -79,7 +100,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
     const destination =
       mode === "register" && intent === "seller"
         ? "/seller/onboarding"
-        : (nextPath ?? "/account");
+        : await resolveDestination();
     router.push(destination);
     router.refresh();
   }

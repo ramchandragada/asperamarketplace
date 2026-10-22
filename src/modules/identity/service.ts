@@ -337,9 +337,10 @@ export async function confirmAdminTotpEnrollment(actor: Actor, code: string) {
 
 export function adminTotpRequiredInProduction(actor: Actor): boolean {
   if (!actorIsAdmin(actor)) return false;
-  if (process.env.VERCEL_ENV !== "production") return false;
-  if (process.env.REQUIRE_ADMIN_TOTP === "false") return false;
-  return true;
+  // Admin 2FA is OFF by default while we build and test. To re-enable it
+  // before real launch, set REQUIRE_ADMIN_TOTP=true in production.
+  if (process.env.REQUIRE_ADMIN_TOTP !== "true") return false;
+  return process.env.VERCEL_ENV === "production";
 }
 
 export async function adminHasTotpEnabled(userId: string): Promise<boolean> {

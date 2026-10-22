@@ -32,8 +32,11 @@ backfilling divergent copies.
 
 - [ ] **P1 — Additive schema.** New tables only; nothing reads them. Zero
       behaviour change, fully reversible. ← *this PR*
-- [ ] **P2 — Catalogue service v2 + seed.** Read/write services for the new
-      model; re-seed demo data behind the flag.
+- [x] **P2 — Catalogue service v2.** `catalogue-v2.ts` read/write services
+      (create catalogue product/variant, create seller offer + inventory,
+      `getCatalogueProductBySlug`, `listOffersForCatalogueVariant`,
+      `rankOffers` buy-box, `bestOfferPricePaise`) + `flags.ts`
+      (`catalogueV2Enabled`, default OFF) + unit and integration tests.
 - [ ] **P3 — Re-point reads.** PDP, search, sibling-offer comparison read v2
       when `CATALOGUE_V2=true`. Flip on preview → prod. Rollback = flip off.
 - [ ] **P4 — Re-point writes (money path).** Seller offer creation, cart,

@@ -3,7 +3,6 @@ import { getOptionalActor } from "@/modules/identity/service";
 import { actorIsAdmin } from "@/modules/identity/policy";
 import { prisma } from "@/platform/db/prisma";
 import { SiteHeaderClient } from "@/components/site-header-client";
-import { MEGA_MENU } from "@/lib/mega-menu";
 import { readGuestCartToken } from "@/modules/cart/guest";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
 import { siteContact } from "@/platform/config/site-contact";
@@ -396,7 +395,9 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t border-border bg-background/70">
+      {/* SEO copy: kept in the DOM for crawlers, hidden on mobile to keep the
+          footer short (desktop/tablet only). */}
+      <div className="hidden border-t border-border bg-background/70 md:block">
         <div className="container-shell space-y-8 py-8">
           <div>
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -431,7 +432,8 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t border-border bg-surface">
+      {/* Category sitemap: in the DOM for SEO, hidden on mobile. */}
+      <div className="hidden border-t border-border bg-surface md:block">
         <div className="container-shell py-8">
           <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
             Online Shopping
@@ -449,35 +451,6 @@ export function SiteFooter() {
                         href={link.href}
                         className="text-accent hover:underline"
                       >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-border bg-background/60">
-        <div className="container-shell py-6">
-          <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
-            Popular categories
-          </p>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {MEGA_MENU.map((entry) => (
-              <div key={entry.key}>
-                <Link
-                  href={entry.href}
-                  className="text-sm font-medium text-accent hover:underline"
-                >
-                  {entry.label}
-                </Link>
-                <ul className="mt-1 space-y-0.5 text-xs text-muted">
-                  {entry.columns.flatMap((column) => column.links).slice(0, 5).map((link) => (
-                    <li key={link.href + link.label}>
-                      <Link href={link.href} className="hover:text-foreground">
                         {link.label}
                       </Link>
                     </li>

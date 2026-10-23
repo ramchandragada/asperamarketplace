@@ -302,10 +302,18 @@ export default async function Home() {
       <AsperaHero />
       <TrustSignalBar />
       <DiscoveryPromoBanner lanes={[...DISCOVERY_LANES]} />
-      <AsperaSelectsBanner tiles={[...SELECT_TILES]} />
+      {/* Secondary merchandising: desktop/tablet only, so the mobile home
+          reaches products sooner. */}
+      <div className="hidden md:block">
+        <AsperaSelectsBanner tiles={[...SELECT_TILES]} />
+      </div>
       <ShopByCategory categories={[...ASPERA_CATEGORY_TILES]} />
-      <ShopByBrands brands={[...ASPERA_BRAND_LANES]} />
-      <CampaignTiles tiles={campaignTiles} />
+      <div className="hidden md:block">
+        <ShopByBrands brands={[...ASPERA_BRAND_LANES]} />
+      </div>
+      <div className="hidden md:block">
+        <CampaignTiles tiles={campaignTiles} />
+      </div>
 
       {trending.length > 0 ? (
         <section className="studio-band">
@@ -327,8 +335,11 @@ export default async function Home() {
         </section>
       ) : null}
 
-      <PriceLedCollections collections={[...priceCollections]} />
+      <div className="hidden md:block">
+        <PriceLedCollections collections={[...priceCollections]} />
+      </div>
 
+      <div className="hidden md:block">
       <FeaturedSellers
         sellers={sellers
           .filter((seller) => seller._count.products > 0)
@@ -362,6 +373,7 @@ export default async function Home() {
             };
           })}
       />
+      </div>
 
       {newArrivals.length > 0 ? (
         <section className="studio-band">

@@ -31,7 +31,7 @@ export async function generateMetadata({
   const product = await getPublicProductBySlug(slug);
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-    "https://asperamarketplace.vercel.app";
+    "https://aspera.market";
   if (!product) {
     return { title: "Product" };
   }
@@ -184,7 +184,7 @@ export default async function ProductDetailPage({
 
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-    "https://asperamarketplace.vercel.app";
+    "https://aspera.market";
   const lowestPrice = Math.min(
     ...variants.map((v) => v.sellingPricePaise),
     Number.POSITIVE_INFINITY,

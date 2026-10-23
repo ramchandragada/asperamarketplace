@@ -293,3 +293,19 @@ go straight to the live storefront (no flag), each verified on a mobile preview.
 - **Storefront mobile pass = done.** Remaining UX items: operator dashboards
   (card-walls → tables, own pass), optional header collapse-on-scroll, demo
   data-quality cleanup.
+
+### Dashboards UX pass — 2026-10-23
+Screenshotted admin + seller consoles at 390px + 1440px (logged in). No
+horizontal overflow anywhere.
+- **#81 — Seller "Products" list → responsive table.** 408 listings rendered
+  as full-width cards (~3,300px/page on desktop); now a Product / SKU / Price /
+  Stock / Status / Actions table on desktop, cards on mobile (single map).
+  Desktop page 3,364→2,038px. (`src/components/seller-catalogue-panel.tsx`)
+- **Already good (no change):** seller **Inventory** is already a table with
+  inline on-hand editing; seller nav collapses to a "Menu" on mobile; admin
+  shell (sidebar + tabs + search) is clean.
+- **Not card-walls:** admin **Finance** is forms + a double-entry ledger view
+  (money-sensitive — left as-is).
+- **Deferred:** admin **Seller queue** cards → table (currently empty in demo
+  since all sellers are approved; has bulk-select, so lower priority); most
+  other admin lists are empty in the demo data.

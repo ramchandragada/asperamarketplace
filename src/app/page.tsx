@@ -187,8 +187,10 @@ export default async function Home() {
       categorySlug: categorySlugSet.has("fashion") ? "fashion" : undefined,
     }),
     searchApprovedProducts({
+      // Smaller first batch keeps the mobile home shorter; the "Products For
+      // You" feed uses infinite scroll, so more load as the shopper scrolls.
       page: 1,
-      pageSize: 24,
+      pageSize: 12,
       sort: "relevance",
       inStockOnly: true,
     }),

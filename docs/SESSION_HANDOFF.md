@@ -280,3 +280,16 @@ and the resulting fixes. **Presentational only** — no data/model/money changes
 
 **Shared rule unchanged:** discuss → approve → implement; presentational UI PRs
 go straight to the live storefront (no flag), each verified on a mobile preview.
+
+### Mobile UX pass — update 2 (home length)
+- **#78 — home feed first batch 24→12.** The "Products For You" infinite-scroll
+  feed loaded a smaller initial batch. (`src/app/page.tsx`)
+- **#79 — lean mobile home.** Secondary merchandising (Aspera Selects, Shop by
+  Brands, Campaign tiles, Price-led collections, Featured sellers) is now
+  `hidden md:block` — desktop/tablet keep the full home. (`src/app/page.tsx`)
+- **Cumulative mobile result (verified):** home **21,418 → 7,901px** (−63%),
+  cart **11,425 → 2,557px**, PDP price always visible in the sticky bar, and the
+  product feed is reached at **3,544px** (was 6,035). Desktop unchanged.
+- **Storefront mobile pass = done.** Remaining UX items: operator dashboards
+  (card-walls → tables, own pass), optional header collapse-on-scroll, demo
+  data-quality cleanup.

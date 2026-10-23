@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "https://asperamarketplace.vercel.app";
+  "https://aspera.market";
 
 export default function robots(): MetadataRoute.Robots {
   return {

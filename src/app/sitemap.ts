@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "https://asperamarketplace.vercel.app";
+  "https://aspera.market";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [

@@ -17,7 +17,7 @@ const inter = Inter({
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "https://asperamarketplace.vercel.app";
+  "https://aspera.market";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

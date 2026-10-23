@@ -238,3 +238,45 @@ Cursor has pulled `main@c2f0e09` (#72) and verified Claude’s session record ag
 5. Continue §5 + §12.5: `refund-math`, `formatPaise`, `status-labels`, semantic color tokens, confirm destructive actions, additive migrations only.
 
 **Open with owner (not starting solo):** separate Neon prod DB; catalogue v2 P3-full → P4 → P5; `@aspera.market` support/grievance email hosting.
+
+---
+
+## 14. Update — 2026-10-23 (Claude Code): mobile UX pass (storefront)
+
+A mobile-first UX review of the live storefront (screenshots at 390px + 1440px)
+and the resulting fixes. **Presentational only** — no data/model/money changes.
+
+### Shipped
+- **#75 — Mobile footer.** The footer stacked four SEO blocks into ~10,000px on
+  every mobile page (empty cart was 11,425px). Now the SEO copy + "Online
+  Shopping" sitemap are `hidden md:block` (kept in DOM for crawlers, off mobile)
+  and the duplicate "Popular categories" block is removed. **Verified:** mobile
+  home 21,418→12,550px, cart 11,425→2,557px; desktop SEO footer intact.
+  (`src/components/site-chrome.tsx`)
+- **#76 — Mobile PDP price.** Price sat below the full-width image on mobile.
+  The sticky bottom buy-bar (already present) now shows live price + MRP
+  strike-through + discount chip, so price is always visible. Mobile-only.
+  (`src/components/product-purchase-panel.tsx`)
+
+### Checked and already good (no change needed)
+- **Product cards** already use `line-clamp-2`, `h-full flex` equal heights, and
+  ≥44px tap targets (wishlist `h-11 w-11`, size/color controls `min-h-11`).
+- **PDP sticky buy-bar** already existed (`fixed … md:static`).
+- **/shop search** is the listing's own search+filter engine (categories,
+  brands, sort, pagination, `filtersOpen` drawer) — not a redundant duplicate of
+  the header search. Do not remove it.
+
+### Still worth doing (needs a bit more design; not started)
+- **Homepage length:** mobile home is still ~12,550px — cap rails to ~4–6 items
+  with "See all" + lazy-load below-the-fold rails (`home-storefront.tsx`).
+- **Header collapse-on-scroll** (optional polish): the 4-row sticky header
+  (utility strip + logo/icons + search + chips) could hide the strip + chips on
+  scroll-down. Lives in `site-header-client.tsx`.
+- **Data-quality (demo only):** some seed titles carry internal status
+  (e.g. "… (moderation)") and some images mismatch the product; add a
+  display-side guard + clean the seed. Real seller data won't have this.
+- **Operator dashboards (P3):** card-walls → sortable tables on desktop, compact
+  rows on mobile. Needs its own screenshot pass of the logged-in dashboards.
+
+**Shared rule unchanged:** discuss → approve → implement; presentational UI PRs
+go straight to the live storefront (no flag), each verified on a mobile preview.

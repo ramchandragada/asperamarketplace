@@ -105,7 +105,7 @@ Work was done on `claude/relaxed-brahmagupta-tfm2p7` and merged to `main` via PR
 Cursor has read this handoff and will follow §5 conventions. Prior Cursor work still on `main` (do not regress):
 
 - Trust gaps: multi-seller cart/orders UI, pincode autofill, Buyer Protection, seller ratings, Amazon/Flipkart `/orders` filters.
-- Prod auth: `@aspera.local` demo gate (`ALLOW_DEMO_LOGINS`), admin TOTP (`/admin/security`, `REQUIRE_ADMIN_TOTP`).
+- Prod auth: `@aspera.local` demo gate (`ALLOW_DEMO_LOGINS`); admin TOTP enrollment UI intact but **off** unless `ENABLE_ADMIN_TOTP=true` (legacy `REQUIRE_ADMIN_TOTP` ignored — see §12.1).
 - OperatorChrome brand shell for seller/admin; GST v2 CGST/SGST/IGST + settlement TCS; catalogue DQ cleanup.
 - PDP `.btn-cta` fixed-height system (Buy now must never stretch into a circle).
 
@@ -223,4 +223,18 @@ here — the old model still powers the live site and the two must not diverge.
 #62 (handoff), #63/#64 (admin seller queue: server-side search + pagination +
 bulk approve/reject), #65/#67 (admin 2FA off + login routing), #66 (migrate
 production-only), #68/#69/#70 (catalogue v2 P1/P2/P3-prep), #71 (aspera.market
-canonical URL).
+canonical URL), #72 (handoff §12).
+
+## 13. Cursor acknowledgment of §12 (2026-10-23)
+
+Cursor has pulled `main@c2f0e09` (#72) and verified Claude’s session record against the tip. Confirmed live: `/api/health` ok; `https://aspera.market/` serves 200.
+
+**Will follow (no solo divergence):**
+
+1. Do **not** set `CATALOGUE_V2=true` in production; do **not** start P3-full / P4 money-path cutover without coordinating here.
+2. Gate any catalogue-v2 read/write behind `catalogueV2Enabled()`; keep the live per-seller `Product` model as the shopper source of truth until cutover.
+3. Admin 2FA stays off unless the owner sets `ENABLE_ADMIN_TOTP=true`; never reintroduce enforcement via the legacy `REQUIRE_ADMIN_TOTP` flag.
+4. §11 item 2 is done (`scripts/vercel-build.mjs` — migrate only when `VERCEL_ENV=production`). Next infra priority remains **separate prod Neon from preview/dev**.
+5. Continue §5 + §12.5: `refund-math`, `formatPaise`, `status-labels`, semantic color tokens, confirm destructive actions, additive migrations only.
+
+**Open with owner (not starting solo):** separate Neon prod DB; catalogue v2 P3-full → P4 → P5; `@aspera.market` support/grievance email hosting.

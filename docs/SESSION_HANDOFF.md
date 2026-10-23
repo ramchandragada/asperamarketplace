@@ -125,3 +125,102 @@ Seen when production + preview (or two production) builds overlap — e.g. #61 p
 2. ~~Move `prisma migrate deploy` out of concurrent preview builds~~ **DONE** — `vercel-build` now runs `node scripts/vercel-build.mjs`, which applies migrations **only when `VERCEL_ENV=production`**. Preview builds just `prisma generate` + `next build`, so they can no longer contend for the migrate lock. Caveat until item 1 lands: preview still shares the prod DB, so a PR that *adds* a migration won't see it on its own preview until it's merged and the production deploy applies it — fine for our additive-only migrations.
 
 With item 2 done, overlapping builds no longer cause P1002. If a production deploy ever still fails, redeploy `main` once from the Vercel dashboard.
+
+---
+
+## 12. Update — 2026-10-23 (Claude Code): admin access, deploy-lock root fix, catalogue v2, custom domain
+
+Everything below is **merged to `main` and live on production**. PRs **#62–#71**.
+`main` remains the single source of truth for both agents.
+
+### 12.1 Admin & seller access — the "admin is just a user account" incident
+
+**Symptom reported:** admin could log in but every `/admin/*` page bounced to
+`/admin/security`; seller onboarding/product-add impossible. Root cause was
+**not** a broken console — it was the admin TOTP gate (Cursor's prod-auth
+hardening, commit `6a6f6c7`). In production `REQUIRE_ADMIN_TOTP` was set to
+`true`, so every admin without an enrolled authenticator was hard-locked.
+
+**Owner decision:** 2FA is **deferred until launch** (we're on demo data, no
+real payments yet). Changes (all merged):
+
+- The gate is now `adminTotpRequiredInProduction()` reading a **new**
+  `ENABLE_ADMIN_TOTP` flag (unset → OFF). The legacy `REQUIRE_ADMIN_TOTP` is
+  **ignored on purpose** so a stale `true` in the environment can't force the
+  wall back on. **To re-enable 2FA before launch: set `ENABLE_ADMIN_TOTP=true`
+  in production.** The enrollment UI (`/admin/security`) + verify code are
+  intact — do **not** delete them.
+- Post-login routing: admins land on `/admin`, sellers on `/seller`, everyone
+  else on `/account` (`auth-form.tsx` `resolveDestination`). An explicit
+  `?next=` still wins; seller-registration flow unchanged.
+- Files: `src/modules/identity/service.ts`, `src/components/auth-form.tsx`.
+
+### 12.2 Deploy-lock root fix (§11 item 2 — DONE)
+
+`vercel-build` now runs `node scripts/vercel-build.mjs`, which applies
+`prisma migrate deploy` **only when `VERCEL_ENV=production`**. Preview builds
+just `generate` + `next build`, so preview and production builds can no longer
+contend for the Postgres advisory lock. **§11 item 1 (separate prod/preview
+DBs) is still open** and still the right next infra step before real users.
+
+### 12.3 Catalogue v2 — shared catalogue + seller offers (IN PROGRESS, flag-gated)
+
+Migrating from the current **clone-and-group** model (each seller owns a full
+`Product`; siblings linked by `sharedListingKey`; facts copied then drift) to a
+**shared CatalogueProduct + SellerOffer** model. Full plan + phase checklist:
+**`docs/CATALOGUE_V2_PLAN.md`** — read it before touching catalogue code.
+
+Shipped so far, **all behind the `CATALOGUE_V2` flag (default OFF)** — nothing
+in the storefront reads v2 yet, so production behaviour is unchanged:
+
+- **P1 schema (#68):** `CatalogueProduct`, `CatalogueVariant`, `SellerOffer`,
+  `OfferInventory`, `CatalogueImage`, enum `OfferCondition` (new/refurbished/
+  used). Additive migration only.
+- **P2 service (#69):** `src/modules/catalogue/catalogue-v2.ts` (create product/
+  variant/offer, `getCatalogueProductBySlug`, `listOffersForCatalogueVariant`,
+  `bestOfferPricePaise`, and a transparent `rankOffers` buy-box: in-stock first,
+  then lowest price, dispatch tie-break, single featured winner) +
+  `src/modules/catalogue/flags.ts` (`catalogueV2Enabled()`).
+- **P3-prep backfill (#70):** `catalogue-v2-backfill.ts` + `pnpm db:backfill:v2`
+  — idempotently maps existing approved products into catalogue+offers. Run
+  once against a DB before flipping the flag.
+
+**NOT done (do with the owner, do NOT start solo):**
+- P3-full: offer-centric PDP + search reading v2 (a shopper-UX change).
+- P4: cart/checkout/orders/inventory on `offerId` — **the money path**. Flip on
+  preview first, verify a real purchase, then prod. Rollback = flag off.
+- P5: admin canonical catalogue editing + reversible duplicate-merge; retire
+  the old per-seller-Product model.
+
+**Cursor, please:** do **not** set `CATALOGUE_V2=true` in production, and do
+**not** begin re-pointing the PDP/cart/orders to offers without coordinating
+here — the old model still powers the live site and the two must not diverge.
+
+### 12.4 Custom domain — aspera.market (LIVE)
+
+- `aspera.market` connected via GoDaddy DNS → Vercel; `www` 307-redirects to the
+  apex; SSL issued; verified live over HTTPS.
+- Code (#71): default canonical origin is now `https://aspera.market`
+  (`layout.tsx` `metadataBase`, `products/[slug]` canonical/OG/JSON-LD,
+  `robots.ts`, `sitemap.ts`). `NEXT_PUBLIC_SITE_URL=https://aspera.market` is set
+  in Vercel Production and still overrides the code default.
+- Open item: support/grievance emails still read `@asperamarketplace.com`
+  (overridable via `SITE_SUPPORT_EMAIL` / `SITE_GRIEVANCE_EMAIL`) — needs email
+  hosting on `aspera.market` before switching.
+
+### 12.5 New conventions / flags
+
+- **Admin 2FA:** off via `ENABLE_ADMIN_TOTP` (legacy `REQUIRE_ADMIN_TOTP`
+  ignored). Re-enable with `ENABLE_ADMIN_TOTP=true` before launch.
+- **Catalogue v2:** gate any v2 read/write behind `catalogueV2Enabled()`; keep
+  it OFF in prod until the money-path cutover is done together.
+- **Migrations:** still additive-only; they now run on production builds only.
+- Everything else in §5 still applies (semantic color tokens, status-labels,
+  refund-math, formatPaise, confirm destructive actions, shared UI primitives).
+
+### 12.6 PRs merged since last sync
+
+#62 (handoff), #63/#64 (admin seller queue: server-side search + pagination +
+bulk approve/reject), #65/#67 (admin 2FA off + login routing), #66 (migrate
+production-only), #68/#69/#70 (catalogue v2 P1/P2/P3-prep), #71 (aspera.market
+canonical URL).

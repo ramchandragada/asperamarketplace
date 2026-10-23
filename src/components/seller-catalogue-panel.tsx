@@ -276,77 +276,125 @@ export function SellerCataloguePanel({
         <p className="text-sm text-muted">
           {total} listing{total === 1 ? "" : "s"} · page {page} of {pageCount}
         </p>
-        {products.map((product) => {
-          const variant = product.variants[0];
-          const available = Math.max(
-            (variant?.inventory?.onHand ?? 0) -
-              (variant?.inventory?.reserved ?? 0),
-            0,
-          );
-          const off =
-            variant != null
-              ? discountPercent(variant.mrpPaise, variant.sellingPricePaise)
-              : null;
-          return (
-            <article
-              key={product.id}
-              className="rounded-card border border-border bg-surface p-4"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold">
-                    <Link
-                      href={`/seller/catalogue/${product.id}`}
-                      className="text-accent hover:underline"
+        {products.length > 0 ? (
+          <div className="overflow-x-auto">
+            {/* Responsive table: columns on desktop, a card per row on mobile. */}
+            <table className="w-full border-collapse text-sm">
+              <thead className="hidden md:table-header-group">
+                <tr className="border-b border-border text-left text-xs font-medium tracking-wide text-muted uppercase">
+                  <th className="py-2 pr-3">Product</th>
+                  <th className="py-2 pr-3">SKU</th>
+                  <th className="py-2 pr-3">Price</th>
+                  <th className="py-2 pr-3">Stock</th>
+                  <th className="py-2 pr-3">Status</th>
+                  <th className="py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="md:divide-y md:divide-border">
+                {products.map((product) => {
+                  const variant = product.variants[0];
+                  const available = Math.max(
+                    (variant?.inventory?.onHand ?? 0) -
+                      (variant?.inventory?.reserved ?? 0),
+                    0,
+                  );
+                  const off =
+                    variant != null
+                      ? discountPercent(
+                          variant.mrpPaise,
+                          variant.sellingPricePaise,
+                        )
+                      : null;
+                  const statusClass =
+                    product.status === "approved"
+                      ? "text-success"
+                      : product.status === "submitted"
+                        ? "text-warning"
+                        : product.status === "rejected"
+                          ? "text-danger"
+                          : "text-muted";
+                  return (
+                    <tr
+                      key={product.id}
+                      className="mb-3 block rounded-card border border-border bg-surface p-4 align-top md:mb-0 md:table-row md:border-0 md:bg-transparent md:p-0"
                     >
-                      {product.title}
-                    </Link>
-                  </h3>
-                  <p className="text-sm text-muted">
-                    {product.status} · {product.category.name} · {product.slug}
-                  </p>
-                  {product.status === "rejected" && product.statusReason ? (
-                    <p className="mt-1 text-sm text-danger">
-                      Rejected: {product.statusReason}
-                    </p>
-                  ) : null}
-                  {variant ? (
-                    <p className="mt-1 text-sm">
-                      {variant.sku} · {formatPaise(variant.sellingPricePaise)}
-                      {variant.mrpPaise > variant.sellingPricePaise ? (
-                        <span className="ml-2 text-muted line-through">
-                          {formatPaise(variant.mrpPaise)}
+                      <td className="block md:table-cell md:py-3 md:pr-3">
+                        <Link
+                          href={`/seller/catalogue/${product.id}`}
+                          className="font-semibold text-accent hover:underline"
+                        >
+                          {product.title}
+                        </Link>
+                        <span className="block text-xs text-muted">
+                          {product.category.name}
                         </span>
-                      ) : null}
-                      {off ? (
-                        <span className="ml-2 text-accent">{off}% off</span>
-                      ) : null}
-                      {" · "}
-                      {available} available
-                    </p>
-                  ) : null}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Link
-                    href={`/seller/catalogue/${product.id}`}
-                    className="rounded-lg border border-border px-3 py-2 text-sm"
-                  >
-                    Edit
-                  </Link>
-                  {product.status === "draft" || product.status === "rejected" ? (
-                    <button
-                      type="button"
-                      className="rounded-lg border border-border px-3 py-2 text-sm"
-                      onClick={() => void submitProduct(product.id)}
-                    >
-                      Submit for review
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            </article>
-          );
-        })}
+                        {product.status === "rejected" &&
+                        product.statusReason ? (
+                          <span className="mt-1 block text-xs text-danger">
+                            Rejected: {product.statusReason}
+                          </span>
+                        ) : null}
+                      </td>
+                      <td className="block py-0.5 text-muted md:table-cell md:py-3 md:pr-3">
+                        <span className="font-medium text-foreground md:hidden">
+                          SKU:{" "}
+                        </span>
+                        {variant?.sku ?? "—"}
+                      </td>
+                      <td className="block py-0.5 md:table-cell md:py-3 md:pr-3">
+                        {variant ? (
+                          <>
+                            {formatPaise(variant.sellingPricePaise)}
+                            {variant.mrpPaise > variant.sellingPricePaise ? (
+                              <span className="ml-2 text-muted line-through">
+                                {formatPaise(variant.mrpPaise)}
+                              </span>
+                            ) : null}
+                            {off ? (
+                              <span className="ml-2 text-accent">{off}% off</span>
+                            ) : null}
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="block py-0.5 md:table-cell md:py-3 md:pr-3">
+                        <span className="font-medium text-foreground md:hidden">
+                          Stock:{" "}
+                        </span>
+                        {available}
+                        <span className="text-muted"> available</span>
+                      </td>
+                      <td className="block py-0.5 md:table-cell md:py-3 md:pr-3">
+                        <span className={`font-medium capitalize ${statusClass}`}>
+                          {product.status}
+                        </span>
+                      </td>
+                      <td className="mt-3 flex flex-wrap gap-2 md:mt-0 md:table-cell md:py-3 md:text-right">
+                        <Link
+                          href={`/seller/catalogue/${product.id}`}
+                          className="rounded-lg border border-border px-3 py-1.5 text-sm"
+                        >
+                          Edit
+                        </Link>
+                        {product.status === "draft" ||
+                        product.status === "rejected" ? (
+                          <button
+                            type="button"
+                            className="rounded-lg border border-border px-3 py-1.5 text-sm"
+                            onClick={() => void submitProduct(product.id)}
+                          >
+                            Submit for review
+                          </button>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
         {products.length === 0 ? (
           <p className="text-sm text-muted">No products match this filter.</p>
         ) : null}

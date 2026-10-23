@@ -365,6 +365,33 @@ export function ProductPurchasePanel({
 
       {/* Fixed-height CTAs: never stretch with sibling feedback (prevents circular Buy now). */}
       <div className="fixed inset-x-3 bottom-[calc(5.85rem+env(safe-area-inset-bottom))] z-50 rounded-[var(--radius)] border border-border bg-surface/95 p-3 shadow-[0_-8px_24px_rgba(23,33,38,0.1)] backdrop-blur-sm [overflow-anchor:none] md:static md:inset-auto md:bottom-auto md:z-auto md:border-0 md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-none">
+        {/* Price inside the sticky bar so it is always visible on mobile
+            (the full price block above sits below the image). Desktop shows
+            the price near the title, so this is mobile-only. */}
+        <p className="mb-2 flex items-baseline gap-x-2 md:hidden">
+          {showFromPrice ? (
+            <span className="text-xs font-medium text-muted">From</span>
+          ) : null}
+          <span className="text-lg font-bold tracking-tight">
+            {formatPaise(displaySellingPaise)}
+          </span>
+          {displayMrpPaise != null && displayMrpPaise > displaySellingPaise ? (
+            <span className="text-sm font-normal text-muted line-through">
+              {formatPaise(displayMrpPaise)}
+            </span>
+          ) : null}
+          {!showFromPrice &&
+          priceVariant &&
+          discountPercent(priceVariant.mrpPaise, priceVariant.sellingPricePaise) ? (
+            <span className="offer-chip px-1.5 py-0.5 text-[11px]">
+              {discountPercent(
+                priceVariant.mrpPaise,
+                priceVariant.sellingPricePaise,
+              )}
+              % off
+            </span>
+          ) : null}
+        </p>
         <div className="flex flex-wrap items-center gap-2">
           <AddToCartButton
             compact

@@ -309,3 +309,38 @@ horizontal overflow anywhere.
 - **Deferred:** admin **Seller queue** cards → table (currently empty in demo
   since all sellers are approved; has bulk-select, so lower priority); most
   other admin lists are empty in the demo data.
+
+---
+
+## 15. Update — 2026-10-23 (Claude Code): pivot to a Pune PC marketplace
+
+Owner decision: convert the demo marketplace into a **Pune PC-components store**
+(first testing playground). Shipped and live on `aspera.market`.
+
+- **Catalogue (#83):** `src/modules/catalogue/pc-catalogue-data.ts` — 9 PC
+  categories (processors, motherboards, graphics-cards, memory-ram,
+  storage-ssd, cabinets, keyboard-mouse, monitors, ups), 39 brands, 5 Pune
+  sellers (`pcc/tzp/pcp/gip/ddp`), **90 real products** with specs,
+  descriptions, India street prices (×1.12 MRP), HSN, and self-hosted images
+  under `public/products/` (74/90; rest fall back to the initials placeholder).
+- **Seed (#83):** `src/modules/catalogue/seed-pc.ts` — idempotent; upserts
+  categories/brands/Pune sellers, **archives** the old fashion catalogue
+  (2,320 products set to `archived`, old categories deactivated — no hard
+  delete, FK-safe), upserts the 90 PC products (Standard variant + inventory +
+  image).
+- **Applied to prod** via a one-off admin endpoint that has since been
+  **removed** (#84). To re-run the seed (e.g. after fixing images), re-add a
+  guarded endpoint or run `seedPcCatalogue()` against the DB.
+- **Nav (#83):** `src/lib/mega-menu.ts` rewritten for the 9 PC categories
+  (mega-menu, search placeholder, trending terms, category/brand tiles).
+- **Home (#84):** hero carousel, discovery banner, selects/campaign tiles, and
+  price buckets rebranded to PC; hero images under `public/hero/pc-*.jpg`.
+
+**Known follow-ups:** 16 products still need real images (mostly UPS — their
+research URLs were store/category pages); the local `pnpm db:seed` still seeds
+the OLD fashion data (prod uses the PC seed) — repoint `prisma/seed.ts` to
+`seedPcCatalogue` when convenient.
+
+**Cursor:** the live catalogue is now PC parts. The old fashion seed files
+(`seed-catalogue-data.ts`, `seed-nav-lanes.ts`) remain in the repo but are not
+used in production.

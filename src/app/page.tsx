@@ -32,118 +32,107 @@ export const dynamic = "force-dynamic";
 /** Split promo lanes — tall collection cards (Meesho-style discovery) */
 const DISCOVERY_LANES = [
   {
-    id: "trending",
-    label: "Trending now",
-    href: "/popular",
-    imageUrl:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=85",
+    id: "graphics",
+    label: "Graphics cards",
+    href: "/browse?categorySlug=graphics-cards",
+    imageUrl: "/hero/pc-gpu.jpg",
   },
   {
     id: "budget",
-    label: "Budget buys",
-    href: "/browse?maxPricePaise=59900",
-    imageUrl:
-      "https://images.unsplash.com/photo-1589169011402-8b2cbd1ee593?auto=format&fit=crop&w=800&q=85",
+    label: "Budget builds",
+    href: "/browse?maxPricePaise=1500000",
+    imageUrl: "/hero/pc-build.jpg",
   },
   {
-    id: "rated",
-    label: "Top rated picks",
-    href: "/browse?sort=rating",
-    imageUrl:
-      "https://images.unsplash.com/photo-1534235187448-833893dfe3e0?auto=format&fit=crop&w=800&q=85",
+    id: "setup",
+    label: "Monitors & desk",
+    href: "/browse?categorySlug=monitors",
+    imageUrl: "/hero/pc-desk.jpg",
   },
   {
-    id: "essentials",
-    label: "Daily essentials",
-    href: "/browse?categorySlug=home-kitchen",
-    imageUrl:
-      "https://images.unsplash.com/photo-1659352790654-058e9077a4f4?auto=format&fit=crop&w=800&q=85",
+    id: "new",
+    label: "New arrivals",
+    href: "/shop?sort=newest",
+    imageUrl: "/hero/pc-setup.jpg",
   },
 ] as const;
 
 /** Aspera Selects — arched lifestyle tiles (Indian faces & ethnic wear) */
 const SELECT_TILES = [
   {
-    id: "lehengas",
-    label: "Lehengas",
-    href: "/browse?categorySlug=fashion&q=lehenga&audience=women",
-    imageUrl:
-      "https://images.unsplash.com/photo-1633891119630-cb3665df5b7d?auto=format&fit=crop&w=800&q=85",
+    id: "processors",
+    label: "Processors",
+    href: "/browse?categorySlug=processors",
+    imageUrl: "/hero/pc-build.jpg",
   },
   {
-    id: "menwear",
-    label: "Menwear",
-    href: "/browse?categorySlug=fashion&audience=men",
-    imageUrl:
-      "https://images.unsplash.com/photo-1534235187448-833893dfe3e0?auto=format&fit=crop&w=800&q=85",
+    id: "graphics",
+    label: "Graphics cards",
+    href: "/browse?categorySlug=graphics-cards",
+    imageUrl: "/hero/pc-gpu.jpg",
   },
   {
-    id: "sarees",
-    label: "Sarees",
-    href: "/browse?categorySlug=fashion&q=saree&audience=women",
-    imageUrl:
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=85",
+    id: "monitors",
+    label: "Monitors",
+    href: "/browse?categorySlug=monitors",
+    imageUrl: "/hero/pc-desk.jpg",
   },
   {
-    id: "jewellery",
-    label: "Jewellery",
-    href: "/browse?categorySlug=fashion&q=jewellery&audience=women",
-    imageUrl:
-      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=85",
+    id: "ssd",
+    label: "SSD / Storage",
+    href: "/browse?categorySlug=storage-ssd",
+    imageUrl: "/hero/pc-setup.jpg",
   },
 ] as const;
 
 const CAMPAIGN_TILES = [
   {
-    id: "essentials",
-    title: "Everyday essentials",
-    subtitle: "Home and household picks",
-    href: "/browse?categorySlug=home-kitchen",
-    imageUrl:
-      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=1200&q=85",
-    categorySlug: "home-kitchen",
+    id: "gaming",
+    title: "Build a gaming PC",
+    subtitle: "GPUs, CPUs and cabinets",
+    href: "/browse?categorySlug=graphics-cards",
+    imageUrl: "/hero/pc-gpu.jpg",
+    categorySlug: "graphics-cards",
   },
   {
-    id: "festive",
-    title: "Festive fashion",
-    subtitle: "Ethnic and occasion wear",
-    href: "/browse?categorySlug=fashion",
-    imageUrl:
-      "https://images.unsplash.com/photo-1633891119630-cb3665df5b7d?auto=format&fit=crop&w=1200&q=85",
-    categorySlug: "fashion",
+    id: "workspace",
+    title: "Upgrade your workspace",
+    subtitle: "Monitors, keyboards and mice",
+    href: "/browse?categorySlug=monitors",
+    imageUrl: "/hero/pc-desk.jpg",
+    categorySlug: "monitors",
   },
   {
-    id: "wellness",
-    title: "Wellness picks",
-    subtitle: "Beauty and personal care",
-    href: "/browse?categorySlug=beauty-personal-care",
-    imageUrl:
-      "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=1200&q=85",
-    categorySlug: "beauty-personal-care",
+    id: "storage",
+    title: "Storage & power",
+    subtitle: "SSDs and UPS backup",
+    href: "/browse?categorySlug=storage-ssd",
+    imageUrl: "/hero/pc-setup.jpg",
+    categorySlug: "storage-ssd",
   },
 ] as const;
 
 const PRICE_COLLECTIONS = [
   {
-    id: "u299",
-    label: "Under ₹299",
-    href: "/browse?maxPricePaise=29900",
-    hint: "Budget finds for everyday needs",
-    maxPaise: 29900,
+    id: "u5k",
+    label: "Under ₹5,000",
+    href: "/browse?maxPricePaise=500000",
+    hint: "SSDs, RAM, cabinets and peripherals",
+    maxPaise: 500000,
   },
   {
-    id: "u599",
-    label: "Under ₹599",
-    href: "/browse?maxPricePaise=59900",
-    hint: "Value picks across categories",
-    maxPaise: 59900,
+    id: "u20k",
+    label: "Under ₹20,000",
+    href: "/browse?maxPricePaise=2000000",
+    hint: "CPUs, boards and entry GPUs",
+    maxPaise: 2000000,
   },
   {
-    id: "u999",
-    label: "Under ₹999",
-    href: "/browse?maxPricePaise=99900",
-    hint: "Smart upgrades under a thousand",
-    maxPaise: 99900,
+    id: "u50k",
+    label: "Under ₹50,000",
+    href: "/browse?maxPricePaise=5000000",
+    hint: "High-end CPUs and mid-range GPUs",
+    maxPaise: 5000000,
   },
 ] as const;
 
@@ -198,21 +187,21 @@ export default async function Home() {
       page: 1,
       pageSize: 4,
       sort: "price_asc",
-      maxPricePaise: 29900,
+      maxPricePaise: 500000,
       inStockOnly: true,
     }),
     searchApprovedProducts({
       page: 1,
       pageSize: 4,
       sort: "price_asc",
-      maxPricePaise: 59900,
+      maxPricePaise: 2000000,
       inStockOnly: true,
     }),
     searchApprovedProducts({
       page: 1,
       pageSize: 4,
       sort: "price_asc",
-      maxPricePaise: 99900,
+      maxPricePaise: 5000000,
       inStockOnly: true,
     }),
     prisma.seller.findMany({
@@ -292,8 +281,8 @@ export default async function Home() {
   }
 
   const priceCollections = PRICE_COLLECTIONS.filter((collection) => {
-    if (collection.maxPaise === 29900) return under299.total > 0;
-    if (collection.maxPaise === 59900) return under599.total > 0;
+    if (collection.maxPaise === 500000) return under299.total > 0;
+    if (collection.maxPaise === 2000000) return under599.total > 0;
     return under999.total > 0;
   }).map(({ id, label, href, hint }) => ({ id, label, href, hint }));
 

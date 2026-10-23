@@ -82,54 +82,44 @@ type HeroSlide = {
  */
 const HERO_SLIDES: HeroSlide[] = [
   {
-    id: "newborn",
-    eyebrow: "Newborn & baby",
-    title: "Soft starts for tiny travellers",
+    id: "build",
+    eyebrow: "Build your rig",
+    title: "Components for your dream PC",
     subtitle:
-      "Care essentials, softwear, and nursery picks for the first chapter.",
-    ctaLabel: "Shop baby",
-    ctaHref: "/browse?categorySlug=baby-kids&q=baby",
-    image: "/hero/hero-baby.webp",
+      "CPUs, motherboards, and memory from trusted Pune sellers — real prices, in stock.",
+    ctaLabel: "Shop processors",
+    ctaHref: "/browse?categorySlug=processors",
+    image: "/hero/pc-build.jpg",
   },
   {
-    id: "kids",
-    eyebrow: "Kids & play",
-    title: "Bright finds for growing explorers",
+    id: "gpu",
+    eyebrow: "Graphics cards",
+    title: "The latest GPUs, ready to ship",
     subtitle:
-      "Clothes, toys, and school staples that keep pace with every adventure.",
-    ctaLabel: "Shop kids",
-    ctaHref: "/browse?categorySlug=baby-kids&audience=kids",
-    image: "/hero/hero-kids.webp",
+      "GeForce RTX and Radeon RX cards for gaming and creation — 1080p to 4K.",
+    ctaLabel: "Shop graphics cards",
+    ctaHref: "/browse?categorySlug=graphics-cards",
+    image: "/hero/pc-gpu.jpg",
   },
   {
-    id: "youth",
-    eyebrow: "Teens & young adults",
-    title: "Style that keeps up with you",
+    id: "monitors",
+    eyebrow: "Monitors & peripherals",
+    title: "A workspace that keeps up",
     subtitle:
-      "Fashion, beauty, and gadgets for every mood — clear prices, real sellers.",
-    ctaLabel: "Shop fashion",
-    ctaHref: "/browse?categorySlug=fashion",
-    image: "/hero/hero-fashion.webp",
+      "High-refresh monitors, keyboards, and mice to complete your setup.",
+    ctaLabel: "Shop monitors",
+    ctaHref: "/browse?categorySlug=monitors",
+    image: "/hero/pc-desk.jpg",
   },
   {
-    id: "family",
-    eyebrow: "Home & family",
-    title: "Everything for the whole household",
+    id: "storage",
+    eyebrow: "Storage & power",
+    title: "Fast SSDs and reliable backup",
     subtitle:
-      "Kitchen, living, and everyday essentials that make shared spaces work.",
-    ctaLabel: "Shop home",
-    ctaHref: "/browse?categorySlug=home-kitchen",
-    image: "/hero/hero-home.webp",
-  },
-  {
-    id: "elders",
-    eyebrow: "Seniors & wellness",
-    title: "Comfort and care, thoughtfully chosen",
-    subtitle:
-      "Wellness, easy living, and trusted everyday picks for later years.",
-    ctaLabel: "Shop wellness",
-    ctaHref: "/browse?categorySlug=health-wellness",
-    image: "/hero/hero-wellness.webp",
+      "NVMe and SATA SSDs, plus UPS units to keep your work safe in Pune's power cuts.",
+    ctaLabel: "Shop SSDs",
+    ctaHref: "/browse?categorySlug=storage-ssd",
+    image: "/hero/pc-setup.jpg",
   },
 ];
 
@@ -388,11 +378,11 @@ export function DiscoveryPromoBanner({ lanes }: { lanes: PromoLane[] }) {
         <div className="flex flex-col justify-between bg-[linear-gradient(160deg,#E66A3D_0%,#D4572F_55%,#C24A28_100%)] px-6 py-8 text-white md:px-8 md:py-10">
           <div>
             <h2 className="max-w-[14rem] text-[28px] leading-[34px] font-bold tracking-tight md:text-[32px] md:leading-[38px]">
-              Fresh finds for everyday India
+              PC components, built for Pune
             </h2>
             <p className="mt-3 max-w-[16rem] text-[14px] leading-5 text-white/90">
-              Honest prices from independent sellers — shop trending, budget,
-              and essentials in one place.
+              CPUs, GPUs, memory and more from trusted local sellers — honest
+              prices, in stock, delivered across Pune.
             </p>
           </div>
           <Link

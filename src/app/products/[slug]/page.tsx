@@ -11,11 +11,21 @@ import { PdpTrustBadgeRow } from "@/components/pdp-trust-badge-row";
 import { BuyerProtectionBadge } from "@/components/buyer-protection-badge";
 import { PageShell } from "@/components/ui/page-shell";
 import { OtherSellersPanel } from "@/components/other-sellers-panel";
+import { ProductDetailsSections } from "@/components/product-details-sections";
 import {
   getPublicProductBySlug,
   listSiblingSellerOffers,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
+import {
+  enrichProduct,
+} from "@/modules/catalogue/product-enrichment";
+import type {
+  DescriptionBlock,
+  HighlightRow,
+  SpecGroup,
+  WarrantyInfo,
+} from "@/modules/catalogue/product-enrichment-types";
 import { getOptionalActor } from "@/modules/identity/service";
 import { listApprovedReviewsForProduct } from "@/modules/trust/service";
 import { prisma } from "@/platform/db/prisma";
@@ -120,12 +130,52 @@ export default async function ProductDetailPage({
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : null;
 
+  const liveEnrichment = enrichProduct({
+    slug: product.slug,
+    title: product.title,
+    categorySlug: product.category.slug,
+    brandSlug: product.brand?.slug ?? "generic",
+    brandName: product.brand?.name,
+    categoryName: product.category.name,
+  });
+
+  const storedHighlightRows = Array.isArray(attrs.highlightRows)
+    ? (attrs.highlightRows as HighlightRow[]).filter(
+        (row) => row && typeof row.label === "string",
+      )
+    : [];
+  const highlightRows =
+    storedHighlightRows.length > 0
+      ? storedHighlightRows
+      : liveEnrichment.highlights;
+
+  const storedSpecGroups = Array.isArray(attrs.specificationGroups)
+    ? (attrs.specificationGroups as SpecGroup[])
+    : [];
+  const specificationGroups =
+    storedSpecGroups.length > 0
+      ? storedSpecGroups
+      : liveEnrichment.specificationGroups;
+
+  const storedBlocks = Array.isArray(attrs.descriptionBlocks)
+    ? (attrs.descriptionBlocks as DescriptionBlock[])
+    : [];
+  const descriptionBlocks =
+    storedBlocks.length > 0 ? storedBlocks : liveEnrichment.descriptionBlocks;
+
+  const warranty =
+    attrs.warranty &&
+    typeof attrs.warranty === "object" &&
+    !Array.isArray(attrs.warranty)
+      ? (attrs.warranty as WarrantyInfo)
+      : liveEnrichment.warranty;
+
   const highlightsRaw =
     attrs.highlights &&
     typeof attrs.highlights === "object" &&
     !Array.isArray(attrs.highlights)
       ? (attrs.highlights as Record<string, string>)
-      : {};
+      : liveEnrichment.highlightMap;
   const highlightsMap = new Map<string, string>();
   for (const [label, value] of Object.entries(highlightsRaw)) {
     highlightsMap.set(label.toLowerCase(), String(value));
@@ -140,6 +190,13 @@ export default async function ProductDetailPage({
     label: label.charAt(0).toUpperCase() + label.slice(1),
     value,
   }));
+  const detailDescription =
+    product.description?.trim() &&
+    !/is listed on Aspera for builders who want clear pricing/i.test(
+      product.description,
+    )
+      ? product.description
+      : liveEnrichment.description;
   const ratingDistribution =
     reviews.length > 0
       ? reviews.reduce(
@@ -398,15 +455,16 @@ export default async function ProductDetailPage({
           <BuyerProtectionBadge />
 
           <OtherSellersPanel offers={siblingOffers} />
-
-          <section className="text-sm leading-7 text-muted">
-            <h2 className="text-lg font-semibold text-foreground">
-              About this item
-            </h2>
-            <p className="mt-2 whitespace-pre-wrap">{product.description}</p>
-          </section>
         </div>
       </div>
+
+      <ProductDetailsSections
+        description={detailDescription}
+        highlightRows={highlightRows}
+        descriptionBlocks={descriptionBlocks}
+        specificationGroups={specificationGroups}
+        warranty={warranty}
+      />
 
       <ProductReviewsPanel
         productId={product.id}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   FormEvent,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -199,10 +200,10 @@ export function CatalogueBrowse({
   const [error, setError] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pending, startTransition] = useTransition();
-  const sentinelRef = useRef<HTMLDivElement>(null);
   /** Sync gate so IntersectionObserver never re-fires mid-fetch / mid-render. */
   const loadMoreLockRef = useRef(false);
   const loadMoreRef = useRef<() => void>(() => {});
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
     gender: true,
@@ -411,10 +412,13 @@ export function CatalogueBrowse({
 
   loadMoreRef.current = loadMore;
 
-  useEffect(() => {
-    if (!useInfinite) return;
-    const node = sentinelRef.current;
-    if (!node) return;
+  // Callback ref: observe exactly when the sentinel mounts. A useEffect that
+  // only keys off has-more can run while the ref is still null (e.g. while
+  // pending swaps the grid to skeletons), then never re-attach.
+  const bindLoadMoreSentinel = useCallback((node: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
+    if (!node || !useInfinite) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (!entries.some((entry) => entry.isIntersecting)) return;
@@ -426,11 +430,15 @@ export function CatalogueBrowse({
       { rootMargin: "120px 0px", threshold: 0 },
     );
     observer.observe(node);
-    return () => observer.disconnect();
-    // Recreate only when the sentinel mounts/unmounts (has-more flips) or
-    // infinite mode changes — never on loadingMore/pending (that reconnects
-    // mid-scroll and re-fires while the bottom is still in view).
-  }, [useInfinite, items.length < total]);
+    observerRef.current = observer;
+  }, [useInfinite]);
+
+  useEffect(() => {
+    return () => {
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     if (!filtersOpen) return;
@@ -1249,11 +1257,12 @@ export function CatalogueBrowse({
               </div>
               {useInfinite && items.length < total ? (
                 <div className="flex flex-col items-center gap-3 py-4">
-                  {/* Zero-layout sentinel: keep height stable so IO never
-                      thrash-dances when skeletons mount below. */}
+                  {/* Stable 1px sentinel (not inside skeleton rows) so IO
+                      does not thrash when load-more UI mounts below. */}
                   <div
-                    ref={sentinelRef}
-                    className="h-px w-full shrink-0"
+                    ref={bindLoadMoreSentinel}
+                    className="w-full shrink-0"
+                    style={{ height: 1 }}
                     aria-hidden
                   />
                   {loadingMore ? (

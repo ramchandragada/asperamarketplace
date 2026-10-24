@@ -444,17 +444,23 @@ export function AsperaSelectsBanner({ tiles }: { tiles: SelectTile[] }) {
       <div className="grid overflow-hidden rounded-2xl bg-[linear-gradient(120deg,#123B4A_0%,#1A5566_45%,#0F2F3A_100%)] md:grid-cols-[1.05fr_1fr]">
         <div className="relative min-h-[220px] md:min-h-[280px]">
           <Image
-            src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1400&q=85"
-            alt=""
+            src="/hero/pc-build.jpg"
+            alt="Custom gaming PC build with RGB lighting"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover object-center opacity-75"
+            className="object-cover object-center opacity-80"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_30%,rgba(15,47,58,0.78)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_25%,rgba(15,47,58,0.82)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
+            <p className="text-[11px] font-semibold tracking-[0.18em] text-[#9FD3DC] uppercase">
+              Aspera Selects
+            </p>
+            <h2 className="mt-1 max-w-sm text-[20px] leading-tight font-bold md:text-[26px]">
+              Build your dream PC, delivered across Pune
+            </h2>
             <Link
               href="/browse"
-              className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/50 px-5 text-[13px] font-semibold text-white transition hover:bg-white/10"
+              className="mt-3 inline-flex min-h-10 items-center justify-center rounded-md border border-white/50 px-5 text-[13px] font-semibold text-white transition hover:bg-white/10"
             >
               Shop now
             </Link>
@@ -493,7 +499,7 @@ export function AsperaSelectsBanner({ tiles }: { tiles: SelectTile[] }) {
 export function TrustSignalBar() {
   const items = [
     { label: "Easy returns on eligible orders", Icon: TrustReturnIcon },
-    { label: "Cash on delivery available", Icon: TrustCodIcon },
+    { label: "Secure checkout", Icon: TrustCodIcon },
   ];
   return (
     <div className="w-full border-b border-border bg-accent-soft">

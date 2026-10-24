@@ -70,174 +70,141 @@ export async function SiteHeader() {
 
 const SEO_BLOCKS = [
   {
-    title: "Fashion",
-    body: "Discover kurtis, sarees, western wear, ethnic sets, and everyday essentials from verified sellers. Shop festive looks and daily staples with size options, ratings, and easy returns.",
-    href: "/browse?categorySlug=fashion",
+    title: "Processors",
+    body: "Shop Intel Core and AMD Ryzen CPUs for gaming, creator, and office builds. Compare sockets, cores, and clear Pune seller pricing before you buy.",
+    href: "/browse?categorySlug=processors",
   },
   {
-    title: "Electronics and Accessories",
-    body: "Browse chargers, earbuds, phone stands, cables, and desk gadgets with transparent pricing. Compare ratings and delivery fees before you check out.",
-    href: "/browse?categorySlug=electronics-accessories",
+    title: "Graphics cards",
+    body: "Browse GeForce RTX and Radeon RX GPUs with transparent MRPs and live stock. From 1080p gaming to 4K creation workloads.",
+    href: "/browse?categorySlug=graphics-cards",
   },
   {
-    title: "Home & Kitchen",
-    body: "Stock kitchens and living spaces with cookware, storage, cleaning tools, and decor picks. Practical products sized for Indian homes and apartments.",
-    href: "/browse?categorySlug=home-kitchen",
+    title: "Motherboards & memory",
+    body: "Match boards and DDR4/DDR5 kits to your CPU. ASUS, MSI, Gigabyte, Corsair and more from verified sellers.",
+    href: "/browse?categorySlug=motherboards",
   },
   {
-    title: "Health, Fitness & Sports",
-    body: "Find yoga mats, resistance bands, sports gear, and wellness essentials for home workouts. Beginner-friendly options with clear product details.",
-    href: "/browse?categorySlug=health-wellness",
+    title: "Storage, monitors & power",
+    body: "NVMe SSDs, high-refresh monitors, cabinets, keyboards, mice, and UPS units sized for Indian homes and Pune power cuts.",
+    href: "/browse?categorySlug=storage-ssd",
   },
   {
-    title: "Office Supplies and Stationery",
-    body: "Keep desks organised with pens, folders, organisers, and everyday stationery. Reliable tools for students, WFH setups, and small offices.",
-    href: "/browse?categorySlug=stationery-office",
+    title: "Sell PC parts on Aspera",
+    body: "List components, manage orders, and reach local builders with verified seller tools for catalogue, fulfilment, and payouts.",
+    href: "/seller/onboarding",
   },
 ] as const;
 
 const COMMUNITY_BLOCKS = [
   {
-    title: "Join the Aspera Community",
-    body: "Follow order updates and save favourites to your wishlist.",
-    href: "/shop",
-    cta: "Start shopping",
+    title: "Build with Aspera",
+    body: "Track orders, save parts to your wishlist, and shop verified Pune sellers.",
+    href: "/browse",
+    cta: "Browse components",
   },
   {
-    title: "Download Aspera App Now",
+    title: "Download Aspera App",
     body: "iOS and Android builds are coming soon.",
     href: "/download-app",
     cta: "Download app",
   },
   {
-    title: "More Than Just Shopping",
-    body: "Sell to shoppers nationwide with verified listings, transparent fees, and a dedicated seller dashboard.",
+    title: "Become a PC parts seller",
+    body: "Sell to builders with verified listings, transparent fees, and a dedicated seller dashboard.",
     href: "/seller/onboarding",
-    cta: "Become a Supplier",
+    cta: "Start selling",
   },
 ] as const;
 
-/** SEO-oriented online shopping directory grouped for footer crawlability. */
+/** SEO-oriented PC shopping directory for footer crawlability. */
 const ONLINE_SHOPPING_GROUPS = [
   {
-    heading: "Women Ethnicwear",
+    heading: "Processors",
     links: [
-      { label: "Kurtas", href: "/browse?categorySlug=fashion&audience=women&q=kurta" },
-      { label: "Sarees", href: "/browse?categorySlug=fashion&audience=women&q=saree" },
-      { label: "Lehengas", href: "/browse?categorySlug=fashion&audience=women&q=lehenga" },
-      { label: "Dupattas", href: "/browse?categorySlug=fashion&audience=women&q=dupatta" },
-      { label: "Palazzo", href: "/browse?categorySlug=fashion&audience=women&q=palazzo" },
+      { label: "Intel Core", href: "/browse?categorySlug=processors&q=Intel" },
+      { label: "AMD Ryzen", href: "/browse?categorySlug=processors&q=Ryzen" },
+      { label: "Budget / office", href: "/browse?categorySlug=processors&q=i3" },
+      { label: "Gaming (X3D)", href: "/browse?categorySlug=processors&q=X3D" },
+      { label: "All processors", href: "/browse?categorySlug=processors" },
     ],
   },
   {
-    heading: "Women Western Wear",
+    heading: "Graphics cards",
     links: [
-      { label: "Dresses", href: "/browse?categorySlug=fashion&audience=women&q=dress" },
-      { label: "Tops", href: "/browse?categorySlug=fashion&audience=women&q=top" },
-      { label: "T-shirts", href: "/browse?categorySlug=fashion&audience=women&q=tee" },
-      { label: "Jeans", href: "/browse?categorySlug=fashion&audience=women&q=jean" },
-      { label: "Jegging", href: "/browse?categorySlug=fashion&audience=women&q=jegging" },
+      { label: "GeForce RTX", href: "/browse?categorySlug=graphics-cards&q=RTX" },
+      { label: "Radeon RX", href: "/browse?categorySlug=graphics-cards&q=Radeon" },
+      { label: "Entry GPUs", href: "/browse?categorySlug=graphics-cards&maxPricePaise=3000000" },
+      { label: "All GPUs", href: "/browse?categorySlug=graphics-cards" },
     ],
   },
   {
-    heading: "Women Accessories",
+    heading: "Motherboards",
     links: [
-      { label: "Scarves", href: "/browse?categorySlug=fashion&audience=women&q=scarf" },
-      { label: "Handbags", href: "/browse?categorySlug=bags-footwear&q=handbag" },
-      { label: "Earrings", href: "/browse?q=earring" },
-      { label: "Belts", href: "/browse?categorySlug=bags-footwear&q=belt" },
+      { label: "AM5 boards", href: "/browse?categorySlug=motherboards&q=AM5" },
+      { label: "LGA1700", href: "/browse?categorySlug=motherboards&q=LGA1700" },
+      { label: "ASUS", href: "/browse?categorySlug=motherboards&q=ASUS" },
+      { label: "MSI", href: "/browse?categorySlug=motherboards&q=MSI" },
+      { label: "All boards", href: "/browse?categorySlug=motherboards" },
     ],
   },
   {
-    heading: "Women Footwear",
+    heading: "Memory",
     links: [
-      { label: "Sandals", href: "/browse?categorySlug=bags-footwear&q=sandal" },
-      { label: "Sneakers", href: "/browse?categorySlug=bags-footwear&q=sneaker" },
-      { label: "Slippers", href: "/browse?categorySlug=bags-footwear&q=slipper" },
+      { label: "DDR5 kits", href: "/browse?categorySlug=memory-ram&q=DDR5" },
+      { label: "DDR4 kits", href: "/browse?categorySlug=memory-ram&q=DDR4" },
+      { label: "Corsair", href: "/browse?categorySlug=memory-ram&q=Corsair" },
+      { label: "All memory", href: "/browse?categorySlug=memory-ram" },
     ],
   },
   {
-    heading: "Men Western Wear",
+    heading: "Storage",
     links: [
-      { label: "Shirts", href: "/browse?categorySlug=fashion&audience=men&q=shirt" },
-      { label: "T-shirts", href: "/browse?categorySlug=fashion&audience=men&q=tee" },
-      { label: "Jeans", href: "/browse?categorySlug=fashion&audience=men&q=jean" },
-      { label: "Trousers", href: "/browse?categorySlug=fashion&audience=men&q=trouser" },
+      { label: "NVMe SSD", href: "/browse?categorySlug=storage-ssd&q=NVMe" },
+      { label: "SATA SSD", href: "/browse?categorySlug=storage-ssd&q=SATA" },
+      { label: "Samsung", href: "/browse?categorySlug=storage-ssd&q=Samsung" },
+      { label: "All SSDs", href: "/browse?categorySlug=storage-ssd" },
     ],
   },
   {
-    heading: "Men Ethnicwear",
+    heading: "Monitors",
     links: [
-      { label: "Kurtas", href: "/browse?categorySlug=fashion&audience=men&q=kurta" },
-      { label: "Ethnic wear", href: "/browse?categorySlug=fashion&audience=men&q=ethnic" },
+      { label: "144Hz+", href: "/browse?categorySlug=monitors&q=144Hz" },
+      { label: "27 inch", href: "/browse?categorySlug=monitors&q=27" },
+      { label: "Office", href: "/browse?categorySlug=monitors&q=100Hz" },
+      { label: "All monitors", href: "/browse?categorySlug=monitors" },
     ],
   },
   {
-    heading: "Men Accessories",
+    heading: "Cabinets & cooling",
     links: [
-      { label: "Wallets", href: "/browse?categorySlug=bags-footwear&q=wallet" },
-      { label: "Belts", href: "/browse?categorySlug=bags-footwear&q=belt" },
-      { label: "Caps", href: "/browse?q=cap" },
+      { label: "ATX cases", href: "/browse?categorySlug=cabinets&q=ATX" },
+      { label: "Mesh airflow", href: "/browse?categorySlug=cabinets&q=mesh" },
+      { label: "All cabinets", href: "/browse?categorySlug=cabinets" },
     ],
   },
   {
-    heading: "Men Footwear",
+    heading: "Peripherals",
     links: [
-      { label: "Sneakers", href: "/browse?categorySlug=bags-footwear&q=sneaker" },
-      { label: "Running shoes", href: "/browse?categorySlug=sports-fitness&q=shoe" },
-      { label: "Slippers", href: "/browse?categorySlug=bags-footwear&q=slipper" },
+      { label: "Keyboard & mouse", href: "/browse?categorySlug=keyboard-mouse" },
+      { label: "Logitech", href: "/browse?categorySlug=keyboard-mouse&q=Logitech" },
+      { label: "Gaming combos", href: "/browse?categorySlug=keyboard-mouse&q=gaming" },
     ],
   },
   {
-    heading: "Kids",
+    heading: "Power backup",
     links: [
-      { label: "Kids hoodies", href: "/browse?categorySlug=baby-kids&audience=kids&q=hoodie" },
-      { label: "Onesies", href: "/browse?categorySlug=baby-kids&audience=kids&q=onesie" },
-      { label: "Toys", href: "/browse?categorySlug=baby-kids&audience=kids&q=toy" },
-      { label: "Kids footwear", href: "/browse?categorySlug=bags-footwear&audience=kids&q=sneaker" },
+      { label: "UPS 600VA", href: "/browse?categorySlug=ups&q=600VA" },
+      { label: "UPS 1000VA+", href: "/browse?categorySlug=ups&q=1000VA" },
+      { label: "All UPS", href: "/browse?categorySlug=ups" },
     ],
   },
   {
-    heading: "Baby",
+    heading: "Shop by budget",
     links: [
-      { label: "Swaddles", href: "/browse?categorySlug=baby-kids&audience=kids&q=swaddle" },
-      { label: "Feeding", href: "/browse?categorySlug=baby-kids&audience=kids&q=feeding" },
-      { label: "Soft toys", href: "/browse?categorySlug=baby-kids&audience=kids&q=plush" },
-    ],
-  },
-  {
-    heading: "Home & Kitchen",
-    links: [
-      { label: "Cookware", href: "/browse?categorySlug=home-kitchen&q=tawa" },
-      { label: "Storage", href: "/browse?categorySlug=home-kitchen&q=container" },
-      { label: "Cleaning", href: "/browse?categorySlug=household-essentials" },
-      { label: "Cushions", href: "/browse?categorySlug=home-kitchen&q=cushion" },
-    ],
-  },
-  {
-    heading: "Home & Living",
-    links: [
-      { label: "Laundry", href: "/browse?categorySlug=general-merchandise&q=laundry" },
-      { label: "Organisers", href: "/browse?categorySlug=stationery-office" },
-      { label: "Decor", href: "/browse?categorySlug=home-kitchen&q=candle" },
-    ],
-  },
-  {
-    heading: "Electronics & Accessories",
-    links: [
-      { label: "Earbuds", href: "/browse?categorySlug=electronics-accessories&q=earbud" },
-      { label: "Chargers", href: "/browse?categorySlug=electronics-accessories&q=charger" },
-      { label: "Cables", href: "/browse?categorySlug=electronics-accessories&q=cable" },
-      { label: "Stands", href: "/browse?categorySlug=electronics-accessories&q=stand" },
-    ],
-  },
-  {
-    heading: "Personal Care & Wellness",
-    links: [
-      { label: "Face wash", href: "/browse?categorySlug=beauty-personal-care&q=face" },
-      { label: "Hair oil", href: "/browse?categorySlug=beauty-personal-care&q=oil" },
-      { label: "Yoga mats", href: "/browse?categorySlug=health-wellness&q=yoga" },
-      { label: "Body lotion", href: "/browse?categorySlug=beauty-personal-care&q=lotion" },
+      { label: "Under ₹5,000", href: "/browse?maxPricePaise=500000" },
+      { label: "Under ₹20,000", href: "/browse?maxPricePaise=2000000" },
+      { label: "Under ₹50,000", href: "/browse?maxPricePaise=5000000" },
     ],
   },
 ] as const;
@@ -248,11 +215,13 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-border bg-surface pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0">
       <div className="container-shell grid gap-8 py-10 text-sm md:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
-          <p className="font-display text-lg font-bold text-accent">
-            {siteContact.brandName}
+          <p className="font-display text-lg font-bold tracking-tight text-accent">
+            ASPERA
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
-            Multi-vendor marketplace of independent Indian sellers.
+            Pune’s PC components marketplace — CPUs, GPUs, boards, memory, and
+            more from verified local sellers with clear pricing and secure
+            prepaid checkout.
           </p>
           <div className="mt-4 space-y-1 text-xs text-muted">
             <p>
@@ -436,7 +405,7 @@ export function SiteFooter() {
       <div className="hidden border-t border-border bg-surface md:block">
         <div className="container-shell py-8">
           <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
-            Online Shopping
+            PC components
           </p>
           <div className="mt-5 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {ONLINE_SHOPPING_GROUPS.map((group) => (

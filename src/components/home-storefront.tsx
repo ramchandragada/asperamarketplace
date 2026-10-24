@@ -32,23 +32,40 @@ function TrustReturnIcon() {
   );
 }
 
-function TrustCodIcon() {
+function TrustShieldIcon() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect
-        x="3"
-        y="6"
-        width="18"
-        height="12"
-        rx="2"
+      <path
+        d="M12 3 4.5 6v6.2c0 4.4 3.1 7.4 7.5 8.8 4.4-1.4 7.5-4.4 7.5-8.8V6L12 3Z"
         stroke="currentColor"
         strokeWidth="1.8"
+        strokeLinejoin="round"
       />
       <path
-        d="M3 10h18M7 14h3"
+        d="M9.5 12.2 11.2 14l3.4-3.8"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function TrustSellerIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4 9.5 12 4l8 5.5V20H4V9.5Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.5 20v-6h5v6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -59,7 +76,7 @@ export function AnnouncementStrip() {
   return (
     <div className="bg-accent text-accent-foreground">
       <p className="container-shell flex h-8 items-center justify-center text-center text-[12px] font-medium tracking-wide md:h-9 md:text-[13px]">
-        Free delivery on eligible orders · Easy returns · Secure checkout
+        Pune PC components · Buyer protection · Secure prepaid checkout
       </p>
     </div>
   );
@@ -77,16 +94,15 @@ type HeroSlide = {
 };
 
 /**
- * Full-bleed hero carousel. Photos are original generated lifestyle images
- * committed under public/hero (not hotlinked). Copy spans baby to seniors.
+ * Full-bleed hero carousel. Self-hosted PC hardware plates under public/hero.
  */
 const HERO_SLIDES: HeroSlide[] = [
   {
     id: "build",
-    eyebrow: "Build your rig",
-    title: "Components for your dream PC",
+    eyebrow: "Pune PC marketplace",
+    title: "Build your next rig",
     subtitle:
-      "CPUs, motherboards, and memory from trusted Pune sellers — real prices, in stock.",
+      "CPUs, boards, and memory from verified local sellers — clear prices, in stock.",
     ctaLabel: "Shop processors",
     ctaHref: "/browse?categorySlug=processors",
     image: "/hero/pc-build.jpg",
@@ -94,9 +110,9 @@ const HERO_SLIDES: HeroSlide[] = [
   {
     id: "gpu",
     eyebrow: "Graphics cards",
-    title: "The latest GPUs, ready to ship",
+    title: "GPUs ready to ship",
     subtitle:
-      "GeForce RTX and Radeon RX cards for gaming and creation — 1080p to 4K.",
+      "GeForce RTX and Radeon RX for gaming and creation — 1080p to 4K.",
     ctaLabel: "Shop graphics cards",
     ctaHref: "/browse?categorySlug=graphics-cards",
     image: "/hero/pc-gpu.jpg",
@@ -104,9 +120,9 @@ const HERO_SLIDES: HeroSlide[] = [
   {
     id: "monitors",
     eyebrow: "Monitors & peripherals",
-    title: "A workspace that keeps up",
+    title: "Finish the setup",
     subtitle:
-      "High-refresh monitors, keyboards, and mice to complete your setup.",
+      "High-refresh monitors, keyboards, and mice matched to your build.",
     ctaLabel: "Shop monitors",
     ctaHref: "/browse?categorySlug=monitors",
     image: "/hero/pc-desk.jpg",
@@ -114,9 +130,9 @@ const HERO_SLIDES: HeroSlide[] = [
   {
     id: "storage",
     eyebrow: "Storage & power",
-    title: "Fast SSDs and reliable backup",
+    title: "Fast SSDs, solid backup",
     subtitle:
-      "NVMe and SATA SSDs, plus UPS units to keep your work safe in Pune's power cuts.",
+      "NVMe and SATA drives plus UPS units for Pune power cuts.",
     ctaLabel: "Shop SSDs",
     ctaHref: "/browse?categorySlug=storage-ssd",
     image: "/hero/pc-setup.jpg",
@@ -125,7 +141,7 @@ const HERO_SLIDES: HeroSlide[] = [
 
 const HERO_AUTO_MS = 5200;
 
-/** Aspera hero — polished product carousel (newborn → elderly copy) */
+/** Aspera Forge hero — brand-first PC components carousel */
 export function AsperaHero() {
   const labelId = useId();
   const rootRef = useRef<HTMLElement | null>(null);
@@ -223,7 +239,7 @@ export function AsperaHero() {
               aria-roledescription="slide"
               aria-label={`${slideIndex + 1} of ${count}: ${entry.eyebrow}`}
               aria-hidden={!active}
-              className={`absolute inset-0 bg-[#123b4a] transition-opacity duration-700 ease-out ${
+              className={`absolute inset-0 bg-[#0B1220] transition-opacity duration-700 ease-out ${
                 active
                   ? "z-[1] opacity-100"
                   : "pointer-events-none z-0 opacity-0"
@@ -245,35 +261,38 @@ export function AsperaHero() {
                 />
               </div>
               <div
-                className="absolute inset-y-0 -left-[3.25rem] -right-[3.25rem] bg-[linear-gradient(90deg,rgba(8,24,32,0.84)_0%,rgba(8,24,32,0.62)_58%,rgba(8,24,32,0.28)_100%)] md:-left-[4.25rem] md:-right-[4.25rem] md:bg-[linear-gradient(90deg,rgba(8,24,32,0.78)_0%,rgba(8,24,32,0.5)_34%,rgba(8,24,32,0.14)_62%,rgba(8,24,32,0.04)_100%)]"
+                className="absolute inset-y-0 -left-[3.25rem] -right-[3.25rem] bg-[linear-gradient(90deg,rgba(11,18,32,0.9)_0%,rgba(11,18,32,0.68)_52%,rgba(11,18,32,0.22)_100%)] md:-left-[4.25rem] md:-right-[4.25rem] md:bg-[linear-gradient(90deg,rgba(11,18,32,0.88)_0%,rgba(11,18,32,0.55)_36%,rgba(11,18,32,0.12)_68%,rgba(11,18,32,0.04)_100%)]"
                 aria-hidden
               />
 
               <div className="relative z-[2] container-shell flex h-full min-h-[24.5rem] flex-col justify-center pt-5 pb-[4.75rem] md:min-h-[22rem] md:py-12 lg:min-h-[24rem]">
-                <div className="max-w-[20rem] text-white md:max-w-[26rem]">
-                  <p className="text-[13px] font-semibold tracking-wide text-white/90 uppercase md:text-[14px]">
+                <div className="max-w-[20rem] text-white md:max-w-[28rem]">
+                  <p className="font-display text-[28px] font-bold tracking-[-0.04em] text-white drop-shadow-sm md:text-[40px]">
+                    ASPERA
+                  </p>
+                  <p className="mt-2 text-[12px] font-semibold tracking-[0.14em] text-[color:var(--brand-accent)] uppercase md:text-[13px]">
                     {entry.eyebrow}
                   </p>
-                  <p className="mt-2 text-[26px] leading-[32px] font-bold tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] md:text-[36px] md:leading-[42px]">
+                  <p className="font-display mt-2 text-[24px] leading-[30px] font-bold tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] md:text-[34px] md:leading-[40px]">
                     {entry.title}
                   </p>
-                  <p className="mt-2 max-w-sm text-[14px] leading-[21px] text-white/92 md:text-[15px] md:leading-[23px]">
+                  <p className="mt-2 max-w-sm text-[14px] leading-[21px] text-white/90 md:text-[15px] md:leading-[23px]">
                     {entry.subtitle}
                   </p>
                   <div className="mt-5 flex flex-wrap gap-3">
                     <Link
                       href={entry.ctaHref}
-                      className="inline-flex min-h-11 items-center justify-center rounded-lg bg-white px-6 text-[14px] font-semibold text-accent shadow-sm transition hover:bg-accent-soft"
+                      className="inline-flex min-h-11 items-center justify-center rounded-[10px] bg-[color:var(--brand-accent)] px-6 text-[14px] font-semibold text-[#0B1220] shadow-sm transition hover:brightness-105"
                       tabIndex={active ? 0 : -1}
                     >
                       {entry.ctaLabel}
                     </Link>
                     <Link
                       href="/browse"
-                      className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/55 bg-white/10 px-5 text-[14px] font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+                      className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-white/55 bg-white/10 px-5 text-[14px] font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
                       tabIndex={active ? 0 : -1}
                     >
-                      Explore all
+                      Browse parts
                     </Link>
                   </div>
                 </div>
@@ -365,61 +384,38 @@ export type PromoLane = {
 };
 
 /**
- * Homepage discovery banner — sober Aspera take on Meesho’s split promo:
- * offer panel + four tall collection lanes.
+ * Compact discovery strip — sharp tech lanes (no Meesho terracotta panel).
  */
 export function DiscoveryPromoBanner({ lanes }: { lanes: PromoLane[] }) {
   if (lanes.length === 0) return null;
   const cards = lanes.slice(0, 4);
 
   return (
-    <section className="container-shell py-3 md:py-4">
-      <div className="grid overflow-hidden rounded-2xl md:grid-cols-[minmax(15rem,0.85fr)_1.55fr]">
-        <div className="flex flex-col justify-between bg-[linear-gradient(160deg,#E66A3D_0%,#D4572F_55%,#C24A28_100%)] px-6 py-8 text-white md:px-8 md:py-10">
-          <div>
-            <h2 className="max-w-[14rem] text-[28px] leading-[34px] font-bold tracking-tight md:text-[32px] md:leading-[38px]">
-              PC components, built for Pune
-            </h2>
-            <p className="mt-3 max-w-[16rem] text-[14px] leading-5 text-white/90">
-              CPUs, GPUs, memory and more from trusted local sellers — honest
-              prices, in stock, delivered across Pune.
-            </p>
-          </div>
-          <Link
-            href="/browse"
-            className="mt-8 inline-flex min-h-11 w-fit items-center justify-center rounded-lg bg-white px-6 text-[14px] font-semibold text-accent transition hover:bg-accent-soft"
-          >
-            Shop now
-          </Link>
-        </div>
-
-        <div className="bg-accent px-3 py-4 md:px-5 md:py-5">
-          <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
-            {cards.map((lane) => (
-              <li key={lane.id}>
-                <Link
-                  href={lane.href}
-                  className="group relative flex aspect-[3/5] overflow-hidden rounded-xl bg-accent-soft shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
-                >
-                  <Image
-                    src={lane.imageUrl}
-                    alt=""
-                    fill
-                    sizes="(max-width: 640px) 45vw, 18vw"
-                    className="object-cover object-center transition duration-500 group-hover:scale-[1.04]"
-                  />
-                  <span className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(15,47,58,0.55)_100%)]" />
-                  <span className="absolute inset-x-2 bottom-3 flex justify-center">
-                    <span className="inline-flex min-h-8 items-center rounded-full bg-white px-3 text-center text-[12px] font-semibold text-foreground shadow-sm md:text-[13px]">
-                      {lane.label}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+    <section className="container-shell py-4 md:py-5">
+      <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+        {cards.map((lane) => (
+          <li key={lane.id}>
+            <Link
+              href={lane.href}
+              className="group relative flex aspect-[4/3] overflow-hidden rounded-[10px] bg-[#121A2B] shadow-[var(--shadow-card)]"
+            >
+              <Image
+                src={lane.imageUrl}
+                alt=""
+                fill
+                sizes="(max-width: 640px) 45vw, 22vw"
+                className="object-cover object-center transition duration-500 group-hover:scale-[1.04]"
+              />
+              <span className="absolute inset-0 bg-[linear-gradient(180deg,transparent_40%,rgba(11,18,32,0.78)_100%)]" />
+              <span className="absolute inset-x-3 bottom-3">
+                <span className="font-display text-[14px] font-semibold text-white md:text-[15px]">
+                  {lane.label}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -431,84 +427,101 @@ export type SelectTile = {
   imageUrl: string;
 };
 
-/**
- * Soft “selects” panel — lifestyle + 2×2 arched category tiles
- * (Aspera teal, not a gold Meesho clone).
- */
-export function AsperaSelectsBanner({ tiles }: { tiles: SelectTile[] }) {
-  const cards = tiles.slice(0, 4);
+export type BuildLane = {
+  id: string;
+  label: string;
+  description: string;
+  href: string;
+  imageUrl: string;
+};
+
+/** Build lanes — Gaming / Creator / Office (replaces Meesho Selects arches). */
+export function BuildLanes({ lanes }: { lanes: BuildLane[] }) {
+  const cards = lanes.slice(0, 3);
   if (cards.length === 0) return null;
 
   return (
-    <section className="container-shell py-3 md:py-4">
-      <div className="grid overflow-hidden rounded-2xl bg-[linear-gradient(120deg,#123B4A_0%,#1A5566_45%,#0F2F3A_100%)] md:grid-cols-[1.05fr_1fr]">
-        <div className="relative min-h-[220px] md:min-h-[280px]">
-          <Image
-            src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1400&q=85"
-            alt=""
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover object-center opacity-75"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_30%,rgba(15,47,58,0.78)_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
-            <Link
-              href="/browse"
-              className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/50 px-5 text-[13px] font-semibold text-white transition hover:bg-white/10"
-            >
-              Shop now
-            </Link>
-          </div>
+    <section className="container-shell py-4 md:py-6">
+      <div className="mb-3 flex items-end justify-between gap-3 md:mb-4">
+        <div>
+          <h2 className="font-display text-[22px] leading-[28px] font-bold tracking-tight md:text-[26px] md:leading-[32px]">
+            Start a build
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Pick a lane — we surface the right components
+          </p>
         </div>
-
-        <ul className="grid grid-cols-2 gap-3 p-4 md:gap-4 md:p-6">
-          {cards.map((tile) => (
-            <li key={tile.id}>
-              <Link
-                href={tile.href}
-                className="group flex flex-col items-center gap-2 text-center"
-              >
-                <span className="relative aspect-[4/5] w-full overflow-hidden rounded-[999px_999px_1.25rem_1.25rem] border border-white/35 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.12)]">
-                  <Image
-                    src={tile.imageUrl}
-                    alt=""
-                    fill
-                    sizes="(max-width: 768px) 40vw, 18vw"
-                    className="object-cover object-top transition duration-500 group-hover:scale-[1.04]"
-                  />
-                </span>
-                <span className="text-[13px] font-semibold tracking-wide text-[#D7E8EC] md:text-[14px]">
-                  {tile.label}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <Link
+          href="/browse"
+          className="text-sm font-medium text-accent hover:underline"
+        >
+          All parts
+        </Link>
       </div>
+      <ul className="grid gap-3 md:grid-cols-3 md:gap-4">
+        {cards.map((lane) => (
+          <li key={lane.id}>
+            <Link
+              href={lane.href}
+              className="group relative flex h-[168px] overflow-hidden rounded-[10px] md:h-[200px]"
+            >
+              <Image
+                src={lane.imageUrl}
+                alt=""
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover transition duration-500 group-hover:scale-[1.04]"
+              />
+              <span className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,18,32,0.15)_0%,rgba(11,18,32,0.82)_100%)]" />
+              <span className="absolute inset-x-0 bottom-0 p-4 text-white md:p-5">
+                <span className="font-display block text-[18px] font-bold tracking-tight md:text-[20px]">
+                  {lane.label}
+                </span>
+                <span className="mt-1 block text-[13px] text-white/85">
+                  {lane.description}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
 
-/** Trust strip — full-bleed service bar under the hero */
+/**
+ * @deprecated Prefer BuildLanes — kept so older imports compile.
+ */
+export function AsperaSelectsBanner({ tiles }: { tiles: SelectTile[] }) {
+  if (tiles.length === 0) return null;
+  return (
+    <BuildLanes
+      lanes={tiles.slice(0, 3).map((tile) => ({
+        id: tile.id,
+        label: tile.label,
+        description: "Shop components",
+        href: tile.href,
+        imageUrl: tile.imageUrl,
+      }))}
+    />
+  );
+}
+
+/** Compact trust chips — never advertise COD (deferred). */
 export function TrustSignalBar() {
   const items = [
-    { label: "Easy returns on eligible orders", Icon: TrustReturnIcon },
-    { label: "Cash on delivery available", Icon: TrustCodIcon },
+    { label: "Buyer protection on eligible orders", Icon: TrustShieldIcon },
+    { label: "Secure prepaid checkout", Icon: TrustReturnIcon },
+    { label: "Verified Pune sellers", Icon: TrustSellerIcon },
   ];
   return (
-    <div className="w-full border-b border-border bg-accent-soft">
-      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-3 text-[13px] text-foreground md:gap-x-10 md:py-3.5 lg:max-w-none lg:px-10">
-        {items.map((item, index) => (
+    <div className="w-full border-b border-border bg-surface">
+      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-2.5 text-[12px] text-foreground md:gap-x-10 md:py-3 md:text-[13px]">
+        {items.map((item) => (
           <li
             key={item.label}
-            className="flex items-center gap-2 px-3 text-accent sm:px-4 md:px-2"
+            className="flex items-center gap-2 px-2 text-accent"
           >
-            {index > 0 ? (
-              <span
-                className="mr-2 hidden h-4 w-px bg-border sm:block md:hidden"
-                aria-hidden
-              />
-            ) : null}
             <item.Icon />
             <span className="font-medium">{item.label}</span>
           </li>
@@ -548,14 +561,14 @@ export function CategoryCircles({
             href={`/browse?categorySlug=${encodeURIComponent(category.slug)}`}
             className="group flex w-[6.25rem] flex-col items-center gap-2 text-center"
           >
-            <span className="relative h-[7.5rem] w-[7.5rem] overflow-hidden rounded-xl border border-border bg-accent-soft transition group-hover:border-accent group-focus-visible:border-accent">
+            <span className="photo-well relative h-[7.5rem] w-[7.5rem] overflow-hidden rounded-[10px] transition group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]">
               {category.imageUrl ? (
                 <Image
                   src={category.imageUrl}
                   alt=""
                   fill
                   sizes="120px"
-                  className="object-cover"
+                  className="object-contain object-center p-2"
                 />
               ) : (
                 <span className="flex h-full items-center justify-center text-2xl font-semibold text-accent/40">
@@ -573,7 +586,7 @@ export function CategoryCircles({
   );
 }
 
-/** Square category tiles — cut-out products filling soft pastel wells */
+/** Square category tiles — real component crops on light wells (no dark frames) */
 export function ShopByCategory({
   categories,
 }: {
@@ -589,9 +602,9 @@ export function ShopByCategory({
 
   return (
     <section className="bg-surface">
-      <div className="container-shell pt-4 pb-2 md:pt-5 md:pb-3">
-        <div className="mb-2.5 flex items-end justify-between gap-3 md:mb-3">
-          <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
+      <div className="container-shell pt-5 pb-3 md:pt-6 md:pb-4">
+        <div className="mb-3 flex items-end justify-between gap-3 md:mb-3.5">
+          <h2 className="font-display text-[22px] leading-[28px] font-bold tracking-tight md:text-[26px] md:leading-[32px]">
             Shop by category
           </h2>
           <Link
@@ -611,9 +624,9 @@ export function ShopByCategory({
               className="group flex flex-col items-center gap-2 text-center"
             >
               <span
-                className="relative aspect-square w-full overflow-hidden rounded-2xl transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_12px_28px_rgba(18,59,74,0.12)]"
+                className="relative aspect-square w-full overflow-hidden rounded-[10px] bg-white transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]"
                 style={{
-                  background: `radial-gradient(120% 120% at 50% 35%, #ffffff 0%, ${category.bgTint ?? "#F3F5F6"} 62%, ${category.bgTint ?? "#F3F5F6"} 100%)`,
+                  background: `radial-gradient(120% 120% at 50% 35%, #ffffff 0%, ${category.bgTint ?? "#EEF2F7"} 72%)`,
                 }}
               >
                 <Image
@@ -635,7 +648,7 @@ export function ShopByCategory({
   );
 }
 
-/** Shop By Brands — Meesho Original Brands-style panel with teal footers */
+/** Shop By Brands — light wells, no dark frames around product crops */
 export function ShopByBrands({
   brands,
 }: {
@@ -653,12 +666,12 @@ export function ShopByBrands({
 
   return (
     <section className="bg-surface">
-      <div className="container-shell pt-2 pb-4 md:pt-3 md:pb-5">
-        <div className="overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#F8EDE4_0%,#F3E8EF_42%,#E6F0F2_100%)] px-3 py-4 shadow-[inset_0_0_0_1px_rgba(18,59,74,0.06)] md:px-5 md:py-5">
+      <div className="container-shell pt-2 pb-5 md:pt-3 md:pb-6">
+        <div className="overflow-hidden rounded-[10px] px-0 py-1 md:py-2">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <h2 className="text-[20px] leading-[26px] font-bold tracking-tight text-foreground md:text-[22px] md:leading-[28px]">
-                Shop By Brands
+              <h2 className="font-display text-[20px] leading-[26px] font-bold tracking-tight text-foreground md:text-[22px] md:leading-[28px]">
+                Shop by brand
               </h2>
               <span
                 className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground"
@@ -690,16 +703,16 @@ export function ShopByBrands({
           </div>
           <ProductLoopRail
             items={tiles}
-            label="Shop By Brands"
+            label="Shop by brand"
             variant="brands"
             renderItem={(brand) => (
               <Link
                 href={brand.href}
-                className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-[0_1px_0_rgba(18,59,74,0.06)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(18,59,74,0.12)]"
+                className="group flex flex-col overflow-hidden rounded-[10px] bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]"
               >
                 <span
                   className="relative aspect-[3/4] w-full"
-                  style={{ backgroundColor: brand.bgTint ?? "#F3EEF8" }}
+                  style={{ backgroundColor: brand.bgTint ?? "#EEF2F7" }}
                 >
                   {brand.offer ? (
                     <span className="absolute top-2 left-2 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent uppercase shadow-sm">
@@ -714,7 +727,7 @@ export function ShopByBrands({
                     className="object-contain object-center p-3 transition duration-300 group-hover:scale-[1.03]"
                   />
                 </span>
-                <span className="flex min-h-10 items-center justify-center bg-accent px-2 py-2 text-center text-[12px] font-semibold tracking-wide text-accent-foreground md:min-h-11 md:text-[13px]">
+                <span className="flex min-h-10 items-center justify-center border-t border-border px-2 py-2 text-center text-[12px] font-semibold tracking-wide text-foreground md:min-h-11 md:text-[13px]">
                   {brand.label}
                 </span>
               </Link>
@@ -809,7 +822,7 @@ export function PriceLedCollections({
               href={collection.href}
               className="flex flex-col gap-1 rounded-2xl bg-surface p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
             >
-              <span className="text-[22px] font-bold tracking-tight text-brand-accent">
+              <span className="font-display text-[22px] font-bold tracking-tight text-brand-accent">
                 {collection.label}
               </span>
               <span className="text-sm text-muted">{collection.hint}</span>
@@ -851,15 +864,15 @@ export function FeaturedSellers({ sellers }: { sellers: SellerCardData[] }) {
         renderItem={(seller) => {
           const style = brandLogoStyle();
           return (
-            <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]">
-              <div className="relative flex h-40 items-center justify-center bg-accent-soft sm:h-44">
+            <article className="flex h-full flex-col overflow-hidden rounded-[10px] bg-white transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]">
+              <div className="photo-well relative flex h-40 items-center justify-center sm:h-44">
                 {seller.imageUrl ? (
                   <Image
                     src={seller.imageUrl}
                     alt=""
                     fill
                     sizes="(max-width: 640px) 72vw, 304px"
-                    className="object-cover"
+                    className="object-contain object-center p-3"
                   />
                 ) : (
                   <span
@@ -910,20 +923,20 @@ function brandLogoStyle(): {
 
 export function SellerConversionSection() {
   return (
-    <section className="container-shell py-4 md:py-5">
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-accent-soft p-5 md:flex-row md:items-center md:justify-between md:p-6">
+    <section className="container-shell py-5 md:py-6">
+      <div className="flex flex-col gap-3 rounded-[10px] border border-border bg-[#0B1220] p-5 text-white md:flex-row md:items-center md:justify-between md:p-6">
         <div>
-          <h2 className="text-[24px] leading-[32px] font-bold tracking-tight">
-            Sell on Aspera
+          <h2 className="font-display text-[24px] leading-[32px] font-bold tracking-tight">
+            Sell PC parts on Aspera
           </h2>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
-            List products, manage orders, and reach shoppers across India with
-            clear tools for catalogue, fulfilment, and payouts.
+          <p className="mt-2 max-w-xl text-sm leading-6 text-white/80">
+            List components, manage orders, and reach Pune builders with clear
+            tools for catalogue, fulfilment, and payouts.
           </p>
         </div>
         <Link
           href="/seller/onboarding"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 text-[14px] font-semibold text-accent-foreground hover:bg-[var(--accent-hover)]"
+          className="inline-flex min-h-11 items-center justify-center rounded-[10px] bg-[color:var(--brand-accent)] px-5 text-[14px] font-semibold text-[#0B1220] hover:brightness-105"
         >
           Start selling
         </Link>

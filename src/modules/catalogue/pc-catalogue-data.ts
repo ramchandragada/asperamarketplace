@@ -752,7 +752,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 22,
     "weightGrams": 90,
     "hsnCode": "8473",
-    "imagePath": null
+    "imagePath": "/products/ram-corsair-vengeance-lpx-16gb.jpg"
   },
   {
     "slug": "ram-g-skill-ripjaws-v-16gb",
@@ -816,7 +816,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 27,
     "weightGrams": 90,
     "hsnCode": "8473",
-    "imagePath": null
+    "imagePath": "/products/ram-crucial-pro-ddr5-32gb.jpg"
   },
   {
     "slug": "ram-kingston-fury-beast-ddr5-32gb",
@@ -976,7 +976,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 15,
     "weightGrams": 60,
     "hsnCode": "8471",
-    "imagePath": null
+    "imagePath": "/products/ssd-kingston-nv3-1tb.jpg"
   },
   {
     "slug": "ssd-crucial-mx500-1tb",
@@ -1072,7 +1072,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 22,
     "weightGrams": 6000,
     "hsnCode": "8473",
-    "imagePath": null
+    "imagePath": "/products/cab-ant-esports-si11.jpg"
   },
   {
     "slug": "cab-ant-esports-ice-300-mesh-v2",
@@ -1088,7 +1088,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 5,
     "weightGrams": 6000,
     "hsnCode": "8473",
-    "imagePath": null
+    "imagePath": "/products/cab-ant-esports-ice-300-mesh-v2.jpg"
   },
   {
     "slug": "cab-circle-furious-360-mesh-argb",
@@ -1216,7 +1216,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 25,
     "weightGrams": 6000,
     "hsnCode": "8473",
-    "imagePath": null
+    "imagePath": "/products/cab-zebronics-zeb-cronus.jpg"
   },
   {
     "slug": "kbm-zebronics-zeb-judwaa-750",
@@ -1280,7 +1280,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 4,
     "weightGrams": 700,
     "hsnCode": "8471",
-    "imagePath": null
+    "imagePath": "/products/kbm-lenovo-100-wireless-combo.jpg"
   },
   {
     "slug": "kbm-dell-km3322w-wireless-combo",
@@ -1360,7 +1360,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 10,
     "weightGrams": 700,
     "hsnCode": "8471",
-    "imagePath": null
+    "imagePath": "/products/kbm-hp-230-wireless-combo.jpg"
   },
   {
     "slug": "kbm-logitech-mk295-silent-wireless-combo",
@@ -1552,7 +1552,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 12,
     "weightGrams": 6500,
     "hsnCode": "8504",
-    "imagePath": null
+    "imagePath": "/products/ups-luminous-line-interactive-600va.jpg"
   },
   {
     "slug": "ups-iball-nirantar-621v",
@@ -1568,7 +1568,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 8,
     "weightGrams": 6500,
     "hsnCode": "8504",
-    "imagePath": null
+    "imagePath": "/products/ups-iball-nirantar-621v.jpg"
   },
   {
     "slug": "ups-zebronics-zeb-u735",
@@ -1600,7 +1600,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 4,
     "weightGrams": 6500,
     "hsnCode": "8504",
-    "imagePath": null
+    "imagePath": "/products/ups-microtek-legend-650va.jpg"
   },
   {
     "slug": "ups-apc-back-ups-bx600c-in",
@@ -1616,7 +1616,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 15,
     "weightGrams": 6500,
     "hsnCode": "8504",
-    "imagePath": null
+    "imagePath": "/products/ups-apc-back-ups-bx600c-in.jpg"
   },
   {
     "slug": "ups-zebronics-zeb-u775",
@@ -1648,7 +1648,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 3,
     "weightGrams": 6500,
     "hsnCode": "8504",
-    "imagePath": null
+    "imagePath": "/products/ups-vertiv-liebert-iton-cx-1000va.jpg"
   },
   {
     "slug": "ups-microtek-em-1250",
@@ -1664,7 +1664,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 18,
     "weightGrams": 6500,
     "hsnCode": "8504",
-    "imagePath": null
+    "imagePath": "/products/ups-microtek-em-1250.jpg"
   },
   {
     "slug": "ups-apc-back-ups-bx1100c-in",
@@ -1680,7 +1680,7 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 10,
     "weightGrams": 6500,
     "hsnCode": "8504",
-    "imagePath": null
+    "imagePath": "/products/ups-apc-back-ups-bx1100c-in.jpg"
   },
   {
     "slug": "ups-apc-easy-ups-online-srv1ki",
@@ -1696,6 +1696,6 @@ export const PC_PRODUCTS: PcProductDef[] = [
     "onHand": 6,
     "weightGrams": 6500,
     "hsnCode": "8504",
-    "imagePath": null
+    "imagePath": "/products/ups-apc-easy-ups-online-srv1ki.jpg"
   }
 ];

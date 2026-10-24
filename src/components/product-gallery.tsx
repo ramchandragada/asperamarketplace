@@ -129,7 +129,7 @@ export function ProductGallery({
       <div className="relative order-1 flex-1 overflow-visible lg:order-2">
         <div
           ref={mainRef}
-          className="photo-well relative aspect-square overflow-hidden rounded-2xl shadow-[var(--shadow-card)] touch-pan-y touch-pinch-zoom lg:cursor-crosshair"
+          className="photo-well relative aspect-square overflow-hidden rounded-[10px] touch-pan-y touch-pinch-zoom lg:cursor-crosshair"
           onPointerMove={onPointerMove}
           onPointerEnter={onPointerMove}
           onPointerLeave={() => setZoom(null)}

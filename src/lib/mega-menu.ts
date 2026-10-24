@@ -21,14 +21,14 @@ function link(label: string, categorySlug: string, opts?: { q?: string }) {
 }
 
 export const SEARCH_PLACEHOLDER =
-  "Search CPUs, GPUs, motherboards, SSDs…";
+  "Search parts for Express delivery…";
 
 export const TRENDING_SEARCHES = [
   "RTX 4060",
   "Ryzen 5",
   "DDR5 RAM",
   "NVMe SSD",
-  "144Hz monitor",
+  "Express cooler",
   "gaming cabinet",
 ] as const;
 

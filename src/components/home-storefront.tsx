@@ -99,20 +99,20 @@ type HeroSlide = {
 const HERO_SLIDES: HeroSlide[] = [
   {
     id: "build",
-    eyebrow: "Pune PC marketplace",
-    title: "Build your next rig",
+    eyebrow: "Aspera Express",
+    title: "PC parts in minutes",
     subtitle:
-      "CPUs, boards, and memory from verified local sellers — clear prices, in stock.",
+      "Order from nearby hubs — Express delivery in under 90 minutes across Pune.",
     ctaLabel: "Shop processors",
     ctaHref: "/browse?categorySlug=processors",
     image: "/hero/pc-build.jpg",
   },
   {
     id: "gpu",
-    eyebrow: "Graphics cards",
-    title: "GPUs ready to ship",
+    eyebrow: "Graphics cards · Express",
+    title: "GPUs, delivered fast",
     subtitle:
-      "GeForce RTX and Radeon RX for gaming and creation — 1080p to 4K.",
+      "GeForce RTX and Radeon RX in stock at local hubs — same-day express ready.",
     ctaLabel: "Shop graphics cards",
     ctaHref: "/browse?categorySlug=graphics-cards",
     image: "/hero/pc-gpu.jpg",
@@ -120,9 +120,9 @@ const HERO_SLIDES: HeroSlide[] = [
   {
     id: "monitors",
     eyebrow: "Monitors & peripherals",
-    title: "Finish the setup",
+    title: "Finish the setup today",
     subtitle:
-      "High-refresh monitors, keyboards, and mice matched to your build.",
+      "High-refresh monitors, keyboards, and mice with minute-level ETAs at your pin.",
     ctaLabel: "Shop monitors",
     ctaHref: "/browse?categorySlug=monitors",
     image: "/hero/pc-desk.jpg",
@@ -130,9 +130,9 @@ const HERO_SLIDES: HeroSlide[] = [
   {
     id: "storage",
     eyebrow: "Storage & power",
-    title: "Fast SSDs, solid backup",
+    title: "SSDs before the evening",
     subtitle:
-      "NVMe and SATA drives plus UPS units for Pune power cuts.",
+      "NVMe, SATA, and UPS from verified sellers — Express when you’re in a hub zone.",
     ctaLabel: "Shop SSDs",
     ctaHref: "/browse?categorySlug=storage-ssd",
     image: "/hero/pc-setup.jpg",

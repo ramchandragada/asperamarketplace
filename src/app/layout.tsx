@@ -28,23 +28,23 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Aspera — Pune PC components marketplace",
+    default: "Aspera Express — PC parts delivered in minutes",
     template: "%s · Aspera",
   },
   description:
-    "Shop CPUs, GPUs, motherboards, RAM, SSDs, monitors and more from verified Pune sellers. Clear pricing, secure prepaid checkout, and buyer protection.",
+    "Quick-commerce PC components: CPUs, GPUs, boards, RAM, SSDs and more from nearby hubs. Express delivery in under 90 minutes across Pune — prepaid and protected.",
   openGraph: {
-    title: "Aspera — Pune PC components marketplace",
+    title: "Aspera Express — PC parts in minutes",
     description:
-      "Build your rig with CPUs, GPUs, SSDs and peripherals from trusted local sellers.",
+      "Blinkit-speed shopping for builders. Set your pin, see the ETA, get parts from local hubs.",
     type: "website",
     siteName: "Aspera",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aspera — Pune PC components marketplace",
+    title: "Aspera Express — PC parts in minutes",
     description:
-      "CPUs, GPUs, motherboards, RAM, SSDs and monitors from verified Pune sellers.",
+      "Express PC components from nearby hubs. Under 90 minutes in Pune.",
   },
 };
 

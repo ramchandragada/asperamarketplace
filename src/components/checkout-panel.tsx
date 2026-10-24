@@ -225,7 +225,11 @@ export function CheckoutPanel({
 
       {!reserved ? (
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">Delivery address</h2>
+          <h2 className="text-lg font-semibold">Express delivery address</h2>
+          <p className="text-xs text-muted">
+            ETA is calculated from your pincode — Pune hubs deliver in under 90
+            minutes for in-stock parts.
+          </p>
           {addresses.length > 0 ? (
             <select
               value={addressId}

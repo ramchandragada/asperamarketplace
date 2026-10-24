@@ -8,6 +8,7 @@ import {
   TRENDING_SEARCHES,
   type MegaMenuColumn,
 } from "@/lib/mega-menu";
+import { DeliveryLocationBar } from "@/components/delivery-location";
 import { MobileCategoryDrawer } from "@/components/mobile-category-drawer";
 import { ScrollEdgeRail } from "@/components/product-loop-rail";
 
@@ -452,15 +453,15 @@ export function SiteHeaderClient({
       <div className="w-full bg-[linear-gradient(90deg,#0B1220_0%,#151E32_55%,#1A2740_100%)] text-accent-foreground">
         <p className="flex h-8 w-full items-center justify-center px-4 text-center text-[12px] font-medium tracking-wide md:h-9 md:px-8 md:text-[13px]">
           <span className="flex items-center justify-center gap-1.5 whitespace-nowrap md:hidden">
-            <span>Pune PC parts</span>
+            <span>⚡ Express in mins</span>
             <span aria-hidden>·</span>
-            <span>Buyer protection</span>
+            <span>Pune hubs</span>
             <span aria-hidden>·</span>
-            <span>Secure checkout</span>
+            <span>Prepaid secure</span>
           </span>
           <span className="hidden md:inline">
-            Pune PC components · Verified sellers · Buyer protection · Secure
-            prepaid checkout
+            Aspera Express — PC parts delivered in minutes from nearby hubs ·
+            Verified sellers · Buyer protection
           </span>
         </p>
       </div>
@@ -481,6 +482,10 @@ export function SiteHeaderClient({
         >
           ASPERA
         </Link>
+
+        <div className="hidden shrink-0 sm:block">
+          <DeliveryLocationBar compact={compact} />
+        </div>
 
         <div className="hidden min-w-0 flex-1 md:block">
           <HeaderSearch />
@@ -540,7 +545,10 @@ export function SiteHeaderClient({
         inside the sticky header and then hiding them on scroll changed the
         stuck bar's height and made mobile browsers rewind the page. */}
     <div className="border-b border-border/80 bg-surface md:hidden">
-      <div className="w-full px-4 pb-2.5">
+      <div className="flex w-full items-center gap-2 border-b border-border/60 px-3 py-1.5 sm:hidden">
+        <DeliveryLocationBar />
+      </div>
+      <div className="w-full px-4 pb-2.5 pt-2">
         <HeaderSearch inputId="global-search-mobile" />
       </div>
       <div className="flex w-full items-center gap-2 border-t border-border px-3 py-2">

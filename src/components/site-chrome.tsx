@@ -70,28 +70,28 @@ export async function SiteHeader() {
 
 const SEO_BLOCKS = [
   {
-    title: "Processors",
-    body: "Shop Intel Core and AMD Ryzen CPUs for gaming, creator, and office builds. Compare sockets, cores, and clear Pune seller pricing before you buy.",
+    title: "Processors · Express",
+    body: "Intel Core and AMD Ryzen CPUs with minute-level ETAs from Pune hubs. Compare sockets, cores, and live Express windows before you buy.",
     href: "/browse?categorySlug=processors",
   },
   {
-    title: "Graphics cards",
-    body: "Browse GeForce RTX and Radeon RX GPUs with transparent MRPs and live stock. From 1080p gaming to 4K creation workloads.",
+    title: "Graphics cards · Express",
+    body: "GeForce RTX and Radeon RX GPUs from nearby inventory — same-day express when your pin is in a hub zone.",
     href: "/browse?categorySlug=graphics-cards",
   },
   {
     title: "Motherboards & memory",
-    body: "Match boards and DDR4/DDR5 kits to your CPU. ASUS, MSI, Gigabyte, Corsair and more from verified sellers.",
+    body: "Match boards and DDR4/DDR5 kits to your CPU. ASUS, MSI, Gigabyte, Corsair and more with quick-commerce delivery.",
     href: "/browse?categorySlug=motherboards",
   },
   {
     title: "Storage, monitors & power",
-    body: "NVMe SSDs, high-refresh monitors, cabinets, keyboards, mice, and UPS units sized for Indian homes and Pune power cuts.",
+    body: "NVMe SSDs, monitors, cabinets, and UPS — ordered in minutes, delivered like Blinkit-speed for builders.",
     href: "/browse?categorySlug=storage-ssd",
   },
   {
-    title: "Sell PC parts on Aspera",
-    body: "List components, manage orders, and reach local builders with verified seller tools for catalogue, fulfilment, and payouts.",
+    title: "Sell on Aspera Express",
+    body: "List components from your hub, fulfil Express orders, and reach local builders with verified seller tools.",
     href: "/seller/onboarding",
   },
 ] as const;
@@ -228,9 +228,9 @@ export function SiteFooter() {
             ASPERA
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
-            Pune’s PC components marketplace — CPUs, GPUs, boards, memory, and
-            more from verified local sellers with clear pricing and secure
-            prepaid checkout.
+            Quick-commerce PC parts — Express delivery in minutes from nearby
+            hubs. CPUs, GPUs, boards, memory, and more with prepaid checkout and
+            buyer protection.
           </p>
           <div className="mt-4 space-y-1 text-xs text-muted">
             <p>

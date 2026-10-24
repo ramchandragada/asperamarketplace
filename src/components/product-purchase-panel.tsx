@@ -320,15 +320,15 @@ export function ProductPurchasePanel({
         {delivery?.serviceable && delivery.etaLabel ? (
           <div className="mt-3 rounded-[var(--radius-sm)] bg-success-soft/60 px-3 py-2">
             <p className="text-sm font-semibold text-foreground">
-              Delivery by {delivery.etaLabel}
+              Aspera Express · {delivery.etaLabel}
             </p>
             <p className="text-xs text-muted">
-              Prepaid delivery available at this pincode
+              In-stock parts from nearby hubs · Prepaid checkout
             </p>
           </div>
         ) : (
           <p className="mt-2 text-sm text-muted">
-            Enter your pincode for a delivery date
+            Enter your pincode for an Express ETA in minutes
           </p>
         )}
         <ul className="mt-3 grid grid-cols-1 gap-2 border-t border-border pt-3 text-xs text-muted sm:grid-cols-3">

@@ -227,7 +227,11 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
             <span className="text-[12px] font-medium text-success">
               Free delivery
             </span>
-          ) : null}
+          ) : (
+            <span className="text-[12px] font-semibold text-accent">
+              Express delivery
+            </span>
+          )}
           <p className="mt-auto pt-0.5 text-[12px] text-muted">
             {sellerLabel ? `${sellerLabel} · ` : ""}
             {product.sellerName}

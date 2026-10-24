@@ -301,7 +301,7 @@ function HeaderSearch({ inputId = "global-search" }: { inputId?: string }) {
           />
           <button
             type="submit"
-            className="absolute top-1 right-1 bottom-1 inline-flex items-center rounded-full bg-brand-accent px-3.5 text-[13px] font-semibold text-white"
+            className="absolute top-1 right-1 bottom-1 inline-flex items-center rounded-full bg-brand-accent px-3.5 text-[13px] font-semibold text-[#0B1220]"
           >
             Search
           </button>

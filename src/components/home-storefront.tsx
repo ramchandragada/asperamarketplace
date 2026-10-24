@@ -586,7 +586,7 @@ export function CategoryCircles({
   );
 }
 
-/** Square category tiles — real component crops on dark photo wells */
+/** Square category tiles — real component crops on light wells (no dark frames) */
 export function ShopByCategory({
   categories,
 }: {
@@ -624,9 +624,9 @@ export function ShopByCategory({
               className="group flex flex-col items-center gap-2 text-center"
             >
               <span
-                className="relative aspect-square w-full overflow-hidden rounded-[10px] transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_12px_28px_rgba(11,18,32,0.16)]"
+                className="relative aspect-square w-full overflow-hidden rounded-[10px] bg-white transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]"
                 style={{
-                  background: `radial-gradient(120% 120% at 50% 35%, #1c2740 0%, ${category.bgTint ?? "#121A2B"} 70%)`,
+                  background: `radial-gradient(120% 120% at 50% 35%, #ffffff 0%, ${category.bgTint ?? "#EEF2F7"} 72%)`,
                 }}
               >
                 <Image
@@ -634,7 +634,7 @@ export function ShopByCategory({
                   alt=""
                   fill
                   sizes="(max-width: 640px) 140px, 180px"
-                  className="object-contain object-center p-2 transition duration-300 group-hover:scale-[1.04] md:p-2.5"
+                  className="object-contain object-center p-1.5 transition duration-300 group-hover:scale-[1.04] md:p-2"
                 />
               </span>
               <span className="text-[14px] font-medium text-foreground md:text-[15px]">

@@ -10,6 +10,7 @@ import {
 } from "@/modules/catalogue/helpers";
 import { sellerStorefrontLabelText } from "@/modules/catalogue/claims";
 import { SHIPPING_POLICY } from "@/modules/cart/pricing";
+import { GridAddButton } from "@/components/grid-add-button";
 
 export type ProductCardModel = {
   id: string;
@@ -154,85 +155,96 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
 
   return (
     <article className="group relative flex h-full flex-col">
-      <WishlistButton productId={product.id} />
-      <Link
-        href={`/products/${product.slug}`}
-        className="flex h-full flex-col"
-        aria-label={`${product.title}, ${priceLabel}${offerLabel}`}
-      >
-        <div className="photo-well relative aspect-[3/4] overflow-hidden rounded-2xl shadow-[var(--shadow-card)]">
-          {product.badge ? <BadgePill badge={product.badge} /> : null}
-          {showImage ? (
-            <Image
-              src={product.primaryImageUrl as string}
-              alt={product.primaryImageAlt ?? product.title}
-              fill
-              sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
-              placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUzMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUzMyIgZmlsbD0iI2VmZTRkMiIvPjwvc3ZnPg=="
-              className="card-photo object-cover object-center"
-              loading="lazy"
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span
-                className="text-4xl font-semibold text-accent/25"
-                aria-hidden
-              >
-                {initials}
-              </span>
-              <span className="sr-only">{product.title}</span>
-            </div>
-          )}
-          {discount ? (
-            <span className="offer-chip absolute bottom-2 left-2 z-10 px-2 py-1 text-[11px]">
-              {discount}% off
-            </span>
-          ) : null}
-          {hasRating ? (
-            <span className="absolute right-2 bottom-2 z-10 inline-flex items-center rounded-full bg-foreground/85 px-1.5 py-1 text-[11px] font-semibold text-white">
-              {product.ratingAverage!.toFixed(1)} ★
-            </span>
-          ) : null}
-          {!inStock ? (
-            <div className="absolute inset-x-0 bottom-0 z-10 bg-foreground/75 px-2 py-1 text-center text-xs text-background">
-              Out of stock
-            </div>
-          ) : null}
-        </div>
-        <div className="flex flex-1 flex-col gap-1 px-0.5 pt-2.5 pb-1">
-          <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <span className="text-[18px] leading-6 font-bold tracking-tight text-foreground md:text-[20px]">
-              {priceLabel}
-            </span>
-            {product.minMrpPaise &&
-            product.minMrpPaise > product.minPricePaise ? (
-              <span className="text-[12px] leading-[18px] text-muted line-through">
-                {formatPaise(product.minMrpPaise)}
+      <div className="relative">
+        <WishlistButton productId={product.id} />
+        <Link
+          href={`/products/${product.slug}`}
+          className="block"
+          aria-label={`${product.title}, ${priceLabel}${offerLabel}`}
+        >
+          <div className="photo-well relative aspect-[3/4] overflow-hidden rounded-2xl shadow-[var(--shadow-card)]">
+            {product.badge ? <BadgePill badge={product.badge} /> : null}
+            {showImage ? (
+              <Image
+                src={product.primaryImageUrl as string}
+                alt={product.primaryImageAlt ?? product.title}
+                fill
+                sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
+                placeholder="blur"
+                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUzMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUzMyIgZmlsbD0iI2VmZTRkMiIvPjwvc3ZnPg=="
+                className="card-photo object-cover object-center"
+                loading="lazy"
+                onError={() => setImageFailed(true)}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span
+                  className="text-4xl font-semibold text-accent/25"
+                  aria-hidden
+                >
+                  {initials}
+                </span>
+                <span className="sr-only">{product.title}</span>
+              </div>
+            )}
+            {discount ? (
+              <span className="offer-chip absolute bottom-2 left-2 z-10 px-2 py-1 text-[11px]">
+                {discount}% off
               </span>
             ) : null}
-          </p>
-          <h3 className="line-clamp-2 text-[13px] leading-[18px] font-medium text-foreground md:text-[14px] md:leading-5">
-            {product.title}
-          </h3>
-          {hasRating ? (
-            <p className="text-[11px] text-muted">
-              {(product.reviewCount ?? 0) >= 1000
-                ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}k reviews`
-                : `${product.reviewCount} reviews`}
-            </p>
-          ) : null}
-          {freeDelivery ? (
-            <span className="text-[12px] font-medium text-success">
-              Free delivery
+            {!inStock ? (
+              <div className="absolute inset-x-0 bottom-0 z-10 bg-foreground/75 px-2 py-1 text-center text-xs text-background">
+                Out of stock
+              </div>
+            ) : null}
+          </div>
+        </Link>
+        {inStock ? (
+          <GridAddButton
+            slug={product.slug}
+            productId={product.id}
+            className="absolute right-2 bottom-2 z-10"
+          />
+        ) : null}
+      </div>
+      <Link
+        href={`/products/${product.slug}`}
+        className="flex flex-1 flex-col gap-1 px-0.5 pt-2.5 pb-1"
+      >
+        <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+          <span className="text-[18px] leading-6 font-bold tracking-tight text-foreground md:text-[20px]">
+            {priceLabel}
+          </span>
+          {product.minMrpPaise &&
+          product.minMrpPaise > product.minPricePaise ? (
+            <span className="text-[12px] leading-[18px] text-muted line-through">
+              {formatPaise(product.minMrpPaise)}
             </span>
           ) : null}
-          <p className="mt-auto pt-0.5 text-[12px] text-muted">
-            {sellerLabel ? `${sellerLabel} · ` : ""}
-            {product.sellerName}
+        </p>
+        <h3 className="line-clamp-2 text-[13px] leading-[18px] font-medium text-foreground md:text-[14px] md:leading-5">
+          {product.title}
+        </h3>
+        {hasRating ? (
+          <p className="text-[11px] text-muted">
+            <span className="font-semibold text-foreground">
+              {product.ratingAverage!.toFixed(1)}★
+            </span>{" "}
+            ·{" "}
+            {(product.reviewCount ?? 0) >= 1000
+              ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}k reviews`
+              : `${product.reviewCount} reviews`}
           </p>
-        </div>
+        ) : null}
+        {freeDelivery ? (
+          <span className="text-[12px] font-medium text-success">
+            Free delivery
+          </span>
+        ) : null}
+        <p className="mt-auto pt-0.5 text-[12px] text-muted">
+          {sellerLabel ? `${sellerLabel} · ` : ""}
+          {product.sellerName}
+        </p>
       </Link>
     </article>
   );

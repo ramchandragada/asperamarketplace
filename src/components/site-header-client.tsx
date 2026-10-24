@@ -9,6 +9,7 @@ import {
   type MegaMenuColumn,
 } from "@/lib/mega-menu";
 import { MobileCategoryDrawer } from "@/components/mobile-category-drawer";
+import { PincodeAnchor } from "@/components/pincode-anchor";
 import { ScrollEdgeRail } from "@/components/product-loop-rail";
 
 function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
@@ -481,6 +482,8 @@ export function SiteHeaderClient({
           Aspera
         </Link>
 
+        <PincodeAnchor className="hidden shrink-0 md:block" />
+
         <div className="hidden min-w-0 flex-1 md:block">
           <HeaderSearch />
         </div>
@@ -540,6 +543,9 @@ export function SiteHeaderClient({
         stuck bar's height and made mobile browsers rewind the page. */}
     <div className="border-b border-border/80 bg-surface md:hidden">
       <div className="w-full px-4 pb-2.5">
+        <div className="pb-2">
+          <PincodeAnchor />
+        </div>
         <HeaderSearch inputId="global-search-mobile" />
       </div>
       <div className="flex w-full items-center gap-2 border-t border-border px-3 py-2">

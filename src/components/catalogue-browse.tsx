@@ -24,10 +24,10 @@ type CategoryOption = { slug: string; name: string; productCount?: number };
 type BrandOption = { slug: string; name: string; productCount?: number };
 
 const PRICE_PRESETS = [
-  { key: "u200", label: "Under ₹200", min: 0, max: 200 },
-  { key: "200-500", label: "₹200 – ₹500", min: 200, max: 500 },
-  { key: "500-1000", label: "₹500 – ₹1,000", min: 500, max: 1000 },
-  { key: "a1000", label: "Above ₹1,000", min: 1000, max: null as number | null },
+  { key: "u2000", label: "Under ₹2,000", min: 0, max: 2000 },
+  { key: "2000-10000", label: "₹2,000 – ₹10,000", min: 2000, max: 10000 },
+  { key: "10000-30000", label: "₹10,000 – ₹30,000", min: 10000, max: 30000 },
+  { key: "a30000", label: "Above ₹30,000", min: 30000, max: null as number | null },
 ] as const;
 
 const RATING_OPTIONS = [
@@ -40,57 +40,6 @@ const DISCOUNT_OPTIONS = [
   { value: 20, label: "20%+" },
   { value: 30, label: "30%+" },
   { value: 40, label: "40%+" },
-] as const;
-
-const GENDER_OPTIONS = [
-  {
-    value: "boys",
-    label: "Boys",
-    categorySlug: "baby-kids",
-    audience: "kids",
-    q: "boy",
-  },
-  {
-    value: "girls",
-    label: "Girls",
-    categorySlug: "baby-kids",
-    audience: "kids",
-    q: "girl",
-  },
-  {
-    value: "men",
-    label: "Men",
-    categorySlug: "fashion",
-    audience: "men",
-    q: "",
-  },
-  {
-    value: "women",
-    label: "Women",
-    categorySlug: "fashion",
-    audience: "women",
-    q: "",
-  },
-] as const;
-
-const COLOR_OPTIONS = [
-  "Black",
-  "White",
-  "Blue",
-  "Red",
-  "Green",
-  "Pink",
-  "Yellow",
-  "Beige",
-] as const;
-
-const FABRIC_OPTIONS = [
-  "Cotton",
-  "Silk",
-  "Rayon",
-  "Polyester",
-  "Linen",
-  "Wool",
 ] as const;
 
 const SORT_OPTIONS = [
@@ -114,7 +63,6 @@ export function CatalogueBrowse({
   brands = [],
   initialCategorySlug = "",
   initialBrandSlug = "",
-  initialAudience = "",
   initialSort = "newest",
   initialInStockOnly = false,
   initialVerifiedOnly = false,
@@ -136,7 +84,6 @@ export function CatalogueBrowse({
   brands?: BrandOption[];
   initialCategorySlug?: string;
   initialBrandSlug?: string;
-  initialAudience?: string;
   initialSort?: string;
   initialInStockOnly?: boolean;
   initialVerifiedOnly?: boolean;
@@ -171,15 +118,6 @@ export function CatalogueBrowse({
   const [query, setQuery] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
   const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
-  const [audience, setAudience] = useState(initialAudience);
-  const [gender, setGender] = useState<string>(() => {
-    if (initialAudience === "women") return "women";
-    if (initialAudience === "men") return "men";
-    if (initialAudience === "kids") return "";
-    return "";
-  });
-  const [color, setColor] = useState<string>("");
-  const [fabric, setFabric] = useState<string>("");
   const [sort, setSort] = useState(initialSort);
   const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
   const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly);
@@ -202,9 +140,6 @@ export function CatalogueBrowse({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
-    gender: true,
-    color: false,
-    fabric: false,
     brand: true,
     price: true,
     rating: true,
@@ -239,19 +174,6 @@ export function CatalogueBrowse({
     if (query.trim()) {
       list.push({ key: "q", label: query.trim() });
     }
-    if (audience) {
-      list.push({
-        key: "audience",
-        label:
-          audience === "women"
-            ? "Women"
-            : audience === "men"
-              ? "Men"
-              : audience === "kids"
-                ? "Kids"
-                : audience,
-      });
-    }
     if (categorySlug) {
       list.push({ key: "cat", label: categoryName });
     }
@@ -279,16 +201,9 @@ export function CatalogueBrowse({
     if (verifiedOnly) {
       list.push({ key: "verified", label: "Verified sellers" });
     }
-    if (gender && !audience) {
-      const option = GENDER_OPTIONS.find((entry) => entry.value === gender);
-      if (option) list.push({ key: "gender", label: option.label });
-    }
-    if (color) list.push({ key: "color", label: color });
-    if (fabric) list.push({ key: "fabric", label: fabric });
     return list;
   }, [
     query,
-    audience,
     categorySlug,
     categoryName,
     brandSlug,
@@ -300,16 +215,12 @@ export function CatalogueBrowse({
     maxPrice,
     minRating,
     minDiscount,
-    gender,
-    color,
-    fabric,
   ]);
 
   async function runSearch(next?: {
     q?: string;
     categorySlug?: string;
     brandSlug?: string;
-    audience?: string;
     sort?: string;
     inStockOnly?: boolean;
     verifiedOnly?: boolean;
@@ -325,8 +236,6 @@ export function CatalogueBrowse({
     const q = (next?.q ?? query).trim();
     const cat = next?.categorySlug ?? categorySlug;
     const brand = next?.brandSlug ?? brandSlug;
-    const audienceValue =
-      next?.audience !== undefined ? next.audience : audience;
     const sortValue = next?.sort ?? sort;
     const stock = next?.inStockOnly ?? inStockOnly;
     const verified = next?.verifiedOnly ?? verifiedOnly;
@@ -340,7 +249,6 @@ export function CatalogueBrowse({
     if (q) params.set("q", q);
     if (cat) params.set("categorySlug", cat);
     if (brand) params.set("brandSlug", brand);
-    if (audienceValue) params.set("audience", audienceValue);
     if (sortValue) params.set("sort", sortValue);
     if (stock) params.set("inStockOnly", "true");
     if (verified) params.set("verifiedSellerOnly", "true");
@@ -426,7 +334,6 @@ export function CatalogueBrowse({
     setQuery("");
     setCategorySlug("");
     setBrandSlug("");
-    setAudience("");
     setSort(initialQuery.trim() ? "relevance" : "newest");
     setInStockOnly(false);
     setVerifiedOnly(false);
@@ -437,15 +344,11 @@ export function CatalogueBrowse({
     setPricePreset("");
     setCategorySearch("");
     setBrandSearch("");
-    setGender("");
-    setColor("");
-    setFabric("");
     startTransition(() => {
       void runSearch({
         q: "",
         categorySlug: "",
         brandSlug: "",
-        audience: "",
         sort: initialQuery.trim() ? "relevance" : "newest",
         inStockOnly: false,
         verifiedOnly: false,
@@ -467,28 +370,9 @@ export function CatalogueBrowse({
       setCategorySlug("");
       next.categorySlug = "";
     }
-    if (key === "audience" || key === "gender") {
-      setAudience("");
-      setGender("");
-      setCategorySlug("");
-      setQuery("");
-      next.audience = "";
-      next.categorySlug = "";
-      next.q = "";
-    }
     if (key === "brand") {
       setBrandSlug("");
       next.brandSlug = "";
-    }
-    if (key === "color") {
-      setColor("");
-      next.q = fabric || "";
-      setQuery(fabric || "");
-    }
-    if (key === "fabric") {
-      setFabric("");
-      next.q = color || "";
-      setQuery(color || "");
     }
     if (key === "price" || key === "priceCustom") {
       setPricePreset("");
@@ -649,116 +533,6 @@ export function CatalogueBrowse({
         ) : null}
       </FilterSection>
 
-      <FilterSection
-        title="Gender"
-        open={openSections.gender !== false}
-        onToggle={() => toggleSection("gender")}
-      >
-        <div className="flex flex-wrap gap-2">
-          {GENDER_OPTIONS.map((option) => {
-            const active = gender === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
-                  active
-                    ? "border-accent bg-accent-soft text-accent"
-                    : "border-[#ddd] bg-white text-[#333] hover:border-accent"
-                }`}
-                onClick={() => {
-                  if (active) {
-                    setGender("");
-                    setAudience("");
-                    setCategorySlug("");
-                    setQuery("");
-                    startTransition(() => {
-                      void runSearch({
-                        categorySlug: "",
-                        q: "",
-                        audience: "",
-                      });
-                    });
-                    return;
-                  }
-                  setGender(option.value);
-                  setAudience(option.audience);
-                  setCategorySlug(option.categorySlug);
-                  setQuery(option.q);
-                  startTransition(() => {
-                    void runSearch({
-                      categorySlug: option.categorySlug,
-                      q: option.q,
-                      audience: option.audience,
-                    });
-                  });
-                }}
-              >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-      </FilterSection>
-
-      <FilterSection
-        title="Color"
-        open={openSections.color === true}
-        onToggle={() => toggleSection("color")}
-      >
-        <ul className="space-y-1.5">
-          {COLOR_OPTIONS.map((option) => (
-            <li key={option}>
-              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm lg:min-h-0">
-                <input
-                  type="radio"
-                  name="color"
-                  checked={color === option}
-                  onChange={() => {
-                    setColor(option);
-                    const nextQ = [option, fabric].filter(Boolean).join(" ");
-                    setQuery(nextQ);
-                    startTransition(() => {
-                      void runSearch({ q: nextQ });
-                    });
-                  }}
-                />
-                {option}
-              </label>
-            </li>
-          ))}
-        </ul>
-      </FilterSection>
-
-      <FilterSection
-        title="Fabric"
-        open={openSections.fabric === true}
-        onToggle={() => toggleSection("fabric")}
-      >
-        <ul className="space-y-1.5">
-          {FABRIC_OPTIONS.map((option) => (
-            <li key={option}>
-              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm lg:min-h-0">
-                <input
-                  type="radio"
-                  name="fabric"
-                  checked={fabric === option}
-                  onChange={() => {
-                    setFabric(option);
-                    const nextQ = [color, option].filter(Boolean).join(" ");
-                    setQuery(nextQ);
-                    startTransition(() => {
-                      void runSearch({ q: nextQ });
-                    });
-                  }}
-                />
-                {option}
-              </label>
-            </li>
-          ))}
-        </ul>
-      </FilterSection>
-
       {brands.length > 0 ? (
         <FilterSection
           title="Brand"
@@ -881,13 +655,13 @@ export function CatalogueBrowse({
           <input
             type="range"
             min={0}
-            max={5000}
-            step={50}
-            value={maxPrice.trim() ? Number(maxPrice) || 0 : 5000}
+            max={100000}
+            step={1000}
+            value={maxPrice.trim() ? Number(maxPrice) || 0 : 100000}
             onChange={(event) => {
               const value = event.target.value;
               setPricePreset("");
-              setMaxPrice(value === "5000" ? "" : value);
+              setMaxPrice(value === "100000" ? "" : value);
             }}
             onMouseUp={() => {
               startTransition(() => {
@@ -1126,7 +900,7 @@ export function CatalogueBrowse({
             name="q"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Try Saree, Kurti or Search by Product Code"
+            placeholder="Search CPUs, GPUs, SSDs or product code"
             className="min-h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2 text-base"
           />
           <button

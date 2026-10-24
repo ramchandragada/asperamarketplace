@@ -20,14 +20,6 @@ const SORTS = new Set([
   "rating",
 ]);
 
-const AUDIENCES = new Set(["women", "men", "kids", "unisex"]);
-const AUDIENCE_HEADINGS: Record<string, string> = {
-  women: "Women",
-  men: "Men",
-  kids: "Kids",
-  unisex: "Unisex",
-};
-
 export default async function BrowsePage({
   searchParams,
 }: {
@@ -35,7 +27,6 @@ export default async function BrowsePage({
     q?: string;
     categorySlug?: string;
     brandSlug?: string;
-    audience?: string;
     sort?: string;
     inStockOnly?: string;
     verifiedSellerOnly?: string;
@@ -49,10 +40,6 @@ export default async function BrowsePage({
   const query = params.q?.trim() ?? "";
   const categorySlug = params.categorySlug?.trim() ?? "";
   const brandSlug = params.brandSlug?.trim() ?? "";
-  const audienceRaw = params.audience?.trim() ?? "";
-  const audience = AUDIENCES.has(audienceRaw)
-    ? (audienceRaw as "women" | "men" | "kids" | "unisex")
-    : undefined;
   const sort = SORTS.has(params.sort ?? "")
     ? (params.sort as string)
     : query
@@ -72,7 +59,6 @@ export default async function BrowsePage({
       q: query || undefined,
       categorySlug: categorySlug || undefined,
       brandSlug: brandSlug || undefined,
-      audience,
       sort: sort as
         | "relevance"
         | "newest"
@@ -95,7 +81,6 @@ export default async function BrowsePage({
   ]);
 
   const heading =
-    (audience ? AUDIENCE_HEADINGS[audience] : undefined) ??
     categories.find((category) => category.slug === categorySlug)?.name ??
     (query ? undefined : "Shop");
 
@@ -113,7 +98,6 @@ export default async function BrowsePage({
         brands={brands}
         initialCategorySlug={categorySlug}
         initialBrandSlug={brandSlug}
-        initialAudience={audience ?? ""}
         initialSort={sort}
         initialInStockOnly={inStockOnly}
         initialVerifiedOnly={verifiedSellerOnly}

@@ -6,12 +6,7 @@ import {
   type Actor,
 } from "@/modules/identity/policy";
 import {
-  cappedMerchandisePaise,
-  refundBreakdown,
-} from "@/modules/finance/refund-math";
-import {
-  alreadyRefundedMerchandisePaise,
-  postRefundLedger,
+  createCappedLineRefund,
   resolveCommissionRateBps,
 } from "@/modules/finance/service";
 import type {
@@ -163,8 +158,17 @@ function isClaimEligible(input: {
     if (input.deliveredAt) {
       return { ok: false, reason: "This shipment is already marked delivered" };
     }
+    // Cancelled groups are refunded on cancel — Buyer Protection must not
+    // open a second payout path for the same undelivered merchandise.
+    if (input.groupStatus === "cancelled") {
+      return {
+        ok: false,
+        reason:
+          "This shipment was cancelled and refunded — Buyer Protection does not apply",
+      };
+    }
     const sincePaid = daysSince(input.paidAt) ?? 0;
-    if (sincePaid < DELIVERY_SLA_DAYS && input.groupStatus !== "cancelled") {
+    if (sincePaid < DELIVERY_SLA_DAYS) {
       return {
         ok: false,
         reason: `Delivery SLA has not elapsed yet (claim after ${DELIVERY_SLA_DAYS} days if still undelivered)`,
@@ -274,45 +278,19 @@ export async function decideProtectionClaim(
     let sellerDebitPaise: number | null = claim.sellerDebitPaise;
 
     if (input.decision === "approved" && line) {
-      // Cap against anything already refunded on this line (e.g. a prior
-      // return), so an approved claim can never refund the line twice.
-      const alreadyRefunded = await alreadyRefundedMerchandisePaise(line.id, tx);
-      const merchandisePaise = cappedMerchandisePaise({
-        desiredMerchandisePaise: line.lineTotalPaise,
-        lineMerchandisePaise: line.lineTotalPaise,
-        alreadyRefundedMerchandisePaise: alreadyRefunded,
-      });
-      const breakdown = refundBreakdown({
-        merchandisePaise,
-        orderSubtotalPaise: claim.order.subtotalPaise,
-        orderTaxPaise: claim.order.taxPaise,
+      const refunded = await createCappedLineRefund({
+        tx,
+        order: claim.order,
+        sellerId: claim.sellerId,
+        line,
+        reason: `Buyer Protection approved: ${input.resolutionNote.slice(0, 180)}`,
+        correlationId,
         commissionRateBps,
+        providerReference: `protection:${claim.id}`,
       });
-
-      if (breakdown.totalPaise > 0) {
-        const refund = await tx.refund.create({
-          data: {
-            orderId: claim.orderId,
-            orderLineId: line.id,
-            amountPaise: breakdown.totalPaise,
-            merchandisePaise: breakdown.merchandisePaise,
-            status: "succeeded",
-            provider: "mock",
-            providerReference: `protection:${claim.id}`,
-            completedAt: new Date(),
-            reason: `Buyer Protection approved: ${input.resolutionNote.slice(0, 180)}`,
-          },
-        });
-        refundId = refund.id;
-        sellerDebitPaise = breakdown.sellerDebitPaise;
-        await postRefundLedger({
-          orderId: claim.orderId,
-          sellerId: claim.sellerId,
-          reason: `Protection refund ${claim.id}`,
-          correlationId,
-          breakdown,
-          tx,
-        });
+      if (refunded) {
+        refundId = refunded.refundId;
+        sellerDebitPaise = refunded.breakdown.sellerDebitPaise;
       }
     }
 

@@ -323,14 +323,12 @@ export function ProductPurchasePanel({
               Delivery by {delivery.etaLabel}
             </p>
             <p className="text-xs text-muted">
-              {delivery.codAvailable
-                ? "Cash on Delivery available at this pincode"
-                : "Prepaid delivery available at this pincode"}
+              Prepaid delivery available at this pincode
             </p>
           </div>
         ) : (
           <p className="mt-2 text-sm text-muted">
-            Enter your pincode for a delivery date · Cash on Delivery available
+            Enter your pincode for a delivery date
           </p>
         )}
         <ul className="mt-3 grid grid-cols-1 gap-2 border-t border-border pt-3 text-xs text-muted sm:grid-cols-3">
@@ -344,7 +342,7 @@ export function ProductPurchasePanel({
             <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-success-soft text-[10px] font-bold text-success">
               ✓
             </span>
-            COD Available
+            Prepaid checkout
           </li>
           <li className="inline-flex items-center gap-1.5">
             <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-success-soft text-[10px] font-bold text-success">

@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { DEV_MOCK_WEBHOOK_SECRET, resolveMockWebhookSecret } from "./provider";
+import {
+  DEV_MOCK_WEBHOOK_SECRET,
+  paymentsAreMockOnly,
+  resolveMockWebhookSecret,
+} from "./provider";
+
+describe("paymentsAreMockOnly", () => {
+  it("is true while the mock provider is the active gateway", () => {
+    expect(paymentsAreMockOnly()).toBe(true);
+  });
+});
 
 describe("mock webhook secret", () => {
   it("rejects the public default in production", () => {

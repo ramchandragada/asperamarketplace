@@ -1,13 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { cappedReturnQuantity } from "@/modules/fulfilment/refund";
 import {
-  cappedMerchandisePaise,
-  refundBreakdown,
-  unitMerchandisePaise,
-} from "@/modules/finance/refund-math";
-import {
-  alreadyRefundedMerchandisePaise,
-  postRefundLedger,
+  createCappedLineRefund,
   resolveCommissionRateBps,
 } from "@/modules/finance/service";
 import type { OrderStatus } from "@prisma/client";
@@ -47,20 +41,38 @@ function requireReturnsReview(actor: Actor, sellerId: string) {
   requireSellerCapability(actor, sellerId, "returns.review");
 }
 
-async function assertFulfilmentWrite(actor: Actor, sellerId: string) {
+async function assertApprovedSellerWrite(
+  actor: Actor,
+  sellerId: string,
+  capability: "fulfilment.write" | "returns.review",
+) {
   const seller = await prisma.seller.findUnique({ where: { id: sellerId } });
-  if (seller?.ownerUserId === actor.userId || actorIsAdmin(actor)) {
+  if (!seller) {
+    throw new FulfilmentValidationError("Seller not found");
+  }
+  // Admins may always act. Sellers (owner or staff) only while approved —
+  // suspended/rejected must not ship, cancel, or approve returns.
+  if (!actorIsAdmin(actor) && seller.status !== "approved") {
+    throw new FulfilmentValidationError(
+      "Seller account must be approved to manage fulfilment",
+    );
+  }
+  if (seller.ownerUserId === actor.userId || actorIsAdmin(actor)) {
     return;
   }
-  requireFulfilmentWrite(actor, sellerId);
+  if (capability === "fulfilment.write") {
+    requireFulfilmentWrite(actor, sellerId);
+  } else {
+    requireReturnsReview(actor, sellerId);
+  }
+}
+
+async function assertFulfilmentWrite(actor: Actor, sellerId: string) {
+  await assertApprovedSellerWrite(actor, sellerId, "fulfilment.write");
 }
 
 async function assertReturnsReview(actor: Actor, sellerId: string) {
-  const seller = await prisma.seller.findUnique({ where: { id: sellerId } });
-  if (seller?.ownerUserId === actor.userId || actorIsAdmin(actor)) {
-    return;
-  }
-  requireReturnsReview(actor, sellerId);
+  await assertApprovedSellerWrite(actor, sellerId, "returns.review");
 }
 
 async function refreshOrderStatus(orderId: string, correlationId: string) {
@@ -321,12 +333,10 @@ export async function cancelFulfilmentGroup(
   assertFulfilmentTransition(group.status, "cancelled");
 
   const cancelCommissionRateBps = await resolveCommissionRateBps(group.sellerId);
-  const cancelBreakdown = refundBreakdown({
-    merchandisePaise: group.lineTotalPaise,
-    orderSubtotalPaise: group.order.subtotalPaise,
-    orderTaxPaise: group.order.taxPaise,
-    commissionRateBps: cancelCommissionRateBps,
-  });
+  const orderIsPaid =
+    group.order.status === "paid" ||
+    group.order.status === "partially_cancelled" ||
+    group.order.paidAt != null;
 
   const updated = await prisma.$transaction(async (tx) => {
     const fulfilment = await tx.orderFulfilmentGroup.update({
@@ -368,27 +378,18 @@ export async function cancelFulfilmentGroup(
       }
     }
 
-    if (cancelBreakdown.totalPaise > 0) {
-      await tx.refund.create({
-        data: {
-          orderId: group.orderId,
-          amountPaise: cancelBreakdown.totalPaise,
-          merchandisePaise: cancelBreakdown.merchandisePaise,
-          status: "succeeded",
-          provider: "mock",
-          providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
+    if (orderIsPaid) {
+      for (const line of group.lines) {
+        await createCappedLineRefund({
+          tx,
+          order: group.order,
+          sellerId: group.sellerId,
+          line,
           reason: input.reason,
-          completedAt: new Date(),
-        },
-      });
-      await postRefundLedger({
-        orderId: group.orderId,
-        sellerId: group.sellerId,
-        reason: `Cancellation refund ${group.order.orderNumber}`,
-        correlationId,
-        breakdown: cancelBreakdown,
-        tx,
-      });
+          correlationId,
+          commissionRateBps: cancelCommissionRateBps,
+        });
+      }
     }
 
     await tx.auditLog.create({
@@ -542,55 +543,20 @@ export async function reviewReturnRequest(
         );
       }
       const quantity = cappedReturnQuantity(line.quantity, request.quantity);
-      // Cap the refund to what this line still has refundable, across every
-      // path (prior returns, cancels, or protection claims on the same line).
-      const desiredMerchandise =
-        unitMerchandisePaise(line.lineTotalPaise, line.quantity) * quantity;
-      const alreadyRefunded = await alreadyRefundedMerchandisePaise(line.id, tx);
-      const merchandisePaise = cappedMerchandisePaise({
-        desiredMerchandisePaise: desiredMerchandise,
-        lineMerchandisePaise: line.lineTotalPaise,
-        alreadyRefundedMerchandisePaise: alreadyRefunded,
-      });
-      const breakdown = refundBreakdown({
-        merchandisePaise,
-        orderSubtotalPaise: request.order.subtotalPaise,
-        orderTaxPaise: request.order.taxPaise,
+      const refunded = await createCappedLineRefund({
+        tx,
+        order: request.order,
+        sellerId: request.sellerId,
+        line,
+        quantity,
+        reason: input.reason,
+        correlationId,
         commissionRateBps,
+        returnRequestId: request.id,
       });
 
-      if (breakdown.totalPaise > 0) {
-        await tx.refund.create({
-          data: {
-            orderId: request.orderId,
-            returnRequestId: request.id,
-            orderLineId: line.id,
-            amountPaise: breakdown.totalPaise,
-            merchandisePaise: breakdown.merchandisePaise,
-            status: "succeeded",
-            provider: "mock",
-            providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
-            reason: input.reason,
-            completedAt: new Date(),
-          },
-        });
-        await postRefundLedger({
-          orderId: request.orderId,
-          sellerId: request.sellerId,
-          reason: `Return refund ${request.id}`,
-          correlationId,
-          breakdown,
-          tx,
-        });
-
-        const refundedUnits = unitMerchandisePaise(
-          line.lineTotalPaise,
-          line.quantity,
-        );
-        const restockQuantity =
-          refundedUnits > 0
-            ? Math.floor(breakdown.merchandisePaise / refundedUnits)
-            : quantity;
+      if (refunded) {
+        const restockQuantity = quantity;
         if (restockQuantity > 0) {
           const inventory = await tx.inventoryItem.findUnique({
             where: { variantId: line.variantId },

@@ -1,10 +1,48 @@
 import { describe, expect, it } from "vitest";
 import {
+  allocateDiscountPaise,
   allocatedGstPaise,
   cappedMerchandisePaise,
+  netMerchandisePaise,
   refundBreakdown,
   unitMerchandisePaise,
 } from "./refund-math";
+
+describe("allocateDiscountPaise / netMerchandisePaise", () => {
+  it("allocates coupon discount in proportion to gross merchandise share", () => {
+    // ₹1000 subtotal, ₹100 coupon, line is the whole order → ₹100 discount.
+    expect(
+      allocateDiscountPaise({
+        grossMerchandisePaise: 100000,
+        orderSubtotalPaise: 100000,
+        orderDiscountPaise: 10000,
+      }),
+    ).toBe(10000);
+    expect(
+      netMerchandisePaise({
+        grossMerchandisePaise: 100000,
+        orderSubtotalPaise: 100000,
+        orderDiscountPaise: 10000,
+      }),
+    ).toBe(90000);
+  });
+
+  it("splits discount across two equal lines without exceeding the coupon", () => {
+    const a = allocateDiscountPaise({
+      grossMerchandisePaise: 50000,
+      orderSubtotalPaise: 100000,
+      orderDiscountPaise: 10000,
+    });
+    const b = allocateDiscountPaise({
+      grossMerchandisePaise: 50000,
+      orderSubtotalPaise: 100000,
+      orderDiscountPaise: 10000,
+    });
+    expect(a).toBe(5000);
+    expect(b).toBe(5000);
+    expect(a + b).toBe(10000);
+  });
+});
 
 describe("allocatedGstPaise", () => {
   it("allocates GST in proportion to the line's share of the subtotal", () => {
@@ -18,7 +56,19 @@ describe("allocatedGstPaise", () => {
     ).toBe(9000);
   });
 
-  it("is zero when there is no tax or no subtotal", () => {
+  it("uses the post-discount taxable base when a coupon was applied", () => {
+    // Buyer paid tax on ₹900 net; refunding that net should return full ₹162 GST.
+    expect(
+      allocatedGstPaise({
+        merchandisePaise: 90000,
+        orderSubtotalPaise: 100000,
+        orderTaxPaise: 16200,
+        orderDiscountPaise: 10000,
+      }),
+    ).toBe(16200);
+  });
+
+  it("is zero when there is no tax or no taxable base", () => {
     expect(
       allocatedGstPaise({ merchandisePaise: 50000, orderSubtotalPaise: 0, orderTaxPaise: 18000 }),
     ).toBe(0);

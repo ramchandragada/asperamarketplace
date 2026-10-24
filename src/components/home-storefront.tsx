@@ -561,14 +561,14 @@ export function CategoryCircles({
             href={`/browse?categorySlug=${encodeURIComponent(category.slug)}`}
             className="group flex w-[6.25rem] flex-col items-center gap-2 text-center"
           >
-            <span className="relative h-[7.5rem] w-[7.5rem] overflow-hidden rounded-xl border border-border bg-accent-soft transition group-hover:border-accent group-focus-visible:border-accent">
+            <span className="photo-well relative h-[7.5rem] w-[7.5rem] overflow-hidden rounded-[10px] transition group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]">
               {category.imageUrl ? (
                 <Image
                   src={category.imageUrl}
                   alt=""
                   fill
                   sizes="120px"
-                  className="object-cover"
+                  className="object-contain object-center p-2"
                 />
               ) : (
                 <span className="flex h-full items-center justify-center text-2xl font-semibold text-accent/40">
@@ -648,7 +648,7 @@ export function ShopByCategory({
   );
 }
 
-/** Shop By Brands — cool graphite panel, not warm pastel Meesho chrome */
+/** Shop By Brands — light wells, no dark frames around product crops */
 export function ShopByBrands({
   brands,
 }: {
@@ -665,16 +665,16 @@ export function ShopByBrands({
   if (tiles.length === 0) return null;
 
   return (
-    <section className="bg-background">
+    <section className="bg-surface">
       <div className="container-shell pt-2 pb-5 md:pt-3 md:pb-6">
-        <div className="overflow-hidden rounded-[10px] border border-border bg-[#0B1220] px-3 py-4 md:px-5 md:py-5">
+        <div className="overflow-hidden rounded-[10px] px-0 py-1 md:py-2">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <h2 className="font-display text-[20px] leading-[26px] font-bold tracking-tight text-white md:text-[22px] md:leading-[28px]">
+              <h2 className="font-display text-[20px] leading-[26px] font-bold tracking-tight text-foreground md:text-[22px] md:leading-[28px]">
                 Shop by brand
               </h2>
               <span
-                className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[color:var(--brand-accent)] text-[#0B1220]"
+                className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground"
                 aria-label="Verified brands"
                 title="Verified brands"
               >
@@ -696,7 +696,7 @@ export function ShopByBrands({
             </div>
             <Link
               href="/browse"
-              className="text-[12px] font-semibold tracking-wide text-[color:var(--brand-accent)] uppercase hover:underline"
+              className="text-[12px] font-semibold tracking-wide text-accent uppercase hover:underline"
             >
               View all →
             </Link>
@@ -708,11 +708,11 @@ export function ShopByBrands({
             renderItem={(brand) => (
               <Link
                 href={brand.href}
-                className="group flex flex-col overflow-hidden rounded-[10px] bg-[#121A2B] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.35)]"
+                className="group flex flex-col overflow-hidden rounded-[10px] bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]"
               >
                 <span
                   className="relative aspect-[3/4] w-full"
-                  style={{ backgroundColor: brand.bgTint ?? "#121A2B" }}
+                  style={{ backgroundColor: brand.bgTint ?? "#EEF2F7" }}
                 >
                   {brand.offer ? (
                     <span className="absolute top-2 left-2 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent uppercase shadow-sm">
@@ -727,7 +727,7 @@ export function ShopByBrands({
                     className="object-contain object-center p-3 transition duration-300 group-hover:scale-[1.03]"
                   />
                 </span>
-                <span className="flex min-h-10 items-center justify-center border-t border-white/10 px-2 py-2 text-center text-[12px] font-semibold tracking-wide text-white md:min-h-11 md:text-[13px]">
+                <span className="flex min-h-10 items-center justify-center border-t border-border px-2 py-2 text-center text-[12px] font-semibold tracking-wide text-foreground md:min-h-11 md:text-[13px]">
                   {brand.label}
                 </span>
               </Link>
@@ -864,15 +864,15 @@ export function FeaturedSellers({ sellers }: { sellers: SellerCardData[] }) {
         renderItem={(seller) => {
           const style = brandLogoStyle();
           return (
-            <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-card)]">
-              <div className="relative flex h-40 items-center justify-center bg-accent-soft sm:h-44">
+            <article className="flex h-full flex-col overflow-hidden rounded-[10px] bg-white transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]">
+              <div className="photo-well relative flex h-40 items-center justify-center sm:h-44">
                 {seller.imageUrl ? (
                   <Image
                     src={seller.imageUrl}
                     alt=""
                     fill
                     sizes="(max-width: 640px) 72vw, 304px"
-                    className="object-cover"
+                    className="object-contain object-center p-3"
                   />
                 ) : (
                   <span

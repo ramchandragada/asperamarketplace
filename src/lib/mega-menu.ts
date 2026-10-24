@@ -238,14 +238,14 @@ export const ASPERA_CATEGORY_TILES = [
 
 /** Shop-by-brand lanes (PC brands). */
 export const ASPERA_BRAND_LANES = [
-  { id: "intel", label: "Intel", href: browse("processors", { q: "Intel" }), imageUrl: "/category-tiles/pc-brand-intel.jpg", bgTint: "#121A2B", offer: "Core processors" },
-  { id: "amd", label: "AMD Ryzen", href: browse("processors", { q: "Ryzen" }), imageUrl: "/category-tiles/pc-brand-amd.jpg", bgTint: "#121A2B", offer: "Ryzen processors" },
-  { id: "nvidia", label: "NVIDIA RTX", href: browse("graphics-cards", { q: "RTX" }), imageUrl: "/category-tiles/pc-brand-nvidia.jpg", bgTint: "#121A2B", offer: "GeForce GPUs" },
-  { id: "asus", label: "ASUS", href: browse("motherboards", { q: "ASUS" }), imageUrl: "/category-tiles/pc-brand-asus.jpg", bgTint: "#121A2B", offer: "Boards & more" },
-  { id: "corsair", label: "Corsair", href: browse("memory-ram", { q: "Corsair" }), imageUrl: "/category-tiles/pc-brand-corsair.jpg", bgTint: "#121A2B", offer: "Memory & cases" },
-  { id: "samsung", label: "Samsung", href: browse("storage-ssd", { q: "Samsung" }), imageUrl: "/category-tiles/pc-brand-samsung.jpg", bgTint: "#121A2B", offer: "SSDs & monitors" },
-  { id: "logitech", label: "Logitech", href: browse("keyboard-mouse", { q: "Logitech" }), imageUrl: "/category-tiles/pc-brand-logitech.jpg", bgTint: "#121A2B", offer: "Combos" },
-  { id: "apc", label: "APC", href: browse("ups", { q: "APC" }), imageUrl: "/category-tiles/pc-brand-apc.jpg", bgTint: "#121A2B", offer: "Power backup" },
+  { id: "intel", label: "Intel", href: browse("processors", { q: "Intel" }), imageUrl: "/category-tiles/pc-brand-intel.jpg", bgTint: "#EEF2F7", offer: "Core processors" },
+  { id: "amd", label: "AMD Ryzen", href: browse("processors", { q: "Ryzen" }), imageUrl: "/category-tiles/pc-brand-amd.jpg", bgTint: "#EEF2F7", offer: "Ryzen processors" },
+  { id: "nvidia", label: "NVIDIA RTX", href: browse("graphics-cards", { q: "RTX" }), imageUrl: "/category-tiles/pc-brand-nvidia.jpg", bgTint: "#EEF2F7", offer: "GeForce GPUs" },
+  { id: "asus", label: "ASUS", href: browse("motherboards", { q: "ASUS" }), imageUrl: "/category-tiles/pc-brand-asus.jpg", bgTint: "#EEF2F7", offer: "Boards & more" },
+  { id: "corsair", label: "Corsair", href: browse("memory-ram", { q: "Corsair" }), imageUrl: "/category-tiles/pc-brand-corsair.jpg", bgTint: "#EEF2F7", offer: "Memory & cases" },
+  { id: "samsung", label: "Samsung", href: browse("storage-ssd", { q: "Samsung" }), imageUrl: "/category-tiles/pc-brand-samsung.jpg", bgTint: "#EEF2F7", offer: "SSDs & monitors" },
+  { id: "logitech", label: "Logitech", href: browse("keyboard-mouse", { q: "Logitech" }), imageUrl: "/category-tiles/pc-brand-logitech.jpg", bgTint: "#EEF2F7", offer: "Combos" },
+  { id: "apc", label: "APC", href: browse("ups", { q: "APC" }), imageUrl: "/category-tiles/pc-brand-apc.jpg", bgTint: "#EEF2F7", offer: "Power backup" },
 ] as const;
 
 /** @deprecated Prefer ASPERA_CATEGORY_TILES — kept for import compatibility */

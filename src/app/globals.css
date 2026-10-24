@@ -16,7 +16,7 @@
   --surface: #f7f9fc;
   --surface-raised: #ffffff;
   --border: #d5dce8;
-  --photo-well: #121a2b;
+  --photo-well: #eef2f7;
   --focus: #0b1220;
   --success: #0f8a5f;
   --success-soft: #e6f5ee;
@@ -82,7 +82,7 @@
     --accent-soft: #e2e8f2;
     --surface: #f7f9fc;
     --border: #d5dce8;
-    --photo-well: #121a2b;
+    --photo-well: #eef2f7;
     --focus: #0b1220;
   }
 }
@@ -289,7 +289,7 @@ h2,
 
 .photo-well {
   background:
-    radial-gradient(90% 80% at 50% 28%, #1c2740 0%, var(--photo-well) 72%);
+    radial-gradient(90% 80% at 50% 28%, #ffffff 0%, var(--photo-well) 72%);
 }
 
 .offer-chip {

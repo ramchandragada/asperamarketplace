@@ -160,7 +160,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
         className="flex h-full flex-col"
         aria-label={`${product.title}, ${priceLabel}${offerLabel}`}
       >
-        <div className="photo-well relative aspect-square overflow-hidden rounded-[10px] shadow-[var(--shadow-card)]">
+        <div className="photo-well relative aspect-square overflow-hidden rounded-[10px]">
           {product.badge ? <BadgePill badge={product.badge} /> : null}
           {showImage ? (
             <Image
@@ -169,7 +169,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               fill
               sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
               placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzEyMUEyQiIvPjwvc3ZnPg=="
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2VlZjJmNyIvPjwvc3ZnPg=="
               className="card-photo object-contain object-center p-2"
               loading="lazy"
               onError={() => setImageFailed(true)}
@@ -177,7 +177,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <span
-                className="text-4xl font-semibold text-white/20"
+                className="text-4xl font-semibold text-accent/20"
                 aria-hidden
               >
                 {initials}

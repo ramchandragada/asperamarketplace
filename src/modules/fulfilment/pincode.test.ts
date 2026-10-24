@@ -20,9 +20,16 @@ describe("checkPincodeServiceability", () => {
     expect(result.etaLabel).toBeTruthy();
   });
 
-  it("treats other valid pins as serviceable", () => {
+  it("treats other valid pins as serviceable without advertising COD", () => {
     const result = checkPincodeServiceability("641001");
     expect(result.serviceable).toBe(true);
-    expect(result.codAvailable).toBe(true);
+    expect(result.codAvailable).toBe(false);
+  });
+
+  it("does not advertise COD on known metro pins (COD deferred)", () => {
+    const result = checkPincodeServiceability("560001");
+    expect(result.serviceable).toBe(true);
+    expect(result.codAvailable).toBe(false);
+    expect(result.message.toLowerCase()).not.toContain("cash on delivery");
   });
 });

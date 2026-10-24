@@ -73,6 +73,7 @@ export function checkPincodeServiceability(raw: string): PincodeCheckResult {
     };
   }
 
+  // COD is deferred (A-28) — never advertise it until a real COD payment path exists.
   const known = PIN_DIRECTORY[postalCode];
   if (known) {
     const etaLabel = etaLabelFromDays(known.etaDays);
@@ -82,8 +83,8 @@ export function checkPincodeServiceability(raw: string): PincodeCheckResult {
       city: known.city,
       state: known.state,
       etaLabel,
-      codAvailable: true,
-      message: `Delivery by ${etaLabel} · Cash on Delivery available · 7 Day Easy Returns`,
+      codAvailable: false,
+      message: `Delivery by ${etaLabel} · Prepaid checkout · 7 Day Easy Returns`,
     };
   }
 
@@ -96,8 +97,8 @@ export function checkPincodeServiceability(raw: string): PincodeCheckResult {
     city: null,
     state: null,
     etaLabel,
-    codAvailable: true,
-    message: `Delivery by ${etaLabel} · Cash on Delivery available · 7 Day Easy Returns`,
+    codAvailable: false,
+    message: `Delivery by ${etaLabel} · Prepaid checkout · 7 Day Easy Returns`,
   };
 }
 

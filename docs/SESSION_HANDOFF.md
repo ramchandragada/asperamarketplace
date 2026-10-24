@@ -344,3 +344,18 @@ the OLD fashion data (prod uses the PC seed) — repoint `prisma/seed.ts` to
 **Cursor:** the live catalogue is now PC parts. The old fashion seed files
 (`seed-catalogue-data.ts`, `seed-nav-lanes.ts`) remain in the repo but are not
 used in production.
+
+## 14. Cursor Wave 0 — money-path trust (2026-10-24)
+
+Owner approved Cursor to choose and build from the Medusa gap plan + deep audit.
+**Wave 0 shipped (this PR):** close money/inventory P0s before Medusa Tier-1 infra.
+
+1. **Coupon-net refunds** — `allocateDiscountPaise` / `netMerchandisePaise`; GST uses post-discount taxable base.
+2. **Line-scoped refunds everywhere** — `createCappedLineRefund` stamps `orderLineId` on cancel/return/protection; remaining-cap shared.
+3. **Claims** — `not_delivered` denied when fulfilment group is already `cancelled`.
+4. **Reservations** — unpaid cancel releases reserved stock; `startPayment` after `payment_failed` re-reserves (or fails closed).
+5. **Pay now** — `mock-complete` gated on `paymentsAreMockOnly()` (not `NODE_ENV`), so demo pay works on `aspera.market` until Razorpay lands.
+6. **Seller status** — fulfilment/returns writes require `seller.status === "approved"` (admins exempt).
+7. **COD** — `codAvailable` always false; PDP no longer advertises COD (A-28 deferred).
+
+**Next (Wave 1, not started):** outbox publisher + Vercel Cron → Blob/S3 + NotificationPort → separate prod Neon. Then Wave 2 saga + Razorpay flag.

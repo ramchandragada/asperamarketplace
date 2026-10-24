@@ -110,3 +110,13 @@ export class MockPaymentProvider implements PaymentProviderPort {
 export function getPaymentProvider(): PaymentProviderPort {
   return new MockPaymentProvider();
 }
+
+/**
+ * True while the live payment provider is still the mock gateway. Used to allow
+ * the authenticated demo "Pay now → mock-complete" path on production until a
+ * real PA (Razorpay) is wired — at which point this returns false and
+ * mock-complete 404s again.
+ */
+export function paymentsAreMockOnly(): boolean {
+  return getPaymentProvider() instanceof MockPaymentProvider;
+}

@@ -1,0 +1,3104 @@
+{
+  "source": "mdcomputers.in",
+  "scrapedAt": "2026-10-24T14:43:31.378Z",
+  "importedAt": "2026-10-24T14:45:50.718Z",
+  "rawCount": 1966,
+  "cleanedCount": 1966,
+  "importedCount": 385,
+  "byCategory": {
+    "processors": 36,
+    "motherboards": 36,
+    "graphics-cards": 36,
+    "memory-ram": 36,
+    "storage-ssd": 36,
+    "cabinets": 36,
+    "power-supplies": 36,
+    "cpu-coolers": 36,
+    "keyboard-mouse": 36,
+    "monitors": 36,
+    "ups": 17,
+    "laptops": 8
+  },
+  "products": [
+    {
+      "slug": "amd-ryzen-3-3200g-processor-with-radeon-vega-8-graphics",
+      "title": "AMD Ryzen 3 3200G Processor with Radeon Vega 8 Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 668000,
+      "imagePath": "/products/amd-ryzen-3-3200g-processor-with-radeon-vega-8-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-3-3200g-yd3200c5fhbox-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-5-3400g-processor-with-radeon-rx-vega-11-graphics",
+      "title": "AMD Ryzen 5 3400G Processor with Radeon RX Vega 11 Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 830000,
+      "imagePath": "/products/amd-ryzen-5-3400g-processor-with-radeon-rx-vega-11-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-5-3400g-yd3400c5fhbox-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i3-12100f-processor",
+      "title": "Intel Core i3-12100F Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1065000,
+      "imagePath": "/products/intel-core-i3-12100f-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-core-i3-12100f-bx8071512100f-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-5-5500-processor",
+      "title": "AMD Ryzen 5 5500 Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1070000,
+      "imagePath": "/products/amd-ryzen-5-5500-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-5-5500-100-100000457box-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i5-10400f-processor",
+      "title": "Intel Core i5-10400F Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1355000,
+      "imagePath": "/products/intel-core-i5-10400f-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i5-10400f-bx8070110400f-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-5-5600-processor",
+      "title": "AMD Ryzen 5 5600 Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1410000,
+      "imagePath": "/products/amd-ryzen-5-5600-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-5-5600-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i3-14100-processor",
+      "title": "Intel Core i3-14100 Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1445000,
+      "imagePath": "/products/intel-core-i3-14100-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i3-14100-bx8071514100-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i5-10400-processor",
+      "title": "Intel Core i5-10400 Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1485000,
+      "imagePath": "/products/intel-core-i5-10400-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i5-10400-bx8070110400-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-5-5600x-processor",
+      "title": "AMD Ryzen 5 5600X Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1520000,
+      "imagePath": "/products/amd-ryzen-5-5600x-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-5-5600x-100-100000065box-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-5-8500g-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 5 8500G Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1535000,
+      "imagePath": "/products/amd-ryzen-5-8500g-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-5-8500g-100-100000931box-desktop-processor"
+    },
+    {
+      "slug": "intel-core-i5-14400f-processor",
+      "title": "Intel Core i5-14400F Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1700000,
+      "imagePath": "/products/intel-core-i5-14400f-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i5-14400f-bx8071514400f-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-5-5600gt-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 5 5600GT Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1930000,
+      "imagePath": "/products/amd-ryzen-5-5600gt-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-5-5600gt-100-100001488box-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-ultra-5-225-processor",
+      "title": "Intel Core Ultra 5 225 Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 1990000,
+      "imagePath": "/products/intel-core-ultra-5-225-processor.webp",
+      "sourceHint": "https://mdcomputers.in/product/intel-ultra-5-225-bx80768225-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-5-8600g-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 5 8600G Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2000000,
+      "imagePath": "/products/amd-ryzen-5-8600g-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-5-8600g-100-100001237box-desktop-processor"
+    },
+    {
+      "slug": "intel-core-i5-14400-processor",
+      "title": "Intel Core i5-14400 Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2075000,
+      "imagePath": "/products/intel-core-i5-14400-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i5-14400-bx8071514400-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-5-9600x-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 5 9600X Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2080000,
+      "imagePath": "/products/amd-ryzen-5-9600x-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-5-9600x-100-100001405wof-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-ultra-5-245k-processor",
+      "title": "Intel Core Ultra 5 245K Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2190000,
+      "imagePath": "/products/intel-core-ultra-5-245k-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-ultra-5-245k-bx80768245k-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-7-5700g-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 7 5700G Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2290000,
+      "imagePath": "/products/amd-ryzen-7-5700g-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-7-5700g-100-100000263box-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-ultra-5-250kf-plus-processor",
+      "title": "Intel Core Ultra 5 250KF Plus Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2400000,
+      "imagePath": "/products/intel-core-ultra-5-250kf-plus-processor.webp",
+      "sourceHint": "https://mdcomputers.in/product/intel-ultra-5-250kf-plus-bx80768250kf-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i5-14500-processor",
+      "title": "Intel Core i5-14500 Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2500000,
+      "imagePath": "/products/intel-core-i5-14500-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i5-14500-bx8071514500-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-7-7700x-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 7 7700X Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2600000,
+      "imagePath": "/products/amd-ryzen-7-7700x-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-7-7700x-100-100000591wof-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-7-9700x-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 7 9700X Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2920000,
+      "imagePath": "/products/amd-ryzen-7-9700x-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-7-9700x-100-100001404wof-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-7-8700g-processor-with-radeon-graphics-2",
+      "title": "AMD Ryzen 7 8700G Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 2950000,
+      "imagePath": null,
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-7-8700g-100-100001236box-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i7-12700kf-processor",
+      "title": "Intel Core i7-12700KF Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 3180000,
+      "imagePath": "/products/intel-core-i7-12700kf-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i7-12700kf-bx8071512700kf-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i7-12700-processor",
+      "title": "Intel Core i7-12700 Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 3250000,
+      "imagePath": "/products/intel-core-i7-12700-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i7-12700-bx8071512700-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i5-14600k-processor",
+      "title": "Intel Core i5-14600K Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 3296000,
+      "imagePath": "/products/intel-core-i5-14600k-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i5-14600k-bx8071514600k-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-9-7900x-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 9 7900X Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 3440000,
+      "imagePath": "/products/amd-ryzen-9-7900x-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-9-7900x-100-100000589wof-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-7-7700x3d-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 7 7700X3D Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 3640000,
+      "imagePath": "/products/amd-ryzen-7-7700x3d-processor-with-radeon-graphics.webp",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-7-7700x3d-100-100002235wof-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i7-12700k-processor",
+      "title": "Intel Core i7-12700K Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 3680000,
+      "imagePath": "/products/intel-core-i7-12700k-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i7-12700k-bx8071512700k-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-7-7800x3d-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 7 7800X3D Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 3960000,
+      "imagePath": "/products/amd-ryzen-7-7800x3d-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-7-7800x3d-100-100000910wof-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i7-14700kf-processor",
+      "title": "Intel Core i7-14700KF Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 4028000,
+      "imagePath": "/products/intel-core-i7-14700kf-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i7-14700kf-bx8071514700kf-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i7-14700k-processor",
+      "title": "Intel Core i7-14700K Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 4415000,
+      "imagePath": "/products/intel-core-i7-14700k-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i7-14700k-bx8071514700k-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i9-14900k-processor",
+      "title": "Intel Core i9-14900K Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 4720000,
+      "imagePath": "/products/intel-core-i9-14900k-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i9-14900k-bx8071514900k-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-7-9800x3d-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 7 9800X3D Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 4800000,
+      "imagePath": "/products/amd-ryzen-7-9800x3d-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-7-9800x3d-100-1000001084wof-desktop-processor/processor"
+    },
+    {
+      "slug": "amd-ryzen-9-9950x-processor-with-radeon-graphics",
+      "title": "AMD Ryzen 9 9950X Processor with Radeon Graphics",
+      "categorySlug": "processors",
+      "sellingPricePaise": 5950000,
+      "imagePath": "/products/amd-ryzen-9-9950x-processor-with-radeon-graphics.jpg",
+      "sourceHint": "https://mdcomputers.in/product/amd-ryzen-9-9950x-100-100001277wof-desktop-processor/processor"
+    },
+    {
+      "slug": "intel-core-i9-14900ks-desktop-processor",
+      "title": "Intel Core i9-14900KS Desktop Processor",
+      "categorySlug": "processors",
+      "sellingPricePaise": 6301900,
+      "imagePath": "/products/intel-core-i9-14900ks-desktop-processor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/intel-i9-14900ks-bx8071514900ks-desktop-processor/processor"
+    },
+    {
+      "slug": "gigabyte-h610m-h-v2-ddr5-motherboard",
+      "title": "Gigabyte H610M H V2 DDR5 Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 440000,
+      "imagePath": "/products/gigabyte-h610m-h-v2-ddr5-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-h610m-h-v2-motherboard/motherboard"
+    },
+    {
+      "slug": "asus-prime-a520m-k-ddr4-m-atx-motherboard",
+      "title": "Asus Prime A520M-K DDR4 M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 535000,
+      "imagePath": "/products/asus-prime-a520m-k-ddr4-m-atx-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/asus-prime-a520m-k-motherboard/motherboard"
+    },
+    {
+      "slug": "msi-pro-h610m-s-ddr4-ii-m-atx-motherboard",
+      "title": "Msi Pro H610M-S DDR4 II M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 615000,
+      "imagePath": "/products/msi-pro-h610m-s-ddr4-ii-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-h610m-s-ddr4-ii-motherboard"
+    },
+    {
+      "slug": "msi-pro-h610m-e-ddr5-motherboard",
+      "title": "MSI Pro H610M-E DDR5 Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 665000,
+      "imagePath": "/products/msi-pro-h610m-e-ddr5-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-h610m-e-motherboard"
+    },
+    {
+      "slug": "msi-mag-a520m-vector-wifi-m-atx-motherboard",
+      "title": "MSI MAG A520M VECTOR WIFI M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 805000,
+      "imagePath": "/products/msi-mag-a520m-vector-wifi-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-mag-a520m-vector-wifi-motherboard"
+    },
+    {
+      "slug": "asus-prime-b760m-k-d4-m-atx-ddr4-motherboard",
+      "title": "Asus Prime B760M-K D4 M-ATX DDR4 Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 840000,
+      "imagePath": "/products/asus-prime-b760m-k-d4-m-atx-ddr4-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-prime-b760m-k-d4-motherboard/motherboard"
+    },
+    {
+      "slug": "msi-pro-h610m-s-wifi-ddr4-motherboard",
+      "title": "MSI PRO H610M-S WIFI DDR4 Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 860000,
+      "imagePath": "/products/msi-pro-h610m-s-wifi-ddr4-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-h610m-s-wifi-ddr4-motherboard"
+    },
+    {
+      "slug": "msi-pro-b550m-p-m-atx-motherboard",
+      "title": "MSI PRO B550M-P M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 915000,
+      "imagePath": "/products/msi-pro-b550m-p-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-b550m-p-motherboard"
+    },
+    {
+      "slug": "msi-pro-a620am-g-evo-wifi-m-atx-motherboard",
+      "title": "Msi Pro A620AM-G Evo WiFi M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 940000,
+      "imagePath": "/products/msi-pro-a620am-g-evo-wifi-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-a620am-g-evo-wifi-motherboard"
+    },
+    {
+      "slug": "asus-prime-h510m-e-r20-m-atx-motherboard",
+      "title": "Asus Prime H510M-E R2.0 M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1015000,
+      "imagePath": "/products/asus-prime-h510m-e-r20-m-atx-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/asus-prime-h510m-e-r2-0-motherboard/motherboard"
+    },
+    {
+      "slug": "asus-b650m-ayw-wifi-m-atx-motherboard",
+      "title": "Asus B650M-AYW WIFI M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1100000,
+      "imagePath": "/products/asus-b650m-ayw-wifi-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-b650m-ayw-wifi-motherboard/motherboard"
+    },
+    {
+      "slug": "msi-b760m-bomber-wifi-m-atx-motherboard",
+      "title": "MSI B760M Bomber WIFI M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1139900,
+      "imagePath": "/products/msi-b760m-bomber-wifi-m-atx-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-b760m-bomber-wifi-motherboard"
+    },
+    {
+      "slug": "msi-pro-b850m-g-m-atx-motherboard",
+      "title": "MSI Pro B850M-G M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1190000,
+      "imagePath": "/products/msi-pro-b850m-g-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-b850m-g-motherboard"
+    },
+    {
+      "slug": "asus-prime-b760m-a-csm-ddr5-m-atx-motherboard",
+      "title": "Asus Prime B760M-A-CSM DDR5 M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1324500,
+      "imagePath": "/products/asus-prime-b760m-a-csm-ddr5-m-atx-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/asus-prime-b760m-a-csm-motherboard/motherboard"
+    },
+    {
+      "slug": "msi-h810m-gaming-wifi6e-m-atx-motherboard",
+      "title": "MSI H810M Gaming WIFI6E M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1370000,
+      "imagePath": "/products/msi-h810m-gaming-wifi6e-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-h810m-gaming-wifi6e-motherboard"
+    },
+    {
+      "slug": "msi-b860m-gaming-wifi7-m-atx-motherboard",
+      "title": "MSI B860M Gaming WIFI7 M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1471000,
+      "imagePath": "/products/msi-b860m-gaming-wifi7-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-b860m-gaming-wifi-motherboard"
+    },
+    {
+      "slug": "asus-prime-b760m-a-wifi-csm-m-atx-motherboard",
+      "title": "ASUS PRIME B760M-A WIFI-CSM M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1542000,
+      "imagePath": "/products/asus-prime-b760m-a-wifi-csm-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-prime-b760m-a-wifi-csm-motherboard/motherboard"
+    },
+    {
+      "slug": "msi-b850m-gaming-plus-wifi6e-m-atx-motherboard",
+      "title": "MSI B850M Gaming Plus WIFI6E M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1630000,
+      "imagePath": "/products/msi-b850m-gaming-plus-wifi6e-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-b850m-gaming-plus-wifi6e-motherboard"
+    },
+    {
+      "slug": "msi-pro-b850m-p-wifi-m-atx-motherboard",
+      "title": "MSI Pro B850M-P WIFI M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1700000,
+      "imagePath": "/products/msi-pro-b850m-p-wifi-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-b850m-p-wifi-motherboard"
+    },
+    {
+      "slug": "msi-pro-b860m-a-wifi6e-m-atx-motherboard",
+      "title": "MSI Pro B860M-A WiFi6E M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1780000,
+      "imagePath": "/products/msi-pro-b860m-a-wifi6e-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-b860m-a-wifi6e-motherboard"
+    },
+    {
+      "slug": "msi-mag-b760m-mortar-wifi-ii-motherboard",
+      "title": "MSI MAG B760M Mortar WIFI II Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1850000,
+      "imagePath": "/products/msi-mag-b760m-mortar-wifi-ii-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-mag-b760m-mortar-wifi-ii-motherboard"
+    },
+    {
+      "slug": "msi-pro-b860-p-wifi-atx-motherboard",
+      "title": "MSI Pro B860-P WIFI ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 1950000,
+      "imagePath": "/products/msi-pro-b860-p-wifi-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-b860-p-wifi-motherboard"
+    },
+    {
+      "slug": "msi-mag-b650m-mortar-wifi-m-atx-motherboard",
+      "title": "MSI MAG B650M Mortar WIFI M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 2050000,
+      "imagePath": "/products/msi-mag-b650m-mortar-wifi-m-atx-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-mag-b650m-mortar-wifi-motherboard"
+    },
+    {
+      "slug": "msi-b860-gaming-plus-wifi-atx-motherboard",
+      "title": "MSI B860 Gaming Plus WIFI ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 2200000,
+      "imagePath": "/products/msi-b860-gaming-plus-wifi-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-b860-gaming-plus-wifi-motherboard"
+    },
+    {
+      "slug": "gigabyte-b850m-aorus-elite-wifi7-ice-p-m-atx-motherboard",
+      "title": "Gigabyte B850M Aorus Elite WIFI7 ICE-P M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 2290000,
+      "imagePath": "/products/gigabyte-b850m-aorus-elite-wifi7-ice-p-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-b850m-aorus-elite-wifi7-ice-p-motherboard/motherboard"
+    },
+    {
+      "slug": "msi-z790-gaming-plus-wifi-motherboard",
+      "title": "MSI Z790 Gaming Plus WIFI Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 2379900,
+      "imagePath": "/products/msi-z790-gaming-plus-wifi-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-z790-gaming-plus-wifi-motherboard"
+    },
+    {
+      "slug": "msi-mag-b850-tomahawk-max-wifi-atx-motherboard",
+      "title": "MSI MAG B850 Tomahawk Max WIFI ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 2485000,
+      "imagePath": "/products/msi-mag-b850-tomahawk-max-wifi-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-mag-b850-tomahawk-max-wifi-motherboard"
+    },
+    {
+      "slug": "asus-tuf-gaming-b860m-plus-wifi-m-atx-motherboard",
+      "title": "ASUS TUF Gaming B860M-Plus WIFI M-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 2620000,
+      "imagePath": "/products/asus-tuf-gaming-b860m-plus-wifi-m-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-tuf-gaming-b860m-plus-wifi-motherboard/motherboard"
+    },
+    {
+      "slug": "asus-prime-z890-p-wifi-csm-motherboard",
+      "title": "Asus Prime Z890-P WIFI-CSM Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 2755000,
+      "imagePath": "/products/asus-prime-z890-p-wifi-csm-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/asus-prime-z890-p-wifi-csm-motherboard/motherboard"
+    },
+    {
+      "slug": "msi-pro-z890-a-wifi-motherboard",
+      "title": "MSI Pro Z890-A WIFI Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 2900000,
+      "imagePath": "/products/msi-pro-z890-a-wifi-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-pro-z890-a-wifi-motherboard"
+    },
+    {
+      "slug": "msi-mag-z790-tomahawk-wifi-motherboard",
+      "title": "MSI MAG Z790 Tomahawk WIFI Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 3215000,
+      "imagePath": "/products/msi-mag-z790-tomahawk-wifi-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/motherboard/msi-mag-z790-tomahawk-wifi-motherboard"
+    },
+    {
+      "slug": "gigabyte-x870-aorus-stealth-atx-wifi-7-motherboard",
+      "title": "Gigabyte X870 Aorus Stealth ATX WIFI 7 Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 3568400,
+      "imagePath": "/products/gigabyte-x870-aorus-stealth-atx-wifi-7-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-x870-aorus-stealth-motherboard/motherboard"
+    },
+    {
+      "slug": "gigabyte-x870e-aorus-pro-x3d-wifi7-atx-motherboard",
+      "title": "Gigabyte X870E AORUS PRO X3D WIFI7 ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 4125000,
+      "imagePath": "/products/gigabyte-x870e-aorus-pro-x3d-wifi7-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-x870e-aorus-pro-x3d-motherboard/motherboard"
+    },
+    {
+      "slug": "asus-rog-strix-x870-f-gaming-wifi7-atx-motherboard",
+      "title": "ASUS ROG Strix X870-F Gaming WIFI7 ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 5180000,
+      "imagePath": "/products/asus-rog-strix-x870-f-gaming-wifi7-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-rog-strix-x870-f-gaming-wifi-motherboard/motherboard"
+    },
+    {
+      "slug": "asus-proart-x870e-creator-wifi-atx-motherboard",
+      "title": "Asus ProArt X870E-Creator WIFI ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 6160000,
+      "imagePath": "/products/asus-proart-x870e-creator-wifi-atx-motherboard.jpg",
+      "sourceHint": "https://mdcomputers.in/product/asus-proart-x870e-creator-wifi-motherboard/motherboard"
+    },
+    {
+      "slug": "asus-rog-crosshair-x870e-extreme-wifi-e-atx-motherboard",
+      "title": "ASUS ROG Crosshair X870E Extreme WIFI E-ATX Motherboard",
+      "categorySlug": "motherboards",
+      "sellingPricePaise": 11840000,
+      "imagePath": "/products/asus-rog-crosshair-x870e-extreme-wifi-e-atx-motherboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-rog-crosshair-x870e-extreme-motherboard/motherboard"
+    },
+    {
+      "slug": "asus-gt-710-2gb-ddr5-graphics-card",
+      "title": "Asus GT 710 2GB DDR5 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 464900,
+      "imagePath": "/products/asus-gt-710-2gb-ddr5-graphics-card.jpg",
+      "sourceHint": "https://mdcomputers.in/product/asus-graphics-card-gt710-sl-2gd5-brk-evo/graphics-card"
+    },
+    {
+      "slug": "nextron-gtx1650-4gb-gddr6-graphics-card",
+      "title": "Nextron GTX1650 4GB GDDR6 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 1699900,
+      "imagePath": "/products/nextron-gtx1650-4gb-gddr6-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/nextron-graphics-card-gtx1650-4gb"
+    },
+    {
+      "slug": "msi-geforce-rtx-3050-ventus-2x-e-6gb-oc-gddr6-graphics-card",
+      "title": "MSI GeForce RTX 3050 Ventus 2X E 6GB OC GDDR6 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 2918600,
+      "imagePath": "/products/msi-geforce-rtx-3050-ventus-2x-e-6gb-oc-gddr6-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-ventus-graphics-card-rtx-3050-2x-e-6gb-oc"
+    },
+    {
+      "slug": "zotac-gaming-geforce-rtx-3050-twin-edge-oc-6gb-gddr6-gpu",
+      "title": "ZOTAC Gaming GeForce RTX 3050 Twin Edge OC 6GB GDDR6 GPU",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 3059000,
+      "imagePath": "/products/zotac-gaming-geforce-rtx-3050-twin-edge-oc-6gb-gddr6-gpu.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/zotac-rtx3050-twin-edge-oc-graphics-card-zt-a30510h-10l"
+    },
+    {
+      "slug": "gigabyte-rtx-3050-windforce-oc-v2-8gb-gaming-graphics-card",
+      "title": "Gigabyte RTX 3050 Windforce OC V2 8GB Gaming Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 4021900,
+      "imagePath": "/products/gigabyte-rtx-3050-windforce-oc-v2-8gb-gaming-graphics-card.jpg",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-windforce-graphics-card-gv-n3050wf2ocv2-8gd/graphics-card"
+    },
+    {
+      "slug": "gigabyte-rx-7600-gaming-oc-8gb-graphics-card",
+      "title": "Gigabyte RX 7600 Gaming OC 8GB Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 4382900,
+      "imagePath": "/products/gigabyte-rx-7600-gaming-oc-8gb-graphics-card.jpg",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-gaming-graphics-card-gv-r76gaming-oc-8gd/graphics-card"
+    },
+    {
+      "slug": "msi-rtx-5050-shadow-2x-oc-8gb-gddr6-graphics-card",
+      "title": "MSI RTX 5050 Shadow 2X OC 8GB GDDR6 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 4759900,
+      "imagePath": "/products/msi-rtx-5050-shadow-2x-oc-8gb-gddr6-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-rtx-5050-8g-shadow-2x-graphics-card-g5050-8s2c"
+    },
+    {
+      "slug": "gigabyte-rtx-4060-gaming-oc-8gb-graphics-card",
+      "title": "Gigabyte RTX 4060 Gaming OC 8GB Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 5319900,
+      "imagePath": "/products/gigabyte-rtx-4060-gaming-oc-8gb-graphics-card.jpg",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-gaming-graphics-card-gv-n4060gaming-oc-8gd/graphics-card"
+    },
+    {
+      "slug": "nvidia-quadro-rtx-a1000-8gb-gddr6-graphics-card",
+      "title": "NVIDIA Quadro RTX A1000 8GB GDDR6 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 5466200,
+      "imagePath": "/products/nvidia-quadro-rtx-a1000-8gb-gddr6-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/nvidia-quadro-graphics-card-rtx-a1000-900-5g172-2580-000"
+    },
+    {
+      "slug": "zotac-gaming-rtx-5060-twin-edge-8gb-gddr7-graphics-card",
+      "title": "ZOTAC Gaming RTX 5060 Twin Edge 8GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 5589900,
+      "imagePath": "/products/zotac-gaming-rtx-5060-twin-edge-8gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/zotac-rtx-5060-twin-edge-graphics-card-zt-b50600e-10m"
+    },
+    {
+      "slug": "asus-dual-rtx-5060-oc-8gb-gddr7-graphics-card",
+      "title": "ASUS Dual RTX 5060 OC 8GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 5999900,
+      "imagePath": "/products/asus-dual-rtx-5060-oc-8gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-dual-graphics-card-rtx5060-o8g/graphics-card"
+    },
+    {
+      "slug": "msi-rtx-5060-ventus-2x-oc-white-8gb-gddr7-graphics-card",
+      "title": "MSI RTX 5060 Ventus 2X OC White 8GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 6259900,
+      "imagePath": "/products/msi-rtx-5060-ventus-2x-oc-white-8gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-rtx-5060-ventus-2x-oc-graphics-card-g5060-8v2cw"
+    },
+    {
+      "slug": "msi-rtx-5060-gaming-oc-v1-8gb-gddr7-graphics-card",
+      "title": "MSI RTX 5060 Gaming OC V1 8GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 6449900,
+      "imagePath": "/products/msi-rtx-5060-gaming-oc-v1-8gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-gaming-oc-v1-graphics-card-g5060-8gcv1"
+    },
+    {
+      "slug": "msi-rtx-5060-ti-shadow-2x-oc-plus-8gb-gddr7-graphics-card",
+      "title": "MSI RTX 5060 Ti Shadow 2X OC Plus 8GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 6699900,
+      "imagePath": "/products/msi-rtx-5060-ti-shadow-2x-oc-plus-8gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-rtx-5060-ti-shadow-2x-oc-plus-graphics-card-g506t-8s2cp"
+    },
+    {
+      "slug": "gigabyte-rtx-5060-ti-windforce-max-oc-8gb-gddr7-graphics-card",
+      "title": "Gigabyte RTX 5060 Ti Windforce Max OC 8GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 6849900,
+      "imagePath": "/products/gigabyte-rtx-5060-ti-windforce-max-oc-8gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-rtx-5060-ti-windforce-gpu-gv-n506twf2max-oc-8gd/graphics-card"
+    },
+    {
+      "slug": "msi-rtx-5060-ti-ventus-2x-oc-plus-8gb-gddr7-graphics-card",
+      "title": "MSI RTX 5060 Ti Ventus 2X OC Plus 8GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 6999900,
+      "imagePath": "/products/msi-rtx-5060-ti-ventus-2x-oc-plus-8gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-ventus-graphics-card-rtx-5060-ti-2x-oc-plus-g506t-8v2cp"
+    },
+    {
+      "slug": "msi-rtx-5060-ti-ventus-2x-oc-white-plus-8gb-gddr7-graphics-card",
+      "title": "MSI RTX 5060 Ti Ventus 2X OC White Plus 8GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 7199900,
+      "imagePath": "/products/msi-rtx-5060-ti-ventus-2x-oc-white-plus-8gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-ventus-graphics-card-rtx-5060-ti-2x-oc-wh-plus-g506t8v2cwp"
+    },
+    {
+      "slug": "zotac-rtx-5060-ti-twin-edge-oc-8gb-gddr7-graphics-card",
+      "title": "ZOTAC RTX 5060 Ti Twin Edge OC 8GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 7512300,
+      "imagePath": "/products/zotac-rtx-5060-ti-twin-edge-oc-8gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/zotac-rtx-5060-ti-twin-edge-oc-graphics-card-zt-b50610h-10m"
+    },
+    {
+      "slug": "colorful-igame-rtx-5060-ti-ultra-w-duo-oc-16gb-v-graphics-card",
+      "title": "Colorful iGame RTX 5060 Ti Ultra W DUO OC 16GB-V Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 9599900,
+      "imagePath": "/products/colorful-igame-rtx-5060-ti-ultra-w-duo-oc-16gb-v-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/colorful-igame-graphics-card-rtx-5060-ti-ultra-w-duo-oc-16gb-v/graphics-card"
+    },
+    {
+      "slug": "asus-dual-rtx-5060-ti-oc-edition-16gb-gddr7-graphics-card",
+      "title": "ASUS Dual RTX 5060 Ti OC Edition 16GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 10280600,
+      "imagePath": "/products/asus-dual-rtx-5060-ti-oc-edition-16gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-dual-graphics-card-rtx5060ti-o16g/graphics-card"
+    },
+    {
+      "slug": "asus-dual-rtx-5070-oc-12gb-gddr7-graphics-card",
+      "title": "Asus Dual RTX 5070 OC 12GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 10479900,
+      "imagePath": "/products/asus-dual-rtx-5070-oc-12gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-dual-graphics-card-rtx5070-o12g/graphics-card"
+    },
+    {
+      "slug": "msi-rtx-5060-ti-ventus-2x-oc-plus-16gb-gddr7-graphics-card",
+      "title": "MSI RTX 5060 Ti Ventus 2X OC Plus 16GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 10830000,
+      "imagePath": "/products/msi-rtx-5060-ti-ventus-2x-oc-plus-16gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-rtx-5060-ti-ventus-2x-oc-graphics-card-g506t-16v2cp"
+    },
+    {
+      "slug": "zotac-rtx-5070-twin-edge-12gb-gddr7-graphics-card",
+      "title": "Zotac RTX 5070 Twin Edge 12GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 10882400,
+      "imagePath": "/products/zotac-rtx-5070-twin-edge-12gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/zotac-rtx-5070-twin-edge-graphics-card-zt-b50700e-10p"
+    },
+    {
+      "slug": "msi-geforce-rtx-5070-ventus-2x-oc-12g-gddr7-graphics-card",
+      "title": "MSI Geforce RTX 5070 Ventus 2X OC 12G GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 10999900,
+      "imagePath": "/products/msi-geforce-rtx-5070-ventus-2x-oc-12g-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-rtx-5070-ventus-2x-oc-graphics-card-g5070-12v2c"
+    },
+    {
+      "slug": "msi-rtx-5070-inspire-3x-oc-12gb-gddr7-graphics-card",
+      "title": "MSI RTX 5070 Inspire 3X OC 12GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 11484200,
+      "imagePath": "/products/msi-rtx-5070-inspire-3x-oc-12gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-rtx-5070-inspire-3x-oc-graphics-card-g5070-12i3c"
+    },
+    {
+      "slug": "msi-rtx-5060-ti-gaming-trio-oc-white-16gb-gddr7-graphics-card",
+      "title": "MSI RTX 5060 Ti Gaming Trio OC White 16GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 12650000,
+      "imagePath": "/products/msi-rtx-5060-ti-gaming-trio-oc-white-16gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-rtx-5060-ti-gaming-trio-oc-graphics-card-g506t-16gtcw"
+    },
+    {
+      "slug": "gigabyte-rtx-5070-ti-windforce-oc-v2-16gb-gddr7-graphics-card",
+      "title": "Gigabyte RTX 5070 Ti Windforce OC V2 16GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 16298600,
+      "imagePath": "/products/gigabyte-rtx-5070-ti-windforce-oc-v2-16gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-windforce-oc-v2-graphics-card-gv-n507twf3ocv2-16gd/graphics-card"
+    },
+    {
+      "slug": "gigabyte-rtx-5070-ti-gaming-oc-16gb-gddr7-graphics-card",
+      "title": "Gigabyte RTX 5070 Ti Gaming OC 16GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 16900400,
+      "imagePath": "/products/gigabyte-rtx-5070-ti-gaming-oc-16gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-gaming-graphics-card-gv-n507tgaming-oc-16gd/graphics-card"
+    },
+    {
+      "slug": "zotac-rtx-5070-ti-solid-core-oc-white-edition-16gb-graphics-card",
+      "title": "Zotac RTX 5070 Ti Solid Core OC White Edition 16GB Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 17502200,
+      "imagePath": "/products/zotac-rtx-5070-ti-solid-core-oc-white-edition-16gb-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/zotac-rtx-5070-ti-solid-core-oc-graphics-card-zt-b50710q2-10p"
+    },
+    {
+      "slug": "pny-rtx-5080-argb-oc-16gb-gddr7-graphics-card",
+      "title": "PNY RTX 5080 ARGB OC 16GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 24122000,
+      "imagePath": "/products/pny-rtx-5080-argb-oc-16gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/pny-rtx-5080-argb-oc-graphics-card-vcg508016tfxxpb1-o"
+    },
+    {
+      "slug": "asus-proart-rtx-5080-oc-16gb-gddr7-graphics-card",
+      "title": "Asus ProArt RTX 5080 OC 16GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 26529200,
+      "imagePath": "/products/asus-proart-rtx-5080-oc-16gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-proart-graphics-card-rtx5080-o16g/graphics-card"
+    },
+    {
+      "slug": "asus-prime-rtx-5080-oc-16gb-gddr7-graphics-card",
+      "title": "ASUS Prime RTX 5080 OC 16GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 26529200,
+      "imagePath": "/products/asus-prime-rtx-5080-oc-16gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-prime-graphics-card-rtx5080-o16g/graphics-card"
+    },
+    {
+      "slug": "gigabyte-rtx-5080-aero-oc-sff-16gb-gddr7-graphics-card",
+      "title": "Gigabyte RTX 5080 Aero OC SFF 16GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 27732800,
+      "imagePath": "/products/gigabyte-rtx-5080-aero-oc-sff-16gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-aero-graphics-card-gv-n5080aero-oc-16gd/graphics-card"
+    },
+    {
+      "slug": "msi-rtx-4090-gaming-x-trio-24gb-graphics-card",
+      "title": "MSI RTX 4090 Gaming X Trio 24GB Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 57279900,
+      "imagePath": "/products/msi-rtx-4090-gaming-x-trio-24gb-graphics-card.jpg",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-gaming-graphics-card-rtx-4090-x-trio-24g"
+    },
+    {
+      "slug": "asus-rog-astral-rtx-5090-oc-32gb-gddr7-graphics-card",
+      "title": "ASUS ROG Astral RTX 5090 OC 32GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 96338000,
+      "imagePath": "/products/asus-rog-astral-rtx-5090-oc-32gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-rog-astral-graphics-card-rtx5090-o32g-gaming/graphics-card"
+    },
+    {
+      "slug": "msi-rtx-5090-suprim-soc-32gb-gddr7-graphics-card",
+      "title": "MSI RTX 5090 Suprim SOC 32GB GDDR7 Graphics Card",
+      "categorySlug": "graphics-cards",
+      "sellingPricePaise": 99347000,
+      "imagePath": "/products/msi-rtx-5090-suprim-soc-32gb-gddr7-graphics-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/graphics-card/msi-rtx-5090-suprim-soc-graphics-card-g5090-32sps"
+    },
+    {
+      "slug": "corsair-vengeance-lpx-8gb-3600mhz-cl18-ddr4-ram",
+      "title": "Corsair Vengeance LPX 8GB 3600MHz CL18 DDR4 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 748000,
+      "imagePath": "/products/corsair-vengeance-lpx-8gb-3600mhz-cl18-ddr4-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/corsair-ram-vengeance-lpx-cmk8gx4m1z3600c18/ram"
+    },
+    {
+      "slug": "verbatim-16gb-3200mhz-cl22-ddr4-laptop-ram",
+      "title": "Verbatim 16GB 3200MHz CL22 DDR4 Laptop RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 1114000,
+      "imagePath": "/products/verbatim-16gb-3200mhz-cl22-ddr4-laptop-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/ram/verbatim-ram-16gb-3200mhz-ddr4-30110"
+    },
+    {
+      "slug": "adata-premier-16gb-2666mhz-cl19-ddr4-laptop-ram",
+      "title": "Adata Premier 16GB 2666MHz CL19 DDR4 Laptop RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 1226000,
+      "imagePath": "/products/adata-premier-16gb-2666mhz-cl19-ddr4-laptop-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ram-premier-16gb-2666mhz-ad4s266616g19-sgn/ram"
+    },
+    {
+      "slug": "adata-premier-16gb-3200mhz-cl22-ddr4-ram",
+      "title": "Adata Premier 16GB 3200MHz CL22 DDR4 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 1324500,
+      "imagePath": "/products/adata-premier-16gb-3200mhz-cl22-ddr4-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ram-premier-16gb-ddr4-ad4u320016g22-sgn/ram"
+    },
+    {
+      "slug": "crucial-16gb-3200mhz-cl22-ddr4-laptop-ram",
+      "title": "Crucial 16GB 3200MHz CL22 DDR4 Laptop RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 1360000,
+      "imagePath": "/products/crucial-16gb-3200mhz-cl22-ddr4-laptop-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/crucial-ram-cb16gs3200/ram"
+    },
+    {
+      "slug": "teamgroup-t-force-delta-rgb-white-16gb-3200mhz-cl16-ddr4-ram",
+      "title": "TeamGroup T-Force Delta RGB White 16GB 3200MHz CL16 DDR4 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 1486000,
+      "imagePath": "/products/teamgroup-t-force-delta-rgb-white-16gb-3200mhz-cl16-ddr4-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ram/teamgroup-ram-t-force-delta-rgb-tf4d416g3200hc16f01"
+    },
+    {
+      "slug": "adata-16gb-5600mhz-cl46-ddr5-ram",
+      "title": "Adata 16GB 5600MHz CL46 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 2422200,
+      "imagePath": "/products/adata-16gb-5600mhz-cl46-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ran-16gb-ddr5-5600mhz-ad5u560016g-s/ram"
+    },
+    {
+      "slug": "klevv-fit-v-16gb-5600mhz-cl30-ddr5-ram-2",
+      "title": "Klevv FIT V 16GB 5600MHz CL30 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 2479900,
+      "imagePath": null,
+      "sourceHint": "https://mdcomputers.in/product/klevv-fit-v-16gb-ddr5-kd5agu880-56k300k/ram"
+    },
+    {
+      "slug": "gskill-ripjaws-s5-16gb-5600mhz-cl40-ddr5-ram",
+      "title": "G.Skill Ripjaws S5 16GB 5600MHz CL40 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 2549900,
+      "imagePath": "/products/gskill-ripjaws-s5-16gb-5600mhz-cl40-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/g-skill-ram-ripjaws-s5-16gb-ddr5-f5-5600j4040c16gx1-rs5k/ram"
+    },
+    {
+      "slug": "crucial-pro-16gb-6000mhz-cl48-ddr5-ram",
+      "title": "Crucial Pro 16GB 6000MHz CL48 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 2699900,
+      "imagePath": "/products/crucial-pro-16gb-6000mhz-cl48-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/crucial-ram-pro-16gb-ddr5-cp16g60c48u5"
+    },
+    {
+      "slug": "patriot-viper-venom-rgb-ddr5-16gb-6000mhz-cl30-ram",
+      "title": "Patriot Viper Venom RGB DDR5 16GB 6000MHz CL30 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 2799900,
+      "imagePath": "/products/patriot-viper-venom-rgb-ddr5-16gb-6000mhz-cl30-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/patriot-ram-viper-venom-rgb-16gb-pvvr516g60c30/ram"
+    },
+    {
+      "slug": "corsair-vengeance-16gb-6000mhz-cl36-ddr5-ram-2",
+      "title": "Corsair Vengeance 16GB 6000MHz CL36 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 2899900,
+      "imagePath": null,
+      "sourceHint": "https://mdcomputers.in/product/corsair-ram-vengeance-16gb-cmk16gx5m1e6000z36/ram"
+    },
+    {
+      "slug": "gskill-trident-z5-rgb-16gb-6000mhz-cl36-ddr5-ram",
+      "title": "G.Skill Trident Z5 RGB 16GB 6000MHz CL36 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 2978000,
+      "imagePath": "/products/gskill-trident-z5-rgb-16gb-6000mhz-cl36-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/g-skill-trident-z5-rgb-16gb-ddr5-f5-6000j3636f16gx1-tz5rk/ram"
+    },
+    {
+      "slug": "adata-premier-32gb-3200mhz-cl22-ddr4-laptop-ram",
+      "title": "Adata Premier 32GB 3200MHz CL22 DDR4 Laptop RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 3104000,
+      "imagePath": "/products/adata-premier-32gb-3200mhz-cl22-ddr4-laptop-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ram-premier-32gb-ddr4-ad4s320032g22-sgn/ram"
+    },
+    {
+      "slug": "welcome-back",
+      "title": "Welcome Back",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 3228600,
+      "imagePath": "/products/welcome-back.webp",
+      "sourceHint": "https://mdcomputers.in/product/g-skill-trident-z5-neo-rgb-16gb-ddr5-f5-6000j3038f16gh1-tz5nr/ram"
+    },
+    {
+      "slug": "adata-xpg-lancer-blade-16gb-6000mhz-cl30-ddr5-ram",
+      "title": "Adata XPG Lancer Blade 16GB 6000MHz CL30 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 3398000,
+      "imagePath": "/products/adata-xpg-lancer-blade-16gb-6000mhz-cl30-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ram-xpg-lancer-blade-16gb-ddr5-ax5u6000c3016g-slabbk/ram"
+    },
+    {
+      "slug": "kingston-fury-beast-rgb-white-16gb-6000mhz-cl36-ddr5-ram",
+      "title": "Kingston Fury Beast RGB White 16GB 6000MHz CL36 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 3596000,
+      "imagePath": "/products/kingston-fury-beast-rgb-white-16gb-6000mhz-cl36-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-ram-fury-beast-16gb-ddr5-kf560c36bwe2a-16/ram"
+    },
+    {
+      "slug": "geil-orion-v-32gb-5600mhz-cl38-ddr5-ram-2",
+      "title": "Geil Orion V 32GB 5600MHz CL38 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 4929900,
+      "imagePath": null,
+      "sourceHint": "https://mdcomputers.in/product/geil-orion-v-32gb-ddr5-gvg532gb5600c38asc/ram"
+    },
+    {
+      "slug": "adata-32gb-4800mhz-cl40-ddr5-laptop-ram",
+      "title": "Adata 32GB 4800MHz CL40 DDR5 Laptop RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 5168000,
+      "imagePath": "/products/adata-32gb-4800mhz-cl40-ddr5-laptop-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ram-32gb-ddr5-4800mhz-ad5s480032g-s/ram"
+    },
+    {
+      "slug": "corsair-vengeance-32gb-5200mhz-cl40-ddr5-ram",
+      "title": "Corsair Vengeance 32GB 5200MHz CL40 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 5289900,
+      "imagePath": "/products/corsair-vengeance-32gb-5200mhz-cl40-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/corsair-ram-vengeance-cmk32gx5m1b5200c40/ram"
+    },
+    {
+      "slug": "teamgroup-t-force-delta-rgb-32gb-6000mhz-cl38-ddr5-ram",
+      "title": "TeamGroup T-Force Delta RGB 32GB 6000MHz CL38 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 5469900,
+      "imagePath": "/products/teamgroup-t-force-delta-rgb-32gb-6000mhz-cl38-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ram/teamgroup-ram-t-force-delta-rgb-ff3d532g6000hc38a01"
+    },
+    {
+      "slug": "corsair-vengeance-32gb-16gbx2-6000mhz-130v-cl36-ddr5-ram",
+      "title": "Corsair Vengeance 32GB (16GBx2) 6000MHz 1.30V CL36 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 5739900,
+      "imagePath": "/products/corsair-vengeance-32gb-16gbx2-6000mhz-130v-cl36-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/corsair-ram-vengeance-cmk32gx5m2f6000c36/ram"
+    },
+    {
+      "slug": "corsair-dominator-platinum-rgb-32gb-16gbx2-5200mhz-cl40-ddr5-ram",
+      "title": "Corsair Dominator Platinum RGB 32GB (16GBx2) 5200MHz CL40 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 5824000,
+      "imagePath": "/products/corsair-dominator-platinum-rgb-32gb-16gbx2-5200mhz-cl40-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/corsair-ram-dominator-platinum-cmt32gx5m2b5200z40/ram"
+    },
+    {
+      "slug": "kingston-fury-beast-32gb-5200mhz-cl40-ddr5-ram",
+      "title": "Kingston Fury Beast 32GB 5200MHz CL40 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 6014000,
+      "imagePath": "/products/kingston-fury-beast-32gb-5200mhz-cl40-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-ram-fury-beast-32gb-ddr5-kf552c40bb2-32/ram"
+    },
+    {
+      "slug": "kingston-fury-beast-32gb-5600mhz-cl36-ddr5-ram",
+      "title": "Kingston Fury Beast 32GB 5600MHz CL36 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 6152000,
+      "imagePath": "/products/kingston-fury-beast-32gb-5600mhz-cl36-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-ram-fury-beast-32gb-ddr5-kf556c36bbe2-32/ram"
+    },
+    {
+      "slug": "adata-xpg-spectrix-d35g-rgb-white-64gb-32gbx2-3200mhz-cl16-ddr4-ram",
+      "title": "Adata XPG Spectrix D35G RGB White 64GB (32GBx2) 3200MHz CL16 DDR4 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 6248000,
+      "imagePath": "/products/adata-xpg-spectrix-d35g-rgb-white-64gb-32gbx2-3200mhz-cl16-ddr4-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ram-xpg-spectrix-d35g-64gb-ddr4-ax4u320032g16a-dtwhd35g/ram"
+    },
+    {
+      "slug": "kingston-fury-beast-rgb-white-expo-32gb-16gbx2-6000mhz-cl30-ddr5-ram",
+      "title": "Kingston Fury Beast RGB White EXPO 32GB (16GBx2) 6000MHz CL30 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 6319900,
+      "imagePath": "/products/kingston-fury-beast-rgb-white-expo-32gb-16gbx2-6000mhz-cl30-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/kingston-ram-fury-beast-32gb-ddr5-kf560c30bweak2-32/ram"
+    },
+    {
+      "slug": "gskill-trident-z5-neo-rgb-32gb16gbx2-6000mhz-cl30-ddr5-ram",
+      "title": "G.Skill Trident Z5 Neo RGB 32GB(16GBx2) 6000MHz CL30 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 6514400,
+      "imagePath": "/products/gskill-trident-z5-neo-rgb-32gb16gbx2-6000mhz-cl30-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/g-skill-ram-32gb-ddr5-f5-6000j3038f16gh2-tz5nr/ram"
+    },
+    {
+      "slug": "acer-predator-pallas-ii-32gb-16gbx2-6000mhz-cl30-ddr5-ram",
+      "title": "Acer Predator Pallas II 32GB (16GBx2) 6000MHz CL30 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 6698000,
+      "imagePath": "/products/acer-predator-pallas-ii-32gb-16gbx2-6000mhz-cl30-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/acer-predator-ram-pallas-ii-32gb-bl-9bwwr-433/ram"
+    },
+    {
+      "slug": "adata-xpg-lancer-blade-rgb-32gb-16gbx2-6000mhz-cl30-ddr5-ram",
+      "title": "Adata XPG Lancer Blade RGB 32GB (16GBx2) 6000MHz CL30 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 6848000,
+      "imagePath": "/products/adata-xpg-lancer-blade-rgb-32gb-16gbx2-6000mhz-cl30-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ram-xpg-lancer-blade-32gb-ddr5-ax5u6000c3016g-dtlabrbk/ram"
+    },
+    {
+      "slug": "adata-xpg-lancer-blade-white-32gb-16gbx2-6000mhz-cl30-ddr5-ram",
+      "title": "Adata XPG Lancer Blade White 32GB (16GBx2) 6000MHz CL30 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 6872000,
+      "imagePath": "/products/adata-xpg-lancer-blade-white-32gb-16gbx2-6000mhz-cl30-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ram-xpg-lancer-blade-32gb-ddr5-ax5u6000c3016g-dtlabwh/ram"
+    },
+    {
+      "slug": "corsair-dominator-titanium-rgb-32gb-16gbx2-7200mhz-cl34-ddr5-ram",
+      "title": "Corsair Dominator Titanium RGB 32GB (16GBx2) 7200MHz CL34 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 8734000,
+      "imagePath": "/products/corsair-dominator-titanium-rgb-32gb-16gbx2-7200mhz-cl34-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/corsair-ram-dominatortitanium-cmp32gx5m2x7200c34/ram"
+    },
+    {
+      "slug": "kingston-value-64gb-5600mhz-cl46-ddr5-ram",
+      "title": "Kingston Value 64GB 5600MHz CL46 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 12514000,
+      "imagePath": "/products/kingston-value-64gb-5600mhz-cl46-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-value-ram-64gb-ddr5-kvr56u46bd8-64/ram"
+    },
+    {
+      "slug": "adata-xpg-lancer-blade-white-64gb-32gbx2-6000mhz-cl30-ddr5-ram",
+      "title": "Adata XPG Lancer Blade White 64GB (32GBx2) 6000MHz CL30 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 13568000,
+      "imagePath": "/products/adata-xpg-lancer-blade-white-64gb-32gbx2-6000mhz-cl30-ddr5-ram.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-ram-xpg-lancer-blade-64gb-ddr5-ax5u6000c3032g-dtlabwh/ram"
+    },
+    {
+      "slug": "kingston-fury-beast-64gb-32gb-x-2-6000mhz-cl36-ddr5-ram",
+      "title": "Kingston Fury Beast 64GB (32GB x 2) 6000MHz CL36 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 14626000,
+      "imagePath": "/products/kingston-fury-beast-64gb-32gb-x-2-6000mhz-cl36-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-fury-beast-ram-64gb-ddr5-kf560c36bbek2-64/ram"
+    },
+    {
+      "slug": "kingston-server-premier-ecc-registered-dimm-64gb-5600mhz-cl46-ddr5-ram",
+      "title": "Kingston Server Premier ECC Registered DIMM 64GB 5600MHz CL46 DDR5 RAM",
+      "categorySlug": "memory-ram",
+      "sellingPricePaise": 29110000,
+      "imagePath": "/products/kingston-server-premier-ecc-registered-dimm-64gb-5600mhz-cl46-ddr5-ram.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-server-premier-ecc-ram-ksm56r46bd4-64ha/ram"
+    },
+    {
+      "slug": "evm-enstore-4gb-usb-20-pen-drive",
+      "title": "EVM EnStore 4GB USB 2.0 Pen Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 43000,
+      "imagePath": "/products/evm-enstore-4gb-usb-20-pen-drive.webp",
+      "sourceHint": "https://mdcomputers.in/product/4gb-pen-drive-evm-enstore-evmpd-4gb/storage"
+    },
+    {
+      "slug": "sandisk-cruzer-blade-128gb-usb-20-red-pen-drive",
+      "title": "SanDisk Cruzer Blade 128GB USB 2.0 Red Pen Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 159900,
+      "imagePath": "/products/sandisk-cruzer-blade-128gb-usb-20-red-pen-drive.webp",
+      "sourceHint": "https://mdcomputers.in/product/128gb-pen-drive-sandisk-cruzer-blade-sdcz50-128g-i35/storage"
+    },
+    {
+      "slug": "sandisk-ultra-128gb-microsdxc-memory-card",
+      "title": "SanDisk Ultra 128GB MicroSDXC Memory Card",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 257800,
+      "imagePath": "/products/sandisk-ultra-128gb-microsdxc-memory-card.jpg",
+      "sourceHint": "https://mdcomputers.in/product/sandisk-ultra-microsd-card-sdsquab-128g-gn6mn/storage"
+    },
+    {
+      "slug": "sandisk-ultra-flair-256gb-usb-30-pen-drive",
+      "title": "SanDisk Ultra Flair 256GB USB 3.0 Pen Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 308000,
+      "imagePath": "/products/sandisk-ultra-flair-256gb-usb-30-pen-drive.jpg",
+      "sourceHint": "https://mdcomputers.in/product/256gb-pen-drive-sandisk-ultra-flair-sdcz73-256g-i35/storage"
+    },
+    {
+      "slug": "adata-ultimate-su650-internal-240gb-ssd",
+      "title": "Adata Ultimate SU650 Internal 240GB SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 409900,
+      "imagePath": "/products/adata-ultimate-su650-internal-240gb-ssd.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-su650-240gb-ssd-asu650ss-240gt-r/storage"
+    },
+    {
+      "slug": "verbatim-vi3000-nvme-256gb-gen3-ssd",
+      "title": "Verbatim Vi3000 NVMe 256GB Gen3 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 508000,
+      "imagePath": "/products/verbatim-vi3000-nvme-256gb-gen3-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/storage/verbatim-vi3000-256gb-nvme-ssd-49373"
+    },
+    {
+      "slug": "kingston-canvas-select-plus-256gb-sdxc-memory-card",
+      "title": "Kingston Canvas Select Plus 256GB SDXC Memory Card",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 605000,
+      "imagePath": "/products/kingston-canvas-select-plus-256gb-sdxc-memory-card.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-canvas-select-plus-sd-card-sds3-256gb/storage"
+    },
+    {
+      "slug": "wd-blue-sa510-ssd-250gb",
+      "title": "WD Blue SA510 SSD, 250GB",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 749900,
+      "imagePath": "/products/wd-blue-sa510-ssd-250gb.jpg",
+      "sourceHint": "https://mdcomputers.in/product/storage/wd-blue-sa510-250gb-ssd-wds250g3b0a"
+    },
+    {
+      "slug": "miphi-mp500g4-nvme-512gb-gen4-ssd",
+      "title": "MiPhi MP500G4 NVMe 512GB Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 867500,
+      "imagePath": "/products/miphi-mp500g4-nvme-512gb-gen4-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/miphi-mp500g4-512gb-nvme-ssd-mp5021512g/storage"
+    },
+    {
+      "slug": "wd-my-passport-1tb-external-hard-drive",
+      "title": "WD My Passport 1TB External Hard Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 955000,
+      "imagePath": "/products/wd-my-passport-1tb-external-hard-drive.jpg",
+      "sourceHint": "https://mdcomputers.in/product/storage/wd-my-passport-1tb-external-hard-drive-wdbyvg0010bbk-wesn"
+    },
+    {
+      "slug": "wd-green-sn3000-nvme-500gb-gen4-ssd",
+      "title": "WD Green SN3000 NVMe 500GB Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1054000,
+      "imagePath": "/products/wd-green-sn3000-nvme-500gb-gen4-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/storage/wd-green-sn3000-500gb-nvme-ssd-wds500g5g0e"
+    },
+    {
+      "slug": "adata-legend-860-500gb-nvme-gen4-ssd",
+      "title": "ADATA Legend 860 500GB NVMe Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1118000,
+      "imagePath": "/products/adata-legend-860-500gb-nvme-gen4-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/adata-legend-860-500gb-nvme-ssd-sleg-860-500gcs/storage"
+    },
+    {
+      "slug": "miphi-mp100-1tb-sata-ssd",
+      "title": "MiPhi MP100 1TB SATA SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1170500,
+      "imagePath": "/products/miphi-mp100-1tb-sata-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/miphi-mp100-1tb-sata-ssd-mp311100t/storage"
+    },
+    {
+      "slug": "toshiba-s300-2tb-5400-rpm-surveillance-hard-drive",
+      "title": "Toshiba S300 2TB 5400 RPM Surveillance Hard Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1260000,
+      "imagePath": "/products/toshiba-s300-2tb-5400-rpm-surveillance-hard-drive.jpg",
+      "sourceHint": "https://mdcomputers.in/product/storage/toshiba-surveillance-s300-2tb-hard-drive-hdwt720uzsva"
+    },
+    {
+      "slug": "kingston-xs1000-built-on-commitment-1tb-external-ssd",
+      "title": "Kingston XS1000 Built on Commitment 1TB External SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1418000,
+      "imagePath": "/products/kingston-xs1000-built-on-commitment-1tb-external-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-xs1000-1tb-external-ssd-sxs1000-1000ga/storage"
+    },
+    {
+      "slug": "samsung-870-evo-250gb-internal-ssd",
+      "title": "Samsung 870 Evo 250GB Internal SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1477000,
+      "imagePath": "/products/samsung-870-evo-250gb-internal-ssd.jpg",
+      "sourceHint": "https://mdcomputers.in/product/samsung-870-evo-250gb-ssd-mz-77e250bw/storage"
+    },
+    {
+      "slug": "crucial-e100-1tb-nvme-gen4-ssd",
+      "title": "Crucial E100 1TB NVMe Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1600000,
+      "imagePath": "/products/crucial-e100-1tb-nvme-gen4-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/crucial-e100-1tb-nvme-ssd-ct1000e100ssd8/storage"
+    },
+    {
+      "slug": "wd-my-book-4tb-external-hard-drive",
+      "title": "WD My Book 4TB External Hard Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1666000,
+      "imagePath": "/products/wd-my-book-4tb-external-hard-drive.jpg",
+      "sourceHint": "https://mdcomputers.in/product/storage/wd-my-book-4tb-external-hard-drive-wdbbgb0040hbk-nesn"
+    },
+    {
+      "slug": "seagate-barracuda-4tb-5400-rpm-hard-drive",
+      "title": "Seagate Barracuda 4TB 5400 RPM Hard Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1719900,
+      "imagePath": "/products/seagate-barracuda-4tb-5400-rpm-hard-drive.webp",
+      "sourceHint": "https://mdcomputers.in/product/seagate-barracuda-4tb-hard-drive-st4000dm004/storage"
+    },
+    {
+      "slug": "wd-elements-4tb-external-hard-drive",
+      "title": "WD Elements 4TB External Hard Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1798000,
+      "imagePath": "/products/wd-elements-4tb-external-hard-drive.webp",
+      "sourceHint": "https://mdcomputers.in/product/storage/wd-elements-4tb-external-hard-drive-wdbhdw0040bbk-eesn"
+    },
+    {
+      "slug": "adata-legend-900-pro-1tb-nvme-gen4-ssd",
+      "title": "Adata Legend 900 Pro 1TB NVMe Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 1862000,
+      "imagePath": "/products/adata-legend-900-pro-1tb-nvme-gen4-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/adata-legend-900-pro-1tb-nvme-sleg-900p-1tcs/storage"
+    },
+    {
+      "slug": "seagate-one-touch-5tb-external-hard-drive",
+      "title": "Seagate One Touch 5TB External Hard Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 2060000,
+      "imagePath": "/products/seagate-one-touch-5tb-external-hard-drive.jpg",
+      "sourceHint": "https://mdcomputers.in/product/seagate-one-touch-5tb-external-hard-drive-stkz5000400/storage"
+    },
+    {
+      "slug": "adata-legend-960-max-1tb-nvme-gen4-ssd",
+      "title": "Adata Legend 960 Max 1TB NVMe Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 2228000,
+      "imagePath": "/products/adata-legend-960-max-1tb-nvme-gen4-ssd.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-legend-960-max-1tb-nvme-ssd-aleg-960m-1tcs/storage"
+    },
+    {
+      "slug": "wd-green-sn3000-nvme-2tb-gen4-ssd",
+      "title": "WD Green SN3000 NVMe 2TB Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 2399900,
+      "imagePath": "/products/wd-green-sn3000-nvme-2tb-gen4-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/storage/wd-green-sn3000-2tb-nvme-ssd-wds200t5g0e"
+    },
+    {
+      "slug": "wd-my-book-8tb-external-hard-drive",
+      "title": "WD My Book 8TB External Hard Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 2720000,
+      "imagePath": "/products/wd-my-book-8tb-external-hard-drive.jpg",
+      "sourceHint": "https://mdcomputers.in/product/storage/wd-my-book-8tb-external-hard-drive-wdbbgb0080hbk"
+    },
+    {
+      "slug": "kingston-nv3-2tb-nvme-gen4-ssd",
+      "title": "Kingston NV3 2TB NVMe Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 2918000,
+      "imagePath": "/products/kingston-nv3-2tb-nvme-gen4-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-nv3-2tb-ssd-snv3s-2000g/storage"
+    },
+    {
+      "slug": "wd-black-sn7100-nvme-2tb-gen4-ssd",
+      "title": "WD Black SN7100 NVMe 2TB Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 3169900,
+      "imagePath": "/products/wd-black-sn7100-nvme-2tb-gen4-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/storage/wd-black-sn7100-2tb-nvme-ssd-wds200t4x0e"
+    },
+    {
+      "slug": "adata-legend-960-2tb-m2-nvme-gen4-internal-ssd",
+      "title": "Adata Legend 960 2TB M.2 NVMe Gen4 Internal SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 3649900,
+      "imagePath": "/products/adata-legend-960-2tb-m2-nvme-gen4-internal-ssd.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-legend-960-2tb-nvme-ssd-aleg-960-2tcs/storage"
+    },
+    {
+      "slug": "toshiba-n300-pro-8tb-7200-rpm-nas-hard-drive",
+      "title": "Toshiba N300 Pro 8TB 7200 RPM NAS Hard Drive",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 4105000,
+      "imagePath": "/products/toshiba-n300-pro-8tb-7200-rpm-nas-hard-drive.webp",
+      "sourceHint": "https://mdcomputers.in/product/storage/toshiba-n300-pro-8tb-nas-hard-drive-hdwg780azstb"
+    },
+    {
+      "slug": "kingston-dc600m-480gb-enterprise-ssd",
+      "title": "Kingston DC600M 480GB Enterprise SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 4388000,
+      "imagePath": "/products/kingston-dc600m-480gb-enterprise-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-dc600m-480gb-enterprise-ssd/storage"
+    },
+    {
+      "slug": "samsung-9100-pro-2tb-nvme-gen5-ssd",
+      "title": "Samsung 9100 PRO 2TB NVMe Gen5 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 5186000,
+      "imagePath": "/products/samsung-9100-pro-2tb-nvme-gen5-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/samsung-9100-pro-2tb-nvme-ssd-mz-vap2t0bw/storage"
+    },
+    {
+      "slug": "qnap-ts-253e-8g-2-bay-tower-nas-enclosure",
+      "title": "QNAP TS-253E-8G 2-Bay Tower NAS Enclosure",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 6040000,
+      "imagePath": "/products/qnap-ts-253e-8g-2-bay-tower-nas-enclosure.webp",
+      "sourceHint": "https://mdcomputers.in/product/qnap-nas-enclousure-ts-253e-8g/storage"
+    },
+    {
+      "slug": "samsung-t7-gray-4tb-gen-2-external-ssd",
+      "title": "SAMSUNG T7 Gray 4TB Gen 2 External SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 7184000,
+      "imagePath": "/products/samsung-t7-gray-4tb-gen-2-external-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/samsung-t7-gray-4tb-external-ssd-mu-pc4t0t-ww/storage"
+    },
+    {
+      "slug": "samsung-990-pro-4tb-m2-nvme-gen4-ssd",
+      "title": "Samsung 990 Pro 4TB M.2 NVMe Gen4 SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 8048000,
+      "imagePath": "/products/samsung-990-pro-4tb-m2-nvme-gen4-ssd.jpg",
+      "sourceHint": "https://mdcomputers.in/product/samsung-990-pro-4tb-nvme-ssd-mz-v9p4t0bw/storage"
+    },
+    {
+      "slug": "samsung-t9-nvme-4tb-gen-2-external-ssd",
+      "title": "SAMSUNG T9 NVMe 4TB Gen 2 External SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 11145000,
+      "imagePath": "/products/samsung-t9-nvme-4tb-gen-2-external-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/samsung-t9-4tb-external-ssd-mu-pg4t0b-ww/storage"
+    },
+    {
+      "slug": "kingston-dc600m-384tb-enterprise-ssd",
+      "title": "Kingston DC600M 3.84TB Enterprise SSD",
+      "categorySlug": "storage-ssd",
+      "sellingPricePaise": 23768000,
+      "imagePath": "/products/kingston-dc600m-384tb-enterprise-ssd.webp",
+      "sourceHint": "https://mdcomputers.in/product/kingston-enterprise-ssd-sedc600m-3840g/storage"
+    },
+    {
+      "slug": "antec-st10m-m-atx-mini-tower-case",
+      "title": "Antec ST10M M-ATX Mini Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 170000,
+      "imagePath": "/products/antec-st10m-m-atx-mini-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/antec-st10m-mini-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "ant-esports-si26-atx-mid-tower-case",
+      "title": "Ant Esports Si26 ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 230000,
+      "imagePath": "/products/ant-esports-si26-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-si26-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "coco-sports-nova-x880-white-argb-m-atx-mini-tower-case",
+      "title": "Coco Sports Nova X880 White ARGB M-ATX Mini Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 295000,
+      "imagePath": "/products/coco-sports-nova-x880-white-argb-m-atx-mini-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/coconut-nova-x880-white-argb-mini-tower-cabinet"
+    },
+    {
+      "slug": "ant-esports-crystal-z2-argb-m-atx-mid-tower-case",
+      "title": "Ant Esports Crystal Z2 ARGB M-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 325000,
+      "imagePath": "/products/ant-esports-crystal-z2-argb-m-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-crystal-z2-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "ant-esports-evo-360-lite-argb-e-atx-mid-tower-case",
+      "title": "Ant Esports EVO 360 Lite ARGB E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 380000,
+      "imagePath": "/products/ant-esports-evo-360-lite-argb-e-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-evo-360-lite-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "ant-esports-infinity-x-atx-mid-tower-case",
+      "title": "Ant Esports Infinity X ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 413000,
+      "imagePath": "/products/ant-esports-infinity-x-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-infinity-x-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "cooler-master-masterbox-mb600l-v2-atx-mid-tower-case",
+      "title": "Cooler Master MasterBox MB600L V2 ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 426000,
+      "imagePath": "/products/cooler-master-masterbox-mb600l-v2-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/cooler-master-masterbox-mid-tower-cabinet-mb600l2-knnn-s00"
+    },
+    {
+      "slug": "ant-esports-511-air-5f-argb-e-atx-mid-tower-case",
+      "title": "Ant Esports 511 Air 5F ARGB E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 463600,
+      "imagePath": "/products/ant-esports-511-air-5f-argb-e-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-511-air-5f-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "dawg-x-440-argb-white-atx-mid-tower-case",
+      "title": "Dawg X 440 ARGB White ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 489900,
+      "imagePath": "/products/dawg-x-440-argb-white-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/dawg-x-440-mid-tower-white-cabinet"
+    },
+    {
+      "slug": "zotac-gaming-alloy-white-m-atx-mini-tower-case",
+      "title": "Zotac Gaming Alloy White M-ATX Mini Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 510000,
+      "imagePath": "/products/zotac-gaming-alloy-white-m-atx-mini-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/zotac-gaming-alloy-white-mini-tower-cabinet-zc-maw3f-01"
+    },
+    {
+      "slug": "cooler-master-cd600-atx-mid-tower-case",
+      "title": "Cooler Master CD600 ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 538000,
+      "imagePath": "/products/cooler-master-cd600-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cooler-master-mid-tower-cabinet-cd600-khnn-s00"
+    },
+    {
+      "slug": "antec-c3-argb-atx-mid-tower-case",
+      "title": "Antec C3 ARGB ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 555000,
+      "imagePath": "/products/antec-c3-argb-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/antec-c3-argb-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "montech-x3-glass-rgb-atx-mid-tower-case",
+      "title": "Montech X3 Glass RGB ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 580000,
+      "imagePath": "/products/montech-x3-glass-rgb-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/montech-x3-glass-rgb-mid-tower-cabinet"
+    },
+    {
+      "slug": "cooler-master-elite-681-white-argb-atx-mid-tower-case",
+      "title": "Cooler Master Elite 681 White ARGB ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 640000,
+      "imagePath": "/products/cooler-master-elite-681-white-argb-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/cooler-master-elite-681-mid-tower-cabinet-e681-whnn-s00"
+    },
+    {
+      "slug": "ant-esports-crystal-x7-pro-max-argb-atx-mid-tower-case-with-infinite-mirror-fan",
+      "title": "ANT Esports Crystal X7 Pro Max ARGB ATX Mid Tower Case With Infinite Mirror Fan",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 680000,
+      "imagePath": "/products/ant-esports-crystal-x7-pro-max-argb-atx-mid-tower-case-with-infinite-mirror-fan.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-crystal-x7-pro-max-infinite-fan-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "dawg-y-740-cube-argb-m-atx-mini-tower-case",
+      "title": "Dawg Y 740 Cube ARGB M-ATX Mini Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 729900,
+      "imagePath": "/products/dawg-y-740-cube-argb-m-atx-mini-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/dawg-y-740-cube-cabinet"
+    },
+    {
+      "slug": "antec-c5-argb-white-atx-mid-tower-case",
+      "title": "Antec C5 ARGB White ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 770000,
+      "imagePath": "/products/antec-c5-argb-white-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/antec-c5-argb-white-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "lian-li-vector-v100-white-argb-e-atx-mid-tower-case",
+      "title": "Lian Li Vector V100 White ARGB E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 795000,
+      "imagePath": "/products/lian-li-vector-v100-white-argb-e-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/lian-li-vector-v100-mid-tower-cabinet-g99-v100rw-in"
+    },
+    {
+      "slug": "prolab-design-ai848-argb-atx-mid-tower-case",
+      "title": "ProLab Design AI848 ARGB ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 830000,
+      "imagePath": "/products/prolab-design-ai848-argb-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/prolab-ai848-mid-tower-cabinet"
+    },
+    {
+      "slug": "corsair-3500x-rs-r-argb-e-atx-mid-tower-case",
+      "title": "Corsair 3500X RS-R ARGB E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 875000,
+      "imagePath": "/products/corsair-3500x-rs-r-argb-e-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/corsair-3500x-rs-r-argb-mid-tower-cabinet-cc-9011322-ww"
+    },
+    {
+      "slug": "antec-c8-aluminum-white-e-atx-full-tower-case",
+      "title": "Antec C8 Aluminum White E-ATX Full Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 900000,
+      "imagePath": "/products/antec-c8-aluminum-white-e-atx-full-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/antec-c8-aluminum-white-full-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "fractal-design-focus-2-solid-atx-mid-tower-case",
+      "title": "Fractal Design Focus 2 Solid ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 940000,
+      "imagePath": "/products/fractal-design-focus-2-solid-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/fractal-design-focus-2-solid-mid-tower-cabinet-fd-c-foc2a-07"
+    },
+    {
+      "slug": "cougar-darkblader-s-argb-e-atx-full-tower-case",
+      "title": "Cougar DarkBlader-s ARGB E-ATX Full Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 1020000,
+      "imagePath": "/products/cougar-darkblader-s-argb-e-atx-full-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/cougar-darkblader-s-full-tower-cabinet-cgr-58m3o-s"
+    },
+    {
+      "slug": "antec-c7-white-argb-e-atx-mid-tower-case",
+      "title": "Antec C7 White ARGB E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 1070000,
+      "imagePath": "/products/antec-c7-white-argb-e-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/antec-c7-white-argb-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "thermaltake-view-300-mx-snow-argb-white-e-atx-mid-tower-case",
+      "title": "Thermaltake View 300 MX Snow ARGB White E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 1152000,
+      "imagePath": "/products/thermaltake-view-300-mx-snow-argb-white-e-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/thermaltake-view-300-mx-mid-tower-cabinet-ca-1p6-00m6wn-00"
+    },
+    {
+      "slug": "lian-li-lancool-217-inf-argb-e-atx-mid-tower-case",
+      "title": "Lian Li Lancool 217 INF ARGB E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 1260000,
+      "imagePath": "/products/lian-li-lancool-217-inf-argb-e-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/lian-li-lancool-217-inf-mid-tower-cabinet-g99-lan217infx-in"
+    },
+    {
+      "slug": "hyte-y50-rgb-e-atx-white-mid-tower-case",
+      "title": "Hyte Y50 RGB E-ATX White Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 1350000,
+      "imagePath": "/products/hyte-y50-rgb-e-atx-white-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/hyte-y50-rgb-mid-tower-cabinet-cs-hyte-y50rgb-ww"
+    },
+    {
+      "slug": "cooler-master-masterframe-500-mesh-argb-silver-e-atx-mid-tower-case",
+      "title": "Cooler Master MasterFrame 500 Mesh ARGB Silver E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 1498000,
+      "imagePath": "/products/cooler-master-masterframe-500-mesh-argb-silver-e-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/cooler-master-masterframe-500-mid-tower-cabinet-mf500m-shnn-s01"
+    },
+    {
+      "slug": "dawg-y-907-argb-e-atx-full-tower-case",
+      "title": "Dawg Y 907 ARGB E-ATX Full Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 1599900,
+      "imagePath": "/products/dawg-y-907-argb-e-atx-full-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/dawg-y-907-full-tower-cabinet"
+    },
+    {
+      "slug": "fractal-design-epoch-tg-rgb-light-tint-atx-mid-tower-case",
+      "title": "Fractal Design Epoch TG RGB Light Tint ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 1690000,
+      "imagePath": "/products/fractal-design-epoch-tg-rgb-light-tint-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/fractal-design-epoch-tg-rgb-light-tint-cabinet-fd-c-epo1a-04"
+    },
+    {
+      "slug": "lian-li-o11-dynamic-evo-rgb-e-atx-mid-tower-case",
+      "title": "Lian Li O11 Dynamic EVO RGB E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 1899900,
+      "imagePath": "/products/lian-li-o11-dynamic-evo-rgb-e-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/lian-li-o11-dynamic-evo-rgb-mid-tower-cabinet-g99-o11dergbx-in"
+    },
+    {
+      "slug": "fractal-design-north-charcoal-tg-dark-atx-mid-tower-case",
+      "title": "Fractal Design North Charcoal TG Dark ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 2015000,
+      "imagePath": "/products/fractal-design-north-charcoal-tg-dark-atx-mid-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/fractal-design-north-charcoal-mid-tower-cabinet-fd-c-nor1c-02"
+    },
+    {
+      "slug": "lian-li-o11-dynamic-evo-xl-argb-e-atx-full-tower-case",
+      "title": "Lian Li O11 Dynamic EVO XL ARGB E-ATX Full Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 2420000,
+      "imagePath": "/products/lian-li-o11-dynamic-evo-xl-argb-e-atx-full-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/lian-li-o11-dynamic-evo-xl-full-tower-cabinet-g99-o11dexl-x-in"
+    },
+    {
+      "slug": "corsair-7000d-airflow-white-atx-full-tower-case",
+      "title": "Corsair 7000D Airflow White ATX Full Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 2680000,
+      "imagePath": "/products/corsair-7000d-airflow-white-atx-full-tower-case.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/corsair-7000d-airflow-white-full-tower-cabinet-cc-9011219-ww"
+    },
+    {
+      "slug": "asus-rog-strix-helios-ii-e-atx-mid-tower-case",
+      "title": "Asus ROG Strix Helios II E-ATX Mid Tower Case",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 3300000,
+      "imagePath": "/products/asus-rog-strix-helios-ii-e-atx-mid-tower-case.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-rog-strix-helios-ii-mid-tower-cabinet/cabinet"
+    },
+    {
+      "slug": "cooler-master-shark-x-mini-itx-case-with-smps-cpu-cooler-and-fan",
+      "title": "Cooler Master Shark X Mini ITX Case with SMPS, CPU Cooler and Fan",
+      "categorySlug": "cabinets",
+      "sellingPricePaise": 36000000,
+      "imagePath": "/products/cooler-master-shark-x-mini-itx-case-with-smps-cpu-cooler-and-fan.webp",
+      "sourceHint": "https://mdcomputers.in/product/cabinet/cooler-master-shark-x-mini-tower-cabinet-abk-ffb4-s38l1-r1"
+    },
+    {
+      "slug": "ant-esports-vs400l-smps",
+      "title": "Ant Esports VS400L SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 129000,
+      "imagePath": "/products/ant-esports-vs400l-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-vs400l-smps/smps"
+    },
+    {
+      "slug": "antec-atom-v550-v2-smps",
+      "title": "Antec Atom V550 V2 SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 220000,
+      "imagePath": "/products/antec-atom-v550-v2-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/antec-atom-v550-v2-smps/smps"
+    },
+    {
+      "slug": "ant-esports-vs550l-550-watt-smps",
+      "title": "ANT ESPORTS VS550L 550 Watt SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 240000,
+      "imagePath": "/products/ant-esports-vs550l-550-watt-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-vs550l-smps/smps"
+    },
+    {
+      "slug": "ant-esports-vs700l-700-watt-smps",
+      "title": "Ant Esports VS700L 700 Watt SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 276000,
+      "imagePath": "/products/ant-esports-vs700l-700-watt-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-vs700l-smps/smps"
+    },
+    {
+      "slug": "gamdias-kratos-e1-500-80-plus-smps",
+      "title": "Gamdias Kratos E1-500 80 Plus SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 320000,
+      "imagePath": "/products/gamdias-kratos-e1-500-80-plus-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/gamdias-kratos-e1-500w-smps/smps"
+    },
+    {
+      "slug": "coconut-sm70-x650-bronze-650-watt-white-smps",
+      "title": "Coconut SM70 X650 Bronze 650 Watt White SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 330000,
+      "imagePath": "/products/coconut-sm70-x650-bronze-650-watt-white-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/coconut-sm70-x650-bronze-white-smps/smps"
+    },
+    {
+      "slug": "thermaltake-smart-bx1-550-watt-80-plus-bronze-smps",
+      "title": "Thermaltake Smart BX1 550 Watt 80 Plus Bronze SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 361800,
+      "imagePath": "/products/thermaltake-smart-bx1-550-watt-80-plus-bronze-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/smps/thermaltake-smart-bx1-bronze-smps-ps-spd-0550nnsabd-1"
+    },
+    {
+      "slug": "thermaltake-smart-bx1-550-watt-bronze-smps-dc-to-dc-version",
+      "title": "Thermaltake Smart BX1 550 Watt Bronze Smps - DC To DC Version",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 370000,
+      "imagePath": "/products/thermaltake-smart-bx1-550-watt-bronze-smps-dc-to-dc-version.webp",
+      "sourceHint": "https://mdcomputers.in/product/smps/thermaltake-smart-bx1-550w-bronze-smps-ps-spd-0550nnfabd-4"
+    },
+    {
+      "slug": "thermaltake-smart-bx3-550-watt-atx-31-smps",
+      "title": "Thermaltake Smart BX3 550 Watt ATX 3.1 SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 387000,
+      "imagePath": "/products/thermaltake-smart-bx3-550-watt-atx-31-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/smps/thermaltake-smart-bx3-550w-bronze-smps-ps-spd-0550nnfabd-3"
+    },
+    {
+      "slug": "adata-xpg-pylon-550w-bronze-smps",
+      "title": "Adata XPG Pylon 550W Bronze SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 405000,
+      "imagePath": "/products/adata-xpg-pylon-550w-bronze-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/adata-xpg-pylon-550w-bronze-smps/smps"
+    },
+    {
+      "slug": "cooler-master-mwe-bronze-550-watt-v3-atx-31-smps",
+      "title": "Cooler Master MWE Bronze 550 Watt V3 ATX 3.1 Smps",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 435000,
+      "imagePath": "/products/cooler-master-mwe-bronze-550-watt-v3-atx-31-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cooler-master-mwe-550-v3-230v-bronze-smps-mpe-5501-acabw-3bin/smps"
+    },
+    {
+      "slug": "ant-esports-rx750-80-plus-bronze-smps",
+      "title": "ANT Esports RX750 80 Plus Bronze SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 485000,
+      "imagePath": "/products/ant-esports-rx750-80-plus-bronze-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-rx750-bronze-smps/smps"
+    },
+    {
+      "slug": "msi-mag-a650bn-650-watt-80-plus-bronze-smps",
+      "title": "MSI MAG A650BN 650 Watt 80 Plus Bronze SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 495000,
+      "imagePath": "/products/msi-mag-a650bn-650-watt-80-plus-bronze-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/msi-mag-a650bn-bronze-smps/smps"
+    },
+    {
+      "slug": "fsp-hexa-85-plus-pro-bronze-650-watt-atx-31-smps",
+      "title": "FSP Hexa 85 Plus Pro Bronze 650 Watt ATX 3.1 SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 509900,
+      "imagePath": "/products/fsp-hexa-85-plus-pro-bronze-650-watt-atx-31-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/fsp-hexa-85-plus-pro-650watt-bronze-smps/smps"
+    },
+    {
+      "slug": "ant-esports-rx850-80-plus-bronze-smps",
+      "title": "ANT Esports RX850 80 Plus Bronze SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 552500,
+      "imagePath": "/products/ant-esports-rx850-80-plus-bronze-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-rx850-bronze-smps/smps"
+    },
+    {
+      "slug": "deepcool-pl750d-atx-31-750-watt-80-plus-bronze-smps",
+      "title": "DeepCool PL750D ATX 3.1 750 Watt 80 Plus Bronze SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 580000,
+      "imagePath": "/products/deepcool-pl750d-atx-31-750-watt-80-plus-bronze-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/deepcool-pl750d-bronze-smps-r-pl750d-fc0b-in-v2-atx-3-1/smps"
+    },
+    {
+      "slug": "fsp-hexa-85-plus-pro-bronze-750-watt-atx-31-smps",
+      "title": "FSP Hexa 85 Plus Pro Bronze 750 Watt ATX 3.1 SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 590000,
+      "imagePath": "/products/fsp-hexa-85-plus-pro-bronze-750-watt-atx-31-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/fsp-hexa-85-plus-pro-750watt-bronze-smps/smps"
+    },
+    {
+      "slug": "thermaltake-smart-bm3-650-watt-80-plus-bronze-smps",
+      "title": "Thermaltake Smart BM3 650 Watt 80 Plus Bronze SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 618000,
+      "imagePath": "/products/thermaltake-smart-bm3-650-watt-80-plus-bronze-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/smps/thermaltake-smart-bm3-bronze-smps-650w-ps-spd-0650mnfabd-3"
+    },
+    {
+      "slug": "deepcool-gamer-storm-pn750d-gold-atx-31-smps",
+      "title": "DeepCool Gamer Storm PN750D Gold ATX 3.1 SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 700000,
+      "imagePath": "/products/deepcool-gamer-storm-pn750d-gold-atx-31-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/deepcool-750w-gold-smps-r-pn750d-fc0b-jgin-v2/smps"
+    },
+    {
+      "slug": "antec-csk1000-pro-atx-31-bronze-smps",
+      "title": "Antec CSK1000 PRO ATX 3.1 Bronze SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 850000,
+      "imagePath": "/products/antec-csk1000-pro-atx-31-bronze-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/antec-csk1000-pro-bronze-modular-smps/smps"
+    },
+    {
+      "slug": "super-flower-leadex-iii-gold-bd-750w-atx-31-fully-modular-smps",
+      "title": "Super Flower Leadex III Gold BD 750W ATX 3.1 Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 880000,
+      "imagePath": "/products/super-flower-leadex-iii-gold-bd-750w-atx-31-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/smps/super-flower-leadex-iii-gold-750w-smps-sf-750f14ge-bd"
+    },
+    {
+      "slug": "thermaltake-toughpower-gf-a3-gold-850-watt-atx-30-fully-modular-smps",
+      "title": "Thermaltake Toughpower GF A3 Gold 850 Watt ATX 3.0 Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 905000,
+      "imagePath": "/products/thermaltake-toughpower-gf-a3-gold-850-watt-atx-30-fully-modular-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/smps/thermaltake-toughpower-gold-modular-smps-ps-tpd-0850fnfagd-h"
+    },
+    {
+      "slug": "asus-tuf-gaming-evo-bronze-750-watt-atx-31-fully-modular-smps",
+      "title": "Asus TUF Gaming EVO Bronze 750 Watt ATX 3.1 Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 970000,
+      "imagePath": "/products/asus-tuf-gaming-evo-bronze-750-watt-atx-31-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-tuf-gaming-evo-750w-bronze-modular-smps/smps"
+    },
+    {
+      "slug": "corsair-rm850e-atx-31-gold-fully-modular-smps",
+      "title": "Corsair RM850e ATX 3.1 Gold Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 1070000,
+      "imagePath": "/products/corsair-rm850e-atx-31-gold-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/corsair-rm850e-cybenetics-gold-modular-smps-cp-9020296-in/smps"
+    },
+    {
+      "slug": "asus-tuf-gaming-bronze-750-watt-smps",
+      "title": "Asus TUF Gaming Bronze 750 Watt SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 1095000,
+      "imagePath": "/products/asus-tuf-gaming-bronze-750-watt-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-tuf-gaming-750b-bronze-smps/smps"
+    },
+    {
+      "slug": "asus-tuf-gaming-evo-gold-750-watt-atx-31-fully-modular-smps",
+      "title": "Asus TUF Gaming EVO Gold 750 Watt ATX 3.1 Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 1370000,
+      "imagePath": "/products/asus-tuf-gaming-evo-gold-750-watt-atx-31-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-tuf-gaming-750g-evo-gold-modular-smps/smps"
+    },
+    {
+      "slug": "nzxt-c1000-gold-fully-modular-atx-31-smps",
+      "title": "Nzxt C1000 Gold Fully Modular ATX 3.1 SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 1420000,
+      "imagePath": "/products/nzxt-c1000-gold-fully-modular-atx-31-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/nzxt-c1000-gold-modular-smps-pa-0g2bb-uk/smps"
+    },
+    {
+      "slug": "asus-tuf-gaming-gold-850-watt-atx-31-fully-modular-smps",
+      "title": "Asus TUF Gaming Gold 850 Watt ATX 3.1 Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 1500000,
+      "imagePath": "/products/asus-tuf-gaming-gold-850-watt-atx-31-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-tuf-gaming-850w-gold-atx-3-1-modular-smps/smps"
+    },
+    {
+      "slug": "thermaltake-toughpower-gf-a3-1050-watt-gold-atx-31-fully-modular-smps",
+      "title": "Thermaltake Toughpower GF A3 1050 Watt Gold ATX 3.1 Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 1535000,
+      "imagePath": "/products/thermaltake-toughpower-gf-a3-1050-watt-gold-atx-31-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/smps/thermaltake-toughpower-gf-a3-1050w-gold-atx-3-1-modular-smps"
+    },
+    {
+      "slug": "deepcool-gamer-storm-pn1200m-gold-atx-31-fully-modular-smps",
+      "title": "Deepcool Gamer Storm PN1200M Gold ATX 3.1 Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 1590000,
+      "imagePath": "/products/deepcool-gamer-storm-pn1200m-gold-atx-31-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/deepcool-pn1200m-gold-modular-smps-r-pnc00m-fc0b-jgin/smps"
+    },
+    {
+      "slug": "corsair-sf850-platinum-atx-31-fully-modular-sfx-smps",
+      "title": "Corsair SF850 Platinum ATX 3.1 Fully Modular SFX SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 1750000,
+      "imagePath": "/products/corsair-sf850-platinum-atx-31-fully-modular-sfx-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/corsair-sf850-platinum-modular-smps-cp-9020256-in/smps"
+    },
+    {
+      "slug": "super-flower-leadex-vii-platinum-pro-1200w-atx-31-modular-smps",
+      "title": "Super Flower Leadex VII Platinum Pro 1200W ATX 3.1 Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 1930000,
+      "imagePath": "/products/super-flower-leadex-vii-platinum-pro-1200w-atx-31-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/smps/super-flower-leadex-vii-platinum-pro-smps-sf-1200f14xp-atx-3-1"
+    },
+    {
+      "slug": "corsair-hx1200i-atx-31-platinum-1200-watt-fully-modular-smps",
+      "title": "CORSAIR HX1200i ATX 3.1 Platinum 1200 Watt Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 2686000,
+      "imagePath": "/products/corsair-hx1200i-atx-31-platinum-1200-watt-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/corsair-hx1200i-platinum-modular-smps-cp-9020307-in/smps"
+    },
+    {
+      "slug": "corsair-hx1500i-platinum-1500-watt-atx-31-fully-modular-smps",
+      "title": "Corsair HX1500i Platinum 1500 Watt ATX 3.1 Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 3534000,
+      "imagePath": "/products/corsair-hx1500i-platinum-1500-watt-atx-31-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/corsair-hx1500i-platinum-modular-smps-cp-9020309-in/smps"
+    },
+    {
+      "slug": "cooler-master-v-platinum-1600-watt-v2-atx-31-fully-modular-smps",
+      "title": "Cooler Master V Platinum 1600 Watt V2 ATX 3.1 Fully Modular Smps",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 3880000,
+      "imagePath": "/products/cooler-master-v-platinum-1600-watt-v2-atx-31-fully-modular-smps.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cooler-master-v-platinum-1600-v2-smps-mpz-g002-afap-bin/smps"
+    },
+    {
+      "slug": "thermaltake-toughpower-i2000w-platinum-atx-31-fully-modular-smps",
+      "title": "Thermaltake Toughpower i2000w Platinum ATX 3.1 Fully Modular SMPS",
+      "categorySlug": "power-supplies",
+      "sellingPricePaise": 4749500,
+      "imagePath": "/products/thermaltake-toughpower-i2000w-platinum-atx-31-fully-modular-smps.webp",
+      "sourceHint": "https://mdcomputers.in/product/smps/thermaltake-toughpower-i2000w-platinum-smps"
+    },
+    {
+      "slug": "ant-esports-ice-c120-120mm-cpu-air-cooler",
+      "title": "Ant Esports ICE-C120 120mm CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 63500,
+      "imagePath": "/products/ant-esports-ice-c120-120mm-cpu-air-cooler.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-ice-c120-cpu-air-cooler/cpu-cooler"
+    },
+    {
+      "slug": "ant-esports-ice-c400-120mm-cpu-air-cooler-with-rainbow-led",
+      "title": "Ant Esports ICE-C400 120mm CPU Air Cooler with Rainbow LED",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 112000,
+      "imagePath": "/products/ant-esports-ice-c400-120mm-cpu-air-cooler-with-rainbow-led.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-ice-c400-cpu-air-cooler/cpu-cooler"
+    },
+    {
+      "slug": "arctic-freezer-8i-cpu-air-cooler",
+      "title": "Arctic Freezer 8i CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 167500,
+      "imagePath": "/products/arctic-freezer-8i-cpu-air-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/arctic-freezer-8i-cpu-air-cooler-acfre00190a/cpu-cooler"
+    },
+    {
+      "slug": "msi-mag-corefrozr-aa13-white-argb-120mm-cpu-air-cooler",
+      "title": "MSI MAG COREFROZR AA13 White ARGB 120mm CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 225000,
+      "imagePath": "/products/msi-mag-corefrozr-aa13-white-argb-120mm-cpu-air-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/msi-mag-corefrozr-aa13-white-cpu-air-cooler-306-7zwha21-l80"
+    },
+    {
+      "slug": "ant-esports-ice-c621-argb-120mm-dual-tower-cpu-air-cooler",
+      "title": "Ant Esports ICE-C621 ARGB 120mm Dual Tower CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 260000,
+      "imagePath": "/products/ant-esports-ice-c621-argb-120mm-dual-tower-cpu-air-cooler.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-ice-c621-cpu-air-cooler/cpu-cooler"
+    },
+    {
+      "slug": "antec-f600-argb-white-120mm-pwm-cpu-air-cooler",
+      "title": "Antec F600 ARGB White 120mm PWM CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 310000,
+      "imagePath": "/products/antec-f600-argb-white-120mm-pwm-cpu-air-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/antec-f600-argb-white-120mm-cpu-air-cooler/cpu-cooler"
+    },
+    {
+      "slug": "arctic-freezer-36-cpu-air-cooler",
+      "title": "Arctic Freezer 36 CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 332000,
+      "imagePath": "/products/arctic-freezer-36-cpu-air-cooler.jpg",
+      "sourceHint": "https://mdcomputers.in/product/arctic-freezer-36-cpu-air-cooler-acfre00121a/cpu-cooler"
+    },
+    {
+      "slug": "gamdias-boreas-m2-51d-white-120mm-cpu-air-cooler",
+      "title": "Gamdias Boreas M2-51D White 120mm CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 381000,
+      "imagePath": "/products/gamdias-boreas-m2-51d-white-120mm-cpu-air-cooler.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/gamdias-boreas-m2-51d-white-cpu-air-cooler"
+    },
+    {
+      "slug": "ant-esports-icestorm-240-argb-cpu-liquid-cooler-with-temperature-display",
+      "title": "Ant Esports ICEStorm-240 ARGB CPU Liquid Cooler with Temperature Display",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 440000,
+      "imagePath": "/products/ant-esports-icestorm-240-argb-cpu-liquid-cooler-with-temperature-display.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-icestorm-240mm-argb-liquid-cooler/cpu-cooler"
+    },
+    {
+      "slug": "cooler-master-masterliquid-240l-core-240mm-cpu-liquid-cooler",
+      "title": "Cooler Master MasterLiquid 240L Core 240mm CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 515000,
+      "imagePath": "/products/cooler-master-masterliquid-240l-core-240mm-cpu-liquid-cooler.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cooler-master-core-240mm-liquid-cooler-mlw-d24m-a17pk-r1/cpu-cooler"
+    },
+    {
+      "slug": "noctua-nh-u12s-redux-cpu-air-cooler",
+      "title": "Noctua NH-U12S Redux CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 540000,
+      "imagePath": "/products/noctua-nh-u12s-redux-cpu-air-cooler.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/noctua-nh-u12s-redux-cpu-air-cooler"
+    },
+    {
+      "slug": "alseye-m240b-argb-240mm-cpu-liquid-cooler-black",
+      "title": "Alseye M240B ARGB 240mm CPU Liquid Cooler (Black)",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 572000,
+      "imagePath": "/products/alseye-m240b-argb-240mm-cpu-liquid-cooler-black.jpg",
+      "sourceHint": "https://mdcomputers.in/product/alseye-max-240mm-liquid-cooler/cpu-cooler"
+    },
+    {
+      "slug": "cooler-master-masterliquid-core-nex-240-argb-cpu-liquid-cooler",
+      "title": "Cooler Master MasterLiquid Core NEX 240 ARGB CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 600000,
+      "imagePath": "/products/cooler-master-masterliquid-core-nex-240-argb-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cooler-master-masterliquid-core-nex-240mm-cpu-cooler/cpu-cooler"
+    },
+    {
+      "slug": "ant-esports-glacius-240d-argb-cpu-liquid-cooler-with-lcd-display",
+      "title": "Ant Esports Glacius-240D ARGB CPU Liquid Cooler with LCD Display",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 637000,
+      "imagePath": "/products/ant-esports-glacius-240d-argb-cpu-liquid-cooler-with-lcd-display.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-glacius-240d-argb-liquid-cooler/cpu-cooler"
+    },
+    {
+      "slug": "ant-esports-ice-glow-240-argb-240mm-cpu-liquid-cooler-white",
+      "title": "Ant Esports ICE-Glow 240 ARGB 240mm CPU Liquid Cooler (White)",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 697000,
+      "imagePath": "/products/ant-esports-ice-glow-240-argb-240mm-cpu-liquid-cooler-white.jpg",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-ice-glow-240mm-white-liquid-cooler/cpu-cooler"
+    },
+    {
+      "slug": "cooler-master-masterliquid-core-nex-360-argb-cpu-liquid-cooler",
+      "title": "Cooler Master MasterLiquid Core NEX 360 ARGB CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 715000,
+      "imagePath": "/products/cooler-master-masterliquid-core-nex-360-argb-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cooler-master-masterliquid-core-nex-360mm-cpu-cooler/cpu-cooler"
+    },
+    {
+      "slug": "corsair-nautilus-240-rs-argb-cpu-liquid-cooler-black",
+      "title": "Corsair Nautilus 240 RS ARGB CPU Liquid Cooler (Black)",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 740000,
+      "imagePath": "/products/corsair-nautilus-240-rs-argb-cpu-liquid-cooler-black.jpg",
+      "sourceHint": "https://mdcomputers.in/product/corsair-nautilus-rs-240mm-liquid-cooler-cw-9060092-ww/cpu-cooler"
+    },
+    {
+      "slug": "thermaltake-lb360-s-argb-360mm-cpu-liquid-cooler-with-lcd-display",
+      "title": "Thermaltake LB360-S ARGB 360mm CPU Liquid Cooler With LCD Display",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 779900,
+      "imagePath": "/products/thermaltake-lb360-s-argb-360mm-cpu-liquid-cooler-with-lcd-display.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/thermaltake-lb360-s-liquid-cooler-cl-w499-pl12sw-a"
+    },
+    {
+      "slug": "thermaltake-la360-s-argb-360mm-cpu-liquid-cooler",
+      "title": "Thermaltake LA360-S ARGB 360mm CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 821000,
+      "imagePath": "/products/thermaltake-la360-s-argb-360mm-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/thermaltake-la-s-360mm-liquid-cooler-cl-w462-pl12sw-a"
+    },
+    {
+      "slug": "thermaltake-lb360-s-argb-360mm-white-cpu-liquid-cooler-with-lcd-display",
+      "title": "Thermaltake LB360-S ARGB 360mm White CPU Liquid Cooler With LCD Display",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 863000,
+      "imagePath": "/products/thermaltake-lb360-s-argb-360mm-white-cpu-liquid-cooler-with-lcd-display.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/thermaltake-lb360-s-wh-liquid-cooler-cl-w500-pl12sw-a"
+    },
+    {
+      "slug": "dawg-l240-aio-argb-240mm-cpu-liquid-cooler",
+      "title": "Dawg L240 AIO ARGB 240mm CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 889900,
+      "imagePath": "/products/dawg-l240-aio-argb-240mm-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/dawg-240mm-liquid-cooler-l240aio"
+    },
+    {
+      "slug": "noctua-nh-d15s-brown-cpu-air-cooler",
+      "title": "Noctua NH-D15S Brown CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 945000,
+      "imagePath": "/products/noctua-nh-d15s-brown-cpu-air-cooler.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/noctua-nh-d15s-cpu-air-cooler"
+    },
+    {
+      "slug": "noctua-nh-d12l-120mm-cpu-air-cooler",
+      "title": "Noctua NH-D12L 120mm CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 975000,
+      "imagePath": "/products/noctua-nh-d12l-120mm-cpu-air-cooler.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/noctua-nh-d12l-cpu-air-cooler"
+    },
+    {
+      "slug": "noctua-nh-d15s-chromax-black-cpu-air-cooler",
+      "title": "Noctua NH-D15S Chromax Black CPU Air Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 1040000,
+      "imagePath": "/products/noctua-nh-d15s-chromax-black-cpu-air-cooler.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/noctua-nh-d15s-chromax-black-cpu-air-cooler"
+    },
+    {
+      "slug": "cooler-master-masterliquid-core-360mm-argb-cpu-liquid-cooler-with-4-inch-lcd-dis",
+      "title": "Cooler Master MasterLiquid Core 360mm ARGB CPU Liquid Cooler with 4-inch LCD Display",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 1175000,
+      "imagePath": "/products/cooler-master-masterliquid-core-360mm-argb-cpu-liquid-cooler-with-4-inch-lcd-dis.webp",
+      "sourceHint": "https://mdcomputers.in/product/cooler-master-masterliquid-core-4-inch-lcd-360mm-cpu-cooler/cpu-cooler"
+    },
+    {
+      "slug": "msi-mpg-coreliquid-p22-360-argb-cpu-liquid-cooler-with-lcd-display",
+      "title": "MSI MPG Coreliquid P22 360 ARGB CPU Liquid Cooler With LCD Display",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 1260000,
+      "imagePath": "/products/msi-mpg-coreliquid-p22-360-argb-cpu-liquid-cooler-with-lcd-display.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/msi-mpg-coreliquid-p22-360-cpu-liquid-cooler"
+    },
+    {
+      "slug": "asus-prime-lc-360-argb-lcd-360mm-cpu-liquid-cooler",
+      "title": "Asus Prime LC 360 ARGB LCD 360mm CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 1330000,
+      "imagePath": "/products/asus-prime-lc-360-argb-lcd-360mm-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-prime-lc-360-argb-lcd-360mm-liquid-cooler/cpu-cooler"
+    },
+    {
+      "slug": "thermaltake-toughliquid-360-ex-pro-argb-sync-cpu-liquid-cooler-black",
+      "title": "Thermaltake Toughliquid 360 EX Pro ARGB Sync CPU Liquid Cooler (Black)",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 1415000,
+      "imagePath": "/products/thermaltake-toughliquid-360-ex-pro-argb-sync-cpu-liquid-cooler-black.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/thermaltake-toughliquid-360mm-liquid-cooler-cl-w400-pl12bl-a"
+    },
+    {
+      "slug": "cooler-master-masterliquid-atmos-ii-lcd-360mm-white-argb-cpu-liquid-cooler",
+      "title": "Cooler Master MasterLiquid Atmos II LCD 360mm White ARGB CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 1590000,
+      "imagePath": "/products/cooler-master-masterliquid-atmos-ii-lcd-360mm-white-argb-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cooler-master-atmos-360mm-liquid-cooler-mlx-d36m-a25sz-lw/cpu-cooler"
+    },
+    {
+      "slug": "lian-li-hydroshift-ii-lcd-s-360-cl-rgb-cpu-liquid-cooler",
+      "title": "Lian Li Hydroshift II LCD-S 360 CL RGB CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 1700000,
+      "imagePath": "/products/lian-li-hydroshift-ii-lcd-s-360-cl-rgb-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/lian-li-hydroshift-ii-lcd-s-360cl-liquid-cooler-ghs2lcds36cb"
+    },
+    {
+      "slug": "msi-mpg-coreliquid-p13-360-argb-cpu-liquid-cooler",
+      "title": "MSI MPG CORELIQUID P13 360 ARGB CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 1847000,
+      "imagePath": "/products/msi-mpg-coreliquid-p13-360-argb-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/msi-mpg-coreliquid-p13-360mm-liquid-cooler"
+    },
+    {
+      "slug": "fractal-design-lumen-s36-rgb-v2-360mm-cpu-liquid-cooler-black",
+      "title": "Fractal Design Lumen S36 RGB V2 360mm CPU Liquid Cooler (Black)",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 1915000,
+      "imagePath": "/products/fractal-design-lumen-s36-rgb-v2-360mm-cpu-liquid-cooler-black.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/fractal-design-lumen-360mm-liquid-cooler-fd-w-l1-s3612"
+    },
+    {
+      "slug": "lian-li-hydroshift-ii-lcd-s-360-tl-flex-cpu-liquid-cooler",
+      "title": "Lian Li Hydroshift II LCD-S 360 TL Flex CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 2110000,
+      "imagePath": "/products/lian-li-hydroshift-ii-lcd-s-360-tl-flex-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/lian-li-hydroshift-ii-lcd-s-360-tl-flex-cpu-cooler-ghs2lcds36tfb"
+    },
+    {
+      "slug": "noctua-nl-lc1-36-360mm-cpu-liquid-cooler",
+      "title": "Noctua NL-LC1-36 360mm CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 2795000,
+      "imagePath": "/products/noctua-nl-lc1-36-360mm-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/cpu-cooler/noctua-nl-lc1-36-360mm-cpu-liquid-cooler"
+    },
+    {
+      "slug": "asus-rog-ryuo-iv-slc-360mm-argb-cpu-liquid-cooler-with-curved-display",
+      "title": "Asus ROG Ryuo IV SLC 360mm ARGB CPU Liquid Cooler with Curved Display",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 3250000,
+      "imagePath": "/products/asus-rog-ryuo-iv-slc-360mm-argb-cpu-liquid-cooler-with-curved-display.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-rog-ryuo-iv-slc-360mm-argb-cpu-liquid-cooler/cpu-cooler"
+    },
+    {
+      "slug": "asus-rog-ryujin-iii-360-argb-extreme-white-360mm-cpu-liquid-cooler",
+      "title": "Asus ROG Ryujin III 360 ARGB Extreme White 360mm CPU Liquid Cooler",
+      "categorySlug": "cpu-coolers",
+      "sellingPricePaise": 3670000,
+      "imagePath": "/products/asus-rog-ryujin-iii-360-argb-extreme-white-360mm-cpu-liquid-cooler.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-rog-ryujin-iii-extreme-white-edition-360mm-liquid-cooler/cpu-cooler"
+    },
+    {
+      "slug": "hp-m050-wired-mouse",
+      "title": "HP M050 Wired Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 28000,
+      "imagePath": "/products/hp-m050-wired-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/hp-m050-mouse-7j4g9aa/peripherals/mouse"
+    },
+    {
+      "slug": "gamdias-aura-gs-2-gaming-mouse-black",
+      "title": "Gamdias Aura GS 2 Gaming Mouse (Black)",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 52000,
+      "imagePath": "/products/gamdias-aura-gs-2-gaming-mouse-black.jpg",
+      "sourceHint": "https://mdcomputers.in/product/gamdias-aura-gs2-mouse/peripherals/mouse"
+    },
+    {
+      "slug": "acer-transparent-wireless-peach-mouse",
+      "title": "Acer Transparent Wireless Peach Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 65000,
+      "imagePath": "/products/acer-transparent-wireless-peach-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/acer-transparent-wl-peach-mouse-zc-a01si-2dt/peripherals/mouse"
+    },
+    {
+      "slug": "logitech-m185-grey-wireless-mouse",
+      "title": "Logitech M185 Grey Wireless Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 74000,
+      "imagePath": "/products/logitech-m185-grey-wireless-mouse.jpg",
+      "sourceHint": "https://mdcomputers.in/product/logitech-m185-wireless-mouse-910-006540/peripherals/mouse"
+    },
+    {
+      "slug": "aula-s12-pro-rgb-gaming-mouse",
+      "title": "Aula S12 Pro RGB Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 90000,
+      "imagePath": "/products/aula-s12-pro-rgb-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/aula-s12pro-gaming-mouse/peripherals/mouse"
+    },
+    {
+      "slug": "cosmic-byte-firestorm-rgb-white-wired-gaming-mouse",
+      "title": "Cosmic Byte Firestorm RGB White Wired Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 96500,
+      "imagePath": "/products/cosmic-byte-firestorm-rgb-white-wired-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/cosmic-byte-firestorm-rgb-white-mouse/peripherals/mouse"
+    },
+    {
+      "slug": "redragon-k1ng-1k-m724-gaming-mouse",
+      "title": "Redragon K1NG 1K M724 Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 115000,
+      "imagePath": "/products/redragon-k1ng-1k-m724-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/mouse/redragon-k1ng-1k-m724-gaming-mouse"
+    },
+    {
+      "slug": "cybeart-pocket-wireless-mouse",
+      "title": "Cybeart Pocket Wireless Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 140000,
+      "imagePath": "/products/cybeart-pocket-wireless-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/cybeart-pocket-wireless-mouse-mc-pocket-cyb01/peripherals/mouse"
+    },
+    {
+      "slug": "karnage-templar-rgb-tri-mode-white-gaming-mouse",
+      "title": "Karnage Templar RGB Tri-Mode White Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 145000,
+      "imagePath": "/products/karnage-templar-rgb-tri-mode-white-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/karnage-templar-wireless-mouse-kng-bw-18-wh/peripherals/mouse"
+    },
+    {
+      "slug": "ant-esports-mk1300-v2-mini-rgb-keyboard-with-blue-switches",
+      "title": "Ant Esports MK1300 V2 Mini RGB Keyboard with Blue Switches",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 165000,
+      "imagePath": "/products/ant-esports-mk1300-v2-mini-rgb-keyboard-with-blue-switches.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-keyboard-mk1300-v2-blue-switch/peripherals/keyboard"
+    },
+    {
+      "slug": "ant-esports-km500w-pro-wireless-gaming-keyboard-mouse-combo",
+      "title": "Ant Esports KM500W Pro Wireless Gaming Keyboard Mouse Combo",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 175000,
+      "imagePath": "/products/ant-esports-km500w-pro-wireless-gaming-keyboard-mouse-combo.webp",
+      "sourceHint": "https://mdcomputers.in/product/ant-esports-km500w-pro-wireless-keyboard-mouse-combo/peripherals/keyboard"
+    },
+    {
+      "slug": "cosmic-byte-cb-gk-25-pandora-tkl-mechanical-with-outemu-blue-switches",
+      "title": "Cosmic Byte CB-GK-25 Pandora TKL Mechanical with Outemu Blue Switches",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 186000,
+      "imagePath": "/products/cosmic-byte-cb-gk-25-pandora-tkl-mechanical-with-outemu-blue-switches.webp",
+      "sourceHint": "https://mdcomputers.in/product/cosmic-byte-cb-gk-25-pandora-keyboard-tcbp03372/peripherals/keyboard"
+    },
+    {
+      "slug": "redragon-predator-pro-m612-pro-tri-mode-rgb-white-and-grey-gaming-mouse",
+      "title": "Redragon Predator Pro M612 Pro Tri-Mode RGB White and Grey Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 200000,
+      "imagePath": "/products/redragon-predator-pro-m612-pro-tri-mode-rgb-white-and-grey-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/mouse/redragon-predator-tri-mode-gaming-mouse-m612wg-rgb-pro"
+    },
+    {
+      "slug": "cosmic-byte-artemis-keyboard-with-blue-mechanical-switch",
+      "title": "Cosmic Byte Artemis Keyboard with Blue Mechanical Switch",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 215000,
+      "imagePath": "/products/cosmic-byte-artemis-keyboard-with-blue-mechanical-switch.webp",
+      "sourceHint": "https://mdcomputers.in/product/cosmic-byte-artemis-gaming-keyboard-tcbp03346/peripherals/keyboard"
+    },
+    {
+      "slug": "rapoo-v500-pro-mechanical-gaming-keyboard-with-blue-switches",
+      "title": "Rapoo V500 Pro Mechanical Gaming Keyboard with Blue Switches",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 220000,
+      "imagePath": "/products/rapoo-v500-pro-mechanical-gaming-keyboard-with-blue-switches.webp",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/keyboard/rapoo-v500-pro-blue-switches-mechanical-gaming-keyboard"
+    },
+    {
+      "slug": "cosmic-byte-firefly-tkl-keyboard-with-blue-mechanical-switch",
+      "title": "Cosmic Byte Firefly TKL Keyboard with Blue Mechanical Switch",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 240000,
+      "imagePath": "/products/cosmic-byte-firefly-tkl-keyboard-with-blue-mechanical-switch.webp",
+      "sourceHint": "https://mdcomputers.in/product/cosmic-byte-firefly-tenkeyless-keyboard-tcbp03312/peripherals/keyboard"
+    },
+    {
+      "slug": "cosmic-byte-velox-tri-mode-gaming-mouse",
+      "title": "Cosmic Byte Velox Tri-Mode Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 257000,
+      "imagePath": "/products/cosmic-byte-velox-tri-mode-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/cosmic-byte-velox-tri-mode-gaming-mouse-tcbp03543/peripherals/mouse"
+    },
+    {
+      "slug": "redragon-k1ng-m916-pro-anime-tri-mode-gaming-mouse",
+      "title": "Redragon K1NG M916 Pro Anime Tri-mode Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 277500,
+      "imagePath": "/products/redragon-k1ng-m916-pro-anime-tri-mode-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/mouse/redragon-k1ng-m916-pro-anime-gaming-mouse"
+    },
+    {
+      "slug": "redragon-fizz-k617-mechanical-rgb-gaming-keyboard-with-he-magnetic-switch-black-",
+      "title": "Redragon Fizz K617 Mechanical RGB Gaming Keyboard With HE Magnetic Switch, Black Strap",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 306000,
+      "imagePath": "/products/redragon-fizz-k617-mechanical-rgb-gaming-keyboard-with-he-magnetic-switch-black-.webp",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/keyboard/redragon-fizz-k617-tkl-mechanical-he-magnetic-switch-keyboard"
+    },
+    {
+      "slug": "hyperx-alloy-core-rgb-gaming-keyboard-membrane-switches",
+      "title": "HyperX Alloy Core RGB Gaming Keyboard - Membrane Switches",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 350000,
+      "imagePath": "/products/hyperx-alloy-core-rgb-gaming-keyboard-membrane-switches.jpg",
+      "sourceHint": "https://mdcomputers.in/product/hyperx-alloy-core-rgb-keyboard-4p4f5aa/peripherals/keyboard"
+    },
+    {
+      "slug": "fingers-quikfingers-lethal-gk1-rgb-mechanical-gaming-keyboard",
+      "title": "Fingers Quikfingers Lethal-GK1 RGB Mechanical Gaming Keyboard",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 390000,
+      "imagePath": "/products/fingers-quikfingers-lethal-gk1-rgb-mechanical-gaming-keyboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/fingers-quikfingers-lethal-gk1-tkl-wl-keyboard/peripherals/keyboard"
+    },
+    {
+      "slug": "fingers-quikfingers-fierce-gk7-tri-mode-mechanical-rgb-keyboard",
+      "title": "Fingers QuikFINGERS Fierce GK7 Tri-Mode Mechanical RGB Keyboard",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 430000,
+      "imagePath": "/products/fingers-quikfingers-fierce-gk7-tri-mode-mechanical-rgb-keyboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/fingers-tri-mode-keyboard-quikfingers-fierce-gk7/peripherals/keyboard"
+    },
+    {
+      "slug": "hyperx-pulsefire-haste-2-wireless-rgb-white-gaming-mouse",
+      "title": "HyperX Pulsefire Haste 2 Wireless RGB White Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 480000,
+      "imagePath": "/products/hyperx-pulsefire-haste-2-wireless-rgb-white-gaming-mouse.jpg",
+      "sourceHint": "https://mdcomputers.in/product/hyperx-pulsefire-haste-2-wireless-gaming-mouse-6n0a9aa/peripherals/mouse"
+    },
+    {
+      "slug": "aula-f87-wireless-tri-mode-rgb-mechanical-gaming-thunder-black-keyboard-with-gra",
+      "title": "Aula F87 Wireless Tri Mode RGB Mechanical Gaming Thunder Black Keyboard With Graywood Switch",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 545000,
+      "imagePath": "/products/aula-f87-wireless-tri-mode-rgb-mechanical-gaming-thunder-black-keyboard-with-gra.webp",
+      "sourceHint": "https://mdcomputers.in/product/aula-f87tbw-tkl-tri-mode-wireless-keyboard-graywood-switch/peripherals/keyboard"
+    },
+    {
+      "slug": "aula-sc900pro-tri-mode-gaming-mouse",
+      "title": "Aula SC900Pro Tri-Mode Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 599900,
+      "imagePath": "/products/aula-sc900pro-tri-mode-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/aula-sc900pro-tri-mode-wireless-gaming-mouse/peripherals/mouse"
+    },
+    {
+      "slug": "razer-ornata-v3-gaming-keyboard-with-mecha-membrane-switches",
+      "title": "Razer Ornata V3 Gaming Keyboard with Mecha-Membrane Switches",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 630000,
+      "imagePath": "/products/razer-ornata-v3-gaming-keyboard-with-mecha-membrane-switches.jpg",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/keyboard/razer-ornata-v3-keyboard-rz03-04460100-r3m1"
+    },
+    {
+      "slug": "razer-blackwidow-v3-tenkeyless-mechanical-gaming-keyboard-green-switches",
+      "title": "Razer BlackWidow V3 Tenkeyless Mechanical Gaming Keyboard Green Switches",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 705000,
+      "imagePath": "/products/razer-blackwidow-v3-tenkeyless-mechanical-gaming-keyboard-green-switches.jpg",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/keyboard/razer-black-widow-v3-tkl-wl-keyboard-rz03-03490100-r3m1"
+    },
+    {
+      "slug": "cybeart-xeus-tri-mode-gaming-mouse",
+      "title": "Cybeart Xeus Tri-Mode Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 750000,
+      "imagePath": "/products/cybeart-xeus-tri-mode-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/cybeart-xeus-tri-mode-gaming-mouse-mc-xeus-cyb01/peripherals/mouse"
+    },
+    {
+      "slug": "razer-basilisk-mobile-wireless-gaming-mouse",
+      "title": "Razer Basilisk Mobile Wireless Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 813000,
+      "imagePath": "/products/razer-basilisk-mobile-wireless-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/mouse/razer-basilisk-mobile-wireless-mouse-rz01-04310100-r3a1"
+    },
+    {
+      "slug": "razer-viper-v3-pro-se-wireless-gaming-mouse",
+      "title": "Razer Viper V3 Pro SE Wireless Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 1000000,
+      "imagePath": "/products/razer-viper-v3-pro-se-wireless-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/mouse/razer-viper-v3-pro-se-wireless-mouse-rz01-04550100-r3a1"
+    },
+    {
+      "slug": "razer-blackwidow-v4-x-mechanical-gaming-keyboard-with-green-switches",
+      "title": "Razer BlackWidow V4 X Mechanical Gaming Keyboard with Green Switches",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 1136300,
+      "imagePath": "/products/razer-blackwidow-v4-x-mechanical-gaming-keyboard-with-green-switches.jpg",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/keyboard/razer-black-widow-v4-x-keyboard-rz03-04700100-r3m1"
+    },
+    {
+      "slug": "logitech-g-pro-x-superlight-2-dex-pink-wireless-gaming-mouse",
+      "title": "Logitech G Pro X Superlight 2 DEX Pink Wireless Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 1290000,
+      "imagePath": "/products/logitech-g-pro-x-superlight-2-dex-pink-wireless-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/logitech-g-pro-x-superlight-2-dex-wl-pink-mouse-910-007375/peripherals/mouse"
+    },
+    {
+      "slug": "razer-basilisk-v3-pro-35k-phantom-green-wireless-gaming-mouse",
+      "title": "Razer Basilisk V3 Pro 35K Phantom Green Wireless Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 1500000,
+      "imagePath": "/products/razer-basilisk-v3-pro-35k-phantom-green-wireless-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/mouse/razer-basilisk-v3-pro-35k-wireless-mouse-rz01-05240300-r3a1"
+    },
+    {
+      "slug": "razer-deathadder-v4-pro-niko-edition-wireless-gaming-mouse",
+      "title": "Razer DeathAdder V4 Pro Niko Edition Wireless Gaming Mouse",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 1670000,
+      "imagePath": "/products/razer-deathadder-v4-pro-niko-edition-wireless-gaming-mouse.webp",
+      "sourceHint": "https://mdcomputers.in/product/peripherals/mouse/razer-deathadder-v4-pro-niko-edition-mouse-rz01-05330300-r3m1"
+    },
+    {
+      "slug": "logitech-g915-x-lightspeed-wireless-rgb-tactile-gaming-keyboard",
+      "title": "Logitech G915 X Lightspeed Wireless RGB Tactile Gaming Keyboard",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 1940000,
+      "imagePath": "/products/logitech-g915-x-lightspeed-wireless-rgb-tactile-gaming-keyboard.webp",
+      "sourceHint": "https://mdcomputers.in/product/logitech-g915-x-lightspeed-wl-tactile-keyboard-920-012680/peripherals/keyboard"
+    },
+    {
+      "slug": "asus-rog-azoth-extreme-edition-20-tri-mode-tkl-gaming-keyboard-with-rog-nx-mecha",
+      "title": "Asus ROG Azoth Extreme Edition 20 Tri Mode TKL Gaming Keyboard with ROG NX Mechanical Switches",
+      "categorySlug": "keyboard-mouse",
+      "sellingPricePaise": 6600000,
+      "imagePath": "/products/asus-rog-azoth-extreme-edition-20-tri-mode-tkl-gaming-keyboard-with-rog-nx-mecha.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-rog-azoth-extreme-edition-20-tkl-tri-mode-keyboard/peripherals/keyboard"
+    },
+    {
+      "slug": "gigabyte-gs22f12i-fhd-22-inch-gaming-monitor",
+      "title": "Gigabyte GS22F12I FHD 22 Inch Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 620000,
+      "imagePath": "/products/gigabyte-gs22f12i-fhd-22-inch-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-22-inch-gaming-monitor-gs22f12i/monitor"
+    },
+    {
+      "slug": "lenovo-l22-42-22-inch-monitor",
+      "title": "Lenovo L22-42 22 Inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 705000,
+      "imagePath": "/products/lenovo-l22-42-22-inch-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/lenovo-l22-42-22-inch-monitor-68fakac6in/monitor"
+    },
+    {
+      "slug": "benq-gw2491p-24-inch-monitor",
+      "title": "BenQ GW2491P 24 Inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 797000,
+      "imagePath": "/products/benq-gw2491p-24-inch-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/benq-24-inch-monitor-gw2491p/monitor"
+    },
+    {
+      "slug": "lg-ultragear-g4-24g411b-b-24-inch-fhd-gaming-monitor",
+      "title": "LG UltraGear G4 24G411B-B 24 Inch FHD Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 820000,
+      "imagePath": "/products/lg-ultragear-g4-24g411b-b-24-inch-fhd-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/lg-ultragear-24-inch-gaming-monitor-24g411b-b/monitor"
+    },
+    {
+      "slug": "msi-pro-mp273-e14a-27-inch-business-monitor",
+      "title": "MSI Pro MP273 E14A 27 Inch Business Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 955000,
+      "imagePath": "/products/msi-pro-mp273-e14a-27-inch-business-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/monitor/msi-27-inch-business-monitor-pro-mp273-e14a"
+    },
+    {
+      "slug": "asus-vz24ehe-24-inch-monitor",
+      "title": "Asus VZ24EHE 24 Inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 989900,
+      "imagePath": "/products/asus-vz24ehe-24-inch-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/asus-24-inch-monitor-vz24ehe/monitor"
+    },
+    {
+      "slug": "lenovo-l27-4e-27-inch-monitor",
+      "title": "Lenovo L27-4E 27 Inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1000000,
+      "imagePath": "/products/lenovo-l27-4e-27-inch-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/lenovo-l27-4e-27-inch-monitor-68cdkac1my/monitor"
+    },
+    {
+      "slug": "samsung-odyssey-g3-g30h-ls24hg300ewxxl-fhd-24-inch-gaming-monitor",
+      "title": "Samsung Odyssey G3 G30H LS24HG300EWXXL FHD 24 Inch Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1020000,
+      "imagePath": "/products/samsung-odyssey-g3-g30h-ls24hg300ewxxl-fhd-24-inch-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/monitor/samsung-odyssey-g3-g30h-24-inch-gaming-monitor-ls24hg300ewxxl"
+    },
+    {
+      "slug": "lenovo-legion-24-10-gaming-monitor",
+      "title": "Lenovo Legion 24-10 Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1070000,
+      "imagePath": "/products/lenovo-legion-24-10-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/lenovo-legion-24-inch-gaming-monitor-68c4gac4in/monitor"
+    },
+    {
+      "slug": "aoc-24b3cf2-24-inch-monitor",
+      "title": "AOC 24B3CF2 24 Inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1110000,
+      "imagePath": "/products/aoc-24b3cf2-24-inch-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/aoc-24-inch-monitor-24b3cf2/monitor"
+    },
+    {
+      "slug": "gigabyte-gs27f16i-fhd-27-inch-gaming-monitor",
+      "title": "Gigabyte GS27F16I FHD 27 Inch Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1145000,
+      "imagePath": "/products/gigabyte-gs27f16i-fhd-27-inch-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/gigabyte-27-inch-gaming-monitor-gs27f16i/monitor"
+    },
+    {
+      "slug": "aoc-q27b3s2-27-inch-monitor",
+      "title": "AOC Q27B3S2 27 Inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1200000,
+      "imagePath": "/products/aoc-q27b3s2-27-inch-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/aoc-27-inch-monitor-q27b3s2/monitor"
+    },
+    {
+      "slug": "msi-modern-md272xp-27-inch-business-monitor",
+      "title": "MSI Modern MD272XP 27 Inch Business Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1250000,
+      "imagePath": "/products/msi-modern-md272xp-27-inch-business-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/monitor/msi-modern-27-inch-business-monitor-md272xp"
+    },
+    {
+      "slug": "benq-mobiuz-ex251-25-inch-gaming-monitor",
+      "title": "BenQ MOBIUZ EX251 25 Inch Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1285000,
+      "imagePath": "/products/benq-mobiuz-ex251-25-inch-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/benq-25-inch-gaming-monitor-ex251/monitor"
+    },
+    {
+      "slug": "msi-pro-mp275q-27-inch-business-monitor",
+      "title": "MSI Pro MP275Q 27 Inch Business Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1310000,
+      "imagePath": "/products/msi-pro-mp275q-27-inch-business-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/monitor/msi-27-inch-business-monitor-pro-mp275q"
+    },
+    {
+      "slug": "msi-pro-mp275q-e14-27-inch-wqhd-business-monitor",
+      "title": "MSI PRO MP275Q E14 27 Inch WQHD Business Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1390000,
+      "imagePath": "/products/msi-pro-mp275q-e14-27-inch-wqhd-business-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/monitor/msi-27-inch-business-monitor-pro-mp275q-e14"
+    },
+    {
+      "slug": "benq-gw2790tc-white-27-inch-monitor",
+      "title": "BenQ GW2790TC White 27 Inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1455000,
+      "imagePath": "/products/benq-gw2790tc-white-27-inch-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/benq-27-inch-monitor-gw2790tc/monitor"
+    },
+    {
+      "slug": "viewsonic-vx2481-mh-24-inch-entertainment-monitor",
+      "title": "ViewSonic VX2481-MH 24 Inch Entertainment Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1495000,
+      "imagePath": "/products/viewsonic-vx2481-mh-24-inch-entertainment-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/monitor/viewsonic-24-inch-monitor-vx2481-mh"
+    },
+    {
+      "slug": "viewsonic-vx2776-smhd-27-inch-monitor",
+      "title": "ViewSonic VX2776-SMHD 27 Inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1560000,
+      "imagePath": "/products/viewsonic-vx2776-smhd-27-inch-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/monitor/viewsonic-27-inch-monitor-vx2776-smhd"
+    },
+    {
+      "slug": "lg-myview-27sr50f-white-27-inch-smart-monitor",
+      "title": "LG MyView 27SR50F White 27 Inch Smart Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1596000,
+      "imagePath": "/products/lg-myview-27sr50f-white-27-inch-smart-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/lg-my-view-27-inch-monitor-27sr50f-w/monitor"
+    },
+    {
+      "slug": "samsung-m5-ls32fm500ewxxl-32-inch-smart-monitor",
+      "title": "Samsung M5 LS32FM500EWXXL 32 Inch Smart Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1780000,
+      "imagePath": "/products/samsung-m5-ls32fm500ewxxl-32-inch-smart-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/monitor/samsung-m5-32-inch-smart-monitor-ls32fm500ewxxl"
+    },
+    {
+      "slug": "msi-pro-mp273u-27-inch-4k-business-monitor",
+      "title": "MSI Pro MP273U 27 Inch 4K Business Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1850000,
+      "imagePath": "/products/msi-pro-mp273u-27-inch-4k-business-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/monitor/msi-27-inch-business-monitor-pro-mp273u"
+    },
+    {
+      "slug": "dell-alienware-aw2525hm-25-inch-gaming-monitor",
+      "title": "Dell Alienware AW2525HM 25 Inch Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1900000,
+      "imagePath": "/products/dell-alienware-aw2525hm-25-inch-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/dell-alienware-25-inch-gaming-monitor-aw2525hm/monitor"
+    },
+    {
+      "slug": "lenovo-legion-r32qc-30-qhd-32-inch-curved-gaming-monitor",
+      "title": "Lenovo Legion R32QC-30 QHD 32 inch Curved Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 1950000,
+      "imagePath": "/products/lenovo-legion-r32qc-30-qhd-32-inch-curved-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/lenovo-legion-r32qc-30-32-inch-gaming-monitor-67c8gac1in/monitor"
+    },
+    {
+      "slug": "msi-mag-32cq6f-32-inch-curved-gaming-monitor",
+      "title": "MSI MAG 32CQ6F 32 Inch Curved Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 2200000,
+      "imagePath": "/products/msi-mag-32cq6f-32-inch-curved-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/monitor/msi-32-inch-gaming-monitor-mag-32cq6f"
+    },
+    {
+      "slug": "viewsonic-vx3276-2k-mhd-2-32-inch-entertainment-monitor",
+      "title": "ViewSonic VX3276-2K-MHD-2 32 Inch Entertainment Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 2395000,
+      "imagePath": "/products/viewsonic-vx3276-2k-mhd-2-32-inch-entertainment-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/monitor/viewsonic-32-inch-monitor-vx3276-2k-mhd-2"
+    },
+    {
+      "slug": "benq-sw240-24-inch-monitor",
+      "title": "BenQ SW240 24 inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 2510000,
+      "imagePath": "/products/benq-sw240-24-inch-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/benq-24-inch-photographer-monitor-sw240/monitor"
+    },
+    {
+      "slug": "aoc-cu34v5cwbk-34-inch-curved-webcam-monitor",
+      "title": "AOC CU34V5CWBK 34 Inch Curved Webcam Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 2720000,
+      "imagePath": "/products/aoc-cu34v5cwbk-34-inch-curved-webcam-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/aoc-34-inch-curved-monitor-cu34v5cw-bk/monitor"
+    },
+    {
+      "slug": "dell-s2725qs-27-inch-4k-monitor",
+      "title": "Dell S2725QS 27 Inch 4K Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 2800000,
+      "imagePath": "/products/dell-s2725qs-27-inch-4k-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/dell-27inch-monitor-s2725qs/monitor"
+    },
+    {
+      "slug": "lg-32u721sb-w-32-inch-uhd-white-smart-monitor-ai-u7s",
+      "title": "LG 32U721SB-W 32 Inch UHD White Smart Monitor AI U7s",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 3200000,
+      "imagePath": "/products/lg-32u721sb-w-32-inch-uhd-white-smart-monitor-ai-u7s.webp",
+      "sourceHint": "https://mdcomputers.in/product/lg-32-inch-white-ai-smart-monitor-32u721sb-w/monitor"
+    },
+    {
+      "slug": "msi-mag-321upd-e14-32-inch-uhd-gaming-monitor",
+      "title": "MSI MAG 321UPD E14 32 Inch UHD Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 3960000,
+      "imagePath": "/products/msi-mag-321upd-e14-32-inch-uhd-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/monitor/msi-32-inch-gaming-monitor-mag-321upd-e14"
+    },
+    {
+      "slug": "lg-ultrafine-4k-ergo-32un880k-b-32-inch-professional-monitor",
+      "title": "LG Ultrafine 4K Ergo 32UN880K-B 32 Inch Professional Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 4635000,
+      "imagePath": "/products/lg-ultrafine-4k-ergo-32un880k-b-32-inch-professional-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/lg-32-inch-ultrafine-4k-ergo-monitor-32un880k-b/monitor"
+    },
+    {
+      "slug": "aoc-agon-pro-ag276qzd2-27-inch-gaming-monitor",
+      "title": "AOC Agon Pro AG276QZD2 27 Inch Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 5020000,
+      "imagePath": "/products/aoc-agon-pro-ag276qzd2-27-inch-gaming-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/aoc-agon-pro-27-inch-gaming-monitor-ag276qzd2/monitor"
+    },
+    {
+      "slug": "msi-mag-341cqp-qd-oled-34-inch-curved-gaming-monitor",
+      "title": "MSI MAG 341CQP QD-OLED 34 Inch Curved Gaming Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 6820000,
+      "imagePath": "/products/msi-mag-341cqp-qd-oled-34-inch-curved-gaming-monitor.jpg",
+      "sourceHint": "https://mdcomputers.in/product/monitor/msi-34-inch-gaming-mag-341cqp-qd-oled"
+    },
+    {
+      "slug": "benq-creative-pro-pd3226g-32-inch-4k-designer-monitor",
+      "title": "BenQ Creative Pro PD3226G 32 Inch 4K Designer Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 9160000,
+      "imagePath": "/products/benq-creative-pro-pd3226g-32-inch-4k-designer-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/benq-32-inch-designer-monitor-creative-pro-pd3226g/monitor"
+    },
+    {
+      "slug": "asus-rog-swift-oled-pg27aqwp-g-20th-edition-27-inch-monitor",
+      "title": "Asus ROG Swift OLED PG27AQWP-G 20th Edition 27 Inch Monitor",
+      "categorySlug": "monitors",
+      "sellingPricePaise": 15700000,
+      "imagePath": "/products/asus-rog-swift-oled-pg27aqwp-g-20th-edition-27-inch-monitor.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-27-inch-monitor-rog-swift-oled-pg27aqwp-g-edition-20/monitor"
+    },
+    {
+      "slug": "cyberpower-bu600e-600va-ups",
+      "title": "CyberPower BU600E 600VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 245000,
+      "imagePath": "/products/cyberpower-bu600e-600va-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cyberpower-ups-bu600e-in/desktop-accessories/ups"
+    },
+    {
+      "slug": "fingers-fast-recharge-fr-630-600va-ups",
+      "title": "Fingers Fast-Recharge FR-630 600VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 265000,
+      "imagePath": "/products/fingers-fast-recharge-fr-630-600va-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/desktop-accessories/ups/fingers-ups-fast-recharge-fr-630"
+    },
+    {
+      "slug": "microtek-legend-650va-ups",
+      "title": "Microtek Legend 650VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 290000,
+      "imagePath": "/products/microtek-legend-650va-ups.webp",
+      "sourceHint": "https://mdcomputers.in/product/desktop-accessories/ups/microtek-ups-legend-650va"
+    },
+    {
+      "slug": "apc-bx600i-in-600va-230v-back-ups",
+      "title": "APC BX600I-IN 600VA 230V Back-UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 385000,
+      "imagePath": "/products/apc-bx600i-in-600va-230v-back-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/apc-ups-bx600i-in/desktop-accessories/ups"
+    },
+    {
+      "slug": "cyberpower-bu1000e-1000va-ups",
+      "title": "CyberPower BU1000E 1000VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 467000,
+      "imagePath": "/products/cyberpower-bu1000e-1000va-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cyberpower-ups-bu1000e-in/desktop-accessories/ups"
+    },
+    {
+      "slug": "cyberpower-ut1200e-1200va-ups",
+      "title": "CyberPower UT1200E 1200VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 569900,
+      "imagePath": "/products/cyberpower-ut1200e-1200va-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cyberpower-ups-ut1200e/desktop-accessories/ups"
+    },
+    {
+      "slug": "microtek-legend-1000va-ups",
+      "title": "Microtek Legend 1000VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 570000,
+      "imagePath": "/products/microtek-legend-1000va-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/desktop-accessories/ups/microtek-ups-legend-1000va-899-le0-1001"
+    },
+    {
+      "slug": "fingers-fr-1250lcd-1200-va-ups",
+      "title": "Fingers FR-1250LCD 1200 VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 610000,
+      "imagePath": "/products/fingers-fr-1250lcd-1200-va-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/desktop-accessories/ups/fingers-ups-fr-1250lcd"
+    },
+    {
+      "slug": "apc-bx1100i-in-1100va-230v-back-ups",
+      "title": "APC BX1100I-IN 1100VA 230V Back-UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 795000,
+      "imagePath": "/products/apc-bx1100i-in-1100va-230v-back-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/apc-ups-bx1100i-in/desktop-accessories/ups"
+    },
+    {
+      "slug": "cyberpower-ut1500e-1500va-ups",
+      "title": "CyberPower UT1500E 1500VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 800000,
+      "imagePath": "/products/cyberpower-ut1500e-1500va-ups.webp",
+      "sourceHint": "https://mdcomputers.in/product/cyberpower-ups-ut1500e/desktop-accessories/ups"
+    },
+    {
+      "slug": "microtek-legend-1600va-ups",
+      "title": "Microtek Legend 1600VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 870000,
+      "imagePath": "/products/microtek-legend-1600va-ups.webp",
+      "sourceHint": "https://mdcomputers.in/product/desktop-accessories/ups/microtek-ups-legend-1600va-899-le2-1601"
+    },
+    {
+      "slug": "cyberpower-ut2200e-2200va-ups",
+      "title": "CyberPower UT2200E 2200VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 910000,
+      "imagePath": "/products/cyberpower-ut2200e-2200va-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/cyberpower-ups-ut2200e/desktop-accessories/ups"
+    },
+    {
+      "slug": "apc-easy-ups-bvx-1600va-230v",
+      "title": "APC Easy UPS BVX 1600VA 230V",
+      "categorySlug": "ups",
+      "sellingPricePaise": 1180000,
+      "imagePath": "/products/apc-easy-ups-bvx-1600va-230v.webp",
+      "sourceHint": "https://mdcomputers.in/product/apc-ups-bvx1600li-in/desktop-accessories/ups"
+    },
+    {
+      "slug": "apc-15kva-230v-ups",
+      "title": "Apc 1.5KVA 230V UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 1780000,
+      "imagePath": "/products/apc-15kva-230v-ups.jpg",
+      "sourceHint": "https://mdcomputers.in/product/apc-ups-br1500g-in/desktop-accessories/ups"
+    },
+    {
+      "slug": "apc-2200va-easy-ups-with-avr",
+      "title": "APC 2200VA Easy-UPS with AVR",
+      "categorySlug": "ups",
+      "sellingPricePaise": 1800000,
+      "imagePath": "/products/apc-2200va-easy-ups-with-avr.jpg",
+      "sourceHint": "https://mdcomputers.in/product/apc-ups-bvx2200li-in/desktop-accessories/ups"
+    },
+    {
+      "slug": "cyberpower-ols2000ec-2000va-ups",
+      "title": "CyberPower OLS2000EC 2000VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 2800000,
+      "imagePath": "/products/cyberpower-ols2000ec-2000va-ups.webp",
+      "sourceHint": "https://mdcomputers.in/product/cyberpower-ols2000ec-ups/desktop-accessories/ups"
+    },
+    {
+      "slug": "cyberpower-ols3000ec-3000va-ups",
+      "title": "CyberPower OLS3000EC 3000VA UPS",
+      "categorySlug": "ups",
+      "sellingPricePaise": 3870000,
+      "imagePath": "/products/cyberpower-ols3000ec-3000va-ups.webp",
+      "sourceHint": "https://mdcomputers.in/product/cyberpower-ols3000ec-ups/desktop-accessories/ups"
+    },
+    {
+      "slug": "acer-travellite-tl14-52m-laptop-i3-1315ulinux",
+      "title": "Acer TravelLite TL14-52M Laptop (i3-1315U/Linux)",
+      "categorySlug": "laptops",
+      "sellingPricePaise": 4500000,
+      "imagePath": "/products/acer-travellite-tl14-52m-laptop-i3-1315ulinux.webp",
+      "sourceHint": "https://mdcomputers.in/product/acer-travellite-laptop-i3-1315u-8gb-512gb-un-35asi-0dv/laptop"
+    },
+    {
+      "slug": "asus-vivobook-15-x1504vap-in005ws-laptop-intel-core-3-100uintel-graphics-windows",
+      "title": "Asus Vivobook 15 X1504VAP-IN005WS Laptop (Intel Core 3 100U/Intel Graphics, Windows 11 home/Office 2024 Home)",
+      "categorySlug": "laptops",
+      "sellingPricePaise": 5649900,
+      "imagePath": "/products/asus-vivobook-15-x1504vap-in005ws-laptop-intel-core-3-100uintel-graphics-windows.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-vivobook-15-laptop-x1504vap-in005ws/laptop"
+    },
+    {
+      "slug": "acer-aspire-3-a325-53-laptop-i5-1334u8gb-ddr4",
+      "title": "Acer Aspire 3 A325-53 Laptop (i5-1334U/8GB-DDR4)",
+      "categorySlug": "laptops",
+      "sellingPricePaise": 6000000,
+      "imagePath": "/products/acer-aspire-3-a325-53-laptop-i5-1334u8gb-ddr4.webp",
+      "sourceHint": "https://mdcomputers.in/product/acer-laptop-i5-1334u-8gb-512gb-un-34ysi-00n/laptop"
+    },
+    {
+      "slug": "asus-vivobook-15-x1504vap-in011ws-laptop-intel-core-5-120uintel-graphics-windows",
+      "title": "Asus Vivobook 15 X1504VAP-IN011WS Laptop (Intel Core 5 120U/Intel Graphics, Windows 11 home/Office 2024 Home)",
+      "categorySlug": "laptops",
+      "sellingPricePaise": 6299900,
+      "imagePath": "/products/asus-vivobook-15-x1504vap-in011ws-laptop-intel-core-5-120uintel-graphics-windows.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-vivobook-15-laptop-x1504vap-in011ws/laptop"
+    },
+    {
+      "slug": "acer-aspire-lite-al15-53-laptop-i5-1334u16gb-ddr4",
+      "title": "Acer Aspire Lite AL15-53 Laptop (i5-1334U/16GB-DDR4)",
+      "categorySlug": "laptops",
+      "sellingPricePaise": 6500000,
+      "imagePath": "/products/acer-aspire-lite-al15-53-laptop-i5-1334u16gb-ddr4.webp",
+      "sourceHint": "https://mdcomputers.in/product/acer-aspire-lite-laptop-i5-1334u-16gb-512gb-un-34esi-00l/laptop"
+    },
+    {
+      "slug": "asus-vivobook-go-15-laptop-amd-ryzen-3-30-radeon-graphics-8gb-lpddr5-ram-512gb-s",
+      "title": "Asus Vivobook Go 15 Laptop (AMD Ryzen 3 30, Radeon Graphics, 8GB LPDDR5 RAM, 512GB SSD, 15.6\" FHD Display, Windows 11 Home)",
+      "categorySlug": "laptops",
+      "sellingPricePaise": 6899900,
+      "imagePath": "/products/asus-vivobook-go-15-laptop-amd-ryzen-3-30-radeon-graphics-8gb-lpddr5-ram-512gb-s.webp",
+      "sourceHint": "https://mdcomputers.in/product/asus-vivobook-go-15-amd-ryzen-laptop-e1504fa-bq2117ws/laptop"
+    },
+    {
+      "slug": "msi-prestige-13-evo-a12m-laptop-i5-1240pintel-iris-xe",
+      "title": "MSI Prestige 13 Evo A12M Laptop (i5-1240P/Intel Iris Xe)",
+      "categorySlug": "laptops",
+      "sellingPricePaise": 8388500,
+      "imagePath": "/products/msi-prestige-13-evo-a12m-laptop-i5-1240pintel-iris-xe.webp",
+      "sourceHint": "https://mdcomputers.in/product/laptop/msi-laptop-i5-1240p-8gb-512gb-9s7-13q111-085"
+    },
+    {
+      "slug": "msi-prestige-14-h-b12ucx-gaming-laptop-i5-12450hrtx-2050-4gb-gddr6",
+      "title": "MSI Prestige 14 H B12UCX Gaming Laptop (i5-12450H/RTX 2050 4GB GDDR6)",
+      "categorySlug": "laptops",
+      "sellingPricePaise": 8731000,
+      "imagePath": "/products/msi-prestige-14-h-b12ucx-gaming-laptop-i5-12450hrtx-2050-4gb-gddr6.jpg",
+      "sourceHint": "https://mdcomputers.in/product/laptop/msi-laptop-i5-16gb-512gb-rtx2050-9s7-14f122-412"
+    }
+  ]
+}

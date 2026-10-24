@@ -180,7 +180,16 @@ const ONLINE_SHOPPING_GROUPS = [
     links: [
       { label: "ATX cases", href: "/browse?categorySlug=cabinets&q=ATX" },
       { label: "Mesh airflow", href: "/browse?categorySlug=cabinets&q=mesh" },
+      { label: "CPU coolers", href: "/browse?categorySlug=cpu-coolers" },
       { label: "All cabinets", href: "/browse?categorySlug=cabinets" },
+    ],
+  },
+  {
+    heading: "Power supplies",
+    links: [
+      { label: "Gold modular", href: "/browse?categorySlug=power-supplies&q=Gold" },
+      { label: "850W+", href: "/browse?categorySlug=power-supplies&q=850" },
+      { label: "All SMPS", href: "/browse?categorySlug=power-supplies" },
     ],
   },
   {

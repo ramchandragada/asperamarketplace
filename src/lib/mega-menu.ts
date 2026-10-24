@@ -168,6 +168,38 @@ export const MEGA_MENU: MegaMenuCategory[] = [
     ],
   },
   {
+    key: "power-supplies",
+    label: "Power Supplies",
+    href: browse("power-supplies"),
+    columns: [
+      {
+        heading: "By rating",
+        links: [
+          link("Bronze / budget", "power-supplies", { q: "Bronze" }),
+          link("Gold modular", "power-supplies", { q: "Gold" }),
+          link("850W+", "power-supplies", { q: "850" }),
+          link("All SMPS", "power-supplies"),
+        ],
+      },
+    ],
+  },
+  {
+    key: "cpu-coolers",
+    label: "CPU Coolers",
+    href: browse("cpu-coolers"),
+    columns: [
+      {
+        heading: "Cooling",
+        links: [
+          link("Air coolers", "cpu-coolers", { q: "Air" }),
+          link("AIO liquid", "cpu-coolers", { q: "AIO" }),
+          link("ARGB coolers", "cpu-coolers", { q: "ARGB" }),
+          link("All coolers", "cpu-coolers"),
+        ],
+      },
+    ],
+  },
+  {
     key: "keyboard-mouse",
     label: "Keyboard & Mouse",
     href: browse("keyboard-mouse"),
@@ -231,6 +263,8 @@ export const ASPERA_CATEGORY_TILES = [
   { id: "motherboards", label: "Motherboards", href: browse("motherboards"), imageUrl: "/category-tiles/pc-mobo.jpg", bgTint: "#EEF2F7" },
   { id: "memory-ram", label: "Memory", href: browse("memory-ram"), imageUrl: "/category-tiles/pc-ram.jpg", bgTint: "#EEF2F7" },
   { id: "storage-ssd", label: "SSD / Storage", href: browse("storage-ssd"), imageUrl: "/category-tiles/pc-ssd.jpg", bgTint: "#EEF2F7" },
+  { id: "power-supplies", label: "Power Supplies", href: browse("power-supplies"), imageUrl: "/category-tiles/pc-cabinet.jpg", bgTint: "#EEF2F7" },
+  { id: "cpu-coolers", label: "CPU Coolers", href: browse("cpu-coolers"), imageUrl: "/category-tiles/pc-cpu.jpg", bgTint: "#EEF2F7" },
   { id: "monitors", label: "Monitors", href: browse("monitors"), imageUrl: "/category-tiles/pc-monitor.jpg", bgTint: "#EEF2F7" },
   { id: "cabinets", label: "Cabinets", href: browse("cabinets"), imageUrl: "/category-tiles/pc-cabinet.jpg", bgTint: "#EEF2F7" },
   { id: "keyboard-mouse", label: "Keyboard & Mouse", href: browse("keyboard-mouse"), imageUrl: "/category-tiles/pc-keyboard.jpg", bgTint: "#EEF2F7" },

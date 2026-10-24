@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Space_Grotesk, Source_Sans_3 } from "next/font/google";
 import { headers } from "next/headers";
 import { Suspense } from "react";
 import { AnalyticsBeacon } from "@/components/analytics-beacon";
@@ -9,8 +9,14 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ToastHost } from "@/components/toast-host";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const sourceSans = Source_Sans_3({
+  variable: "--font-source-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -22,23 +28,23 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Aspera Marketplace — Discover More. Choose Better.",
-    template: "%s · Aspera Marketplace",
+    default: "Aspera — Pune PC components marketplace",
+    template: "%s · Aspera",
   },
   description:
-    "Shop products from independent Indian sellers with clear pricing, easy discovery, transparent delivery, and secure checkout.",
+    "Shop CPUs, GPUs, motherboards, RAM, SSDs, monitors and more from verified Pune sellers. Clear pricing, secure prepaid checkout, and buyer protection.",
   openGraph: {
-    title: "Aspera Marketplace — Discover More. Choose Better.",
+    title: "Aspera — Pune PC components marketplace",
     description:
-      "Shop products from independent Indian sellers with clear pricing, easy discovery, transparent delivery, and secure checkout.",
+      "Build your rig with CPUs, GPUs, SSDs and peripherals from trusted local sellers.",
     type: "website",
-    siteName: "Aspera Marketplace",
+    siteName: "Aspera",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aspera Marketplace — Discover More. Choose Better.",
+    title: "Aspera — Pune PC components marketplace",
     description:
-      "Shop products from independent Indian sellers with clear pricing and secure checkout.",
+      "CPUs, GPUs, motherboards, RAM, SSDs and monitors from verified Pune sellers.",
   },
 };
 
@@ -52,7 +58,10 @@ export default async function RootLayout({
   const isPanel = surface === "admin" || surface === "seller";
 
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${spaceGrotesk.variable} ${sourceSans.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col font-sans">
         <a className="skip-link" href="#content">
           Skip to content

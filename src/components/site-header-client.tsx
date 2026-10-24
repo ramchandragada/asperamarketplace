@@ -449,17 +449,18 @@ export function SiteHeaderClient({
 
   return (
     <>
-      <div className="w-full bg-[linear-gradient(90deg,#123b4a_0%,#1a5348_58%,#9a4a28_100%)] text-accent-foreground">
+      <div className="w-full bg-[linear-gradient(90deg,#0B1220_0%,#151E32_55%,#1A2740_100%)] text-accent-foreground">
         <p className="flex h-8 w-full items-center justify-center px-4 text-center text-[12px] font-medium tracking-wide md:h-9 md:px-8 md:text-[13px]">
           <span className="flex items-center justify-center gap-1.5 whitespace-nowrap md:hidden">
-            <span>Free delivery</span>
+            <span>Pune PC parts</span>
             <span aria-hidden>·</span>
-            <span>Easy returns</span>
+            <span>Buyer protection</span>
             <span aria-hidden>·</span>
             <span>Secure checkout</span>
           </span>
           <span className="hidden md:inline">
-            Free delivery on eligible orders · Easy returns · Secure checkout
+            Pune PC components · Verified sellers · Buyer protection · Secure
+            prepaid checkout
           </span>
         </p>
       </div>
@@ -476,9 +477,9 @@ export function SiteHeaderClient({
       >
         <Link
           href="/"
-          className="inline-flex min-h-11 shrink-0 items-center font-bold text-[22px] leading-none tracking-tight text-accent md:text-[24px]"
+          className="font-display inline-flex min-h-11 shrink-0 items-center text-[22px] leading-none font-bold tracking-tight text-accent md:text-[26px]"
         >
-          Aspera
+          ASPERA
         </Link>
 
         <div className="hidden min-w-0 flex-1 md:block">

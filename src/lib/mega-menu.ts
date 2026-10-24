@@ -224,30 +224,28 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   },
 ];
 
-const PC_TILE_IMG = "/category-tiles/electronics.png";
-
-/** Homepage shop-by-category tiles (PC categories). */
+/** Homepage shop-by-category tiles — real component crops, dark wells. */
 export const ASPERA_CATEGORY_TILES = [
-  { id: "processors", label: "Processors", href: browse("processors"), imageUrl: PC_TILE_IMG, bgTint: "#E8EEF4" },
-  { id: "graphics-cards", label: "Graphics Cards", href: browse("graphics-cards"), imageUrl: PC_TILE_IMG, bgTint: "#EAF3EF" },
-  { id: "motherboards", label: "Motherboards", href: browse("motherboards"), imageUrl: PC_TILE_IMG, bgTint: "#F3EEF8" },
-  { id: "memory-ram", label: "Memory", href: browse("memory-ram"), imageUrl: PC_TILE_IMG, bgTint: "#F8EFE6" },
-  { id: "storage-ssd", label: "SSD / Storage", href: browse("storage-ssd"), imageUrl: PC_TILE_IMG, bgTint: "#F6ECE8" },
-  { id: "monitors", label: "Monitors", href: browse("monitors"), imageUrl: PC_TILE_IMG, bgTint: "#E9EEF3" },
-  { id: "cabinets", label: "Cabinets", href: browse("cabinets"), imageUrl: PC_TILE_IMG, bgTint: "#F4ECF0" },
-  { id: "keyboard-mouse", label: "Keyboard & Mouse", href: browse("keyboard-mouse"), imageUrl: PC_TILE_IMG, bgTint: "#EEF3F8" },
+  { id: "processors", label: "Processors", href: browse("processors"), imageUrl: "/category-tiles/pc-cpu.jpg", bgTint: "#121A2B" },
+  { id: "graphics-cards", label: "Graphics Cards", href: browse("graphics-cards"), imageUrl: "/category-tiles/pc-gpu.jpg", bgTint: "#121A2B" },
+  { id: "motherboards", label: "Motherboards", href: browse("motherboards"), imageUrl: "/category-tiles/pc-mobo.jpg", bgTint: "#121A2B" },
+  { id: "memory-ram", label: "Memory", href: browse("memory-ram"), imageUrl: "/category-tiles/pc-ram.jpg", bgTint: "#121A2B" },
+  { id: "storage-ssd", label: "SSD / Storage", href: browse("storage-ssd"), imageUrl: "/category-tiles/pc-ssd.jpg", bgTint: "#121A2B" },
+  { id: "monitors", label: "Monitors", href: browse("monitors"), imageUrl: "/category-tiles/pc-monitor.jpg", bgTint: "#121A2B" },
+  { id: "cabinets", label: "Cabinets", href: browse("cabinets"), imageUrl: "/category-tiles/pc-cabinet.jpg", bgTint: "#121A2B" },
+  { id: "keyboard-mouse", label: "Keyboard & Mouse", href: browse("keyboard-mouse"), imageUrl: "/category-tiles/pc-keyboard.jpg", bgTint: "#121A2B" },
 ] as const;
 
 /** Shop-by-brand lanes (PC brands). */
 export const ASPERA_BRAND_LANES = [
-  { id: "intel", label: "Intel", href: browse("processors", { q: "Intel" }), imageUrl: PC_TILE_IMG, bgTint: "#E8EEF4", offer: "Core processors" },
-  { id: "amd", label: "AMD Ryzen", href: browse("processors", { q: "Ryzen" }), imageUrl: PC_TILE_IMG, bgTint: "#F6ECE8", offer: "Ryzen processors" },
-  { id: "nvidia", label: "NVIDIA RTX", href: browse("graphics-cards", { q: "RTX" }), imageUrl: PC_TILE_IMG, bgTint: "#EAF3EF", offer: "GeForce GPUs" },
-  { id: "asus", label: "ASUS", href: browse("motherboards", { q: "ASUS" }), imageUrl: PC_TILE_IMG, bgTint: "#EEF3F8", offer: "Boards & more" },
-  { id: "corsair", label: "Corsair", href: browse("memory-ram", { q: "Corsair" }), imageUrl: PC_TILE_IMG, bgTint: "#F3EEF8", offer: "Memory & cases" },
-  { id: "samsung", label: "Samsung", href: browse("storage-ssd", { q: "Samsung" }), imageUrl: PC_TILE_IMG, bgTint: "#F8EFEA", offer: "SSDs & monitors" },
-  { id: "logitech", label: "Logitech", href: browse("keyboard-mouse", { q: "Logitech" }), imageUrl: PC_TILE_IMG, bgTint: "#F4ECF0", offer: "Combos" },
-  { id: "apc", label: "APC", href: browse("ups", { q: "APC" }), imageUrl: PC_TILE_IMG, bgTint: "#EAF3EF", offer: "Power backup" },
+  { id: "intel", label: "Intel", href: browse("processors", { q: "Intel" }), imageUrl: "/category-tiles/pc-brand-intel.jpg", bgTint: "#121A2B", offer: "Core processors" },
+  { id: "amd", label: "AMD Ryzen", href: browse("processors", { q: "Ryzen" }), imageUrl: "/category-tiles/pc-brand-amd.jpg", bgTint: "#121A2B", offer: "Ryzen processors" },
+  { id: "nvidia", label: "NVIDIA RTX", href: browse("graphics-cards", { q: "RTX" }), imageUrl: "/category-tiles/pc-brand-nvidia.jpg", bgTint: "#121A2B", offer: "GeForce GPUs" },
+  { id: "asus", label: "ASUS", href: browse("motherboards", { q: "ASUS" }), imageUrl: "/category-tiles/pc-brand-asus.jpg", bgTint: "#121A2B", offer: "Boards & more" },
+  { id: "corsair", label: "Corsair", href: browse("memory-ram", { q: "Corsair" }), imageUrl: "/category-tiles/pc-brand-corsair.jpg", bgTint: "#121A2B", offer: "Memory & cases" },
+  { id: "samsung", label: "Samsung", href: browse("storage-ssd", { q: "Samsung" }), imageUrl: "/category-tiles/pc-brand-samsung.jpg", bgTint: "#121A2B", offer: "SSDs & monitors" },
+  { id: "logitech", label: "Logitech", href: browse("keyboard-mouse", { q: "Logitech" }), imageUrl: "/category-tiles/pc-brand-logitech.jpg", bgTint: "#121A2B", offer: "Combos" },
+  { id: "apc", label: "APC", href: browse("ups", { q: "APC" }), imageUrl: "/category-tiles/pc-brand-apc.jpg", bgTint: "#121A2B", offer: "Power backup" },
 ] as const;
 
 /** @deprecated Prefer ASPERA_CATEGORY_TILES — kept for import compatibility */

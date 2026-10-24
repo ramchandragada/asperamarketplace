@@ -200,6 +200,9 @@ export function CatalogueBrowse({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement>(null);
+  /** Sync gate so IntersectionObserver never re-fires mid-fetch / mid-render. */
+  const loadMoreLockRef = useRef(false);
+  const loadMoreRef = useRef<() => void>(() => {});
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
     gender: true,
@@ -359,35 +362,54 @@ export function CatalogueBrowse({
     params.set("page", String(nextPage));
     params.set("pageSize", "24");
 
-    if (append) setLoadingMore(true);
-
-    const response = await fetch(`/api/catalogue/products?${params.toString()}`);
-    const body = (await response.json()) as {
-      data?: { items: BrowseProduct[]; total: number };
-      message?: string;
-    };
-    if (append) setLoadingMore(false);
-    if (!response.ok) {
-      setError(body.message ?? "Search failed");
-      return;
+    if (!append) {
+      // Filter/sort resets must clear any in-flight infinite-scroll lock.
+      loadMoreLockRef.current = false;
+      setLoadingMore(false);
     }
-    const nextItems = body.data?.items ?? [];
-    setItems((prev) => (append ? [...prev, ...nextItems] : nextItems));
-    setTotal(body.data?.total ?? 0);
-    setPage(nextPage);
-    if (updateUrl && !isHome) {
-      const url = new URL(window.location.href);
-      url.search = params.toString();
-      window.history.replaceState({}, "", url.toString());
+
+    try {
+      const response = await fetch(
+        `/api/catalogue/products?${params.toString()}`,
+      );
+      const body = (await response.json()) as {
+        data?: { items: BrowseProduct[]; total: number };
+        message?: string;
+      };
+      if (!response.ok) {
+        setError(body.message ?? "Search failed");
+        return;
+      }
+      const nextItems = body.data?.items ?? [];
+      setItems((prev) => (append ? [...prev, ...nextItems] : nextItems));
+      setTotal(body.data?.total ?? 0);
+      setPage(nextPage);
+      if (updateUrl && !isHome) {
+        const url = new URL(window.location.href);
+        url.search = params.toString();
+        window.history.replaceState({}, "", url.toString());
+      }
+    } finally {
+      if (append) {
+        setLoadingMore(false);
+        loadMoreLockRef.current = false;
+      }
     }
   }
 
   function loadMore() {
-    if (loadingMore || pending || items.length >= total) return;
+    if (loadMoreLockRef.current || loadingMore || pending) return;
+    if (items.length >= total) return;
+    // Set the lock + loading flag synchronously so the grid never swaps to
+    // full-page skeletons (pending && !loadingMore) while append is in flight.
+    loadMoreLockRef.current = true;
+    setLoadingMore(true);
     startTransition(() => {
       void runSearch({ page: page + 1, append: true });
     });
   }
+
+  loadMoreRef.current = loadMore;
 
   useEffect(() => {
     if (!useInfinite) return;
@@ -395,16 +417,20 @@ export function CatalogueBrowse({
     if (!node) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          loadMore();
-        }
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        if (loadMoreLockRef.current) return;
+        loadMoreRef.current();
       },
-      { rootMargin: "320px 0px" },
+      // Modest prefetch — large rootMargin kept the sentinel "intersecting"
+      // through skeleton height thrash and caused load/unload blink loops.
+      { rootMargin: "120px 0px", threshold: 0 },
     );
     observer.observe(node);
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadMore closes over latest page/items
-  }, [useInfinite, items.length, total, loadingMore, pending, page]);
+    // Recreate only when the sentinel mounts/unmounts (has-more flips) or
+    // infinite mode changes — never on loadingMore/pending (that reconnects
+    // mid-scroll and re-fires while the bottom is still in view).
+  }, [useInfinite, items.length < total]);
 
   useEffect(() => {
     if (!filtersOpen) return;
@@ -1222,23 +1248,28 @@ export function CatalogueBrowse({
                 ))}
               </div>
               {useInfinite && items.length < total ? (
-                <div
-                  ref={sentinelRef}
-                  className="flex flex-col items-center gap-3 py-4"
-                  aria-hidden={!loadingMore}
-                >
-                  <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-                    {(loadingMore || pending
-                      ? [0, 1, 2, 3]
-                      : []
-                    ).map((index) => (
-                      <ProductCardSkeleton key={`more-${index}`} />
-                    ))}
-                  </div>
+                <div className="flex flex-col items-center gap-3 py-4">
+                  {/* Zero-layout sentinel: keep height stable so IO never
+                      thrash-dances when skeletons mount below. */}
+                  <div
+                    ref={sentinelRef}
+                    className="h-px w-full shrink-0"
+                    aria-hidden
+                  />
                   {loadingMore ? (
-                    <p className="text-xs font-medium text-muted">
-                      Loading more products…
-                    </p>
+                    <>
+                      <div
+                        className="grid w-full grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4"
+                        aria-hidden
+                      >
+                        {[0, 1, 2, 3].map((index) => (
+                          <ProductCardSkeleton key={`more-${index}`} />
+                        ))}
+                      </div>
+                      <p className="text-xs font-medium text-muted">
+                        Loading more products…
+                      </p>
+                    </>
                   ) : null}
                 </div>
               ) : null}

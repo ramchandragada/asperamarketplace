@@ -8,6 +8,7 @@ import {
   SEARCH_PLACEHOLDER,
   TRENDING_SEARCHES,
   type MegaMenuBrand,
+  type MegaMenuColumn,
 } from "@/lib/mega-menu";
 import { DeliveryLocationBar } from "@/components/delivery-location";
 import { MobileCategoryDrawer } from "@/components/mobile-category-drawer";
@@ -91,6 +92,54 @@ function brandMonogram(label: string) {
   return label.slice(0, 3).toUpperCase();
 }
 
+function BrandLogoMedia({
+  brand,
+  featured,
+}: {
+  brand: MegaMenuBrand;
+  featured: boolean;
+}) {
+  const src = brand.imageUrl;
+  if (!src) {
+    return (
+      <span
+        aria-hidden
+        className={
+          featured
+            ? "font-display text-3xl font-semibold tracking-tight text-[#222]"
+            : "font-display text-2xl font-semibold tracking-tight text-[#222]"
+        }
+      >
+        {brandMonogram(brand.label)}
+      </span>
+    );
+  }
+  // SVGs use <img> — next/image does not optimize local SVG marks well.
+  if (src.endsWith(".svg")) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt=""
+        className={
+          featured
+            ? "h-16 w-auto max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.04] md:h-20"
+            : "h-11 w-auto max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.04] md:h-12"
+        }
+      />
+    );
+  }
+  return (
+    <Image
+      src={src}
+      alt=""
+      fill
+      sizes={featured ? "240px" : "140px"}
+      className="object-contain p-2 transition-transform duration-200 group-hover:scale-[1.04]"
+    />
+  );
+}
+
 function MegaBrandTile({
   brand,
   onNavigate,
@@ -107,38 +156,19 @@ function MegaBrandTile({
       onClick={onNavigate}
       className={
         featured
-          ? "group flex h-full min-h-[9.5rem] w-full items-center justify-center rounded-2xl bg-white px-6 py-5 transition-transform duration-200 hover:-translate-y-0.5"
-          : "group flex h-full min-h-[5.75rem] w-full items-center justify-center rounded-xl bg-white px-4 py-3 transition-transform duration-200 hover:-translate-y-0.5"
+          ? "group flex h-full min-h-[10rem] w-full items-center justify-center rounded-2xl border border-[#E8ECEC] bg-white px-5 py-6 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-accent/40"
+          : "group flex h-full min-h-[6.5rem] w-full items-center justify-center rounded-xl border border-[#E8ECEC] bg-white px-4 py-4 transition-colors hover:border-accent/40"
       }
       aria-label={`Shop ${brand.label}`}
     >
       <span
         className={
           featured
-            ? "relative flex h-24 w-full max-w-[14rem] items-center justify-center overflow-hidden"
-            : "relative flex h-14 w-full max-w-[9rem] items-center justify-center overflow-hidden"
+            ? "relative flex h-24 w-full items-center justify-center overflow-hidden"
+            : "relative flex h-14 w-full items-center justify-center overflow-hidden"
         }
       >
-        {brand.imageUrl ? (
-          <Image
-            src={brand.imageUrl}
-            alt=""
-            fill
-            sizes={featured ? "280px" : "160px"}
-            className="object-contain p-1 transition-transform duration-200 group-hover:scale-[1.04]"
-          />
-        ) : (
-          <span
-            aria-hidden
-            className={
-              featured
-                ? "font-display text-3xl font-semibold tracking-tight text-[#222]"
-                : "font-display text-2xl font-semibold tracking-tight text-[#222]"
-            }
-          >
-            {brandMonogram(brand.label)}
-          </span>
-        )}
+        <BrandLogoMedia brand={brand} featured={featured} />
       </span>
     </Link>
   );
@@ -147,55 +177,83 @@ function MegaBrandTile({
 function brandGridColumns(count: number): string {
   if (count <= 2) return "repeat(2, minmax(0, 1fr))";
   if (count === 3) return "repeat(3, minmax(0, 1fr))";
-  if (count === 4) return "repeat(4, minmax(0, 1fr))";
+  if (count === 4) return "repeat(2, minmax(0, 1fr))";
   if (count <= 6) return "repeat(3, minmax(0, 1fr))";
-  if (count <= 8) return "repeat(4, minmax(0, 1fr))";
-  return "repeat(5, minmax(0, 1fr))";
+  return "repeat(4, minmax(0, 1fr))";
 }
 
-/** Mega menu shows brand logos only — no facet columns, headings, or labels. */
+/** Facet columns on the left; full brand logos fill the remaining space. */
 function MegaPanel({
+  columns,
   brands,
+  categoryLabel,
   onNavigate,
 }: {
+  columns: MegaMenuColumn[];
   brands: MegaMenuBrand[];
+  categoryLabel: string;
   onNavigate: () => void;
 }) {
-  if (brands.length === 0) return null;
-
-  const featured = brands.length <= 4;
-  const maxWidth =
-    brands.length <= 2
-      ? "36rem"
-      : brands.length <= 4
-        ? "48rem"
-        : brands.length <= 6
-          ? "56rem"
-          : "72rem";
+  const featured = brands.length > 0 && brands.length <= 4;
 
   return (
     <div className="absolute inset-x-0 top-full z-50 border-b border-[#E3E8E8] bg-white shadow-[var(--shadow-mega)]">
-      <div className="flex w-full justify-center px-4 py-5 md:px-6 md:py-6 lg:px-8 xl:px-10">
-        <div
-          className={`grid w-full gap-2 md:gap-3 ${
-            featured
-              ? "[grid-auto-rows:minmax(9.5rem,1fr)]"
-              : "[grid-auto-rows:minmax(5.75rem,1fr)]"
-          }`}
-          style={{
-            gridTemplateColumns: brandGridColumns(brands.length),
-            maxWidth,
-          }}
+      <div className="flex w-full items-stretch gap-5 px-4 py-5 md:gap-7 md:px-6 lg:gap-8 lg:px-8 xl:gap-10 xl:px-10">
+        <ScrollEdgeRail
+          label="Subcategories"
+          className="hide-scroll flex min-w-0 shrink-0 gap-8 overflow-x-auto md:gap-10 xl:gap-12"
         >
-          {brands.map((entry) => (
-            <MegaBrandTile
-              key={entry.href + entry.label}
-              brand={entry}
-              onNavigate={onNavigate}
-              featured={featured}
-            />
+          {columns.map((column) => (
+            <div key={column.heading} className="min-w-[9.5rem] shrink-0">
+              <p className="text-[13px] leading-none font-bold text-accent">
+                {column.heading}
+              </p>
+              <ul className="mt-3 space-y-2.5">
+                {column.links.map((item) => (
+                  <li key={item.href + item.label}>
+                    <Link
+                      href={item.href}
+                      className="block text-[13px] leading-snug text-[#666] hover:text-accent"
+                      onClick={onNavigate}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </div>
+        </ScrollEdgeRail>
+
+        {brands.length > 0 ? (
+          <aside className="hidden min-w-0 flex-1 self-stretch rounded-2xl border border-border bg-white p-4 md:flex md:flex-col lg:p-5">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-[13px] leading-none font-bold text-accent">
+                Popular brands
+              </p>
+              <p className="truncate text-[11px] text-[#888]">
+                in {categoryLabel}
+              </p>
+            </div>
+            <div
+              className={`mt-3 grid w-full flex-1 gap-3 ${
+                featured
+                  ? "[grid-auto-rows:minmax(9.5rem,1fr)]"
+                  : "[grid-auto-rows:minmax(6.25rem,1fr)]"
+              }`}
+              style={{ gridTemplateColumns: brandGridColumns(brands.length) }}
+            >
+              {brands.map((entry) => (
+                <MegaBrandTile
+                  key={entry.href + entry.label}
+                  brand={entry}
+                  onNavigate={onNavigate}
+                  featured={featured}
+                />
+              ))}
+            </div>
+          </aside>
+        ) : null}
       </div>
     </div>
   );
@@ -251,7 +309,9 @@ function CategoryNav() {
       {active ? (
         <div onMouseEnter={() => open(active.key)}>
           <MegaPanel
+            columns={active.columns}
             brands={active.brands}
+            categoryLabel={active.label}
             onNavigate={() => setOpenKey(null)}
           />
         </div>

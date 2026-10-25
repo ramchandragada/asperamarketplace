@@ -49,6 +49,11 @@ function link(
   return { label, href: browse(categorySlug, opts) };
 }
 
+/** Official-style SVG wordmarks / marks in /public/brand-logos. */
+function brandLogo(brandSlug: string): string {
+  return `/brand-logos/${brandSlug}.svg`;
+}
+
 function brand(
   label: string,
   categorySlug: string,
@@ -58,19 +63,19 @@ function brand(
   return {
     label,
     href: browse(categorySlug, { brandSlug }),
-    imageUrl,
+    imageUrl: imageUrl ?? brandLogo(brandSlug),
   };
 }
 
 const IMG = {
-  amd: "/category-tiles/pc-brand-amd.jpg",
-  intel: "/category-tiles/pc-brand-intel.jpg",
-  nvidia: "/category-tiles/pc-brand-nvidia.jpg",
-  asus: "/category-tiles/pc-brand-asus.jpg",
-  corsair: "/category-tiles/pc-brand-corsair.jpg",
-  samsung: "/category-tiles/pc-brand-samsung.jpg",
-  logitech: "/category-tiles/pc-brand-logitech.jpg",
-  apc: "/category-tiles/pc-brand-apc.jpg",
+  amd: brandLogo("amd"),
+  intel: brandLogo("intel"),
+  nvidia: brandLogo("nvidia"),
+  asus: brandLogo("asus"),
+  corsair: brandLogo("corsair"),
+  samsung: brandLogo("samsung"),
+  logitech: brandLogo("logitech"),
+  apc: brandLogo("apc"),
 } as const;
 
 export const SEARCH_PLACEHOLDER =
@@ -606,7 +611,7 @@ export const ASPERA_BRAND_LANES = [
     id: "intel",
     label: "Intel",
     href: browse("processors", { facets: { brandFamily: "Intel Core" } }),
-    imageUrl: "/category-tiles/pc-brand-intel.jpg",
+    imageUrl: brandLogo("intel"),
     bgTint: "#ffffff",
     offer: "Core processors",
   },
@@ -614,7 +619,7 @@ export const ASPERA_BRAND_LANES = [
     id: "amd",
     label: "AMD Ryzen",
     href: browse("processors", { facets: { brandFamily: "AMD Ryzen" } }),
-    imageUrl: "/category-tiles/pc-brand-amd.jpg",
+    imageUrl: brandLogo("amd"),
     bgTint: "#ffffff",
     offer: "Ryzen processors",
   },
@@ -624,7 +629,7 @@ export const ASPERA_BRAND_LANES = [
     href: browse("graphics-cards", {
       facets: { generation: "RTX 50-series" },
     }),
-    imageUrl: "/category-tiles/pc-brand-nvidia.jpg",
+    imageUrl: brandLogo("nvidia"),
     bgTint: "#ffffff",
     offer: "GeForce GPUs",
   },
@@ -632,7 +637,7 @@ export const ASPERA_BRAND_LANES = [
     id: "asus",
     label: "ASUS",
     href: browse("motherboards", { q: "ASUS" }),
-    imageUrl: "/category-tiles/pc-brand-asus.jpg",
+    imageUrl: brandLogo("asus"),
     bgTint: "#ffffff",
     offer: "Boards & more",
   },
@@ -640,7 +645,7 @@ export const ASPERA_BRAND_LANES = [
     id: "corsair",
     label: "Corsair",
     href: browse("memory-ram", { q: "Corsair" }),
-    imageUrl: "/category-tiles/pc-brand-corsair.jpg",
+    imageUrl: brandLogo("corsair"),
     bgTint: "#ffffff",
     offer: "Memory & cases",
   },
@@ -648,7 +653,7 @@ export const ASPERA_BRAND_LANES = [
     id: "samsung",
     label: "Samsung",
     href: browse("storage-ssd", { q: "Samsung" }),
-    imageUrl: "/category-tiles/pc-brand-samsung.jpg",
+    imageUrl: brandLogo("samsung"),
     bgTint: "#ffffff",
     offer: "SSDs & monitors",
   },
@@ -656,7 +661,7 @@ export const ASPERA_BRAND_LANES = [
     id: "logitech",
     label: "Logitech",
     href: browse("keyboard-mouse", { q: "Logitech" }),
-    imageUrl: "/category-tiles/pc-brand-logitech.jpg",
+    imageUrl: brandLogo("logitech"),
     bgTint: "#ffffff",
     offer: "Combos",
   },
@@ -664,7 +669,7 @@ export const ASPERA_BRAND_LANES = [
     id: "apc",
     label: "APC",
     href: browse("ups", { q: "APC" }),
-    imageUrl: "/category-tiles/pc-brand-apc.jpg",
+    imageUrl: brandLogo("apc"),
     bgTint: "#ffffff",
     offer: "Power backup",
   },

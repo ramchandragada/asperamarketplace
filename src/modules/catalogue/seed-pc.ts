@@ -10,7 +10,7 @@
  *
  * Idempotent — safe to run repeatedly.
  */
-import type { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 import { hashPassword } from "@/modules/identity/crypto";
 import { buildSearchDocument } from "@/modules/catalogue/helpers";
 import {
@@ -19,6 +19,10 @@ import {
   PC_PRODUCTS,
   PC_SELLERS,
 } from "@/modules/catalogue/pc-catalogue-data";
+import {
+  enrichProduct,
+  toEnrichmentAttributes,
+} from "@/modules/catalogue/product-enrichment";
 
 const SELLER_PASSWORD = "AsperaSellerDevOnly1!";
 
@@ -161,19 +165,35 @@ export async function seedPcCatalogue(
         `Missing refs for ${item.slug} (seller/${item.sellerKey} cat/${item.categorySlug} brand/${item.brandSlug})`,
       );
     }
+    const enrichment = enrichProduct({
+      slug: item.slug,
+      title: item.title,
+      categorySlug: item.categorySlug,
+      brandSlug: item.brandSlug,
+      brandName: brandName[item.brandSlug],
+      categoryName: categoryName[item.categorySlug],
+    });
+    const summary = enrichment.summary;
+    const description = enrichment.description;
     const searchDocument = buildSearchDocument({
       title: item.title,
-      summary: item.summary,
-      description: item.description,
+      summary,
+      description,
       brandName: brandName[item.brandSlug],
       categoryName: categoryName[item.categorySlug],
       sku: item.sku,
     });
-    const attributes = {
-      brand: brandName[item.brandSlug],
-      specs: item.summary,
-      city: "Pune",
-    };
+    const attributes = toEnrichmentAttributes(
+      {
+        slug: item.slug,
+        title: item.title,
+        categorySlug: item.categorySlug,
+        brandSlug: item.brandSlug,
+        brandName: brandName[item.brandSlug],
+        categoryName: categoryName[item.categorySlug],
+      },
+      enrichment,
+    ) as Prisma.InputJsonValue;
 
     const product = await prisma.product.upsert({
       where: { slug: item.slug },
@@ -183,8 +203,8 @@ export async function seedPcCatalogue(
         brandId: brand,
         slug: item.slug,
         title: item.title,
-        summary: item.summary,
-        description: item.description,
+        summary,
+        description,
         status: "approved",
         countryOfOrigin: "India",
         hsnCode: item.hsnCode,
@@ -200,8 +220,8 @@ export async function seedPcCatalogue(
         categoryId: categoryRow.id,
         brandId: brand,
         title: item.title,
-        summary: item.summary,
-        description: item.description,
+        summary,
+        description,
         status: "approved",
         hsnCode: item.hsnCode,
         searchDocument,

@@ -3,7 +3,7 @@
  * and help surfaces. Override via env in production deployments.
  */
 export const siteContact = {
-  brandName: "Aspera Marketplace",
+  brandName: "Aspera",
   supportEmail:
     process.env.SITE_SUPPORT_EMAIL?.trim() || "support@asperamarketplace.com",
   supportPhoneDisplay:

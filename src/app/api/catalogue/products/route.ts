@@ -1,3 +1,4 @@
+import { parseFacetSearchParams } from "@/modules/catalogue/category-facets";
 import { searchProductsSchema } from "@/modules/catalogue/schema";
 import { searchApprovedProducts } from "@/modules/catalogue/service";
 import { getRequestId, jsonError, jsonOk } from "@/platform/http/respond";
@@ -9,11 +10,13 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const audienceRaw = url.searchParams.get("audience") ?? undefined;
+    const facets = parseFacetSearchParams(url.searchParams);
     const input = searchProductsSchema.parse({
       q: url.searchParams.get("q") ?? undefined,
       categorySlug: url.searchParams.get("categorySlug") ?? undefined,
       brandSlug: url.searchParams.get("brandSlug") ?? undefined,
       audience: audienceRaw || undefined,
+      facets: Object.keys(facets).length > 0 ? facets : undefined,
       minPricePaise: url.searchParams.get("minPricePaise") ?? undefined,
       maxPricePaise: url.searchParams.get("maxPricePaise") ?? undefined,
       inStockOnly: url.searchParams.get("inStockOnly") === "true",

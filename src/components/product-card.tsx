@@ -126,7 +126,7 @@ const BADGE_LABELS: Record<ProductCardBadge, string> = {
 
 function BadgePill({ badge }: { badge: ProductCardBadge }) {
   return (
-    <span className="absolute top-2 left-2 z-10 inline-flex items-center rounded-full bg-accent px-2 py-1 text-[10px] font-semibold tracking-wide text-accent-foreground shadow-sm">
+    <span className="absolute top-2 left-2 z-10 inline-flex items-center rounded-md bg-accent px-2 py-1 text-[10px] font-semibold tracking-wide text-accent-foreground shadow-sm">
       {BADGE_LABELS[badge]}
     </span>
   );
@@ -162,7 +162,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
           className="block"
           aria-label={`${product.title}, ${priceLabel}${offerLabel}`}
         >
-          <div className="photo-well relative aspect-[3/4] overflow-hidden rounded-2xl shadow-[var(--shadow-card)]">
+          <div className="photo-well relative aspect-square overflow-hidden rounded-[10px]">
             {product.badge ? <BadgePill badge={product.badge} /> : null}
             {showImage ? (
               <Image
@@ -171,15 +171,15 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
                 fill
                 sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
                 placeholder="blur"
-                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUzMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUzMyIgZmlsbD0iI2VmZTRkMiIvPjwvc3ZnPg=="
-                className="card-photo object-cover object-center"
+                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y3ZjhmYSIvPjwvc3ZnPg=="
+                className="card-photo object-contain object-center p-2"
                 loading="lazy"
                 onError={() => setImageFailed(true)}
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span
-                  className="text-4xl font-semibold text-accent/25"
+                  className="text-4xl font-semibold text-accent/20"
                   aria-hidden
                 >
                   {initials}
@@ -187,7 +187,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
                 <span className="sr-only">{product.title}</span>
               </div>
             )}
-            {discount ? (
+            {discount && !product.badge ? (
               <span className="offer-chip absolute bottom-2 left-2 z-10 px-2 py-1 text-[11px]">
                 {discount}% off
               </span>
@@ -240,7 +240,11 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
           <span className="text-[12px] font-medium text-success">
             Free delivery
           </span>
-        ) : null}
+        ) : (
+          <span className="text-[12px] font-semibold text-accent">
+            Express delivery
+          </span>
+        )}
         <p className="mt-auto pt-0.5 text-[12px] text-muted">
           {sellerLabel ? `${sellerLabel} · ` : ""}
           {product.sellerName}

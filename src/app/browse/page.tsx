@@ -3,9 +3,10 @@ import {
   type BrowseProduct,
 } from "@/components/catalogue-browse";
 import { PageShell } from "@/components/ui/page-shell";
+import { parseFacetSearchParams } from "@/modules/catalogue/category-facets";
 import {
-  listActiveBrands,
   listActiveCategories,
+  listBrandFilterIndex,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
 
@@ -20,67 +21,86 @@ const SORTS = new Set([
   "rating",
 ]);
 
+const AUDIENCES = new Set(["women", "men", "kids", "unisex"]);
+const AUDIENCE_HEADINGS: Record<string, string> = {
+  women: "Women",
+  men: "Men",
+  kids: "Kids",
+  unisex: "Unisex",
+};
+
 export default async function BrowsePage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    q?: string;
-    categorySlug?: string;
-    brandSlug?: string;
-    sort?: string;
-    inStockOnly?: string;
-    verifiedSellerOnly?: string;
-    minPricePaise?: string;
-    maxPricePaise?: string;
-    minRating?: string;
-    minDiscountPercent?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const query = params.q?.trim() ?? "";
-  const categorySlug = params.categorySlug?.trim() ?? "";
-  const brandSlug = params.brandSlug?.trim() ?? "";
-  const sort = SORTS.has(params.sort ?? "")
-    ? (params.sort as string)
+  const read = (key: string) => {
+    const value = params[key];
+    return typeof value === "string" ? value : undefined;
+  };
+  const query = read("q")?.trim() ?? "";
+  const categorySlug = read("categorySlug")?.trim() ?? "";
+  const brandSlug = read("brandSlug")?.trim() ?? "";
+  const audienceRaw = read("audience")?.trim() ?? "";
+  const audience = AUDIENCES.has(audienceRaw)
+    ? (audienceRaw as "women" | "men" | "kids" | "unisex")
+    : undefined;
+  const sort = SORTS.has(read("sort") ?? "")
+    ? (read("sort") as string)
     : query
       ? "relevance"
       : "newest";
-  const inStockOnly = params.inStockOnly === "true";
-  const verifiedSellerOnly = params.verifiedSellerOnly === "true";
-  const minPricePaise = params.minPricePaise
-    ? Number(params.minPricePaise)
+  const inStockOnly = read("inStockOnly") === "true";
+  const verifiedSellerOnly = read("verifiedSellerOnly") === "true";
+  const minPricePaise = read("minPricePaise")
+    ? Number(read("minPricePaise"))
     : undefined;
-  const maxPricePaise = params.maxPricePaise
-    ? Number(params.maxPricePaise)
+  const maxPricePaise = read("maxPricePaise")
+    ? Number(read("maxPricePaise"))
     : undefined;
+  const facets = parseFacetSearchParams(params);
 
-  const [result, categories, brands] = await Promise.all([
-    searchApprovedProducts({
-      q: query || undefined,
-      categorySlug: categorySlug || undefined,
-      brandSlug: brandSlug || undefined,
-      sort: sort as
-        | "relevance"
-        | "newest"
-        | "price_asc"
-        | "price_desc"
-        | "rating",
-      inStockOnly,
-      verifiedSellerOnly,
-      minPricePaise,
-      maxPricePaise,
-      minRating: params.minRating ? Number(params.minRating) : undefined,
-      minDiscountPercent: params.minDiscountPercent
-        ? Number(params.minDiscountPercent)
-        : undefined,
-      page: 1,
-      pageSize: 24,
-    }),
+  const [categories, brandIndex] = await Promise.all([
     listActiveCategories(),
-    listActiveBrands(),
+    listBrandFilterIndex(),
   ]);
 
+  // Ignore a brand that has no products in the selected category.
+  const brandsForCategory = categorySlug
+    ? (brandIndex.byCategory[categorySlug] ?? [])
+    : brandIndex.all;
+  const resolvedBrandSlug =
+    brandSlug && brandsForCategory.some((brand) => brand.slug === brandSlug)
+      ? brandSlug
+      : "";
+
+  const result = await searchApprovedProducts({
+    q: query || undefined,
+    categorySlug: categorySlug || undefined,
+    brandSlug: resolvedBrandSlug || undefined,
+    audience,
+    facets: Object.keys(facets).length > 0 ? facets : undefined,
+    sort: sort as
+      | "relevance"
+      | "newest"
+      | "price_asc"
+      | "price_desc"
+      | "rating",
+    inStockOnly,
+    verifiedSellerOnly,
+    minPricePaise,
+    maxPricePaise,
+    minRating: read("minRating") ? Number(read("minRating")) : undefined,
+    minDiscountPercent: read("minDiscountPercent")
+      ? Number(read("minDiscountPercent"))
+      : undefined,
+    page: 1,
+    pageSize: 24,
+  });
+
   const heading =
+    (audience ? AUDIENCE_HEADINGS[audience] : undefined) ??
     categories.find((category) => category.slug === categorySlug)?.name ??
     (query ? undefined : "Shop");
 
@@ -95,20 +115,23 @@ export default async function BrowsePage({
           name: category.name,
           productCount: category.productCount,
         }))}
-        brands={brands}
+        brands={brandIndex.all}
+        brandsByCategory={brandIndex.byCategory}
         initialCategorySlug={categorySlug}
-        initialBrandSlug={brandSlug}
+        initialBrandSlug={resolvedBrandSlug}
+        initialAudience={audience ?? ""}
         initialSort={sort}
         initialInStockOnly={inStockOnly}
         initialVerifiedOnly={verifiedSellerOnly}
-        initialMinRating={params.minRating ? Number(params.minRating) : undefined}
+        initialMinRating={read("minRating") ? Number(read("minRating")) : undefined}
         initialMinDiscount={
-          params.minDiscountPercent
-            ? Number(params.minDiscountPercent)
+          read("minDiscountPercent")
+            ? Number(read("minDiscountPercent"))
             : undefined
         }
         initialMinPricePaise={minPricePaise}
         initialMaxPricePaise={maxPricePaise}
+        initialFacets={facets}
         heading={heading}
         browseBasePath="/browse"
         enableLoadMore

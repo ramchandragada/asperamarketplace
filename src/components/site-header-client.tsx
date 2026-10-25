@@ -1,15 +1,17 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import {
   MEGA_MENU,
   SEARCH_PLACEHOLDER,
   TRENDING_SEARCHES,
+  type MegaMenuBrand,
   type MegaMenuColumn,
 } from "@/lib/mega-menu";
+import { DeliveryLocationBar } from "@/components/delivery-location";
 import { MobileCategoryDrawer } from "@/components/mobile-category-drawer";
-import { PincodeAnchor } from "@/components/pincode-anchor";
 import { ScrollEdgeRail } from "@/components/product-loop-rail";
 
 function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
@@ -79,40 +81,144 @@ function OrdersIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+function brandMonogram(label: string) {
+  const parts = label.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return parts
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("");
+  }
+  return label.slice(0, 3).toUpperCase();
+}
+
+function BrandLogoMedia({ brand }: { brand: MegaMenuBrand }) {
+  const src = brand.imageUrl;
+  if (!src) {
+    return (
+      <span
+        aria-hidden
+        className="font-display text-lg font-semibold tracking-tight text-[#222]"
+      >
+        {brandMonogram(brand.label)}
+      </span>
+    );
+  }
+  // SVGs use <img> — next/image does not optimize local SVG marks well.
+  if (src.endsWith(".svg")) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt=""
+        className="h-8 w-auto max-w-[7.5rem] object-contain transition-transform duration-200 group-hover:scale-[1.04]"
+      />
+    );
+  }
+  return (
+    <Image
+      src={src}
+      alt=""
+      width={120}
+      height={32}
+      className="h-8 w-auto max-w-[7.5rem] object-contain transition-transform duration-200 group-hover:scale-[1.04]"
+    />
+  );
+}
+
+function MegaBrandTile({
+  brand,
+  onNavigate,
+}: {
+  brand: MegaMenuBrand;
+  onNavigate: () => void;
+}) {
+  return (
+    <Link
+      href={brand.href}
+      onClick={onNavigate}
+      className="group flex h-12 w-full items-center justify-center rounded-lg border border-[#E8ECEC] bg-white px-3 transition-colors hover:border-accent/40"
+      aria-label={`Shop ${brand.label}`}
+    >
+      <BrandLogoMedia brand={brand} />
+    </Link>
+  );
+}
+
+function brandGridColumns(count: number): string {
+  if (count <= 2) return "repeat(2, minmax(0, 1fr))";
+  if (count === 3) return "repeat(3, minmax(0, 1fr))";
+  if (count === 4) return "repeat(4, minmax(0, 1fr))";
+  if (count <= 6) return "repeat(3, minmax(0, 1fr))";
+  return "repeat(4, minmax(0, 1fr))";
+}
+
+/** Facet columns on the left; compact brand logos fill remaining width. */
 function MegaPanel({
   columns,
+  brands,
+  categoryLabel,
   onNavigate,
 }: {
   columns: MegaMenuColumn[];
+  brands: MegaMenuBrand[];
+  categoryLabel: string;
   onNavigate: () => void;
 }) {
   return (
     <div className="absolute inset-x-0 top-full z-50 border-b border-[#E3E8E8] bg-white shadow-[var(--shadow-mega)]">
-      <ScrollEdgeRail
-        label="Subcategories"
-        className="hide-scroll flex w-full gap-8 overflow-x-auto px-4 py-6 md:gap-10 md:px-6 lg:px-8 xl:gap-12 xl:px-10"
-      >
-        {columns.map((column) => (
-          <div key={column.heading} className="min-w-[9.5rem] shrink-0">
-            <p className="text-[13px] leading-none font-bold text-accent">
-              {column.heading}
-            </p>
-            <ul className="mt-3 space-y-2.5">
-              {column.links.map((item) => (
-                <li key={item.href + item.label}>
-                  <Link
-                    href={item.href}
-                    className="block text-[13px] leading-snug text-[#666] hover:text-accent"
-                    onClick={onNavigate}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
+      <div className="flex w-full items-start gap-6 px-4 py-3.5 md:gap-8 md:px-6 lg:px-8 xl:px-10">
+        <ScrollEdgeRail
+          label="Subcategories"
+          className="hide-scroll flex min-w-0 shrink-0 gap-8 overflow-x-auto md:gap-10 xl:gap-12"
+        >
+          {columns.map((column) => (
+            <div key={column.heading} className="min-w-[9rem] shrink-0">
+              <p className="text-[13px] leading-none font-bold text-accent">
+                {column.heading}
+              </p>
+              <ul className="mt-2.5 space-y-2">
+                {column.links.map((item) => (
+                  <li key={item.href + item.label}>
+                    <Link
+                      href={item.href}
+                      className="block text-[13px] leading-snug text-[#666] hover:text-accent"
+                      onClick={onNavigate}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </ScrollEdgeRail>
+
+        {brands.length > 0 ? (
+          <aside className="hidden min-w-0 flex-1 rounded-xl border border-border bg-white px-3 py-2.5 md:block">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-[13px] leading-none font-bold text-accent">
+                Popular brands
+              </p>
+              <p className="truncate text-[11px] text-[#888]">
+                in {categoryLabel}
+              </p>
+            </div>
+            <div
+              className="mt-2.5 grid w-full gap-2"
+              style={{ gridTemplateColumns: brandGridColumns(brands.length) }}
+            >
+              {brands.map((entry) => (
+                <MegaBrandTile
+                  key={entry.href + entry.label}
+                  brand={entry}
+                  onNavigate={onNavigate}
+                />
               ))}
-            </ul>
-          </div>
-        ))}
-      </ScrollEdgeRail>
+            </div>
+          </aside>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -166,7 +272,12 @@ function CategoryNav() {
       </nav>
       {active ? (
         <div onMouseEnter={() => open(active.key)}>
-          <MegaPanel columns={active.columns} onNavigate={() => setOpenKey(null)} />
+          <MegaPanel
+            columns={active.columns}
+            brands={active.brands}
+            categoryLabel={active.label}
+            onNavigate={() => setOpenKey(null)}
+          />
         </div>
       ) : null}
     </div>
@@ -302,7 +413,7 @@ function HeaderSearch({ inputId = "global-search" }: { inputId?: string }) {
           />
           <button
             type="submit"
-            className="absolute top-1 right-1 bottom-1 inline-flex items-center rounded-full bg-brand-accent px-3.5 text-[13px] font-semibold text-white"
+            className="absolute top-1 right-1 bottom-1 inline-flex items-center rounded-full bg-brand-accent px-3.5 text-[13px] font-semibold text-[#0B1220]"
           >
             Search
           </button>
@@ -450,17 +561,18 @@ export function SiteHeaderClient({
 
   return (
     <>
-      <div className="w-full bg-[linear-gradient(90deg,#123b4a_0%,#1a5348_58%,#9a4a28_100%)] text-accent-foreground">
+      <div className="w-full bg-[linear-gradient(90deg,#0B1220_0%,#151E32_55%,#1A2740_100%)] text-accent-foreground">
         <p className="flex h-8 w-full items-center justify-center px-4 text-center text-[12px] font-medium tracking-wide md:h-9 md:px-8 md:text-[13px]">
           <span className="flex items-center justify-center gap-1.5 whitespace-nowrap md:hidden">
-            <span>Free delivery</span>
+            <span>⚡ Express in mins</span>
             <span aria-hidden>·</span>
-            <span>Easy returns</span>
+            <span>Pune hubs</span>
             <span aria-hidden>·</span>
-            <span>Secure checkout</span>
+            <span>Prepaid secure</span>
           </span>
           <span className="hidden md:inline">
-            Free delivery on eligible orders · Easy returns · Secure checkout
+            Aspera Express — PC parts delivered in minutes from nearby hubs ·
+            Verified sellers · Buyer protection
           </span>
         </p>
       </div>
@@ -477,12 +589,14 @@ export function SiteHeaderClient({
       >
         <Link
           href="/"
-          className="inline-flex min-h-11 shrink-0 items-center font-bold text-[22px] leading-none tracking-tight text-accent md:text-[24px]"
+          className="font-display inline-flex min-h-11 shrink-0 items-center text-[22px] leading-none font-bold tracking-tight text-accent md:text-[26px]"
         >
-          Aspera
+          ASPERA
         </Link>
 
-        <PincodeAnchor className="hidden shrink-0 md:block" />
+        <div className="hidden shrink-0 sm:block">
+          <DeliveryLocationBar compact={compact} />
+        </div>
 
         <div className="hidden min-w-0 flex-1 md:block">
           <HeaderSearch />
@@ -492,6 +606,12 @@ export function SiteHeaderClient({
           aria-label="Primary"
           className="ml-auto flex shrink-0 items-center gap-0 md:gap-5 lg:gap-6"
         >
+          <Link
+            href="/pc-builder"
+            className="hidden min-h-11 items-center px-1 text-[14px] font-medium text-foreground hover:text-accent md:inline-flex"
+          >
+            PC Builder
+          </Link>
           <Link
             href={sellHref}
             className="hidden min-h-11 items-center px-1 text-[14px] font-medium text-foreground hover:text-accent sm:inline-flex"
@@ -542,10 +662,10 @@ export function SiteHeaderClient({
         inside the sticky header and then hiding them on scroll changed the
         stuck bar's height and made mobile browsers rewind the page. */}
     <div className="border-b border-border/80 bg-surface md:hidden">
-      <div className="w-full px-4 pb-2.5">
-        <div className="pb-2">
-          <PincodeAnchor />
-        </div>
+      <div className="flex w-full items-center gap-2 border-b border-border/60 px-3 py-1.5 sm:hidden">
+        <DeliveryLocationBar />
+      </div>
+      <div className="w-full px-4 pb-2.5 pt-2">
         <HeaderSearch inputId="global-search-mobile" />
       </div>
       <div className="flex w-full items-center gap-2 border-t border-border px-3 py-2">

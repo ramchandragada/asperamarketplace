@@ -70,143 +70,150 @@ export async function SiteHeader() {
 
 const SEO_BLOCKS = [
   {
-    title: "Processors (CPUs)",
-    body: "Shop the latest Intel Core and AMD Ryzen desktop processors — from value builds to high-core gaming and workstation chips. Compare cores, clock speeds, and sockets from trusted Pune sellers.",
+    title: "Processors · Express",
+    body: "Intel Core and AMD Ryzen CPUs with minute-level ETAs from Pune hubs. Compare sockets, cores, and live Express windows before you buy.",
     href: "/browse?categorySlug=processors",
   },
   {
-    title: "Graphics Cards (GPUs)",
-    body: "Find NVIDIA GeForce RTX and AMD Radeon graphics cards for gaming, content creation, and AI workloads. Compare VRAM and boost clocks across ASUS, MSI, and Gigabyte.",
+    title: "Graphics cards · Express",
+    body: "GeForce RTX and Radeon RX GPUs from nearby inventory — same-day express when your pin is in a hub zone.",
     href: "/browse?categorySlug=graphics-cards",
   },
   {
-    title: "Motherboards",
-    body: "Intel LGA1700 and AMD AM5 motherboards with DDR5, PCIe Gen5, and Wi-Fi. Match your CPU with the right chipset and form factor, delivered across Pune.",
+    title: "Motherboards & memory",
+    body: "Match boards and DDR4/DDR5 kits to your CPU. ASUS, MSI, Gigabyte, Corsair and more with quick-commerce delivery.",
     href: "/browse?categorySlug=motherboards",
   },
   {
-    title: "Memory & Storage",
-    body: "DDR4 and DDR5 RAM kits plus NVMe Gen4 and SATA SSDs from Corsair, Kingston, Samsung, WD, and Crucial. Speed up your build with the right capacity and latency.",
+    title: "Storage, monitors & power",
+    body: "NVMe SSDs, monitors, cabinets, and UPS — ordered in minutes, delivered like Blinkit-speed for builders.",
     href: "/browse?categorySlug=storage-ssd",
   },
   {
-    title: "Monitors & Peripherals",
-    body: "Gaming and productivity monitors, mechanical keyboards, mice, cabinets, and UPS power backup. Build a complete setup with clear specs and transparent pricing.",
-    href: "/browse?categorySlug=monitors",
+    title: "Sell on Aspera Express",
+    body: "List components from your hub, fulfil Express orders, and reach local builders with verified seller tools.",
+    href: "/seller/onboarding",
   },
 ] as const;
 
 const COMMUNITY_BLOCKS = [
   {
-    title: "Join the Aspera Community",
-    body: "Follow order updates and save favourites to your wishlist.",
-    href: "/shop",
-    cta: "Start shopping",
+    title: "Build with Aspera",
+    body: "Track orders, save parts to your wishlist, and shop verified Pune sellers.",
+    href: "/browse",
+    cta: "Browse components",
   },
   {
-    title: "Download Aspera App Now",
+    title: "Download Aspera App",
     body: "iOS and Android builds are coming soon.",
     href: "/download-app",
     cta: "Download app",
   },
   {
-    title: "More Than Just Shopping",
-    body: "Sell to shoppers nationwide with verified listings, transparent fees, and a dedicated seller dashboard.",
+    title: "Become a PC parts seller",
+    body: "Sell to builders with verified listings, transparent fees, and a dedicated seller dashboard.",
     href: "/seller/onboarding",
-    cta: "Become a Supplier",
+    cta: "Start selling",
   },
 ] as const;
 
-/** SEO-oriented online shopping directory grouped for footer crawlability. */
+/** SEO-oriented PC shopping directory for footer crawlability. */
 const ONLINE_SHOPPING_GROUPS = [
   {
     heading: "Processors",
     links: [
-      { label: "Intel Core i5", href: "/browse?categorySlug=processors&q=core i5" },
-      { label: "Intel Core i7", href: "/browse?categorySlug=processors&q=core i7" },
-      { label: "AMD Ryzen 5", href: "/browse?categorySlug=processors&q=ryzen 5" },
-      { label: "AMD Ryzen 7", href: "/browse?categorySlug=processors&q=ryzen 7" },
+      { label: "Intel Core", href: "/browse?categorySlug=processors&q=Intel" },
+      { label: "AMD Ryzen", href: "/browse?categorySlug=processors&q=Ryzen" },
+      { label: "Budget / office", href: "/browse?categorySlug=processors&q=i3" },
+      { label: "Gaming (X3D)", href: "/browse?categorySlug=processors&q=X3D" },
+      { label: "All processors", href: "/browse?categorySlug=processors" },
     ],
   },
   {
-    heading: "Graphics Cards",
+    heading: "Graphics cards",
     links: [
-      { label: "NVIDIA RTX", href: "/browse?categorySlug=graphics-cards&q=rtx" },
-      { label: "AMD Radeon", href: "/browse?categorySlug=graphics-cards&q=radeon" },
-      { label: "ASUS", href: "/browse?categorySlug=graphics-cards&q=asus" },
-      { label: "MSI", href: "/browse?categorySlug=graphics-cards&q=msi" },
+      { label: "GeForce RTX", href: "/browse?categorySlug=graphics-cards&q=RTX" },
+      { label: "Radeon RX", href: "/browse?categorySlug=graphics-cards&q=Radeon" },
+      { label: "Entry GPUs", href: "/browse?categorySlug=graphics-cards&maxPricePaise=3000000" },
+      { label: "All GPUs", href: "/browse?categorySlug=graphics-cards" },
     ],
   },
   {
     heading: "Motherboards",
     links: [
-      { label: "Intel LGA1700", href: "/browse?categorySlug=motherboards&q=lga1700" },
-      { label: "AMD AM5", href: "/browse?categorySlug=motherboards&q=am5" },
-      { label: "ASUS", href: "/browse?categorySlug=motherboards&q=asus" },
-      { label: "Gigabyte", href: "/browse?categorySlug=motherboards&q=gigabyte" },
+      { label: "AM5 boards", href: "/browse?categorySlug=motherboards&q=AM5" },
+      { label: "LGA1700", href: "/browse?categorySlug=motherboards&q=LGA1700" },
+      { label: "ASUS", href: "/browse?categorySlug=motherboards&q=ASUS" },
+      { label: "MSI", href: "/browse?categorySlug=motherboards&q=MSI" },
+      { label: "All boards", href: "/browse?categorySlug=motherboards" },
     ],
   },
   {
-    heading: "Memory (RAM)",
+    heading: "Memory",
     links: [
-      { label: "DDR5", href: "/browse?categorySlug=memory-ram&q=ddr5" },
-      { label: "DDR4", href: "/browse?categorySlug=memory-ram&q=ddr4" },
-      { label: "Corsair", href: "/browse?categorySlug=memory-ram&q=corsair" },
-      { label: "Kingston", href: "/browse?categorySlug=memory-ram&q=kingston" },
+      { label: "DDR5 kits", href: "/browse?categorySlug=memory-ram&q=DDR5" },
+      { label: "DDR4 kits", href: "/browse?categorySlug=memory-ram&q=DDR4" },
+      { label: "Corsair", href: "/browse?categorySlug=memory-ram&q=Corsair" },
+      { label: "All memory", href: "/browse?categorySlug=memory-ram" },
     ],
   },
   {
-    heading: "Storage (SSD)",
+    heading: "Storage",
     links: [
-      { label: "NVMe Gen4", href: "/browse?categorySlug=storage-ssd&q=nvme" },
-      { label: "SATA SSD", href: "/browse?categorySlug=storage-ssd&q=sata" },
-      { label: "Samsung", href: "/browse?categorySlug=storage-ssd&q=samsung" },
-      { label: "WD", href: "/browse?categorySlug=storage-ssd&q=wd" },
-    ],
-  },
-  {
-    heading: "Cabinets",
-    links: [
-      { label: "Mid Tower", href: "/browse?categorySlug=cabinets&q=mid tower" },
-      { label: "ARGB Cabinets", href: "/browse?categorySlug=cabinets&q=argb" },
-      { label: "NZXT", href: "/browse?categorySlug=cabinets&q=nzxt" },
-      { label: "Ant Esports", href: "/browse?categorySlug=cabinets&q=ant esports" },
+      { label: "NVMe SSD", href: "/browse?categorySlug=storage-ssd&q=NVMe" },
+      { label: "SATA SSD", href: "/browse?categorySlug=storage-ssd&q=SATA" },
+      { label: "Samsung", href: "/browse?categorySlug=storage-ssd&q=Samsung" },
+      { label: "All SSDs", href: "/browse?categorySlug=storage-ssd" },
     ],
   },
   {
     heading: "Monitors",
     links: [
-      { label: "144Hz Gaming", href: "/browse?categorySlug=monitors&q=144hz" },
-      { label: "4K UHD", href: "/browse?categorySlug=monitors&q=4k" },
-      { label: "LG", href: "/browse?categorySlug=monitors&q=lg" },
-      { label: "Acer", href: "/browse?categorySlug=monitors&q=acer" },
+      { label: "144Hz+", href: "/browse?categorySlug=monitors&q=144Hz" },
+      { label: "27 inch", href: "/browse?categorySlug=monitors&q=27" },
+      { label: "Office", href: "/browse?categorySlug=monitors&q=100Hz" },
+      { label: "All monitors", href: "/browse?categorySlug=monitors" },
     ],
   },
   {
-    heading: "Keyboard & Mouse",
+    heading: "Cabinets & cooling",
     links: [
-      { label: "Combos", href: "/browse?categorySlug=keyboard-mouse&q=combo" },
-      { label: "Mechanical", href: "/browse?categorySlug=keyboard-mouse&q=mechanical" },
-      { label: "Logitech", href: "/browse?categorySlug=keyboard-mouse&q=logitech" },
-      { label: "Razer", href: "/browse?categorySlug=keyboard-mouse&q=razer" },
+      { label: "ATX cases", href: "/browse?categorySlug=cabinets&q=ATX" },
+      { label: "Mesh airflow", href: "/browse?categorySlug=cabinets&q=mesh" },
+      { label: "CPU coolers", href: "/browse?categorySlug=cpu-coolers" },
+      { label: "All cabinets", href: "/browse?categorySlug=cabinets" },
     ],
   },
   {
-    heading: "UPS & Power",
+    heading: "Power supplies",
     links: [
-      { label: "UPS Backup", href: "/browse?categorySlug=ups" },
-      { label: "APC", href: "/browse?categorySlug=ups&q=apc" },
-      { label: "Zebronics", href: "/browse?categorySlug=ups&q=zebronics" },
+      { label: "Gold modular", href: "/browse?categorySlug=power-supplies&q=Gold" },
+      { label: "850W+", href: "/browse?categorySlug=power-supplies&q=850" },
+      { label: "All SMPS", href: "/browse?categorySlug=power-supplies" },
     ],
   },
   {
-    heading: "Top Brands",
+    heading: "Peripherals",
     links: [
-      { label: "Intel", href: "/browse?q=intel" },
-      { label: "AMD", href: "/browse?q=amd" },
-      { label: "NVIDIA", href: "/browse?q=nvidia" },
-      { label: "Corsair", href: "/browse?q=corsair" },
-      { label: "ASUS", href: "/browse?q=asus" },
+      { label: "Keyboard & mouse", href: "/browse?categorySlug=keyboard-mouse" },
+      { label: "Logitech", href: "/browse?categorySlug=keyboard-mouse&q=Logitech" },
+      { label: "Gaming combos", href: "/browse?categorySlug=keyboard-mouse&q=gaming" },
+    ],
+  },
+  {
+    heading: "Power backup",
+    links: [
+      { label: "UPS 600VA", href: "/browse?categorySlug=ups&q=600VA" },
+      { label: "UPS 1000VA+", href: "/browse?categorySlug=ups&q=1000VA" },
+      { label: "All UPS", href: "/browse?categorySlug=ups" },
+    ],
+  },
+  {
+    heading: "Shop by budget",
+    links: [
+      { label: "Under ₹5,000", href: "/browse?maxPricePaise=500000" },
+      { label: "Under ₹20,000", href: "/browse?maxPricePaise=2000000" },
+      { label: "Under ₹50,000", href: "/browse?maxPricePaise=5000000" },
     ],
   },
 ] as const;
@@ -217,11 +224,13 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-border bg-surface pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0">
       <div className="container-shell grid gap-8 py-10 text-sm md:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
-          <p className="font-display text-lg font-bold text-accent">
-            {siteContact.brandName}
+          <p className="font-display text-lg font-bold tracking-tight text-accent">
+            ASPERA
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
-            Multi-vendor marketplace of independent Indian sellers.
+            Quick-commerce PC parts — Express delivery in minutes from nearby
+            hubs. CPUs, GPUs, boards, memory, and more with prepaid checkout and
+            buyer protection.
           </p>
           <div className="mt-4 space-y-1 text-xs text-muted">
             <p>
@@ -405,7 +414,7 @@ export function SiteFooter() {
       <div className="hidden border-t border-border bg-surface md:block">
         <div className="container-shell py-8">
           <p className="text-xs font-semibold tracking-wide text-foreground uppercase">
-            Online Shopping
+            PC components
           </p>
           <div className="mt-5 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {ONLINE_SHOPPING_GROUPS.map((group) => (

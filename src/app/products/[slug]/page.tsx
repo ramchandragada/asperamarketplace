@@ -11,11 +11,21 @@ import { PdpTrustBadgeRow } from "@/components/pdp-trust-badge-row";
 import { BuyerProtectionBadge } from "@/components/buyer-protection-badge";
 import { PageShell } from "@/components/ui/page-shell";
 import { OtherSellersPanel } from "@/components/other-sellers-panel";
+import { ProductDetailsSections } from "@/components/product-details-sections";
 import {
   getPublicProductBySlug,
   listSiblingSellerOffers,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
+import {
+  enrichProduct,
+} from "@/modules/catalogue/product-enrichment";
+import type {
+  DescriptionBlock,
+  HighlightRow,
+  SpecGroup,
+  WarrantyInfo,
+} from "@/modules/catalogue/product-enrichment-types";
 import { getOptionalActor } from "@/modules/identity/service";
 import { listApprovedReviewsForProduct } from "@/modules/trust/service";
 import { prisma } from "@/platform/db/prisma";
@@ -120,12 +130,52 @@ export default async function ProductDetailPage({
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : null;
 
+  const liveEnrichment = enrichProduct({
+    slug: product.slug,
+    title: product.title,
+    categorySlug: product.category.slug,
+    brandSlug: product.brand?.slug ?? "generic",
+    brandName: product.brand?.name,
+    categoryName: product.category.name,
+  });
+
+  const storedHighlightRows = Array.isArray(attrs.highlightRows)
+    ? (attrs.highlightRows as HighlightRow[]).filter(
+        (row) => row && typeof row.label === "string",
+      )
+    : [];
+  const highlightRows =
+    storedHighlightRows.length > 0
+      ? storedHighlightRows
+      : liveEnrichment.highlights;
+
+  const storedSpecGroups = Array.isArray(attrs.specificationGroups)
+    ? (attrs.specificationGroups as SpecGroup[])
+    : [];
+  const specificationGroups =
+    storedSpecGroups.length > 0
+      ? storedSpecGroups
+      : liveEnrichment.specificationGroups;
+
+  const storedBlocks = Array.isArray(attrs.descriptionBlocks)
+    ? (attrs.descriptionBlocks as DescriptionBlock[])
+    : [];
+  const descriptionBlocks =
+    storedBlocks.length > 0 ? storedBlocks : liveEnrichment.descriptionBlocks;
+
+  const warranty =
+    attrs.warranty &&
+    typeof attrs.warranty === "object" &&
+    !Array.isArray(attrs.warranty)
+      ? (attrs.warranty as WarrantyInfo)
+      : liveEnrichment.warranty;
+
   const highlightsRaw =
     attrs.highlights &&
     typeof attrs.highlights === "object" &&
     !Array.isArray(attrs.highlights)
       ? (attrs.highlights as Record<string, string>)
-      : {};
+      : liveEnrichment.highlightMap;
   const highlightsMap = new Map<string, string>();
   for (const [label, value] of Object.entries(highlightsRaw)) {
     highlightsMap.set(label.toLowerCase(), String(value));
@@ -140,6 +190,13 @@ export default async function ProductDetailPage({
     label: label.charAt(0).toUpperCase() + label.slice(1),
     value,
   }));
+  const detailDescription =
+    product.description?.trim() &&
+    !/is listed on Aspera for builders who want clear pricing/i.test(
+      product.description,
+    )
+      ? product.description
+      : liveEnrichment.description;
   const ratingDistribution =
     reviews.length > 0
       ? reviews.reduce(
@@ -322,18 +379,25 @@ export default async function ProductDetailPage({
         </ol>
       </nav>
 
-      <div className="grid gap-8 overflow-visible lg:grid-cols-2">
-        <ProductGallery
-          title={product.title}
-          images={product.images.map((image) => ({
-            id: image.id,
-            url: image.url,
-            altText: image.altText,
-            isPrimary: image.isPrimary,
-          }))}
-        />
+      {/*
+        Desktop: gallery + details stack in the left column; buy box sits sticky
+        on the right (row-span) so the empty gap under the image is filled.
+        Mobile DOM order stays Gallery → Buy → Details.
+      */}
+      <div className="grid gap-8 overflow-visible lg:grid-cols-2 lg:items-start">
+        <div className="order-1 min-w-0">
+          <ProductGallery
+            title={product.title}
+            images={product.images.map((image) => ({
+              id: image.id,
+              url: image.url,
+              altText: image.altText,
+              isPrimary: image.isPrimary,
+            }))}
+          />
+        </div>
 
-        <div className="flex flex-col gap-5">
+        <div className="order-2 flex flex-col gap-5 lg:row-span-2 lg:self-start lg:sticky lg:top-24">
           <div>
             <h1 className="font-display text-[1.75rem] leading-tight font-semibold tracking-tight md:text-4xl">
               {product.title}
@@ -398,13 +462,17 @@ export default async function ProductDetailPage({
           <BuyerProtectionBadge />
 
           <OtherSellersPanel offers={siblingOffers} />
+        </div>
 
-          <section className="text-sm leading-7 text-muted">
-            <h2 className="text-lg font-semibold text-foreground">
-              About this item
-            </h2>
-            <p className="mt-2 whitespace-pre-wrap">{product.description}</p>
-          </section>
+        <div className="order-3 min-w-0">
+          <ProductDetailsSections
+            description={detailDescription}
+            highlightRows={highlightRows}
+            descriptionBlocks={descriptionBlocks}
+            specificationGroups={specificationGroups}
+            warranty={warranty}
+            layout="besideGallery"
+          />
         </div>
       </div>
 

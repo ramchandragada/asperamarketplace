@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   FormEvent,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -10,10 +11,16 @@ import {
   useTransition,
   type ReactNode,
 } from "react";
+import { CategoryFacetFilters } from "@/components/category-facet-filters";
 import { ProductCard, type ProductCardModel } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProductCardSkeleton } from "@/components/ui/skeleton";
+import {
+  facetQueryEntries,
+  getCategoryFacetConfig,
+  type FacetSelection,
+} from "@/modules/catalogue/category-facets";
 
 export type BrowseProduct = ProductCardModel & {
   summary: string;
@@ -24,10 +31,10 @@ type CategoryOption = { slug: string; name: string; productCount?: number };
 type BrandOption = { slug: string; name: string; productCount?: number };
 
 const PRICE_PRESETS = [
-  { key: "u2000", label: "Under ₹2,000", min: 0, max: 2000 },
-  { key: "2000-10000", label: "₹2,000 – ₹10,000", min: 2000, max: 10000 },
-  { key: "10000-30000", label: "₹10,000 – ₹30,000", min: 10000, max: 30000 },
-  { key: "a30000", label: "Above ₹30,000", min: 30000, max: null as number | null },
+  { key: "u5k", label: "Under ₹5,000", min: 0, max: 5000 },
+  { key: "5-15k", label: "₹5,000 – ₹15,000", min: 5000, max: 15000 },
+  { key: "15-40k", label: "₹15,000 – ₹40,000", min: 15000, max: 40000 },
+  { key: "a40k", label: "Above ₹40,000", min: 40000, max: null as number | null },
 ] as const;
 
 const RATING_OPTIONS = [
@@ -61,8 +68,10 @@ export function CatalogueBrowse({
   initialTotal,
   categories,
   brands = [],
+  brandsByCategory = {},
   initialCategorySlug = "",
   initialBrandSlug = "",
+  initialAudience = "",
   initialSort = "newest",
   initialInStockOnly = false,
   initialVerifiedOnly = false,
@@ -70,6 +79,7 @@ export function CatalogueBrowse({
   initialMinDiscount,
   initialMinPricePaise,
   initialMaxPricePaise,
+  initialFacets = {},
   heading,
   browseBasePath = "/browse",
   variant = "page",
@@ -82,8 +92,11 @@ export function CatalogueBrowse({
   initialTotal: number;
   categories: CategoryOption[];
   brands?: BrandOption[];
+  /** Brands that actually have approved products in each category slug. */
+  brandsByCategory?: Record<string, BrandOption[]>;
   initialCategorySlug?: string;
   initialBrandSlug?: string;
+  initialAudience?: string;
   initialSort?: string;
   initialInStockOnly?: boolean;
   initialVerifiedOnly?: boolean;
@@ -91,6 +104,7 @@ export function CatalogueBrowse({
   initialMinDiscount?: number;
   initialMinPricePaise?: number;
   initialMaxPricePaise?: number;
+  initialFacets?: FacetSelection;
   heading?: string;
   browseBasePath?: string;
   /** `home` hides breadcrumb/top sort; Meesho-style Products For You chrome */
@@ -118,6 +132,8 @@ export function CatalogueBrowse({
   const [query, setQuery] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
   const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
+  const [audience, setAudience] = useState(initialAudience);
+  const [facets, setFacets] = useState<FacetSelection>(initialFacets);
   const [sort, setSort] = useState(initialSort);
   const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
   const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly);
@@ -137,7 +153,10 @@ export function CatalogueBrowse({
   const [error, setError] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pending, startTransition] = useTransition();
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  /** Sync gate so IntersectionObserver never re-fires mid-fetch / mid-render. */
+  const loadMoreLockRef = useRef(false);
+  const loadMoreRef = useRef<() => void>(() => {});
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
     brand: true,
@@ -147,13 +166,24 @@ export function CatalogueBrowse({
     seller: false,
     availability: false,
   });
+  const categoryFacetConfig = getCategoryFacetConfig(categorySlug);
 
   const categoryName =
     categories.find((entry) => entry.slug === categorySlug)?.name ??
     heading ??
     "All products";
+  /** Only brands that sell in the active category (or all brands when unscoped). */
+  const scopedBrands = useMemo(() => {
+    if (categorySlug && brandsByCategory[categorySlug]) {
+      return brandsByCategory[categorySlug];
+    }
+    return brands;
+  }, [brands, brandsByCategory, categorySlug]);
+
   const brandName =
-    brands.find((entry) => entry.slug === brandSlug)?.name ?? null;
+    scopedBrands.find((entry) => entry.slug === brandSlug)?.name ??
+    brands.find((entry) => entry.slug === brandSlug)?.name ??
+    null;
 
   const filteredCategories = useMemo(() => {
     const term = categorySearch.trim().toLowerCase();
@@ -165,14 +195,38 @@ export function CatalogueBrowse({
 
   const filteredBrands = useMemo(() => {
     const term = brandSearch.trim().toLowerCase();
-    if (!term) return brands;
-    return brands.filter((brand) => brand.name.toLowerCase().includes(term));
-  }, [brands, brandSearch]);
+    if (!term) return scopedBrands;
+    return scopedBrands.filter((brand) =>
+      brand.name.toLowerCase().includes(term),
+    );
+  }, [scopedBrands, brandSearch]);
+
+  // Drop a brand selection that no longer exists in the active category.
+  useEffect(() => {
+    if (!brandSlug) return;
+    if (scopedBrands.some((brand) => brand.slug === brandSlug)) return;
+    setBrandSlug("");
+    setBrandSearch("");
+    setBrandShowAll(false);
+  }, [brandSlug, scopedBrands]);
 
   const chips = useMemo(() => {
     const list: Array<{ key: string; label: string }> = [];
     if (query.trim()) {
       list.push({ key: "q", label: query.trim() });
+    }
+    if (audience) {
+      list.push({
+        key: "audience",
+        label:
+          audience === "women"
+            ? "Women"
+            : audience === "men"
+              ? "Men"
+              : audience === "kids"
+                ? "Kids"
+                : audience,
+      });
     }
     if (categorySlug) {
       list.push({ key: "cat", label: categoryName });
@@ -201,9 +255,21 @@ export function CatalogueBrowse({
     if (verifiedOnly) {
       list.push({ key: "verified", label: "Verified sellers" });
     }
+    for (const [facetKey, facetValues] of Object.entries(facets)) {
+      const label =
+        categoryFacetConfig?.facets.find((f) => f.key === facetKey)?.label ??
+        facetKey;
+      for (const facetValue of facetValues) {
+        list.push({
+          key: `facet:${facetKey}:${facetValue}`,
+          label: `${label}: ${facetValue}`,
+        });
+      }
+    }
     return list;
   }, [
     query,
+    audience,
     categorySlug,
     categoryName,
     brandSlug,
@@ -215,12 +281,16 @@ export function CatalogueBrowse({
     maxPrice,
     minRating,
     minDiscount,
+    facets,
+    categoryFacetConfig,
   ]);
 
   async function runSearch(next?: {
     q?: string;
     categorySlug?: string;
     brandSlug?: string;
+    audience?: string;
+    facets?: FacetSelection;
     sort?: string;
     inStockOnly?: boolean;
     verifiedOnly?: boolean;
@@ -236,6 +306,9 @@ export function CatalogueBrowse({
     const q = (next?.q ?? query).trim();
     const cat = next?.categorySlug ?? categorySlug;
     const brand = next?.brandSlug ?? brandSlug;
+    const audienceValue =
+      next?.audience !== undefined ? next.audience : audience;
+    const facetValues = next?.facets ?? facets;
     const sortValue = next?.sort ?? sort;
     const stock = next?.inStockOnly ?? inStockOnly;
     const verified = next?.verifiedOnly ?? verifiedOnly;
@@ -249,6 +322,10 @@ export function CatalogueBrowse({
     if (q) params.set("q", q);
     if (cat) params.set("categorySlug", cat);
     if (brand) params.set("brandSlug", brand);
+    if (audienceValue) params.set("audience", audienceValue);
+    for (const [key, value] of facetQueryEntries(facetValues)) {
+      params.append(key, value);
+    }
     if (sortValue) params.set("sort", sortValue);
     if (stock) params.set("inStockOnly", "true");
     if (verified) params.set("verifiedSellerOnly", "true");
@@ -267,52 +344,82 @@ export function CatalogueBrowse({
     params.set("page", String(nextPage));
     params.set("pageSize", "24");
 
-    if (append) setLoadingMore(true);
-
-    const response = await fetch(`/api/catalogue/products?${params.toString()}`);
-    const body = (await response.json()) as {
-      data?: { items: BrowseProduct[]; total: number };
-      message?: string;
-    };
-    if (append) setLoadingMore(false);
-    if (!response.ok) {
-      setError(body.message ?? "Search failed");
-      return;
+    if (!append) {
+      // Filter/sort resets must clear any in-flight infinite-scroll lock.
+      loadMoreLockRef.current = false;
+      setLoadingMore(false);
     }
-    const nextItems = body.data?.items ?? [];
-    setItems((prev) => (append ? [...prev, ...nextItems] : nextItems));
-    setTotal(body.data?.total ?? 0);
-    setPage(nextPage);
-    if (updateUrl && !isHome) {
-      const url = new URL(window.location.href);
-      url.search = params.toString();
-      window.history.replaceState({}, "", url.toString());
+
+    try {
+      const response = await fetch(
+        `/api/catalogue/products?${params.toString()}`,
+      );
+      const body = (await response.json()) as {
+        data?: { items: BrowseProduct[]; total: number };
+        message?: string;
+      };
+      if (!response.ok) {
+        setError(body.message ?? "Search failed");
+        return;
+      }
+      const nextItems = body.data?.items ?? [];
+      setItems((prev) => (append ? [...prev, ...nextItems] : nextItems));
+      setTotal(body.data?.total ?? 0);
+      setPage(nextPage);
+      if (updateUrl && !isHome) {
+        const url = new URL(window.location.href);
+        url.search = params.toString();
+        window.history.replaceState({}, "", url.toString());
+      }
+    } finally {
+      if (append) {
+        setLoadingMore(false);
+        loadMoreLockRef.current = false;
+      }
     }
   }
 
   function loadMore() {
-    if (loadingMore || pending || items.length >= total) return;
+    if (loadMoreLockRef.current || loadingMore || pending) return;
+    if (items.length >= total) return;
+    // Set the lock + loading flag synchronously so the grid never swaps to
+    // full-page skeletons (pending && !loadingMore) while append is in flight.
+    loadMoreLockRef.current = true;
+    setLoadingMore(true);
     startTransition(() => {
       void runSearch({ page: page + 1, append: true });
     });
   }
 
-  useEffect(() => {
-    if (!useInfinite) return;
-    const node = sentinelRef.current;
-    if (!node) return;
+  loadMoreRef.current = loadMore;
+
+  // Callback ref: observe exactly when the sentinel mounts. A useEffect that
+  // only keys off has-more can run while the ref is still null (e.g. while
+  // pending swaps the grid to skeletons), then never re-attach.
+  const bindLoadMoreSentinel = useCallback((node: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
+    if (!node || !useInfinite) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          loadMore();
-        }
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        if (loadMoreLockRef.current) return;
+        loadMoreRef.current();
       },
-      { rootMargin: "320px 0px" },
+      // Modest prefetch — large rootMargin kept the sentinel "intersecting"
+      // through skeleton height thrash and caused load/unload blink loops.
+      { rootMargin: "120px 0px", threshold: 0 },
     );
     observer.observe(node);
-    return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadMore closes over latest page/items
-  }, [useInfinite, items.length, total, loadingMore, pending, page]);
+    observerRef.current = observer;
+  }, [useInfinite]);
+
+  useEffect(() => {
+    return () => {
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     if (!filtersOpen) return;
@@ -334,6 +441,7 @@ export function CatalogueBrowse({
     setQuery("");
     setCategorySlug("");
     setBrandSlug("");
+    setAudience("");
     setSort(initialQuery.trim() ? "relevance" : "newest");
     setInStockOnly(false);
     setVerifiedOnly(false);
@@ -344,11 +452,14 @@ export function CatalogueBrowse({
     setPricePreset("");
     setCategorySearch("");
     setBrandSearch("");
+    setFacets({});
     startTransition(() => {
       void runSearch({
         q: "",
         categorySlug: "",
         brandSlug: "",
+        audience: "",
+        facets: {},
         sort: initialQuery.trim() ? "relevance" : "newest",
         inStockOnly: false,
         verifiedOnly: false,
@@ -368,7 +479,30 @@ export function CatalogueBrowse({
     }
     if (key === "cat") {
       setCategorySlug("");
+      setFacets({});
       next.categorySlug = "";
+      next.facets = {};
+    }
+    if (key === "audience") {
+      setAudience("");
+      next.audience = "";
+    }
+    if (key.startsWith("facet:")) {
+      // chip key is facet:<facetKey>:<value>
+      const rest = key.slice("facet:".length);
+      const sep = rest.indexOf(":");
+      const facetKey = sep === -1 ? rest : rest.slice(0, sep);
+      const facetValue = sep === -1 ? "" : rest.slice(sep + 1);
+      const nextFacets: FacetSelection = { ...facets };
+      if (facetValue && nextFacets[facetKey]) {
+        const remaining = nextFacets[facetKey].filter((v) => v !== facetValue);
+        if (remaining.length === 0) delete nextFacets[facetKey];
+        else nextFacets[facetKey] = remaining;
+      } else {
+        delete nextFacets[facetKey];
+      }
+      setFacets(nextFacets);
+      next.facets = nextFacets;
     }
     if (key === "brand") {
       setBrandSlug("");
@@ -508,8 +642,25 @@ export function CatalogueBrowse({
                     const next =
                       categorySlug === category.slug ? "" : category.slug;
                     setCategorySlug(next);
+                    setFacets({});
+                    setBrandSearch("");
+                    setBrandShowAll(false);
+                    // Clear brand if it has no products in the newly selected category.
+                    const nextBrands =
+                      next && brandsByCategory[next]
+                        ? brandsByCategory[next]
+                        : brands;
+                    const brandStillValid =
+                      !brandSlug ||
+                      nextBrands.some((brand) => brand.slug === brandSlug);
+                    const nextBrand = brandStillValid ? brandSlug : "";
+                    if (!brandStillValid) setBrandSlug("");
                     startTransition(() => {
-                      void runSearch({ categorySlug: next });
+                      void runSearch({
+                        categorySlug: next,
+                        facets: {},
+                        brandSlug: nextBrand,
+                      });
                     });
                   }}
                   className="h-3.5 w-3.5 accent-[var(--accent)]"
@@ -533,7 +684,27 @@ export function CatalogueBrowse({
         ) : null}
       </FilterSection>
 
-      {brands.length > 0 ? (
+      {categorySlug ? (
+        <CategoryFacetFilters
+          categorySlug={categorySlug}
+          selected={facets}
+          openSections={openSections}
+          onToggleSection={toggleSection}
+          onChange={(nextFacets) => {
+            setFacets(nextFacets);
+            startTransition(() => {
+              void runSearch({ facets: nextFacets });
+            });
+          }}
+        />
+      ) : (
+        <p className="border-b border-border py-3 text-[12px] leading-5 text-[#666]">
+          Pick a category to unlock precise filters (socket, VRAM, wattage,
+          panel size, and more).
+        </p>
+      )}
+
+      {scopedBrands.length > 0 ? (
         <FilterSection
           title="Brand"
           open={openSections.brand !== false}
@@ -655,13 +826,13 @@ export function CatalogueBrowse({
           <input
             type="range"
             min={0}
-            max={100000}
-            step={1000}
-            value={maxPrice.trim() ? Number(maxPrice) || 0 : 100000}
+            max={5000}
+            step={50}
+            value={maxPrice.trim() ? Number(maxPrice) || 0 : 5000}
             onChange={(event) => {
               const value = event.target.value;
               setPricePreset("");
-              setMaxPrice(value === "100000" ? "" : value);
+              setMaxPrice(value === "5000" ? "" : value);
             }}
             onMouseUp={() => {
               startTransition(() => {
@@ -900,7 +1071,7 @@ export function CatalogueBrowse({
             name="q"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search CPUs, GPUs, SSDs or product code"
+            placeholder="Try Saree, Kurti or Search by Product Code"
             className="min-h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2 text-base"
           />
           <button
@@ -996,23 +1167,29 @@ export function CatalogueBrowse({
                 ))}
               </div>
               {useInfinite && items.length < total ? (
-                <div
-                  ref={sentinelRef}
-                  className="flex flex-col items-center gap-3 py-4"
-                  aria-hidden={!loadingMore}
-                >
-                  <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-                    {(loadingMore || pending
-                      ? [0, 1, 2, 3]
-                      : []
-                    ).map((index) => (
-                      <ProductCardSkeleton key={`more-${index}`} />
-                    ))}
-                  </div>
+                <div className="flex flex-col items-center gap-3 py-4">
+                  {/* Stable 1px sentinel (not inside skeleton rows) so IO
+                      does not thrash when load-more UI mounts below. */}
+                  <div
+                    ref={bindLoadMoreSentinel}
+                    className="w-full shrink-0"
+                    style={{ height: 1 }}
+                    aria-hidden
+                  />
                   {loadingMore ? (
-                    <p className="text-xs font-medium text-muted">
-                      Loading more products…
-                    </p>
+                    <>
+                      <div
+                        className="grid w-full grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4"
+                        aria-hidden
+                      >
+                        {[0, 1, 2, 3].map((index) => (
+                          <ProductCardSkeleton key={`more-${index}`} />
+                        ))}
+                      </div>
+                      <p className="text-xs font-medium text-muted">
+                        Loading more products…
+                      </p>
+                    </>
                   ) : null}
                 </div>
               ) : null}

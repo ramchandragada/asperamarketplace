@@ -1,21 +1,24 @@
 import { requireActor } from "@/modules/identity/service";
 import { mockCompletePaymentSchema } from "@/modules/orders/schema";
 import { simulateMockPaymentOutcome } from "@/modules/orders/service";
+import { paymentsAreMockOnly } from "@/modules/payments/provider";
 import { getRequestId, jsonError, jsonOk } from "@/platform/http/respond";
-import { readPublicConfig } from "@/platform/config/env";
 import { NotFoundError } from "@/platform/http/errors";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Development/test-only helper that emits a signed mock provider webhook so an
- * order can be driven to paid without a real gateway. It is disabled in
- * production: a shopper must never be able to mark their own order paid.
+ * Demo helper: emits a signed mock provider webhook so an authenticated buyer
+ * can drive their own order to paid/failed without a real gateway.
+ *
+ * Allowed only while {@link paymentsAreMockOnly} is true. When Razorpay (or
+ * another PA) becomes the active provider this route 404s — shoppers must never
+ * self-mark a real payment as paid.
  */
 export async function POST(request: Request) {
   const requestId = getRequestId(request);
   try {
-    if (readPublicConfig().NODE_ENV === "production") {
+    if (!paymentsAreMockOnly()) {
       throw new NotFoundError("Not found");
     }
     const actor = await requireActor();

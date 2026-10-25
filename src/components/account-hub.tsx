@@ -97,16 +97,7 @@ const GROUP_LABEL: Record<Tile["group"], string> = {
   activity: "Activity & help",
 };
 
-export function AccountHub({
-  stats,
-}: {
-  stats: {
-    orderCount: number;
-    addressCount: number;
-    wishlistCount: number;
-    openReturnCount: number;
-  };
-}) {
+export function AccountHub() {
   const groups = (["shopping", "account", "money", "activity"] as const).map(
     (key) => ({
       key,
@@ -117,14 +108,6 @@ export function AccountHub({
 
   return (
     <div className="flex flex-col gap-8">
-      <p className="text-sm text-muted">
-        {stats.orderCount} order{stats.orderCount === 1 ? "" : "s"} ·{" "}
-        {stats.addressCount} address
-        {stats.addressCount === 1 ? "" : "es"} · {stats.wishlistCount} wishlist
-        · {stats.openReturnCount} open return
-        {stats.openReturnCount === 1 ? "" : "s"}
-      </p>
-
       {groups.map((group) => (
         <section key={group.key} className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold tracking-wide text-muted uppercase">

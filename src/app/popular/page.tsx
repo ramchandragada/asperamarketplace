@@ -4,8 +4,8 @@ import {
 } from "@/components/catalogue-browse";
 import { PageShell } from "@/components/ui/page-shell";
 import {
-  listActiveBrands,
   listActiveCategories,
+  listBrandFilterIndex,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
 
@@ -16,14 +16,14 @@ export const metadata = {
 };
 
 export default async function PopularPage() {
-  const [result, categories, brands] = await Promise.all([
+  const [result, categories, brandIndex] = await Promise.all([
     searchApprovedProducts({
       page: 1,
       pageSize: 24,
       sort: "rating",
     }),
     listActiveCategories(),
-    listActiveBrands(),
+    listBrandFilterIndex(),
   ]);
 
   return (
@@ -37,7 +37,8 @@ export default async function PopularPage() {
           name: category.name,
           productCount: category.productCount,
         }))}
-        brands={brands}
+        brands={brandIndex.all}
+        brandsByCategory={brandIndex.byCategory}
         initialSort="rating"
         heading="Popular"
         browseBasePath="/popular"

@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { prisma } from "@/platform/db/prisma";
 import {
   actorIsAdmin,
@@ -9,6 +10,13 @@ import {
   DEFAULT_COMMISSION_BPS,
   LEDGER_ACCOUNTS,
 } from "@/modules/finance/helpers";
+import {
+  cappedMerchandisePaise,
+  netMerchandisePaise,
+  refundBreakdown,
+  unitMerchandisePaise,
+  type RefundBreakdown,
+} from "@/modules/finance/refund-math";
 import type {
   CreateReconciliationInput,
   CreateSettlementInput,
@@ -298,6 +306,88 @@ export async function alreadyRefundedMerchandisePaise(
     _sum: { merchandisePaise: true },
   });
   return agg._sum.merchandisePaise ?? 0;
+}
+
+/**
+ * Create a line-scoped refund (coupon-net, remaining-cap, ledger) or no-op when
+ * nothing remains refundable. Every cancel / return / protection path should use
+ * this so `orderLineId` is always stamped and double-refunds are impossible.
+ */
+export async function createCappedLineRefund(params: {
+  tx: Prisma.TransactionClient;
+  order: {
+    id: string;
+    orderNumber: string;
+    subtotalPaise: number;
+    taxPaise: number;
+    discountPaise: number;
+  };
+  sellerId: string;
+  line: { id: string; lineTotalPaise: number; quantity: number };
+  /** Units being refunded; defaults to the full purchased quantity. */
+  quantity?: number;
+  reason: string;
+  correlationId: string;
+  commissionRateBps: number;
+  returnRequestId?: string;
+  providerReference?: string;
+}): Promise<{ breakdown: RefundBreakdown; refundId: string } | null> {
+  const quantity = Math.max(
+    0,
+    Math.min(params.line.quantity, params.quantity ?? params.line.quantity),
+  );
+  if (quantity <= 0) return null;
+
+  const lineNet = netMerchandisePaise({
+    grossMerchandisePaise: params.line.lineTotalPaise,
+    orderSubtotalPaise: params.order.subtotalPaise,
+    orderDiscountPaise: params.order.discountPaise,
+  });
+  const unitNet = unitMerchandisePaise(lineNet, params.line.quantity);
+  const desiredMerchandise = unitNet * quantity;
+  const alreadyRefunded = await alreadyRefundedMerchandisePaise(
+    params.line.id,
+    params.tx,
+  );
+  const merchandisePaise = cappedMerchandisePaise({
+    desiredMerchandisePaise: desiredMerchandise,
+    lineMerchandisePaise: lineNet,
+    alreadyRefundedMerchandisePaise: alreadyRefunded,
+  });
+  const breakdown = refundBreakdown({
+    merchandisePaise,
+    orderSubtotalPaise: params.order.subtotalPaise,
+    orderTaxPaise: params.order.taxPaise,
+    orderDiscountPaise: params.order.discountPaise,
+    commissionRateBps: params.commissionRateBps,
+  });
+  if (breakdown.totalPaise <= 0) return null;
+
+  const refund = await params.tx.refund.create({
+    data: {
+      orderId: params.order.id,
+      orderLineId: params.line.id,
+      returnRequestId: params.returnRequestId,
+      amountPaise: breakdown.totalPaise,
+      merchandisePaise: breakdown.merchandisePaise,
+      status: "succeeded",
+      provider: "mock",
+      providerReference:
+        params.providerReference ??
+        `mock_ref_${randomBytes(8).toString("hex")}`,
+      reason: params.reason,
+      completedAt: new Date(),
+    },
+  });
+  await postRefundLedger({
+    orderId: params.order.id,
+    sellerId: params.sellerId,
+    reason: params.reason,
+    correlationId: params.correlationId,
+    breakdown,
+    tx: params.tx,
+  });
+  return { breakdown, refundId: refund.id };
 }
 
 /**

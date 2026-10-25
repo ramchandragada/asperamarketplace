@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../src/modules/identity/crypto";
 import { ROLE_DEFINITIONS } from "../src/modules/identity/roles";
-import { seedMarketplaceCatalogue } from "../src/modules/catalogue/seed-catalogue";
-import { SEED_CATEGORIES, SEED_PRODUCTS } from "../src/modules/catalogue/seed-catalogue-data";
+import { seedPcCatalogue } from "../src/modules/catalogue/seed-pc";
+import { PC_PRODUCTS } from "../src/modules/catalogue/pc-catalogue-data";
 
 const prisma = new PrismaClient();
 
@@ -165,7 +165,9 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const fashion = await ensureSeller({
+  // Legacy fashion/demo sellers kept for local login compatibility; catalogue
+  // itself comes from seedPcCatalogue (Pune PC sellers).
+  await ensureSeller({
     email: "seller.fashion@aspera.local",
     password: "AsperaFashionDevOnly1!",
     displayName: "Fashion Seller",
@@ -174,7 +176,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const tech = await ensureSeller({
+  await ensureSeller({
     email: "seller.tech@aspera.local",
     password: "AsperaTechDevOnly1!",
     displayName: "Tech Seller",
@@ -183,7 +185,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const wellness = await ensureSeller({
+  await ensureSeller({
     email: "seller.wellness@aspera.local",
     password: "AsperaWellnessDevOnly1!",
     displayName: "Wellness Seller",
@@ -192,7 +194,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const textile = await ensureSeller({
+  await ensureSeller({
     email: "seller.textile@aspera.local",
     password: "AsperaTextileDevOnly1!",
     displayName: "Textile Seller",
@@ -201,7 +203,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const sports = await ensureSeller({
+  await ensureSeller({
     email: "seller.sports@aspera.local",
     password: "AsperaSportsDevOnly1!",
     displayName: "Sports Seller",
@@ -210,7 +212,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const mumbai = await ensureSeller({
+  await ensureSeller({
     email: "seller.mumbai@aspera.local",
     password: "AsperaMumbaiDevOnly1!",
     displayName: "Mumbai Fashion Seller",
@@ -219,7 +221,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const artisan = await ensureSeller({
+  await ensureSeller({
     email: "seller.artisan@aspera.local",
     password: "AsperaArtisanDevOnly1!",
     displayName: "Artisan Seller",
@@ -289,19 +291,9 @@ async function main() {
     });
   }
 
-  const catalogue = await seedMarketplaceCatalogue(prisma, {
-    adminUserId: admin.id,
-    sellers: {
-      home: { id: home.seller.id },
-      fashion: { id: fashion.seller.id },
-      tech: { id: tech.seller.id },
-      wellness: { id: wellness.seller.id },
-      textile: { id: textile.seller.id },
-      sports: { id: sports.seller.id },
-      mumbai: { id: mumbai.seller.id },
-      artisan: { id: artisan.seller.id },
-    },
-  });
+  // Source of truth: Pune PC catalogue (MD Computers import, ~385 SKUs).
+  // Archives leftover fashion demo products without hard-delete.
+  const catalogue = await seedPcCatalogue(prisma);
 
   const { ensureDefaultTaxProfiles } = await import("../src/modules/tax/service");
   await ensureDefaultTaxProfiles();
@@ -338,10 +330,6 @@ async function main() {
     update: {},
   });
 
-  const approvedPublic = SEED_PRODUCTS.filter(
-    (product) => (product.status ?? "approved") === "approved",
-  ).length;
-
   console.log(
     JSON.stringify(
       {
@@ -354,33 +342,18 @@ async function main() {
         },
         sellers: [
           { key: "home", email: DEV_SELLER_EMAIL, password: DEV_SELLER_PASSWORD },
-          {
-            key: "fashion",
-            email: "seller.fashion@aspera.local",
-            password: "AsperaFashionDevOnly1!",
-          },
-          {
-            key: "tech",
-            email: "seller.tech@aspera.local",
-            password: "AsperaTechDevOnly1!",
-          },
-          {
-            key: "wellness",
-            email: "seller.wellness@aspera.local",
-            password: "AsperaWellnessDevOnly1!",
-          },
         ],
         sellerStaff: staffAccounts,
         catalogue: {
+          sourceOfTruth: "pc-catalogue-data (MD Computers import)",
           categories: catalogue.categories,
-          productsDefined: catalogue.productsDefined,
-          approvedPublicTarget: approvedPublic,
-          created: catalogue.created,
-          updated: catalogue.updated,
-          perCategory: catalogue.perCategory,
-          categoryNames: SEED_CATEGORIES.map((category) => category.name),
+          brands: catalogue.brands,
+          puneSellers: catalogue.sellers,
+          products: catalogue.products,
+          productsDefined: PC_PRODUCTS.length,
+          archivedOld: catalogue.archivedOld,
         },
-        note: "Fictional development credentials and catalogue imagery only. No fake payments or customer reviews.",
+        note: "PC marketplace seed. Fashion demo catalogue is archived, not hard-deleted.",
       },
       null,
       2,

@@ -3,39 +3,96 @@ export type MegaMenuColumn = {
   links: Array<{ label: string; href: string }>;
 };
 
+/** Brand tiles shown in the mega-menu’s right panel for the hovered category. */
+export type MegaMenuBrand = {
+  label: string;
+  href: string;
+  /** Optional photo tile; when omitted a lettermark tile is rendered. */
+  imageUrl?: string;
+};
+
 export type MegaMenuCategory = {
   key: string;
   label: string;
   href: string;
   columns: MegaMenuColumn[];
+  brands: MegaMenuBrand[];
 };
 
-function browse(categorySlug: string, opts?: { q?: string }) {
+function browse(
+  categorySlug: string,
+  opts?: {
+    q?: string;
+    brandSlug?: string;
+    facets?: Record<string, string | string[]>;
+  },
+) {
   const params = new URLSearchParams({ categorySlug });
   if (opts?.q) params.set("q", opts.q);
+  if (opts?.brandSlug) params.set("brandSlug", opts.brandSlug);
+  if (opts?.facets) {
+    for (const [key, value] of Object.entries(opts.facets)) {
+      const values = Array.isArray(value) ? value : [value];
+      for (const entry of values) {
+        params.append(`facet.${key}`, entry);
+      }
+    }
+  }
   return `/browse?${params.toString()}`;
 }
 
-function link(label: string, categorySlug: string, opts?: { q?: string }) {
+function link(
+  label: string,
+  categorySlug: string,
+  opts?: { q?: string; facets?: Record<string, string | string[]> },
+) {
   return { label, href: browse(categorySlug, opts) };
 }
 
+/** Official-style SVG wordmarks / marks in /public/brand-logos. */
+function brandLogo(brandSlug: string): string {
+  return `/brand-logos/${brandSlug}.svg`;
+}
+
+function brand(
+  label: string,
+  categorySlug: string,
+  brandSlug: string,
+  imageUrl?: string,
+): MegaMenuBrand {
+  return {
+    label,
+    href: browse(categorySlug, { brandSlug }),
+    imageUrl: imageUrl ?? brandLogo(brandSlug),
+  };
+}
+
+const IMG = {
+  amd: brandLogo("amd"),
+  intel: brandLogo("intel"),
+  nvidia: brandLogo("nvidia"),
+  asus: brandLogo("asus"),
+  corsair: brandLogo("corsair"),
+  samsung: brandLogo("samsung"),
+  logitech: brandLogo("logitech"),
+  apc: brandLogo("apc"),
+} as const;
+
 export const SEARCH_PLACEHOLDER =
-  "Search CPUs, GPUs, motherboards, SSDs…";
+  "Search parts for Express delivery…";
 
 export const TRENDING_SEARCHES = [
   "RTX 4060",
   "Ryzen 5",
   "DDR5 RAM",
   "NVMe SSD",
-  "144Hz monitor",
+  "Express cooler",
   "gaming cabinet",
 ] as const;
 
 /**
  * Aspera PC-components category navigation. Links filter the catalogue by
- * category slug (+ a search term for sub-types), mapped to the seeded Pune
- * PC marketplace.
+ * category slug + precise facet filters (socket, VRAM, wattage, etc.).
  */
 export const MEGA_MENU: MegaMenuCategory[] = [
   {
@@ -46,19 +103,46 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "By brand",
         links: [
-          link("Intel Core", "processors", { q: "Intel" }),
-          link("AMD Ryzen", "processors", { q: "Ryzen" }),
+          link("AMD Ryzen", "processors", {
+            facets: { brandFamily: "AMD Ryzen" },
+          }),
+          link("Intel Core", "processors", {
+            facets: { brandFamily: "Intel Core" },
+          }),
+          link("Intel Core Ultra", "processors", {
+            facets: { brandFamily: "Intel Core Ultra" },
+          }),
           link("All processors", "processors"),
         ],
       },
       {
-        heading: "By use",
+        heading: "By socket",
         links: [
-          link("Budget / office", "processors", { q: "i3" }),
-          link("Gaming", "processors", { q: "X3D" }),
-          link("Workstation", "processors", { q: "i9" }),
+          link("AM5 (Ryzen 7000+)", "processors", {
+            facets: { socket: "AM5" },
+          }),
+          link("AM4", "processors", { facets: { socket: "AM4" } }),
+          link("LGA 1700", "processors", { facets: { socket: "LGA 1700" } }),
+          link("LGA 1851", "processors", { facets: { socket: "LGA 1851" } }),
         ],
       },
+      {
+        heading: "By tier",
+        links: [
+          link("Ryzen 5", "processors", { facets: { tier: "Ryzen 5" } }),
+          link("Ryzen 7 / 9", "processors", { facets: { tier: "Ryzen 7" } }),
+          link("Core i5 / Ultra 5", "processors", {
+            facets: { tier: "Core i5 / Ultra 5" },
+          }),
+          link("Needs discrete GPU", "processors", {
+            facets: { integratedGraphics: "No (needs GPU)" },
+          }),
+        ],
+      },
+    ],
+    brands: [
+      brand("AMD", "processors", "amd", IMG.amd),
+      brand("Intel", "processors", "intel", IMG.intel),
     ],
   },
   {
@@ -67,20 +151,41 @@ export const MEGA_MENU: MegaMenuCategory[] = [
     href: browse("motherboards"),
     columns: [
       {
-        heading: "Intel (LGA1700)",
+        heading: "CPU platform",
         links: [
-          link("H610 / B760", "motherboards", { q: "B760" }),
-          link("Z790", "motherboards", { q: "Z790" }),
+          link("AMD AM5", "motherboards", {
+            facets: { cpuPlatform: "AMD AM5" },
+          }),
+          link("AMD AM4", "motherboards", {
+            facets: { cpuPlatform: "AMD AM4" },
+          }),
+          link("Intel LGA 1700", "motherboards", {
+            facets: { cpuPlatform: "Intel LGA 1700" },
+          }),
+          link("Intel LGA 1851", "motherboards", {
+            facets: { cpuPlatform: "Intel LGA 1851" },
+          }),
         ],
       },
       {
-        heading: "AMD (AM4 / AM5)",
+        heading: "Memory & form",
         links: [
-          link("B550 / A520", "motherboards", { q: "B550" }),
-          link("B650 / X670", "motherboards", { q: "B650" }),
+          link("DDR5 boards", "motherboards", {
+            facets: { memoryType: "DDR5" },
+          }),
+          link("DDR4 boards", "motherboards", {
+            facets: { memoryType: "DDR4" },
+          }),
+          link("ATX", "motherboards", { facets: { formFactor: "ATX" } }),
+          link("mATX", "motherboards", { facets: { formFactor: "mATX" } }),
           link("All motherboards", "motherboards"),
         ],
       },
+    ],
+    brands: [
+      brand("ASUS", "motherboards", "asus", IMG.asus),
+      brand("MSI", "motherboards", "msi"),
+      brand("Gigabyte", "motherboards", "gigabyte"),
     ],
   },
   {
@@ -89,20 +194,39 @@ export const MEGA_MENU: MegaMenuCategory[] = [
     href: browse("graphics-cards"),
     columns: [
       {
-        heading: "NVIDIA GeForce",
+        heading: "Generation",
         links: [
-          link("RTX 3050 / 4060", "graphics-cards", { q: "RTX 4060" }),
-          link("RTX 5060 / 5070", "graphics-cards", { q: "RTX 5070" }),
+          link("RTX 50-series", "graphics-cards", {
+            facets: { generation: "RTX 50-series" },
+          }),
+          link("RTX 40-series", "graphics-cards", {
+            facets: { generation: "RTX 40-series" },
+          }),
+          link("RTX 30-series", "graphics-cards", {
+            facets: { generation: "RTX 30-series" },
+          }),
+          link("Radeon RX 7000", "graphics-cards", {
+            facets: { generation: "Radeon RX 7000" },
+          }),
         ],
       },
       {
-        heading: "AMD Radeon",
+        heading: "By VRAM",
         links: [
-          link("RX 7600 / 9060", "graphics-cards", { q: "RX" }),
-          link("RX 9070 XT", "graphics-cards", { q: "9070" }),
+          link("8 GB", "graphics-cards", { facets: { vram: "8 GB" } }),
+          link("12 GB", "graphics-cards", { facets: { vram: "12 GB" } }),
+          link("16 GB+", "graphics-cards", { facets: { vram: "16 GB" } }),
           link("All graphics cards", "graphics-cards"),
         ],
       },
+    ],
+    brands: [
+      brand("NVIDIA", "graphics-cards", "nvidia", IMG.nvidia),
+      brand("ASUS", "graphics-cards", "asus", IMG.asus),
+      brand("MSI", "graphics-cards", "msi"),
+      brand("Gigabyte", "graphics-cards", "gigabyte"),
+      brand("Zotac", "graphics-cards", "zotac"),
+      brand("AMD", "graphics-cards", "amd", IMG.amd),
     ],
   },
   {
@@ -113,19 +237,32 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "By type",
         links: [
-          link("DDR4", "memory-ram", { q: "DDR4" }),
-          link("DDR5", "memory-ram", { q: "DDR5" }),
-          link("RGB kits", "memory-ram", { q: "RGB" }),
+          link("DDR5", "memory-ram", { facets: { memoryType: "DDR5" } }),
+          link("DDR4", "memory-ram", { facets: { memoryType: "DDR4" } }),
+          link("Desktop DIMM", "memory-ram", {
+            facets: { formFactor: "Desktop (DIMM)" },
+          }),
+          link("Laptop SO-DIMM", "memory-ram", {
+            facets: { formFactor: "Laptop (SO-DIMM)" },
+          }),
         ],
       },
       {
         heading: "By capacity",
         links: [
-          link("16GB", "memory-ram", { q: "16GB" }),
-          link("32GB", "memory-ram", { q: "32GB" }),
+          link("16 GB", "memory-ram", { facets: { capacity: "16 GB" } }),
+          link("32 GB", "memory-ram", { facets: { capacity: "32 GB" } }),
+          link("64 GB", "memory-ram", { facets: { capacity: "64 GB" } }),
           link("All memory", "memory-ram"),
         ],
       },
+    ],
+    brands: [
+      brand("Corsair", "memory-ram", "corsair", IMG.corsair),
+      brand("ADATA", "memory-ram", "adata"),
+      brand("Kingston", "memory-ram", "kingston"),
+      brand("G.Skill", "memory-ram", "g-skill"),
+      brand("Crucial", "memory-ram", "crucial"),
     ],
   },
   {
@@ -136,19 +273,39 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "By interface",
         links: [
-          link("NVMe (M.2)", "storage-ssd", { q: "NVMe" }),
-          link("SATA (2.5\")", "storage-ssd", { q: "SATA" }),
+          link("NVMe (M.2)", "storage-ssd", {
+            facets: { interface: "NVMe / PCIe" },
+          }),
+          link("SATA / SSD", "storage-ssd", { facets: { interface: "SSD" } }),
+          link("HDD", "storage-ssd", { facets: { interface: "HDD" } }),
+          link("USB flash", "storage-ssd", {
+            facets: { interface: "USB flash" },
+          }),
         ],
       },
       {
         heading: "By capacity",
         links: [
-          link("Up to 500GB", "storage-ssd", { q: "500GB" }),
-          link("1TB", "storage-ssd", { q: "1TB" }),
-          link("2TB", "storage-ssd", { q: "2TB" }),
-          link("All SSDs", "storage-ssd"),
+          link("Under 500 GB", "storage-ssd", {
+            facets: { capacityBand: "Under 500 GB" },
+          }),
+          link("500 GB – 1 TB", "storage-ssd", {
+            facets: { capacityBand: "500 GB – 1 TB" },
+          }),
+          link("1–2 TB", "storage-ssd", {
+            facets: { capacityBand: "1–2 TB" },
+          }),
+          link("All storage", "storage-ssd"),
         ],
       },
+    ],
+    brands: [
+      brand("Samsung", "storage-ssd", "samsung", IMG.samsung),
+      brand("WD", "storage-ssd", "wd"),
+      brand("Kingston", "storage-ssd", "kingston"),
+      brand("ADATA", "storage-ssd", "adata"),
+      brand("SanDisk", "storage-ssd", "sandisk"),
+      brand("Seagate", "storage-ssd", "seagate"),
     ],
   },
   {
@@ -157,14 +314,120 @@ export const MEGA_MENU: MegaMenuCategory[] = [
     href: browse("cabinets"),
     columns: [
       {
-        heading: "Cases",
+        heading: "Case size",
         links: [
-          link("ARGB cabinets", "cabinets", { q: "ARGB" }),
-          link("Airflow / mesh", "cabinets", { q: "mesh" }),
-          link("Budget cabinets", "cabinets", { q: "Ant" }),
+          link("Mid Tower", "cabinets", {
+            facets: { towerSize: "Mid Tower" },
+          }),
+          link("Mini Tower", "cabinets", {
+            facets: { towerSize: "Mini Tower" },
+          }),
+          link("Full Tower", "cabinets", {
+            facets: { towerSize: "Full Tower" },
+          }),
+        ],
+      },
+      {
+        heading: "Style",
+        links: [
+          link("ARGB / RGB", "cabinets", {
+            facets: { lighting: "ARGB / RGB" },
+          }),
+          link("White builds", "cabinets", { facets: { color: "White" } }),
+          link("ATX support", "cabinets", {
+            facets: { motherboardSupport: "ATX" },
+          }),
           link("All cabinets", "cabinets"),
         ],
       },
+    ],
+    brands: [
+      brand("Corsair", "cabinets", "corsair", IMG.corsair),
+      brand("Cooler Master", "cabinets", "cooler-master"),
+      brand("Ant Esports", "cabinets", "ant-esports"),
+      brand("Antec", "cabinets", "antec"),
+      brand("Lian Li", "cabinets", "lian-li"),
+      brand("ASUS", "cabinets", "asus", IMG.asus),
+    ],
+  },
+  {
+    key: "power-supplies",
+    label: "Power Supplies",
+    href: browse("power-supplies"),
+    columns: [
+      {
+        heading: "Wattage",
+        links: [
+          link("500–649 W", "power-supplies", {
+            facets: { wattageBand: "500–649 W" },
+          }),
+          link("650–849 W", "power-supplies", {
+            facets: { wattageBand: "650–849 W" },
+          }),
+          link("850 W & above", "power-supplies", {
+            facets: { wattageBand: "850 W & above" },
+          }),
+        ],
+      },
+      {
+        heading: "Efficiency",
+        links: [
+          link("80+ Bronze", "power-supplies", {
+            facets: { efficiency: "Bronze" },
+          }),
+          link("80+ Gold", "power-supplies", {
+            facets: { efficiency: "Gold" },
+          }),
+          link("80+ Platinum", "power-supplies", {
+            facets: { efficiency: "Platinum" },
+          }),
+          link("All SMPS", "power-supplies"),
+        ],
+      },
+    ],
+    brands: [
+      brand("Corsair", "power-supplies", "corsair", IMG.corsair),
+      brand("Thermaltake", "power-supplies", "thermaltake"),
+      brand("ASUS", "power-supplies", "asus", IMG.asus),
+      brand("Cooler Master", "power-supplies", "cooler-master"),
+      brand("Ant Esports", "power-supplies", "ant-esports"),
+      brand("Deepcool", "power-supplies", "deepcool"),
+    ],
+  },
+  {
+    key: "cpu-coolers",
+    label: "CPU Coolers",
+    href: browse("cpu-coolers"),
+    columns: [
+      {
+        heading: "Cooling type",
+        links: [
+          link("Air coolers", "cpu-coolers", {
+            facets: { type: "Air cooler" },
+          }),
+          link("AIO liquid", "cpu-coolers", {
+            facets: { type: "AIO liquid" },
+          }),
+          link("240 mm AIO", "cpu-coolers", {
+            facets: { type: "AIO liquid", size: "240 mm" },
+          }),
+          link("360 mm AIO", "cpu-coolers", {
+            facets: { type: "AIO liquid", size: "360 mm" },
+          }),
+          link("RGB coolers", "cpu-coolers", {
+            facets: { lighting: "RGB / LED" },
+          }),
+          link("All coolers", "cpu-coolers"),
+        ],
+      },
+    ],
+    brands: [
+      brand("Cooler Master", "cpu-coolers", "cooler-master"),
+      brand("Noctua", "cpu-coolers", "noctua"),
+      brand("Corsair", "cpu-coolers", "corsair", IMG.corsair),
+      brand("ASUS", "cpu-coolers", "asus", IMG.asus),
+      brand("Ant Esports", "cpu-coolers", "ant-esports"),
+      brand("Thermaltake", "cpu-coolers", "thermaltake"),
     ],
   },
   {
@@ -173,14 +436,38 @@ export const MEGA_MENU: MegaMenuCategory[] = [
     href: browse("keyboard-mouse"),
     columns: [
       {
-        heading: "Combos",
+        heading: "Type",
         links: [
-          link("Wireless combos", "keyboard-mouse", { q: "wireless" }),
-          link("Gaming combos", "keyboard-mouse", { q: "gaming" }),
-          link("Budget combos", "keyboard-mouse", { q: "wired" }),
+          link("Combos", "keyboard-mouse", { facets: { type: "Combo" } }),
+          link("Keyboards", "keyboard-mouse", {
+            facets: { type: "Keyboard" },
+          }),
+          link("Mice", "keyboard-mouse", { facets: { type: "Mouse" } }),
+        ],
+      },
+      {
+        heading: "Connectivity",
+        links: [
+          link("Wireless", "keyboard-mouse", {
+            facets: { connectivity: "Wireless" },
+          }),
+          link("Wired", "keyboard-mouse", {
+            facets: { connectivity: "Wired" },
+          }),
+          link("Gaming", "keyboard-mouse", {
+            facets: { useCase: "Gaming" },
+          }),
           link("All combos", "keyboard-mouse"),
         ],
       },
+    ],
+    brands: [
+      brand("Logitech", "keyboard-mouse", "logitech", IMG.logitech),
+      brand("Razer", "keyboard-mouse", "razer"),
+      brand("Cosmic Byte", "keyboard-mouse", "cosmic-byte"),
+      brand("Redragon", "keyboard-mouse", "redragon"),
+      brand("ASUS", "keyboard-mouse", "asus", IMG.asus),
+      brand("HyperX", "keyboard-mouse", "hyperx"),
     ],
   },
   {
@@ -189,21 +476,40 @@ export const MEGA_MENU: MegaMenuCategory[] = [
     href: browse("monitors"),
     columns: [
       {
-        heading: "By resolution",
+        heading: "By size",
         links: [
-          link("Full HD (1080p)", "monitors", { q: "FHD" }),
-          link("QHD (1440p)", "monitors", { q: "QHD" }),
-          link("4K UHD", "monitors", { q: "4K" }),
+          link(`24" & under`, "monitors", {
+            facets: { sizeBand: `24" & under` },
+          }),
+          link(`25–27"`, "monitors", { facets: { sizeBand: `25–27"` } }),
+          link(`28–32"`, "monitors", { facets: { sizeBand: `28–32"` } }),
+          link(`34" & ultrawide`, "monitors", {
+            facets: { sizeBand: `34" & ultrawide` },
+          }),
         ],
       },
       {
         heading: "By use",
         links: [
-          link("Gaming (high refresh)", "monitors", { q: "180Hz" }),
-          link("Office", "monitors", { q: "100Hz" }),
+          link("Gaming", "monitors", { facets: { useCase: "Gaming" } }),
+          link("Office", "monitors", {
+            facets: { useCase: "Office / general" },
+          }),
+          link("4K / UHD", "monitors", { facets: { resolution: "4K" } }),
+          link("OLED", "monitors", { facets: { panelType: "OLED" } }),
           link("All monitors", "monitors"),
         ],
       },
+    ],
+    brands: [
+      brand("Samsung", "monitors", "samsung", IMG.samsung),
+      brand("ASUS", "monitors", "asus", IMG.asus),
+      brand("MSI", "monitors", "msi"),
+      brand("LG", "monitors", "lg"),
+      brand("BenQ", "monitors", "benq"),
+      brand("AOC", "monitors", "aoc"),
+      brand("Dell", "monitors", "dell"),
+      brand("ViewSonic", "monitors", "viewsonic"),
     ],
   },
   {
@@ -212,42 +518,161 @@ export const MEGA_MENU: MegaMenuCategory[] = [
     href: browse("ups"),
     columns: [
       {
-        heading: "Power backup",
+        heading: "Capacity",
         links: [
-          link("600VA (single PC)", "ups", { q: "600VA" }),
-          link("1000VA+", "ups", { q: "1000VA" }),
-          link("Online UPS", "ups", { q: "online" }),
+          link("Under 800 VA", "ups", {
+            facets: { capacityBand: "Under 800 VA" },
+          }),
+          link("800–1499 VA", "ups", {
+            facets: { capacityBand: "800–1499 VA" },
+          }),
+          link("1500 VA & above", "ups", {
+            facets: { capacityBand: "1500 VA & above" },
+          }),
+        ],
+      },
+      {
+        heading: "Topology",
+        links: [
+          link("Line-interactive", "ups", {
+            facets: { topology: "Line-interactive" },
+          }),
+          link("Online UPS", "ups", { facets: { topology: "Online" } }),
           link("All UPS", "ups"),
         ],
       },
     ],
+    brands: [
+      brand("APC", "ups", "apc", IMG.apc),
+      brand("CyberPower", "ups", "cyberpower"),
+      brand("Microtek", "ups", "microtek"),
+      brand("Fingers", "ups", "fingers"),
+    ],
+  },
+  {
+    key: "laptops",
+    label: "Laptops",
+    href: browse("laptops"),
+    columns: [
+      {
+        heading: "Processor",
+        links: [
+          link("Intel Core 3 / i3", "laptops", {
+            facets: { processor: "Intel Core 3 / i3" },
+          }),
+          link("Intel Core 5 / i5", "laptops", {
+            facets: { processor: "Intel Core 5 / i5" },
+          }),
+          link("AMD Ryzen 3", "laptops", {
+            facets: { processor: "AMD Ryzen 3" },
+          }),
+        ],
+      },
+      {
+        heading: "Specs",
+        links: [
+          link("8 GB RAM", "laptops", { facets: { ram: "8 GB" } }),
+          link("16 GB RAM", "laptops", { facets: { ram: "16 GB" } }),
+          link("Discrete GPU", "laptops", {
+            facets: { graphics: "Discrete GPU" },
+          }),
+          link("Windows", "laptops", { facets: { os: "Windows" } }),
+          link("All laptops", "laptops"),
+        ],
+      },
+    ],
+    brands: [
+      brand("ASUS", "laptops", "asus", IMG.asus),
+      brand("Acer", "laptops", "acer"),
+      brand("MSI", "laptops", "msi"),
+      brand("Intel", "laptops", "intel", IMG.intel),
+    ],
   },
 ];
 
-const PC_TILE_IMG = "/category-tiles/electronics.png";
-
-/** Homepage shop-by-category tiles (PC categories). */
+/** Homepage shop-by-category tiles — real component crops on light wells. */
 export const ASPERA_CATEGORY_TILES = [
-  { id: "processors", label: "Processors", href: browse("processors"), imageUrl: PC_TILE_IMG, bgTint: "#E8EEF4" },
-  { id: "graphics-cards", label: "Graphics Cards", href: browse("graphics-cards"), imageUrl: PC_TILE_IMG, bgTint: "#EAF3EF" },
-  { id: "motherboards", label: "Motherboards", href: browse("motherboards"), imageUrl: PC_TILE_IMG, bgTint: "#F3EEF8" },
-  { id: "memory-ram", label: "Memory", href: browse("memory-ram"), imageUrl: PC_TILE_IMG, bgTint: "#F8EFE6" },
-  { id: "storage-ssd", label: "SSD / Storage", href: browse("storage-ssd"), imageUrl: PC_TILE_IMG, bgTint: "#F6ECE8" },
-  { id: "monitors", label: "Monitors", href: browse("monitors"), imageUrl: PC_TILE_IMG, bgTint: "#E9EEF3" },
-  { id: "cabinets", label: "Cabinets", href: browse("cabinets"), imageUrl: PC_TILE_IMG, bgTint: "#F4ECF0" },
-  { id: "keyboard-mouse", label: "Keyboard & Mouse", href: browse("keyboard-mouse"), imageUrl: PC_TILE_IMG, bgTint: "#EEF3F8" },
+  { id: "processors", label: "Processors", href: browse("processors"), imageUrl: "/category-tiles/pc-cpu.jpg", bgTint: "#ffffff" },
+  { id: "graphics-cards", label: "Graphics Cards", href: browse("graphics-cards"), imageUrl: "/category-tiles/pc-gpu.jpg", bgTint: "#ffffff" },
+  { id: "motherboards", label: "Motherboards", href: browse("motherboards"), imageUrl: "/category-tiles/pc-mobo.jpg", bgTint: "#ffffff" },
+  { id: "memory-ram", label: "Memory", href: browse("memory-ram"), imageUrl: "/category-tiles/pc-ram.jpg", bgTint: "#ffffff" },
+  { id: "storage-ssd", label: "SSD / Storage", href: browse("storage-ssd"), imageUrl: "/category-tiles/pc-ssd.jpg", bgTint: "#ffffff" },
+  { id: "laptops", label: "Laptops", href: browse("laptops"), imageUrl: "/category-tiles/pc-cpu.jpg", bgTint: "#ffffff" },
+  { id: "power-supplies", label: "Power Supplies", href: browse("power-supplies"), imageUrl: "/category-tiles/pc-cabinet.jpg", bgTint: "#ffffff" },
+  { id: "cpu-coolers", label: "CPU Coolers", href: browse("cpu-coolers"), imageUrl: "/category-tiles/pc-cpu.jpg", bgTint: "#ffffff" },
+  { id: "monitors", label: "Monitors", href: browse("monitors"), imageUrl: "/category-tiles/pc-monitor.jpg", bgTint: "#ffffff" },
+  { id: "cabinets", label: "Cabinets", href: browse("cabinets"), imageUrl: "/category-tiles/pc-cabinet.jpg", bgTint: "#ffffff" },
+  { id: "keyboard-mouse", label: "Keyboard & Mouse", href: browse("keyboard-mouse"), imageUrl: "/category-tiles/pc-keyboard.jpg", bgTint: "#ffffff" },
 ] as const;
 
-/** Shop-by-brand lanes (PC brands). */
+/** Shop-by-brand lanes (PC brands) — deep-link to brand + category facets. */
 export const ASPERA_BRAND_LANES = [
-  { id: "intel", label: "Intel", href: browse("processors", { q: "Intel" }), imageUrl: PC_TILE_IMG, bgTint: "#E8EEF4", offer: "Core processors" },
-  { id: "amd", label: "AMD Ryzen", href: browse("processors", { q: "Ryzen" }), imageUrl: PC_TILE_IMG, bgTint: "#F6ECE8", offer: "Ryzen processors" },
-  { id: "nvidia", label: "NVIDIA RTX", href: browse("graphics-cards", { q: "RTX" }), imageUrl: PC_TILE_IMG, bgTint: "#EAF3EF", offer: "GeForce GPUs" },
-  { id: "asus", label: "ASUS", href: browse("motherboards", { q: "ASUS" }), imageUrl: PC_TILE_IMG, bgTint: "#EEF3F8", offer: "Boards & more" },
-  { id: "corsair", label: "Corsair", href: browse("memory-ram", { q: "Corsair" }), imageUrl: PC_TILE_IMG, bgTint: "#F3EEF8", offer: "Memory & cases" },
-  { id: "samsung", label: "Samsung", href: browse("storage-ssd", { q: "Samsung" }), imageUrl: PC_TILE_IMG, bgTint: "#F8EFEA", offer: "SSDs & monitors" },
-  { id: "logitech", label: "Logitech", href: browse("keyboard-mouse", { q: "Logitech" }), imageUrl: PC_TILE_IMG, bgTint: "#F4ECF0", offer: "Combos" },
-  { id: "apc", label: "APC", href: browse("ups", { q: "APC" }), imageUrl: PC_TILE_IMG, bgTint: "#EAF3EF", offer: "Power backup" },
+  {
+    id: "intel",
+    label: "Intel",
+    href: browse("processors", { facets: { brandFamily: "Intel Core" } }),
+    imageUrl: brandLogo("intel"),
+    bgTint: "#ffffff",
+    offer: "Core processors",
+  },
+  {
+    id: "amd",
+    label: "AMD Ryzen",
+    href: browse("processors", { facets: { brandFamily: "AMD Ryzen" } }),
+    imageUrl: brandLogo("amd"),
+    bgTint: "#ffffff",
+    offer: "Ryzen processors",
+  },
+  {
+    id: "nvidia",
+    label: "NVIDIA RTX",
+    href: browse("graphics-cards", {
+      facets: { generation: "RTX 50-series" },
+    }),
+    imageUrl: brandLogo("nvidia"),
+    bgTint: "#ffffff",
+    offer: "GeForce GPUs",
+  },
+  {
+    id: "asus",
+    label: "ASUS",
+    href: browse("motherboards", { q: "ASUS" }),
+    imageUrl: brandLogo("asus"),
+    bgTint: "#ffffff",
+    offer: "Boards & more",
+  },
+  {
+    id: "corsair",
+    label: "Corsair",
+    href: browse("memory-ram", { q: "Corsair" }),
+    imageUrl: brandLogo("corsair"),
+    bgTint: "#ffffff",
+    offer: "Memory & cases",
+  },
+  {
+    id: "samsung",
+    label: "Samsung",
+    href: browse("storage-ssd", { q: "Samsung" }),
+    imageUrl: brandLogo("samsung"),
+    bgTint: "#ffffff",
+    offer: "SSDs & monitors",
+  },
+  {
+    id: "logitech",
+    label: "Logitech",
+    href: browse("keyboard-mouse", { q: "Logitech" }),
+    imageUrl: brandLogo("logitech"),
+    bgTint: "#ffffff",
+    offer: "Combos",
+  },
+  {
+    id: "apc",
+    label: "APC",
+    href: browse("ups", { q: "APC" }),
+    imageUrl: brandLogo("apc"),
+    bgTint: "#ffffff",
+    offer: "Power backup",
+  },
 ] as const;
 
 /** @deprecated Prefer ASPERA_CATEGORY_TILES — kept for import compatibility */

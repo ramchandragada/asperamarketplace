@@ -20,8 +20,9 @@ export function BuyerProtectionBadge({
     <div className="rounded-2xl border border-border bg-surface p-4 text-sm shadow-[var(--shadow-card)]">
       <p className="font-semibold text-foreground">Buyer Protection</p>
       <p className="mt-1 text-muted">
-        Get help if your order never arrives, is not as described, or a return
-        is not honoured — Aspera reviews eligible claims.
+        Express orders are prepaid and protected — get help if delivery misses
+        the quoted ETA window, an item is not as described, or a return is not
+        honoured.
       </p>
       <Link
         href="/buyer-protection"

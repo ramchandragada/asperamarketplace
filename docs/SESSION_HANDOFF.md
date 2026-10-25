@@ -337,10 +337,54 @@ Owner decision: convert the demo marketplace into a **Pune PC-components store**
   price buckets rebranded to PC; hero images under `public/hero/pc-*.jpg`.
 
 **Known follow-ups:** 16 products still need real images (mostly UPS — their
-research URLs were store/category pages); the local `pnpm db:seed` still seeds
-the OLD fashion data (prod uses the PC seed) — repoint `prisma/seed.ts` to
-`seedPcCatalogue` when convenient.
+research URLs were store/category pages). Local `pnpm db:seed` now uses
+`seedPcCatalogue` (fixed in §17 integration).
 
 **Cursor:** the live catalogue is now PC parts. The old fashion seed files
 (`seed-catalogue-data.ts`, `seed-nav-lanes.ts`) remain in the repo but are not
 used in production.
+
+## 16. Cursor Wave 0 — money-path trust (2026-10-24)
+
+Owner approved Cursor to choose and build from the Medusa gap plan + deep audit.
+**Wave 0 shipped:** close money/inventory P0s before Medusa Tier-1 infra.
+
+1. **Coupon-net refunds** — `allocateDiscountPaise` / `netMerchandisePaise`; GST uses post-discount taxable base.
+2. **Line-scoped refunds everywhere** — `createCappedLineRefund` stamps `orderLineId` on cancel/return/protection; remaining-cap shared.
+3. **Claims** — `not_delivered` denied when fulfilment group is already `cancelled`.
+4. **Reservations** — unpaid cancel releases reserved stock; `startPayment` after `payment_failed` re-reserves (or fails closed).
+5. **Pay now** — `mock-complete` gated on `paymentsAreMockOnly()` (not `NODE_ENV`), so demo pay works on `aspera.market` until Razorpay lands.
+6. **Seller status** — fulfilment/returns writes require `seller.status === "approved"` (admins exempt).
+7. **COD** — `codAvailable` always false; PDP no longer advertises COD (A-28 deferred).
+
+**Next (Wave 1, not started):** outbox publisher + Vercel Cron → Blob/S3 + NotificationPort → separate prod Neon. Then Wave 2 saga + Razorpay flag.
+
+## 17. Integrate Cursor Express stack onto main (2026-10-25)
+
+**CTO decision:** Production stays on `main`. Cursor’s Express PC / Builder /
+MD catalogue stack must land on `main` so prod keeps Claude’s dashboard-kit
+(#95/#110) **and** gains `/pc-builder`, Express storefront, facet filters,
+and the ~384 SKU MD catalogue. Stop deploying feature branches to production.
+
+**What this merge brings (from `cursor/mega-logo-only-ffa4` tip `8f8879c`):**
+
+- Forge / Express PC landing + sober brand surfaces + hero build visuals
+- MD Computers catalogue import (~384 SKUs) + enrichment / facet filters
+- Quick-commerce Express flows + PDP specs continuity
+- PC Builder with cascading compatibility filters (`/pc-builder`)
+- Mega-menu brand logos (SVG under `public/brand-logos/`) + filter columns
+- Wave 0 money-path trust fixes (see §16)
+
+**Conflict policy (Cursor stack wins storefront; Claude wins dashboards):**
+
+- Overlaps in browse/shop, catalogue-browse, home-storefront, product-card,
+  site-chrome, site-header-client → keep Express/PC storefront behaviour
+  (sober cards, GridAddButton, mega-menu logos, Express chrome).
+- Admin / seller / account dashboard redesigns from main are untouched.
+
+**Seed SoT:** `prisma/seed.ts` → `seedPcCatalogue` + `PC_PRODUCTS` (archives
+fashion demo; no hard-delete).
+
+**Policy going forward:** merge to `main` → Vercel Production Branch auto-deploys.
+Do not point Production at feature branches. After merge, verify
+`aspera.market/pc-builder` and admin/seller dashboards both live.

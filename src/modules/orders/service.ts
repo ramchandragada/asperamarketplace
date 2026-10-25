@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 import { prisma } from "@/platform/db/prisma";
 import type { Actor } from "@/modules/identity/policy";
 import type { CheckoutSnapshot } from "@/modules/cart/pricing";
@@ -23,12 +23,12 @@ import type {
 } from "@/modules/orders/schema";
 import { createDocumentStorage } from "@/platform/storage/local";
 import {
+  createCappedLineRefund,
   ensureChartOfAccounts,
   postOrderPaidLedger,
-  postRefundLedger,
   resolveCommissionRateBps,
 } from "@/modules/finance/service";
-import { refundBreakdown } from "@/modules/finance/refund-math";
+import { availableQuantity } from "@/modules/cart/pricing";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
 
 export class OrderValidationError extends Error {
@@ -233,6 +233,7 @@ export async function startPayment(
 
   const order = await prisma.order.findFirst({
     where: { id: input.orderId, userId: actor.userId },
+    include: { lines: true },
   });
   if (!order) {
     throw new OrderValidationError("Order not found");
@@ -251,6 +252,41 @@ export async function startPayment(
 
   const payment = await prisma.$transaction(async (tx) => {
     if (order.status === "payment_failed") {
+      // Payment failure released reservations — re-hold stock before a new attempt.
+      for (const line of order.lines) {
+        const inventory = await tx.inventoryItem.findUnique({
+          where: { variantId: line.variantId },
+        });
+        if (!inventory) {
+          throw new OrderConflictError(
+            `Cannot re-reserve stock for ${line.sku}: inventory missing`,
+          );
+        }
+        const available = availableQuantity(inventory.onHand, inventory.reserved);
+        if (available < line.quantity) {
+          throw new OrderConflictError(
+            `Cannot re-reserve stock for ${line.sku}: only ${available} available`,
+          );
+        }
+        await tx.inventoryItem.update({
+          where: { id: inventory.id, version: inventory.version },
+          data: {
+            reserved: { increment: line.quantity },
+            version: { increment: 1 },
+          },
+        });
+        await tx.stockMovement.create({
+          data: {
+            inventoryItemId: inventory.id,
+            movementType: "reserve",
+            quantity: line.quantity,
+            reason: `Payment retry reserve ${order.orderNumber}`,
+            actorId: actor.userId,
+            correlationId,
+          },
+        });
+      }
+
       assertOrderTransition(order.status, "awaiting_payment");
       await tx.order.update({
         where: { id: order.id, version: order.version },
@@ -915,6 +951,7 @@ export async function cancelBuyerOrder(
     where: { id: orderId, userId: actor.userId },
     include: {
       groups: { include: { lines: true } },
+      lines: true,
       payments: true,
     },
   });
@@ -943,6 +980,35 @@ export async function cancelBuyerOrder(
           await tx.paymentAttempt.update({
             where: { id: payment.id },
             data: { status: "cancelled", failureReason: reason },
+          });
+        }
+      }
+      // awaiting_payment still holds checkout reservations; payment_failed
+      // already released them in markPaymentFailed — release is a no-op then.
+      if (order.status === "awaiting_payment") {
+        for (const line of order.lines) {
+          const inventory = await tx.inventoryItem.findUnique({
+            where: { variantId: line.variantId },
+          });
+          if (!inventory) continue;
+          const releaseQty = Math.min(inventory.reserved, line.quantity);
+          if (releaseQty <= 0) continue;
+          await tx.inventoryItem.update({
+            where: { id: inventory.id },
+            data: {
+              reserved: { decrement: releaseQty },
+              version: { increment: 1 },
+            },
+          });
+          await tx.stockMovement.create({
+            data: {
+              inventoryItemId: inventory.id,
+              movementType: "release",
+              quantity: releaseQty,
+              reason: `Buyer unpaid cancel ${order.orderNumber}`,
+              actorId: actor.userId,
+              correlationId,
+            },
           });
         }
       }
@@ -994,12 +1060,6 @@ export async function cancelBuyerOrder(
 
   for (const group of cancellable) {
     const commissionRateBps = await resolveCommissionRateBps(group.sellerId);
-    const breakdown = refundBreakdown({
-      merchandisePaise: group.lineTotalPaise,
-      orderSubtotalPaise: order.subtotalPaise,
-      orderTaxPaise: order.taxPaise,
-      commissionRateBps,
-    });
     await prisma.$transaction(async (tx) => {
       await tx.orderFulfilmentGroup.update({
         where: { id: group.id, version: group.version },
@@ -1033,26 +1093,15 @@ export async function cancelBuyerOrder(
           },
         });
       }
-      if (breakdown.totalPaise > 0) {
-        await tx.refund.create({
-          data: {
-            orderId: group.orderId,
-            amountPaise: breakdown.totalPaise,
-            merchandisePaise: breakdown.merchandisePaise,
-            status: "succeeded",
-            provider: "mock",
-            providerReference: `mock_ref_${randomBytes(8).toString("hex")}`,
-            reason,
-            completedAt: new Date(),
-          },
-        });
-        await postRefundLedger({
-          orderId: group.orderId,
-          sellerId: group.sellerId,
-          reason: `Buyer cancellation refund ${order.orderNumber}`,
-          correlationId,
-          breakdown,
+      for (const line of group.lines) {
+        await createCappedLineRefund({
           tx,
+          order,
+          sellerId: group.sellerId,
+          line,
+          reason,
+          correlationId,
+          commissionRateBps,
         });
       }
       await tx.auditLog.create({

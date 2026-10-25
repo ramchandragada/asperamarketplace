@@ -1,7 +1,7 @@
 /**
- * Shared pincode serviceability + city/state autofill.
- * Coverage is an allow-list of metro / major PIN prefixes plus a default
- * serviceable rule for valid Indian 6-digit pins (not starting with 0).
+ * Quick-commerce pincode serviceability + city/state autofill.
+ * Express hubs (Pune first, then metros) quote delivery in minutes / same-day
+ * windows — Blinkit / Zepto / Bigbasket-style speed for in-stock parts.
  */
 
 export type PincodeCheckResult = {
@@ -9,42 +9,82 @@ export type PincodeCheckResult = {
   serviceable: boolean;
   city: string | null;
   state: string | null;
+  /** Human ETA, e.g. "60–90 mins" or "Today, 2–4 hrs". */
   etaLabel: string | null;
+  /** Lower bound minutes when express; null for day-scale ETAs. */
+  etaMinutes: number | null;
+  /** True when the pin is inside an Aspera Express hub. */
+  express: boolean;
   codAvailable: boolean;
   message: string;
 };
 
-const PIN_DIRECTORY: Record<
-  string,
-  { city: string; state: string; etaDays: number }
-> = {
-  "110001": { city: "New Delhi", state: "Delhi", etaDays: 3 },
-  "110016": { city: "New Delhi", state: "Delhi", etaDays: 3 },
-  "400001": { city: "Mumbai", state: "Maharashtra", etaDays: 3 },
-  "400050": { city: "Mumbai", state: "Maharashtra", etaDays: 3 },
-  "411001": { city: "Pune", state: "Maharashtra", etaDays: 4 },
-  "560001": { city: "Bengaluru", state: "Karnataka", etaDays: 3 },
-  "560034": { city: "Bengaluru", state: "Karnataka", etaDays: 3 },
-  "600001": { city: "Chennai", state: "Tamil Nadu", etaDays: 4 },
-  "700001": { city: "Kolkata", state: "West Bengal", etaDays: 4 },
-  "500001": { city: "Hyderabad", state: "Telangana", etaDays: 4 },
-  "380001": { city: "Ahmedabad", state: "Gujarat", etaDays: 4 },
-  "302001": { city: "Jaipur", state: "Rajasthan", etaDays: 5 },
-  "226001": { city: "Lucknow", state: "Uttar Pradesh", etaDays: 5 },
-  "800001": { city: "Patna", state: "Bihar", etaDays: 6 },
+type PinMeta = {
+  city: string;
+  state: string;
+  /** Express minutes (single value → “under X mins”). */
+  etaMinutes: number;
+  express: boolean;
+};
+
+/** Primary express hubs — local inventory / dark-store style coverage. */
+const PIN_DIRECTORY: Record<string, PinMeta> = {
+  // Pune — flagship Aspera Express city
+  "411001": { city: "Pune", state: "Maharashtra", etaMinutes: 60, express: true },
+  "411002": { city: "Pune", state: "Maharashtra", etaMinutes: 75, express: true },
+  "411004": { city: "Pune", state: "Maharashtra", etaMinutes: 75, express: true },
+  "411005": { city: "Pune", state: "Maharashtra", etaMinutes: 60, express: true },
+  "411007": { city: "Pune", state: "Maharashtra", etaMinutes: 90, express: true },
+  "411014": { city: "Pune", state: "Maharashtra", etaMinutes: 90, express: true },
+  "411016": { city: "Pune", state: "Maharashtra", etaMinutes: 75, express: true },
+  "411021": { city: "Pune", state: "Maharashtra", etaMinutes: 90, express: true },
+  "411027": { city: "Pune", state: "Maharashtra", etaMinutes: 90, express: true },
+  "411038": { city: "Pune", state: "Maharashtra", etaMinutes: 75, express: true },
+  "411045": { city: "Pune", state: "Maharashtra", etaMinutes: 90, express: true },
+  "411057": { city: "Pune", state: "Maharashtra", etaMinutes: 90, express: true },
+  // Other metros — same-day express windows
+  "110001": { city: "New Delhi", state: "Delhi", etaMinutes: 180, express: true },
+  "110016": { city: "New Delhi", state: "Delhi", etaMinutes: 180, express: true },
+  "400001": { city: "Mumbai", state: "Maharashtra", etaMinutes: 150, express: true },
+  "400050": { city: "Mumbai", state: "Maharashtra", etaMinutes: 150, express: true },
+  "560001": { city: "Bengaluru", state: "Karnataka", etaMinutes: 180, express: true },
+  "560034": { city: "Bengaluru", state: "Karnataka", etaMinutes: 180, express: true },
+  "600001": { city: "Chennai", state: "Tamil Nadu", etaMinutes: 210, express: true },
+  "700001": { city: "Kolkata", state: "West Bengal", etaMinutes: 210, express: true },
+  "500001": { city: "Hyderabad", state: "Telangana", etaMinutes: 180, express: true },
+  "380001": { city: "Ahmedabad", state: "Gujarat", etaMinutes: 240, express: true },
+  "302001": { city: "Jaipur", state: "Rajasthan", etaMinutes: 240, express: true },
+  "226001": { city: "Lucknow", state: "Uttar Pradesh", etaMinutes: 300, express: false },
+  "800001": { city: "Patna", state: "Bihar", etaMinutes: 360, express: false },
 };
 
 /** Explicitly non-serviceable prefixes (remote / invalid ranges for MVP). */
 const BLOCKED_PREFIXES = ["00", "99"];
 
-function etaLabelFromDays(days: number): string {
-  const day = new Date();
-  day.setDate(day.getDate() + days);
-  return day.toLocaleDateString("en-IN", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
+function formatEtaMinutes(minutes: number): string {
+  if (minutes <= 90) {
+    const low = Math.max(30, minutes - 15);
+    return `${low}–${minutes} mins`;
+  }
+  if (minutes <= 240) {
+    const hoursLow = Math.max(1, Math.floor((minutes - 60) / 60));
+    const hoursHigh = Math.ceil(minutes / 60);
+    return `Today, ${hoursLow}–${hoursHigh} hrs`;
+  }
+  return "Today / tomorrow morning";
+}
+
+function prefixExpress(postalCode: string): PinMeta | null {
+  // Whole Pune circle rides Aspera Express.
+  if (postalCode.startsWith("411")) {
+    return {
+      city: "Pune",
+      state: "Maharashtra",
+      etaMinutes: 75,
+      express: true,
+    };
+  }
+  return null;
 }
 
 export function checkPincodeServiceability(raw: string): PincodeCheckResult {
@@ -56,6 +96,8 @@ export function checkPincodeServiceability(raw: string): PincodeCheckResult {
       city: null,
       state: null,
       etaLabel: null,
+      etaMinutes: null,
+      express: false,
       codAvailable: false,
       message: "Enter a valid 6-digit pincode",
     };
@@ -68,36 +110,45 @@ export function checkPincodeServiceability(raw: string): PincodeCheckResult {
       city: null,
       state: null,
       etaLabel: null,
+      etaMinutes: null,
+      express: false,
       codAvailable: false,
       message: "Sorry, we do not deliver to this pincode yet",
     };
   }
 
-  const known = PIN_DIRECTORY[postalCode];
+  // COD is deferred (A-28) — never advertise it until a real COD payment path exists.
+  const known = PIN_DIRECTORY[postalCode] ?? prefixExpress(postalCode);
   if (known) {
-    const etaLabel = etaLabelFromDays(known.etaDays);
+    const etaLabel = formatEtaMinutes(known.etaMinutes);
     return {
       postalCode,
       serviceable: true,
       city: known.city,
       state: known.state,
       etaLabel,
-      codAvailable: true,
-      message: `Delivery by ${etaLabel} · Cash on Delivery available · 7 Day Easy Returns`,
+      etaMinutes: known.etaMinutes,
+      express: known.express,
+      codAvailable: false,
+      message: known.express
+        ? `Aspera Express · ${etaLabel} · Prepaid · 7-day returns`
+        : `Delivery ${etaLabel} · Prepaid · 7-day returns`,
     };
   }
 
-  // Heuristic: first digit maps loosely to Indian postal circle; treat as serviceable.
-  const etaDays = 3 + (Number(postalCode) % 4);
-  const etaLabel = etaLabelFromDays(etaDays);
+  // Other valid pins: same-day / next-morning, not full express.
+  const etaMinutes = 360 + (Number(postalCode) % 3) * 60;
+  const etaLabel = formatEtaMinutes(etaMinutes);
   return {
     postalCode,
     serviceable: true,
     city: null,
     state: null,
     etaLabel,
-    codAvailable: true,
-    message: `Delivery by ${etaLabel} · Cash on Delivery available · 7 Day Easy Returns`,
+    etaMinutes,
+    express: false,
+    codAvailable: false,
+    message: `Delivery ${etaLabel} · Prepaid checkout · 7-day returns`,
   };
 }
 

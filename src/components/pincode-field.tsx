@@ -8,6 +8,8 @@ type PincodeCheck = {
   city: string | null;
   state: string | null;
   etaLabel: string | null;
+  etaMinutes?: number | null;
+  express?: boolean;
   codAvailable: boolean;
   message: string;
 };

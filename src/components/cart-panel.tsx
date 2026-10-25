@@ -342,9 +342,9 @@ export function CartPanel({
             </div>
 
             <p className="mt-3 text-xs text-muted">
-              Final delivery and tax confirmed at checkout
+              Aspera Express ETA and tax confirmed at checkout
               {sellerGroups.length > 1
-                ? ` · ${sellerGroups.length} shipments`
+                ? ` · ${sellerGroups.length} hub shipments`
                 : ""}
               .
             </p>

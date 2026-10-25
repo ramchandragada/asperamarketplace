@@ -95,36 +95,59 @@ function brandMonogram(label: string) {
 function MegaBrandTile({
   brand,
   onNavigate,
+  featured = false,
 }: {
   brand: MegaMenuBrand;
   onNavigate: () => void;
+  /** Large billboard tiles used when a category has few brands. */
+  featured?: boolean;
 }) {
   return (
     <Link
       href={brand.href}
       onClick={onNavigate}
-      className="group flex min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-[#E8ECEC] bg-[#F7F9F9] px-3 py-3.5 transition-colors hover:border-accent/40 hover:bg-white"
+      className={
+        featured
+          ? "group flex h-full min-h-[11.5rem] flex-col items-center justify-center gap-3 rounded-2xl border border-[#E4E9E9] bg-white px-5 py-6 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-accent/45"
+          : "group flex min-h-[7rem] flex-col items-center justify-center gap-2 rounded-xl border border-[#E8ECEC] bg-white px-3 py-3.5 transition-colors hover:border-accent/40"
+      }
       aria-label={`Shop ${brand.label}`}
     >
-      <span className="relative flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-white">
+      <span
+        className={
+          featured
+            ? "relative flex h-24 w-full max-w-[16rem] items-center justify-center overflow-hidden rounded-xl bg-[#F7F9F9]"
+            : "relative flex h-14 w-full items-center justify-center overflow-hidden rounded-lg bg-[#F7F9F9]"
+        }
+      >
         {brand.imageUrl ? (
           <Image
             src={brand.imageUrl}
             alt=""
             fill
-            sizes="160px"
-            className="object-contain p-2.5 transition-transform duration-200 group-hover:scale-[1.04]"
+            sizes={featured ? "220px" : "140px"}
+            className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.05]"
           />
         ) : (
           <span
             aria-hidden
-            className="font-display text-2xl font-semibold tracking-tight text-[#222]"
+            className={
+              featured
+                ? "font-display text-3xl font-semibold tracking-tight text-[#222]"
+                : "font-display text-2xl font-semibold tracking-tight text-[#222]"
+            }
           >
             {brandMonogram(brand.label)}
           </span>
         )}
       </span>
-      <span className="text-[12px] font-medium text-[#555] group-hover:text-accent">
+      <span
+        className={
+          featured
+            ? "text-[13px] font-semibold text-[#333] group-hover:text-accent"
+            : "text-[12px] font-medium text-[#555] group-hover:text-accent"
+        }
+      >
         {brand.label}
       </span>
     </Link>
@@ -142,12 +165,15 @@ function MegaPanel({
   categoryLabel: string;
   onNavigate: () => void;
 }) {
+  const sparse = brands.length > 0 && brands.length <= 4;
+  const featured = brands.length > 0 && brands.length <= 4;
+
   return (
     <div className="absolute inset-x-0 top-full z-50 border-b border-[#E3E8E8] bg-white shadow-[var(--shadow-mega)]">
-      <div className="flex w-full items-stretch gap-6 px-4 py-6 md:gap-8 md:px-6 lg:gap-10 lg:px-8 xl:px-10">
+      <div className="flex w-full items-stretch gap-5 px-4 py-5 md:gap-7 md:px-6 lg:gap-8 lg:px-8 xl:gap-10 xl:px-10">
         <ScrollEdgeRail
           label="Subcategories"
-          className="hide-scroll flex min-w-0 flex-1 gap-8 overflow-x-auto md:gap-10 xl:gap-12"
+          className="hide-scroll flex min-w-0 flex-[0.9] gap-8 overflow-x-auto md:gap-10 xl:gap-12"
         >
           {columns.map((column) => (
             <div key={column.heading} className="min-w-[9.5rem] shrink-0">
@@ -172,7 +198,7 @@ function MegaPanel({
         </ScrollEdgeRail>
 
         {brands.length > 0 ? (
-          <aside className="hidden min-w-0 flex-[1.55] border-l border-[#EEF1F1] pl-6 lg:block xl:pl-8">
+          <aside className="hidden min-w-0 flex-[2] self-stretch rounded-2xl bg-[linear-gradient(160deg,#F7F9F9_0%,#EEF3F3_100%)] p-4 md:block lg:p-5 xl:flex-[2.15]">
             <div className="flex items-baseline justify-between gap-3">
               <p className="text-[13px] leading-none font-bold text-accent">
                 Popular brands
@@ -182,14 +208,18 @@ function MegaPanel({
               </p>
             </div>
             <div
-              className="mt-3 grid gap-3"
+              className={
+                sparse
+                  ? "mt-3 grid min-h-[11.5rem] flex-1 gap-3 [grid-auto-rows:1fr]"
+                  : "mt-3 grid gap-2.5"
+              }
               style={{
                 gridTemplateColumns:
                   brands.length <= 2
                     ? "repeat(2, minmax(0, 1fr))"
                     : brands.length <= 4
                       ? "repeat(2, minmax(0, 1fr))"
-                      : "repeat(auto-fill, minmax(8.5rem, 1fr))",
+                      : "repeat(auto-fill, minmax(7.75rem, 1fr))",
               }}
             >
               {brands.map((entry) => (
@@ -197,6 +227,7 @@ function MegaPanel({
                   key={entry.href + entry.label}
                   brand={entry}
                   onNavigate={onNavigate}
+                  featured={featured}
                 />
               ))}
             </div>

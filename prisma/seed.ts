@@ -165,7 +165,9 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const fashion = await ensureSeller({
+  // Legacy fashion/demo sellers kept for local login compatibility; catalogue
+  // itself comes from seedPcCatalogue (Pune PC sellers).
+  await ensureSeller({
     email: "seller.fashion@aspera.local",
     password: "AsperaFashionDevOnly1!",
     displayName: "Fashion Seller",
@@ -174,7 +176,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const tech = await ensureSeller({
+  await ensureSeller({
     email: "seller.tech@aspera.local",
     password: "AsperaTechDevOnly1!",
     displayName: "Tech Seller",
@@ -183,7 +185,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const wellness = await ensureSeller({
+  await ensureSeller({
     email: "seller.wellness@aspera.local",
     password: "AsperaWellnessDevOnly1!",
     displayName: "Wellness Seller",
@@ -192,7 +194,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const textile = await ensureSeller({
+  await ensureSeller({
     email: "seller.textile@aspera.local",
     password: "AsperaTextileDevOnly1!",
     displayName: "Textile Seller",
@@ -201,7 +203,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const sports = await ensureSeller({
+  await ensureSeller({
     email: "seller.sports@aspera.local",
     password: "AsperaSportsDevOnly1!",
     displayName: "Sports Seller",
@@ -210,7 +212,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const mumbai = await ensureSeller({
+  await ensureSeller({
     email: "seller.mumbai@aspera.local",
     password: "AsperaMumbaiDevOnly1!",
     displayName: "Mumbai Fashion Seller",
@@ -219,7 +221,7 @@ async function main() {
     adminId: admin.id,
     sellerRoleId: sellerRole.id,
   });
-  const artisan = await ensureSeller({
+  await ensureSeller({
     email: "seller.artisan@aspera.local",
     password: "AsperaArtisanDevOnly1!",
     displayName: "Artisan Seller",

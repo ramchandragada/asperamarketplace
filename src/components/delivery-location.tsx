@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "aspera.deliveryLocation";
+const EVENT = "aspera:delivery-location";
 
 export type SavedDeliveryLocation = {
   postalCode: string;
@@ -23,11 +24,26 @@ type CheckPayload = {
   message?: string;
 };
 
-function readSaved(): SavedDeliveryLocation | null {
-  if (typeof window === "undefined") return null;
+function subscribe(onChange: () => void) {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(EVENT, onChange);
+  };
+}
+
+function snapshotRaw(): string {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
+    return window.localStorage.getItem(STORAGE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function parseSaved(raw: string): SavedDeliveryLocation | null {
+  if (!raw) return null;
+  try {
     const parsed = JSON.parse(raw) as SavedDeliveryLocation;
     if (!parsed?.postalCode || !parsed?.etaLabel) return null;
     return parsed;
@@ -40,33 +56,15 @@ function writeSaved(value: SavedDeliveryLocation | null) {
   if (typeof window === "undefined") return;
   if (!value) {
     window.localStorage.removeItem(STORAGE_KEY);
-    return;
+  } else {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
   }
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-  window.dispatchEvent(new CustomEvent("aspera:delivery-location", { detail: value }));
+  window.dispatchEvent(new CustomEvent(EVENT, { detail: value }));
 }
 
 export function useDeliveryLocation() {
-  const [location, setLocation] = useState<SavedDeliveryLocation | null>(null);
-
-  useEffect(() => {
-    setLocation(readSaved());
-    function onStorage(event: StorageEvent) {
-      if (event.key === STORAGE_KEY) setLocation(readSaved());
-    }
-    function onCustom(event: Event) {
-      const detail = (event as CustomEvent<SavedDeliveryLocation>).detail;
-      setLocation(detail ?? readSaved());
-    }
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("aspera:delivery-location", onCustom);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("aspera:delivery-location", onCustom);
-    };
-  }, []);
-
-  return location;
+  const raw = useSyncExternalStore(subscribe, snapshotRaw, () => "");
+  return parseSaved(raw);
 }
 
 /**
@@ -84,9 +82,11 @@ export function DeliveryLocationBar({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (saved?.postalCode) setPin(saved.postalCode);
-  }, [saved?.postalCode]);
+  function openPicker() {
+    setPin(saved?.postalCode ?? "");
+    setError(null);
+    setOpen((value) => !value);
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -134,7 +134,7 @@ export function DeliveryLocationBar({
     <div className="relative min-w-0">
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={openPicker}
         className={`flex min-h-11 min-w-0 flex-col items-start justify-center rounded-lg px-2 text-left transition hover:bg-background ${
           compact ? "md:min-h-9" : ""
         }`}

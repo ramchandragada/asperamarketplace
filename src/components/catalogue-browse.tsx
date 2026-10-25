@@ -201,14 +201,8 @@ export function CatalogueBrowse({
     );
   }, [scopedBrands, brandSearch]);
 
-  // Drop a brand selection that no longer exists in the active category.
-  useEffect(() => {
-    if (!brandSlug) return;
-    if (scopedBrands.some((brand) => brand.slug === brandSlug)) return;
-    setBrandSlug("");
-    setBrandSearch("");
-    setBrandShowAll(false);
-  }, [brandSlug, scopedBrands]);
+  // Brand validity is enforced in the category onChange handler (clears when
+  // the selected brand has no products in the new category). No effect needed.
 
   const chips = useMemo(() => {
     const list: Array<{ key: string; label: string }> = [];
@@ -391,7 +385,9 @@ export function CatalogueBrowse({
     });
   }
 
-  loadMoreRef.current = loadMore;
+  useEffect(() => {
+    loadMoreRef.current = loadMore;
+  });
 
   // Callback ref: observe exactly when the sentinel mounts. A useEffect that
   // only keys off has-more can run while the ref is still null (e.g. while

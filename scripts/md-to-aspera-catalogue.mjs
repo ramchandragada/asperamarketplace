@@ -4,7 +4,6 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createWriteStream } from "fs";
 import { pipeline } from "stream/promises";
-import { Readable } from "stream";
 import path from "path";
 import https from "https";
 import http from "http";

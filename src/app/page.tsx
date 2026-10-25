@@ -33,21 +33,21 @@ const BUILD_LANES = [
     label: "Gaming",
     description: "GPUs, X3D CPUs, high-refresh monitors",
     href: "/browse?categorySlug=graphics-cards",
-    imageUrl: "/hero/pc-gpu.jpg",
+    imageUrl: "/hero/build-gaming.jpg",
   },
   {
     id: "creator",
     label: "Creator",
     description: "Multi-core CPUs, fast NVMe, colour-ready panels",
     href: "/browse?categorySlug=processors&q=Ryzen+7",
-    imageUrl: "/hero/pc-build.jpg",
+    imageUrl: "/hero/build-creator.jpg",
   },
   {
     id: "office",
     label: "Office",
     description: "Reliable CPUs, SSDs, and UPS for Pune power cuts",
     href: "/browse?categorySlug=processors&q=i5",
-    imageUrl: "/hero/pc-desk.jpg",
+    imageUrl: "/hero/build-office.jpg",
   },
 ] as const;
 

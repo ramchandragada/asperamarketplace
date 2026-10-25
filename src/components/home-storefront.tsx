@@ -105,7 +105,7 @@ const HERO_SLIDES: HeroSlide[] = [
       "Order from nearby hubs — Express delivery in under 90 minutes across Pune.",
     ctaLabel: "Shop processors",
     ctaHref: "/browse?categorySlug=processors",
-    image: "/hero/pc-build.jpg",
+    image: "/hero/pc-express-build.jpg",
   },
   {
     id: "gpu",
@@ -115,7 +115,7 @@ const HERO_SLIDES: HeroSlide[] = [
       "GeForce RTX and Radeon RX in stock at local hubs — same-day express ready.",
     ctaLabel: "Shop graphics cards",
     ctaHref: "/browse?categorySlug=graphics-cards",
-    image: "/hero/pc-gpu.jpg",
+    image: "/hero/pc-gpu-express.jpg",
   },
   {
     id: "monitors",
@@ -125,7 +125,7 @@ const HERO_SLIDES: HeroSlide[] = [
       "High-refresh monitors, keyboards, and mice with minute-level ETAs at your pin.",
     ctaLabel: "Shop monitors",
     ctaHref: "/browse?categorySlug=monitors",
-    image: "/hero/pc-desk.jpg",
+    image: "/hero/pc-monitor-desk.jpg",
   },
   {
     id: "storage",
@@ -135,7 +135,7 @@ const HERO_SLIDES: HeroSlide[] = [
       "NVMe, SATA, and UPS from verified sellers — Express when you’re in a hub zone.",
     ctaLabel: "Shop SSDs",
     ctaHref: "/browse?categorySlug=storage-ssd",
-    image: "/hero/pc-setup.jpg",
+    image: "/hero/pc-ssd-power.jpg",
   },
 ];
 
@@ -228,7 +228,7 @@ export function AsperaHero() {
       </h2>
 
       <div className="relative grid grid-cols-[3.25rem_minmax(0,1fr)_3.25rem] md:grid-cols-[4.25rem_minmax(0,1fr)_4.25rem]">
-        <div className="relative col-start-2 row-start-1 min-h-[24.5rem] md:min-h-[22rem] lg:min-h-[24rem]">
+        <div className="relative col-start-2 row-start-1 min-h-[32rem] md:min-h-[36rem] lg:min-h-[40rem] xl:min-h-[44rem]">
         {HERO_SLIDES.map((entry, slideIndex) => {
           const active = slideIndex === index;
           return (
@@ -257,29 +257,29 @@ export function AsperaHero() {
                   fill
                   priority={slideIndex === 0}
                   sizes="100vw"
-                  className="object-cover object-[72%_center]"
+                  className="object-cover object-[68%_center] md:object-[72%_center]"
                 />
               </div>
               <div
-                className="absolute inset-y-0 -left-[3.25rem] -right-[3.25rem] bg-[linear-gradient(90deg,rgba(11,18,32,0.9)_0%,rgba(11,18,32,0.68)_52%,rgba(11,18,32,0.22)_100%)] md:-left-[4.25rem] md:-right-[4.25rem] md:bg-[linear-gradient(90deg,rgba(11,18,32,0.88)_0%,rgba(11,18,32,0.55)_36%,rgba(11,18,32,0.12)_68%,rgba(11,18,32,0.04)_100%)]"
+                className="absolute inset-y-0 -left-[3.25rem] -right-[3.25rem] bg-[linear-gradient(90deg,rgba(11,18,32,0.92)_0%,rgba(11,18,32,0.72)_48%,rgba(11,18,32,0.28)_100%)] md:-left-[4.25rem] md:-right-[4.25rem] md:bg-[linear-gradient(90deg,rgba(11,18,32,0.9)_0%,rgba(11,18,32,0.58)_34%,rgba(11,18,32,0.18)_66%,rgba(11,18,32,0.06)_100%)]"
                 aria-hidden
               />
 
-              <div className="relative z-[2] container-shell flex h-full min-h-[24.5rem] flex-col justify-center pt-5 pb-[4.75rem] md:min-h-[22rem] md:py-12 lg:min-h-[24rem]">
-                <div className="max-w-[20rem] text-white md:max-w-[28rem]">
-                  <p className="font-display text-[28px] font-bold tracking-[-0.04em] text-white drop-shadow-sm md:text-[40px]">
+              <div className="relative z-[2] container-shell flex h-full min-h-[32rem] flex-col justify-center pt-6 pb-[5.25rem] md:min-h-[36rem] md:py-16 lg:min-h-[40rem] xl:min-h-[44rem]">
+                <div className="max-w-[21rem] text-white md:max-w-[30rem]">
+                  <p className="font-display text-[32px] font-bold tracking-[-0.04em] text-white drop-shadow-sm md:text-[48px]">
                     ASPERA
                   </p>
                   <p className="mt-2 text-[12px] font-semibold tracking-[0.14em] text-[color:var(--brand-accent)] uppercase md:text-[13px]">
                     {entry.eyebrow}
                   </p>
-                  <p className="font-display mt-2 text-[24px] leading-[30px] font-bold tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] md:text-[34px] md:leading-[40px]">
+                  <p className="font-display mt-2 text-[26px] leading-[32px] font-bold tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] md:text-[40px] md:leading-[46px]">
                     {entry.title}
                   </p>
-                  <p className="mt-2 max-w-sm text-[14px] leading-[21px] text-white/90 md:text-[15px] md:leading-[23px]">
+                  <p className="mt-3 max-w-md text-[15px] leading-[23px] text-white/90 md:text-[16px] md:leading-[25px]">
                     {entry.subtitle}
                   </p>
-                  <div className="mt-5 flex flex-wrap gap-3">
+                  <div className="mt-6 flex flex-wrap gap-3">
                     <Link
                       href={entry.ctaHref}
                       className="inline-flex min-h-11 items-center justify-center rounded-[10px] bg-[color:var(--brand-accent)] px-6 text-[14px] font-semibold text-[#0B1220] shadow-sm transition hover:brightness-105"
@@ -463,21 +463,21 @@ export function BuildLanes({ lanes }: { lanes: BuildLane[] }) {
           <li key={lane.id}>
             <Link
               href={lane.href}
-              className="group relative flex h-[168px] overflow-hidden rounded-[10px] md:h-[200px]"
+              className="group relative flex h-[200px] overflow-hidden rounded-[12px] md:h-[240px]"
             >
               <Image
                 src={lane.imageUrl}
                 alt=""
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
-                className="object-cover transition duration-500 group-hover:scale-[1.04]"
+                className="object-cover object-center transition duration-500 group-hover:scale-[1.04]"
               />
-              <span className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,18,32,0.15)_0%,rgba(11,18,32,0.82)_100%)]" />
+              <span className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,18,32,0.08)_0%,rgba(11,18,32,0.55)_55%,rgba(11,18,32,0.88)_100%)]" />
               <span className="absolute inset-x-0 bottom-0 p-4 text-white md:p-5">
-                <span className="font-display block text-[18px] font-bold tracking-tight md:text-[20px]">
+                <span className="font-display block text-[18px] font-bold tracking-tight md:text-[22px]">
                   {lane.label}
                 </span>
-                <span className="mt-1 block text-[13px] text-white/85">
+                <span className="mt-1.5 block text-[13px] leading-snug text-white/88 md:text-[14px]">
                   {lane.description}
                 </span>
               </span>

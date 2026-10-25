@@ -3,19 +3,33 @@ export type MegaMenuColumn = {
   links: Array<{ label: string; href: string }>;
 };
 
+/** Brand tiles shown in the mega-menu’s right panel for the hovered category. */
+export type MegaMenuBrand = {
+  label: string;
+  href: string;
+  /** Optional photo tile; when omitted a lettermark tile is rendered. */
+  imageUrl?: string;
+};
+
 export type MegaMenuCategory = {
   key: string;
   label: string;
   href: string;
   columns: MegaMenuColumn[];
+  brands: MegaMenuBrand[];
 };
 
 function browse(
   categorySlug: string,
-  opts?: { q?: string; facets?: Record<string, string | string[]> },
+  opts?: {
+    q?: string;
+    brandSlug?: string;
+    facets?: Record<string, string | string[]>;
+  },
 ) {
   const params = new URLSearchParams({ categorySlug });
   if (opts?.q) params.set("q", opts.q);
+  if (opts?.brandSlug) params.set("brandSlug", opts.brandSlug);
   if (opts?.facets) {
     for (const [key, value] of Object.entries(opts.facets)) {
       const values = Array.isArray(value) ? value : [value];
@@ -34,6 +48,30 @@ function link(
 ) {
   return { label, href: browse(categorySlug, opts) };
 }
+
+function brand(
+  label: string,
+  categorySlug: string,
+  brandSlug: string,
+  imageUrl?: string,
+): MegaMenuBrand {
+  return {
+    label,
+    href: browse(categorySlug, { brandSlug }),
+    imageUrl,
+  };
+}
+
+const IMG = {
+  amd: "/category-tiles/pc-brand-amd.jpg",
+  intel: "/category-tiles/pc-brand-intel.jpg",
+  nvidia: "/category-tiles/pc-brand-nvidia.jpg",
+  asus: "/category-tiles/pc-brand-asus.jpg",
+  corsair: "/category-tiles/pc-brand-corsair.jpg",
+  samsung: "/category-tiles/pc-brand-samsung.jpg",
+  logitech: "/category-tiles/pc-brand-logitech.jpg",
+  apc: "/category-tiles/pc-brand-apc.jpg",
+} as const;
 
 export const SEARCH_PLACEHOLDER =
   "Search parts for Express delivery…";
@@ -97,6 +135,10 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         ],
       },
     ],
+    brands: [
+      brand("AMD", "processors", "amd", IMG.amd),
+      brand("Intel", "processors", "intel", IMG.intel),
+    ],
   },
   {
     key: "motherboards",
@@ -135,6 +177,11 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         ],
       },
     ],
+    brands: [
+      brand("ASUS", "motherboards", "asus", IMG.asus),
+      brand("MSI", "motherboards", "msi"),
+      brand("Gigabyte", "motherboards", "gigabyte"),
+    ],
   },
   {
     key: "graphics-cards",
@@ -168,6 +215,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         ],
       },
     ],
+    brands: [
+      brand("NVIDIA", "graphics-cards", "nvidia", IMG.nvidia),
+      brand("ASUS", "graphics-cards", "asus", IMG.asus),
+      brand("MSI", "graphics-cards", "msi"),
+      brand("Gigabyte", "graphics-cards", "gigabyte"),
+      brand("Zotac", "graphics-cards", "zotac"),
+      brand("AMD", "graphics-cards", "amd", IMG.amd),
+    ],
   },
   {
     key: "memory-ram",
@@ -196,6 +251,13 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           link("All memory", "memory-ram"),
         ],
       },
+    ],
+    brands: [
+      brand("Corsair", "memory-ram", "corsair", IMG.corsair),
+      brand("ADATA", "memory-ram", "adata"),
+      brand("Kingston", "memory-ram", "kingston"),
+      brand("G.Skill", "memory-ram", "g-skill"),
+      brand("Crucial", "memory-ram", "crucial"),
     ],
   },
   {
@@ -232,6 +294,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         ],
       },
     ],
+    brands: [
+      brand("Samsung", "storage-ssd", "samsung", IMG.samsung),
+      brand("WD", "storage-ssd", "wd"),
+      brand("Kingston", "storage-ssd", "kingston"),
+      brand("ADATA", "storage-ssd", "adata"),
+      brand("SanDisk", "storage-ssd", "sandisk"),
+      brand("Seagate", "storage-ssd", "seagate"),
+    ],
   },
   {
     key: "cabinets",
@@ -265,6 +335,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           link("All cabinets", "cabinets"),
         ],
       },
+    ],
+    brands: [
+      brand("Corsair", "cabinets", "corsair", IMG.corsair),
+      brand("Cooler Master", "cabinets", "cooler-master"),
+      brand("Ant Esports", "cabinets", "ant-esports"),
+      brand("Antec", "cabinets", "antec"),
+      brand("Lian Li", "cabinets", "lian-li"),
+      brand("ASUS", "cabinets", "asus", IMG.asus),
     ],
   },
   {
@@ -302,6 +380,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         ],
       },
     ],
+    brands: [
+      brand("Corsair", "power-supplies", "corsair", IMG.corsair),
+      brand("Thermaltake", "power-supplies", "thermaltake"),
+      brand("ASUS", "power-supplies", "asus", IMG.asus),
+      brand("Cooler Master", "power-supplies", "cooler-master"),
+      brand("Ant Esports", "power-supplies", "ant-esports"),
+      brand("Deepcool", "power-supplies", "deepcool"),
+    ],
   },
   {
     key: "cpu-coolers",
@@ -329,6 +415,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           link("All coolers", "cpu-coolers"),
         ],
       },
+    ],
+    brands: [
+      brand("Cooler Master", "cpu-coolers", "cooler-master"),
+      brand("Noctua", "cpu-coolers", "noctua"),
+      brand("Corsair", "cpu-coolers", "corsair", IMG.corsair),
+      brand("ASUS", "cpu-coolers", "asus", IMG.asus),
+      brand("Ant Esports", "cpu-coolers", "ant-esports"),
+      brand("Thermaltake", "cpu-coolers", "thermaltake"),
     ],
   },
   {
@@ -362,6 +456,14 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         ],
       },
     ],
+    brands: [
+      brand("Logitech", "keyboard-mouse", "logitech", IMG.logitech),
+      brand("Razer", "keyboard-mouse", "razer"),
+      brand("Cosmic Byte", "keyboard-mouse", "cosmic-byte"),
+      brand("Redragon", "keyboard-mouse", "redragon"),
+      brand("ASUS", "keyboard-mouse", "asus", IMG.asus),
+      brand("HyperX", "keyboard-mouse", "hyperx"),
+    ],
   },
   {
     key: "monitors",
@@ -394,6 +496,16 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         ],
       },
     ],
+    brands: [
+      brand("Samsung", "monitors", "samsung", IMG.samsung),
+      brand("ASUS", "monitors", "asus", IMG.asus),
+      brand("MSI", "monitors", "msi"),
+      brand("LG", "monitors", "lg"),
+      brand("BenQ", "monitors", "benq"),
+      brand("AOC", "monitors", "aoc"),
+      brand("Dell", "monitors", "dell"),
+      brand("ViewSonic", "monitors", "viewsonic"),
+    ],
   },
   {
     key: "ups",
@@ -424,6 +536,12 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           link("All UPS", "ups"),
         ],
       },
+    ],
+    brands: [
+      brand("APC", "ups", "apc", IMG.apc),
+      brand("CyberPower", "ups", "cyberpower"),
+      brand("Microtek", "ups", "microtek"),
+      brand("Fingers", "ups", "fingers"),
     ],
   },
   {
@@ -457,6 +575,12 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           link("All laptops", "laptops"),
         ],
       },
+    ],
+    brands: [
+      brand("ASUS", "laptops", "asus", IMG.asus),
+      brand("Acer", "laptops", "acer"),
+      brand("MSI", "laptops", "msi"),
+      brand("Intel", "laptops", "intel", IMG.intel),
     ],
   },
 ];

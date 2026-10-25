@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createProductOfferSchema } from "@/modules/catalogue/schema";
-import { SEED_MULTI_SELLER_OFFERS, SEED_PRODUCT_BASE } from "@/modules/catalogue/seed-catalogue-data";
+import { PC_PRODUCTS, PC_SELLERS } from "@/modules/catalogue/pc-catalogue-data";
 
 describe("multi-seller offers", () => {
   it("accepts a valid offer payload", () => {
@@ -8,13 +8,13 @@ describe("multi-seller offers", () => {
       sellerId: "11111111-1111-4111-8111-111111111111",
       sourceProductId: "22222222-2222-4222-8222-222222222222",
       variant: {
-        sku: "TOWEL-SET-B",
-        mrpPaise: 59900,
-        sellingPricePaise: 39900,
+        sku: "GPU-RTX-B",
+        mrpPaise: 5990000,
+        sellingPricePaise: 5490000,
         initialStock: 12,
       },
     });
-    expect(parsed.variant.sku).toBe("TOWEL-SET-B");
+    expect(parsed.variant.sku).toBe("GPU-RTX-B");
   });
 
   it("rejects offer when MRP is below selling price", () => {
@@ -22,7 +22,7 @@ describe("multi-seller offers", () => {
       sellerId: "11111111-1111-4111-8111-111111111111",
       sourceProductId: "22222222-2222-4222-8222-222222222222",
       variant: {
-        sku: "TOWEL-SET-B",
+        sku: "GPU-RTX-B",
         mrpPaise: 30000,
         sellingPricePaise: 39900,
         initialStock: 12,
@@ -31,20 +31,9 @@ describe("multi-seller offers", () => {
     expect(result.success).toBe(false);
   });
 
-  it("seeds at least three shared listing groups with multiple sellers", () => {
-    const keyed = [...SEED_PRODUCT_BASE, ...SEED_MULTI_SELLER_OFFERS].filter(
-      (item) => item.sharedListingKey,
-    );
-    const byKey = new Map<string, Set<string>>();
-    for (const item of keyed) {
-      const key = item.sharedListingKey!;
-      const sellers = byKey.get(key) ?? new Set<string>();
-      sellers.add(item.sellerKey);
-      byKey.set(key, sellers);
-    }
-    expect(byKey.size).toBeGreaterThanOrEqual(3);
-    for (const sellers of byKey.values()) {
-      expect(sellers.size).toBeGreaterThanOrEqual(2);
-    }
+  it("PC catalogue distributes listings across multiple Pune sellers", () => {
+    expect(PC_SELLERS.length).toBeGreaterThanOrEqual(3);
+    const sellersWithStock = new Set(PC_PRODUCTS.map((item) => item.sellerKey));
+    expect(sellersWithStock.size).toBeGreaterThanOrEqual(3);
   });
 });

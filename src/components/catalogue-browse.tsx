@@ -71,7 +71,6 @@ export function CatalogueBrowse({
   brandsByCategory = {},
   initialCategorySlug = "",
   initialBrandSlug = "",
-  initialAudience = "",
   initialSort = "newest",
   initialInStockOnly = false,
   initialVerifiedOnly = false,
@@ -96,7 +95,6 @@ export function CatalogueBrowse({
   brandsByCategory?: Record<string, BrandOption[]>;
   initialCategorySlug?: string;
   initialBrandSlug?: string;
-  initialAudience?: string;
   initialSort?: string;
   initialInStockOnly?: boolean;
   initialVerifiedOnly?: boolean;
@@ -132,7 +130,6 @@ export function CatalogueBrowse({
   const [query, setQuery] = useState(initialQuery);
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
   const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
-  const [audience, setAudience] = useState(initialAudience);
   const [facets, setFacets] = useState<FacetSelection>(initialFacets);
   const [sort, setSort] = useState(initialSort);
   const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
@@ -209,19 +206,6 @@ export function CatalogueBrowse({
     if (query.trim()) {
       list.push({ key: "q", label: query.trim() });
     }
-    if (audience) {
-      list.push({
-        key: "audience",
-        label:
-          audience === "women"
-            ? "Women"
-            : audience === "men"
-              ? "Men"
-              : audience === "kids"
-                ? "Kids"
-                : audience,
-      });
-    }
     if (categorySlug) {
       list.push({ key: "cat", label: categoryName });
     }
@@ -263,7 +247,6 @@ export function CatalogueBrowse({
     return list;
   }, [
     query,
-    audience,
     categorySlug,
     categoryName,
     brandSlug,
@@ -283,7 +266,6 @@ export function CatalogueBrowse({
     q?: string;
     categorySlug?: string;
     brandSlug?: string;
-    audience?: string;
     facets?: FacetSelection;
     sort?: string;
     inStockOnly?: boolean;
@@ -300,8 +282,6 @@ export function CatalogueBrowse({
     const q = (next?.q ?? query).trim();
     const cat = next?.categorySlug ?? categorySlug;
     const brand = next?.brandSlug ?? brandSlug;
-    const audienceValue =
-      next?.audience !== undefined ? next.audience : audience;
     const facetValues = next?.facets ?? facets;
     const sortValue = next?.sort ?? sort;
     const stock = next?.inStockOnly ?? inStockOnly;
@@ -316,7 +296,6 @@ export function CatalogueBrowse({
     if (q) params.set("q", q);
     if (cat) params.set("categorySlug", cat);
     if (brand) params.set("brandSlug", brand);
-    if (audienceValue) params.set("audience", audienceValue);
     for (const [key, value] of facetQueryEntries(facetValues)) {
       params.append(key, value);
     }
@@ -437,7 +416,6 @@ export function CatalogueBrowse({
     setQuery("");
     setCategorySlug("");
     setBrandSlug("");
-    setAudience("");
     setSort(initialQuery.trim() ? "relevance" : "newest");
     setInStockOnly(false);
     setVerifiedOnly(false);
@@ -454,7 +432,6 @@ export function CatalogueBrowse({
         q: "",
         categorySlug: "",
         brandSlug: "",
-        audience: "",
         facets: {},
         sort: initialQuery.trim() ? "relevance" : "newest",
         inStockOnly: false,
@@ -478,10 +455,6 @@ export function CatalogueBrowse({
       setFacets({});
       next.categorySlug = "";
       next.facets = {};
-    }
-    if (key === "audience") {
-      setAudience("");
-      next.audience = "";
     }
     if (key.startsWith("facet:")) {
       // chip key is facet:<facetKey>:<value>

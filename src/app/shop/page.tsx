@@ -24,8 +24,6 @@ const SORTS = new Set([
   "rating",
 ]);
 
-const AUDIENCES = new Set(["women", "men", "kids", "unisex"]);
-
 export default async function ShopPage({
   searchParams,
 }: {
@@ -39,10 +37,6 @@ export default async function ShopPage({
   const query = read("q")?.trim() ?? "";
   const categorySlug = read("categorySlug")?.trim() ?? "";
   const brandSlug = read("brandSlug")?.trim() ?? "";
-  const audienceRaw = read("audience")?.trim() ?? "";
-  const audience = AUDIENCES.has(audienceRaw)
-    ? (audienceRaw as "women" | "men" | "kids" | "unisex")
-    : undefined;
   const sort = SORTS.has(read("sort") ?? "")
     ? (read("sort") as string)
     : query
@@ -75,7 +69,6 @@ export default async function ShopPage({
     q: query || undefined,
     categorySlug: categorySlug || undefined,
     brandSlug: resolvedBrandSlug || undefined,
-    audience,
     facets: Object.keys(facets).length > 0 ? facets : undefined,
     sort: sort as
       | "relevance"
@@ -110,7 +103,6 @@ export default async function ShopPage({
         brandsByCategory={brandIndex.byCategory}
         initialCategorySlug={categorySlug}
         initialBrandSlug={resolvedBrandSlug}
-        initialAudience={audience ?? ""}
         initialSort={sort}
         initialInStockOnly={inStockOnly}
         initialVerifiedOnly={verifiedSellerOnly}

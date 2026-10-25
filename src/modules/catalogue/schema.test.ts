@@ -4,14 +4,14 @@ import { createProductSchema } from "@/modules/catalogue/schema";
 const validDraft = {
   sellerId: "11111111-1111-4111-8111-111111111111",
   categoryId: "22222222-2222-4222-8222-222222222222",
-  title: "Studio Loom sample bottle",
-  summary: "Reusable bottle for the daily commute.",
+  title: "Aspera sample NVMe SSD 1TB",
+  summary: "Gen4 drive for everyday PC builds.",
   description: "A fictional listing long enough to satisfy the catalogue description rule.",
   variant: {
-    sku: "SLM-TEST-01",
-    title: "750 ml",
-    mrpPaise: 10000,
-    sellingPricePaise: 8000,
+    sku: "SSD-TEST-01",
+    title: "1 TB",
+    mrpPaise: 1000000,
+    sellingPricePaise: 849900,
     initialStock: 4,
   },
 };

@@ -91,8 +91,6 @@ export const searchProductsSchema = z.object({
   q: z.string().trim().max(120).optional(),
   categorySlug: z.string().trim().max(120).optional(),
   brandSlug: z.string().trim().max(120).optional(),
-  /** Fashion/kids audience segment stored on Product.attributes.audience */
-  audience: z.enum(["women", "men", "kids", "unisex"]).optional(),
   /**
    * Category-specific multi-select facets from Product.attributes.facets.
    * Within a key values are OR'd; across keys they are AND'd.

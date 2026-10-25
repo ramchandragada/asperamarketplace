@@ -92,23 +92,13 @@ function brandMonogram(label: string) {
   return label.slice(0, 3).toUpperCase();
 }
 
-function BrandLogoMedia({
-  brand,
-  featured,
-}: {
-  brand: MegaMenuBrand;
-  featured: boolean;
-}) {
+function BrandLogoMedia({ brand }: { brand: MegaMenuBrand }) {
   const src = brand.imageUrl;
   if (!src) {
     return (
       <span
         aria-hidden
-        className={
-          featured
-            ? "font-display text-3xl font-semibold tracking-tight text-[#222]"
-            : "font-display text-2xl font-semibold tracking-tight text-[#222]"
-        }
+        className="font-display text-lg font-semibold tracking-tight text-[#222]"
       >
         {brandMonogram(brand.label)}
       </span>
@@ -121,11 +111,7 @@ function BrandLogoMedia({
       <img
         src={src}
         alt=""
-        className={
-          featured
-            ? "h-16 w-auto max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.04] md:h-20"
-            : "h-11 w-auto max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.04] md:h-12"
-        }
+        className="h-8 w-auto max-w-[7.5rem] object-contain transition-transform duration-200 group-hover:scale-[1.04]"
       />
     );
   }
@@ -133,9 +119,9 @@ function BrandLogoMedia({
     <Image
       src={src}
       alt=""
-      fill
-      sizes={featured ? "240px" : "140px"}
-      className="object-contain p-2 transition-transform duration-200 group-hover:scale-[1.04]"
+      width={120}
+      height={32}
+      className="h-8 w-auto max-w-[7.5rem] object-contain transition-transform duration-200 group-hover:scale-[1.04]"
     />
   );
 }
@@ -143,33 +129,18 @@ function BrandLogoMedia({
 function MegaBrandTile({
   brand,
   onNavigate,
-  featured = false,
 }: {
   brand: MegaMenuBrand;
   onNavigate: () => void;
-  /** Large billboard tiles used when a category has few brands. */
-  featured?: boolean;
 }) {
   return (
     <Link
       href={brand.href}
       onClick={onNavigate}
-      className={
-        featured
-          ? "group flex h-full min-h-[10rem] w-full items-center justify-center rounded-2xl border border-[#E8ECEC] bg-white px-5 py-6 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-accent/40"
-          : "group flex h-full min-h-[6.5rem] w-full items-center justify-center rounded-xl border border-[#E8ECEC] bg-white px-4 py-4 transition-colors hover:border-accent/40"
-      }
+      className="group flex h-12 w-full items-center justify-center rounded-lg border border-[#E8ECEC] bg-white px-3 transition-colors hover:border-accent/40"
       aria-label={`Shop ${brand.label}`}
     >
-      <span
-        className={
-          featured
-            ? "relative flex h-24 w-full items-center justify-center overflow-hidden"
-            : "relative flex h-14 w-full items-center justify-center overflow-hidden"
-        }
-      >
-        <BrandLogoMedia brand={brand} featured={featured} />
-      </span>
+      <BrandLogoMedia brand={brand} />
     </Link>
   );
 }
@@ -177,12 +148,12 @@ function MegaBrandTile({
 function brandGridColumns(count: number): string {
   if (count <= 2) return "repeat(2, minmax(0, 1fr))";
   if (count === 3) return "repeat(3, minmax(0, 1fr))";
-  if (count === 4) return "repeat(2, minmax(0, 1fr))";
+  if (count === 4) return "repeat(4, minmax(0, 1fr))";
   if (count <= 6) return "repeat(3, minmax(0, 1fr))";
   return "repeat(4, minmax(0, 1fr))";
 }
 
-/** Facet columns on the left; full brand logos fill the remaining space. */
+/** Facet columns on the left; compact brand logos fill remaining width. */
 function MegaPanel({
   columns,
   brands,
@@ -194,21 +165,19 @@ function MegaPanel({
   categoryLabel: string;
   onNavigate: () => void;
 }) {
-  const featured = brands.length > 0 && brands.length <= 4;
-
   return (
     <div className="absolute inset-x-0 top-full z-50 border-b border-[#E3E8E8] bg-white shadow-[var(--shadow-mega)]">
-      <div className="flex w-full items-stretch gap-5 px-4 py-5 md:gap-7 md:px-6 lg:gap-8 lg:px-8 xl:gap-10 xl:px-10">
+      <div className="flex w-full items-start gap-6 px-4 py-3.5 md:gap-8 md:px-6 lg:px-8 xl:px-10">
         <ScrollEdgeRail
           label="Subcategories"
           className="hide-scroll flex min-w-0 shrink-0 gap-8 overflow-x-auto md:gap-10 xl:gap-12"
         >
           {columns.map((column) => (
-            <div key={column.heading} className="min-w-[9.5rem] shrink-0">
+            <div key={column.heading} className="min-w-[9rem] shrink-0">
               <p className="text-[13px] leading-none font-bold text-accent">
                 {column.heading}
               </p>
-              <ul className="mt-3 space-y-2.5">
+              <ul className="mt-2.5 space-y-2">
                 {column.links.map((item) => (
                   <li key={item.href + item.label}>
                     <Link
@@ -226,7 +195,7 @@ function MegaPanel({
         </ScrollEdgeRail>
 
         {brands.length > 0 ? (
-          <aside className="hidden min-w-0 flex-1 self-stretch rounded-2xl border border-border bg-white p-4 md:flex md:flex-col lg:p-5">
+          <aside className="hidden min-w-0 flex-1 rounded-xl border border-border bg-white px-3 py-2.5 md:block">
             <div className="flex items-baseline justify-between gap-3">
               <p className="text-[13px] leading-none font-bold text-accent">
                 Popular brands
@@ -236,11 +205,7 @@ function MegaPanel({
               </p>
             </div>
             <div
-              className={`mt-3 grid w-full flex-1 gap-3 ${
-                featured
-                  ? "[grid-auto-rows:minmax(9.5rem,1fr)]"
-                  : "[grid-auto-rows:minmax(6.25rem,1fr)]"
-              }`}
+              className="mt-2.5 grid w-full gap-2"
               style={{ gridTemplateColumns: brandGridColumns(brands.length) }}
             >
               {brands.map((entry) => (
@@ -248,7 +213,6 @@ function MegaPanel({
                   key={entry.href + entry.label}
                   brand={entry}
                   onNavigate={onNavigate}
-                  featured={featured}
                 />
               ))}
             </div>

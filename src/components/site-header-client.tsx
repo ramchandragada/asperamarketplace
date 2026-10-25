@@ -164,17 +164,28 @@ function MegaPanel({
   if (brands.length === 0) return null;
 
   const featured = brands.length <= 4;
+  const maxWidth =
+    brands.length <= 2
+      ? "36rem"
+      : brands.length <= 4
+        ? "48rem"
+        : brands.length <= 6
+          ? "56rem"
+          : "72rem";
 
   return (
     <div className="absolute inset-x-0 top-full z-50 border-b border-[#E3E8E8] bg-white shadow-[var(--shadow-mega)]">
-      <div className="w-full px-4 py-5 md:px-6 md:py-6 lg:px-8 xl:px-10">
+      <div className="flex w-full justify-center px-4 py-5 md:px-6 md:py-6 lg:px-8 xl:px-10">
         <div
           className={`grid w-full gap-2 md:gap-3 ${
             featured
               ? "[grid-auto-rows:minmax(9.5rem,1fr)]"
               : "[grid-auto-rows:minmax(5.75rem,1fr)]"
           }`}
-          style={{ gridTemplateColumns: brandGridColumns(brands.length) }}
+          style={{
+            gridTemplateColumns: brandGridColumns(brands.length),
+            maxWidth,
+          }}
         >
           {brands.map((entry) => (
             <MegaBrandTile

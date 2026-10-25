@@ -452,17 +452,17 @@ export function BuildLanes({ lanes }: { lanes: BuildLane[] }) {
           </p>
         </div>
         <Link
-          href="/browse"
+          href="/pc-builder"
           className="text-sm font-medium text-accent hover:underline"
         >
-          All parts
+          Open PC Builder
         </Link>
       </div>
       <ul className="grid gap-3 md:grid-cols-3 md:gap-4">
         {cards.map((lane) => (
           <li key={lane.id}>
             <Link
-              href={lane.href}
+              href={`/pc-builder?preset=${lane.id}`}
               className="group relative flex h-[200px] overflow-hidden rounded-[12px] md:h-[240px]"
             >
               <Image

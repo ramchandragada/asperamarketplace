@@ -618,6 +618,12 @@ export function SiteHeaderClient({
           className="ml-auto flex shrink-0 items-center gap-0 md:gap-5 lg:gap-6"
         >
           <Link
+            href="/pc-builder"
+            className="hidden min-h-11 items-center px-1 text-[14px] font-medium text-foreground hover:text-accent md:inline-flex"
+          >
+            PC Builder
+          </Link>
+          <Link
             href={sellHref}
             className="hidden min-h-11 items-center px-1 text-[14px] font-medium text-foreground hover:text-accent sm:inline-flex"
           >

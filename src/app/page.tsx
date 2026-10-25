@@ -228,7 +228,7 @@ export default async function Home() {
 
       {/* Beat 5 — New / trending */}
       {newArrivals.length > 0 ? (
-        <section className="studio-band">
+        <section className="border-t border-border/70 bg-background">
           <div className="container-shell flex flex-col gap-3 py-5 md:gap-3.5 md:py-6">
             <SectionHeading
               title="New arrivals"
@@ -252,7 +252,7 @@ export default async function Home() {
       ) : null}
 
       {trending.length > 0 ? (
-        <section className="bg-background">
+        <section className="border-t border-border/70 bg-background">
           <div className="container-shell flex flex-col gap-3 py-5 md:gap-3.5 md:py-6">
             <SectionHeading
               title="Trending builds"
@@ -272,7 +272,7 @@ export default async function Home() {
       ) : null}
 
       {productsForYou.items.length > 0 ? (
-        <section id="products-for-you" className="bg-surface">
+        <section id="products-for-you" className="border-t border-border/70 bg-background">
           <div className="container-shell py-5 md:py-7">
             <CatalogueBrowse
               variant="home"

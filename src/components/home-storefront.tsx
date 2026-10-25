@@ -586,7 +586,7 @@ export function CategoryCircles({
   );
 }
 
-/** Square category tiles — real component crops on light wells (no dark frames) */
+/** Square category tiles — white plate + hairline, no tinted wells */
 export function ShopByCategory({
   categories,
 }: {
@@ -601,7 +601,7 @@ export function ShopByCategory({
   const tiles = categories.slice(0, 8);
 
   return (
-    <section className="bg-surface">
+    <section className="bg-background">
       <div className="container-shell pt-5 pb-3 md:pt-6 md:pb-4">
         <div className="mb-3 flex items-end justify-between gap-3 md:mb-3.5">
           <h2 className="font-display text-[22px] leading-[28px] font-bold tracking-tight md:text-[26px] md:leading-[32px]">
@@ -623,18 +623,13 @@ export function ShopByCategory({
               href={category.href}
               className="group flex flex-col items-center gap-2 text-center"
             >
-              <span
-                className="relative aspect-square w-full overflow-hidden rounded-[10px] bg-white transition duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]"
-                style={{
-                  background: `radial-gradient(120% 120% at 50% 35%, #ffffff 0%, ${category.bgTint ?? "#EEF2F7"} 72%)`,
-                }}
-              >
+              <span className="relative aspect-square w-full overflow-hidden rounded-[10px] border border-border bg-white transition-[border-color] duration-200 group-hover:border-[#cfd6e0]">
                 <Image
                   src={category.imageUrl}
                   alt=""
                   fill
                   sizes="(max-width: 640px) 140px, 180px"
-                  className="object-contain object-center p-1.5 transition duration-300 group-hover:scale-[1.04] md:p-2"
+                  className="object-contain object-center p-2 transition duration-300 group-hover:scale-[1.03] md:p-2.5"
                 />
               </span>
               <span className="text-[14px] font-medium text-foreground md:text-[15px]">
@@ -648,7 +643,7 @@ export function ShopByCategory({
   );
 }
 
-/** Shop By Brands — light wells, no dark frames around product crops */
+/** Shop By Brands — sober white cards; product on white, no nested grey wells */
 export function ShopByBrands({
   brands,
 }: {
@@ -665,16 +660,16 @@ export function ShopByBrands({
   if (tiles.length === 0) return null;
 
   return (
-    <section className="bg-surface">
+    <section className="bg-background">
       <div className="container-shell pt-2 pb-5 md:pt-3 md:pb-6">
-        <div className="overflow-hidden rounded-[10px] px-0 py-1 md:py-2">
+        <div className="px-0 py-1 md:py-2">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <h2 className="font-display text-[20px] leading-[26px] font-bold tracking-tight text-foreground md:text-[22px] md:leading-[28px]">
                 Shop by brand
               </h2>
               <span
-                className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground"
+                className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-border text-muted"
                 aria-label="Verified brands"
                 title="Verified brands"
               >
@@ -708,14 +703,11 @@ export function ShopByBrands({
             renderItem={(brand) => (
               <Link
                 href={brand.href}
-                className="group flex flex-col overflow-hidden rounded-[10px] bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(11,18,32,0.1)]"
+                className="group flex flex-col overflow-hidden rounded-[10px] border border-border bg-white transition-[border-color] duration-200 hover:border-[#cfd6e0]"
               >
-                <span
-                  className="relative aspect-[3/4] w-full"
-                  style={{ backgroundColor: brand.bgTint ?? "#EEF2F7" }}
-                >
+                <span className="relative aspect-[3/4] w-full bg-white">
                   {brand.offer ? (
-                    <span className="absolute top-2 left-2 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-accent uppercase shadow-sm">
+                    <span className="absolute top-2.5 left-2.5 z-10 text-[10px] font-medium tracking-[0.08em] text-muted uppercase">
                       {brand.offer}
                     </span>
                   ) : null}
@@ -724,10 +716,10 @@ export function ShopByBrands({
                     alt=""
                     fill
                     sizes="(max-width: 640px) 150px, 190px"
-                    className="object-contain object-center p-3 transition duration-300 group-hover:scale-[1.03]"
+                    className="object-contain object-center p-4 pt-8 transition duration-300 group-hover:scale-[1.02]"
                   />
                 </span>
-                <span className="flex min-h-10 items-center justify-center border-t border-border px-2 py-2 text-center text-[12px] font-semibold tracking-wide text-foreground md:min-h-11 md:text-[13px]">
+                <span className="flex min-h-10 items-center justify-center border-t border-border/80 px-2 py-2 text-center text-[12px] font-semibold tracking-wide text-foreground md:min-h-11 md:text-[13px]">
                   {brand.label}
                 </span>
               </Link>
@@ -820,7 +812,7 @@ export function PriceLedCollections({
           <li key={collection.id}>
             <Link
               href={collection.href}
-              className="flex flex-col gap-1 rounded-2xl bg-surface p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
+              className="flex flex-col gap-1 rounded-2xl border border-border bg-white p-5 transition-[border-color] duration-200 hover:border-[#cfd6e0]"
             >
               <span className="font-display text-[22px] font-bold tracking-tight text-brand-accent">
                 {collection.label}

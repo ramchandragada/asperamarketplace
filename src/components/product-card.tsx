@@ -169,7 +169,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               fill
               sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
               placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2VlZjJmNyIvPjwvc3ZnPg=="
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y3ZjhmYSIvPjwvc3ZnPg=="
               className="card-photo object-contain object-center p-2"
               loading="lazy"
               onError={() => setImageFailed(true)}

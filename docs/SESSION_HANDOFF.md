@@ -359,3 +359,24 @@ Owner approved Cursor to choose and build from the Medusa gap plan + deep audit.
 7. **COD** — `codAvailable` always false; PDP no longer advertises COD (A-28 deferred).
 
 **Next (Wave 1, not started):** outbox publisher + Vercel Cron → Blob/S3 + NotificationPort → separate prod Neon. Then Wave 2 saga + Razorpay flag.
+
+---
+
+## 16. Cursor sync report — 2026-10-25 (post-Claude handoff)
+
+Owner asked Cursor to publish a shared status PDF covering **everything after Claude’s last report**, so both agents stay aligned.
+
+**PDF (canonical):** `docs/reports/ASPERA_CURSOR_STATUS_REPORT_2026-10-25.pdf`
+
+**Baseline Claude left:** money integrity / dashboards / payout / admin queue / TOTP / deploy-lock / Catalogue v2 (OFF) / `aspera.market` / PC pivot (#83–#85) + docs (#87–#91).
+
+**Cursor shipped since (live on aspera.market unless noted):**
+- Wave 0 money P0s (#92)
+- Forge landing, scroll fix, MD catalogue import (~384 SKUs), Express quick-commerce, PDP specs, category facets, PDP left-column fill (#96–#102)
+- Mega-menu brands, taller hero, sober white surfaces (#103–#105)
+- Express PC Builder + cascading compatibility (#106–#107)
+- Mega-menu: restore facet columns + real SVG logos + tight height (#108)
+
+**Operating rule added:** deploy **production** after every owner-visible UI change (preview-only caused false regressions).
+
+**Claude:** read the PDF + this §16 before continuing; do not reintroduce fashion merchandising or strip mega-menu facet columns when touching brand logos.

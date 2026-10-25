@@ -68,6 +68,7 @@ export function CatalogueBrowse({
   initialTotal,
   categories,
   brands = [],
+  brandsByCategory = {},
   initialCategorySlug = "",
   initialBrandSlug = "",
   initialAudience = "",
@@ -91,6 +92,8 @@ export function CatalogueBrowse({
   initialTotal: number;
   categories: CategoryOption[];
   brands?: BrandOption[];
+  /** Brands that actually have approved products in each category slug. */
+  brandsByCategory?: Record<string, BrandOption[]>;
   initialCategorySlug?: string;
   initialBrandSlug?: string;
   initialAudience?: string;
@@ -169,8 +172,18 @@ export function CatalogueBrowse({
     categories.find((entry) => entry.slug === categorySlug)?.name ??
     heading ??
     "All products";
+  /** Only brands that sell in the active category (or all brands when unscoped). */
+  const scopedBrands = useMemo(() => {
+    if (categorySlug && brandsByCategory[categorySlug]) {
+      return brandsByCategory[categorySlug];
+    }
+    return brands;
+  }, [brands, brandsByCategory, categorySlug]);
+
   const brandName =
-    brands.find((entry) => entry.slug === brandSlug)?.name ?? null;
+    scopedBrands.find((entry) => entry.slug === brandSlug)?.name ??
+    brands.find((entry) => entry.slug === brandSlug)?.name ??
+    null;
 
   const filteredCategories = useMemo(() => {
     const term = categorySearch.trim().toLowerCase();
@@ -182,9 +195,20 @@ export function CatalogueBrowse({
 
   const filteredBrands = useMemo(() => {
     const term = brandSearch.trim().toLowerCase();
-    if (!term) return brands;
-    return brands.filter((brand) => brand.name.toLowerCase().includes(term));
-  }, [brands, brandSearch]);
+    if (!term) return scopedBrands;
+    return scopedBrands.filter((brand) =>
+      brand.name.toLowerCase().includes(term),
+    );
+  }, [scopedBrands, brandSearch]);
+
+  // Drop a brand selection that no longer exists in the active category.
+  useEffect(() => {
+    if (!brandSlug) return;
+    if (scopedBrands.some((brand) => brand.slug === brandSlug)) return;
+    setBrandSlug("");
+    setBrandSearch("");
+    setBrandShowAll(false);
+  }, [brandSlug, scopedBrands]);
 
   const chips = useMemo(() => {
     const list: Array<{ key: string; label: string }> = [];
@@ -619,8 +643,24 @@ export function CatalogueBrowse({
                       categorySlug === category.slug ? "" : category.slug;
                     setCategorySlug(next);
                     setFacets({});
+                    setBrandSearch("");
+                    setBrandShowAll(false);
+                    // Clear brand if it has no products in the newly selected category.
+                    const nextBrands =
+                      next && brandsByCategory[next]
+                        ? brandsByCategory[next]
+                        : brands;
+                    const brandStillValid =
+                      !brandSlug ||
+                      nextBrands.some((brand) => brand.slug === brandSlug);
+                    const nextBrand = brandStillValid ? brandSlug : "";
+                    if (!brandStillValid) setBrandSlug("");
                     startTransition(() => {
-                      void runSearch({ categorySlug: next, facets: {} });
+                      void runSearch({
+                        categorySlug: next,
+                        facets: {},
+                        brandSlug: nextBrand,
+                      });
                     });
                   }}
                   className="h-3.5 w-3.5 accent-[var(--accent)]"
@@ -664,7 +704,7 @@ export function CatalogueBrowse({
         </p>
       )}
 
-      {brands.length > 0 ? (
+      {scopedBrands.length > 0 ? (
         <FilterSection
           title="Brand"
           open={openSections.brand !== false}

@@ -16,7 +16,7 @@ import {
   ShopByCategory,
 } from "@/components/home-storefront";
 import {
-  listActiveBrands,
+  listBrandFilterIndex,
   listActiveCategories,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
@@ -76,9 +76,9 @@ const PRICE_COLLECTIONS = [
 ] as const;
 
 export default async function Home() {
-  const [categories, brands] = await Promise.all([
+  const [categories, brandIndex] = await Promise.all([
     listActiveCategories(),
-    listActiveBrands(),
+    listBrandFilterIndex(),
   ]);
 
   const [
@@ -287,7 +287,8 @@ export default async function Home() {
                 name: category.name,
                 productCount: category.productCount,
               }))}
-              brands={brands}
+              brands={brandIndex.all}
+              brandsByCategory={brandIndex.byCategory}
               enableLoadMore
               infiniteScroll
               updateUrl={false}

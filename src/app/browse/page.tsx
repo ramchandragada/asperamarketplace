@@ -5,8 +5,8 @@ import {
 import { PageShell } from "@/components/ui/page-shell";
 import { parseFacetSearchParams } from "@/modules/catalogue/category-facets";
 import {
-  listActiveBrands,
   listActiveCategories,
+  listBrandFilterIndex,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
 
@@ -61,33 +61,43 @@ export default async function BrowsePage({
     : undefined;
   const facets = parseFacetSearchParams(params);
 
-  const [result, categories, brands] = await Promise.all([
-    searchApprovedProducts({
-      q: query || undefined,
-      categorySlug: categorySlug || undefined,
-      brandSlug: brandSlug || undefined,
-      audience,
-      facets: Object.keys(facets).length > 0 ? facets : undefined,
-      sort: sort as
-        | "relevance"
-        | "newest"
-        | "price_asc"
-        | "price_desc"
-        | "rating",
-      inStockOnly,
-      verifiedSellerOnly,
-      minPricePaise,
-      maxPricePaise,
-      minRating: read("minRating") ? Number(read("minRating")) : undefined,
-      minDiscountPercent: read("minDiscountPercent")
-        ? Number(read("minDiscountPercent"))
-        : undefined,
-      page: 1,
-      pageSize: 24,
-    }),
+  const [categories, brandIndex] = await Promise.all([
     listActiveCategories(),
-    listActiveBrands(),
+    listBrandFilterIndex(),
   ]);
+
+  // Ignore a brand that has no products in the selected category.
+  const brandsForCategory = categorySlug
+    ? (brandIndex.byCategory[categorySlug] ?? [])
+    : brandIndex.all;
+  const resolvedBrandSlug =
+    brandSlug && brandsForCategory.some((brand) => brand.slug === brandSlug)
+      ? brandSlug
+      : "";
+
+  const result = await searchApprovedProducts({
+    q: query || undefined,
+    categorySlug: categorySlug || undefined,
+    brandSlug: resolvedBrandSlug || undefined,
+    audience,
+    facets: Object.keys(facets).length > 0 ? facets : undefined,
+    sort: sort as
+      | "relevance"
+      | "newest"
+      | "price_asc"
+      | "price_desc"
+      | "rating",
+    inStockOnly,
+    verifiedSellerOnly,
+    minPricePaise,
+    maxPricePaise,
+    minRating: read("minRating") ? Number(read("minRating")) : undefined,
+    minDiscountPercent: read("minDiscountPercent")
+      ? Number(read("minDiscountPercent"))
+      : undefined,
+    page: 1,
+    pageSize: 24,
+  });
 
   const heading =
     (audience ? AUDIENCE_HEADINGS[audience] : undefined) ??
@@ -105,9 +115,10 @@ export default async function BrowsePage({
           name: category.name,
           productCount: category.productCount,
         }))}
-        brands={brands}
+        brands={brandIndex.all}
+        brandsByCategory={brandIndex.byCategory}
         initialCategorySlug={categorySlug}
-        initialBrandSlug={brandSlug}
+        initialBrandSlug={resolvedBrandSlug}
         initialAudience={audience ?? ""}
         initialSort={sort}
         initialInStockOnly={inStockOnly}

@@ -69,23 +69,113 @@ export async function listActiveCategories() {
   }));
 }
 
-export async function listActiveBrands() {
+export type BrandFilterOption = {
+  id?: string;
+  slug: string;
+  name: string;
+  productCount: number;
+};
+
+/**
+ * Brands that have at least one approved product.
+ * When `categorySlug` is set, only brands with listings in that category
+ * are returned (so motherboard browse never lists Logitech / Acer, etc.).
+ */
+export async function listActiveBrands(input?: {
+  categorySlug?: string;
+}): Promise<BrandFilterOption[]> {
+  const categorySlug = input?.categorySlug?.trim() || undefined;
+  const productWhere: Prisma.ProductWhereInput = {
+    status: "approved",
+    ...(categorySlug
+      ? { category: { slug: categorySlug, isActive: true } }
+      : {}),
+  };
+
   const brands = await prisma.brand.findMany({
     orderBy: { name: "asc" },
+    where: {
+      products: { some: productWhere },
+    },
     include: {
       _count: {
-        select: { products: { where: { status: "approved" } } },
+        select: { products: { where: productWhere } },
       },
     },
   });
-  return brands
-    .filter((brand) => brand._count.products > 0)
-    .map((brand) => ({
-      id: brand.id,
-      slug: brand.slug,
-      name: brand.name,
-      productCount: brand._count.products,
-    }));
+
+  return brands.map((brand) => ({
+    id: brand.id,
+    slug: brand.slug,
+    name: brand.name,
+    productCount: brand._count.products,
+  }));
+}
+
+/**
+ * Brand filter index for browse UI: global list + per-category lists so the
+ * client can swap brand options instantly when the shopper changes category.
+ */
+export async function listBrandFilterIndex(): Promise<{
+  all: BrandFilterOption[];
+  byCategory: Record<string, BrandFilterOption[]>;
+}> {
+  const rows = await prisma.$queryRaw<
+    Array<{
+      brand_id: string;
+      brand_slug: string;
+      brand_name: string;
+      category_slug: string;
+      product_count: number;
+    }>
+  >`
+    SELECT
+      b.id AS brand_id,
+      b.slug AS brand_slug,
+      b.name AS brand_name,
+      c.slug AS category_slug,
+      COUNT(*)::int AS product_count
+    FROM products p
+    INNER JOIN brands b ON b.id = p.brand_id
+    INNER JOIN categories c ON c.id = p.category_id AND c.is_active = true
+    WHERE p.status = 'approved'
+    GROUP BY b.id, b.slug, b.name, c.slug
+    ORDER BY b.name ASC, c.slug ASC
+  `;
+
+  const byCategory: Record<string, BrandFilterOption[]> = {};
+  const allMap = new Map<string, BrandFilterOption>();
+
+  for (const row of rows) {
+    const entry: BrandFilterOption = {
+      id: row.brand_id,
+      slug: row.brand_slug,
+      name: row.brand_name,
+      productCount: row.product_count,
+    };
+    const catList = byCategory[row.category_slug] ?? [];
+    catList.push(entry);
+    byCategory[row.category_slug] = catList;
+
+    const existing = allMap.get(row.brand_slug);
+    if (existing) {
+      existing.productCount += row.product_count;
+    } else {
+      allMap.set(row.brand_slug, {
+        id: row.brand_id,
+        slug: row.brand_slug,
+        name: row.brand_name,
+        productCount: row.product_count,
+      });
+    }
+  }
+
+  return {
+    all: [...allMap.values()].sort((a, b) =>
+      a.name.localeCompare(b.name, "en"),
+    ),
+    byCategory,
+  };
 }
 
 export async function ensureGenericCategory() {

@@ -1437,9 +1437,12 @@ export async function searchApprovedProducts(
 
   const where: Prisma.ProductWhereInput = {
     status: "approved",
-    ...(input.categorySlug
-      ? { category: { slug: input.categorySlug, isActive: true } }
-      : {}),
+    // Always require an active category so archived fashion/demo categories
+    // never leak into New arrivals / Trending / browse even if a product
+    // was left approved by mistake.
+    category: input.categorySlug
+      ? { slug: input.categorySlug, isActive: true }
+      : { isActive: true },
     ...(input.brandSlug ? { brand: { slug: input.brandSlug } } : {}),
     ...(input.audience
       ? {

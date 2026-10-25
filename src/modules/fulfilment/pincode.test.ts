@@ -38,9 +38,12 @@ describe("checkPincodeServiceability", () => {
     expect(result.express).toBe(true);
   });
 
-  it("treats other valid pins as serviceable without advertising COD", () => {
+  it("treats other valid pins as serviceable without inventing a precise ETA", () => {
     const result = checkPincodeServiceability("641001");
     expect(result.serviceable).toBe(true);
+    expect(result.express).toBe(false);
+    expect(result.etaMinutes).toBeNull();
+    expect(result.etaLabel?.toLowerCase()).toContain("usually");
     expect(result.codAvailable).toBe(false);
   });
 

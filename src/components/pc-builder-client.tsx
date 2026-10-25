@@ -318,7 +318,8 @@ export function PcBuilderClient({
           </h1>
           <p className="mt-2 text-[14px] leading-relaxed text-muted md:text-[15px]">
             Pick compatible parts from live Pune stock. We check socket, RAM, and
-            PSU headroom — then deliver Express in 75–90 minutes.
+            PSU headroom — Express delivery usually within 75–90 minutes in hub
+            zones when in stock.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -532,7 +533,7 @@ export function PcBuilderClient({
           <div className="border-b border-border px-4 py-3">
             <p className="text-[13px] font-semibold">Build summary</p>
             <p className="mt-0.5 text-[12px] text-muted">
-              Express · 75–90 mins in hub zones
+              Express · usually 75–90 mins in hub zones
             </p>
           </div>
           <div className="space-y-3 px-4 py-4">

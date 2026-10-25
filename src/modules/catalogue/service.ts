@@ -22,6 +22,7 @@ import {
 } from "@/modules/catalogue/claims";
 import { SHIPPING_POLICY } from "@/modules/cart/pricing";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
+import { PC_CATEGORIES } from "@/modules/catalogue/pc-catalogue-data";
 import {
   searchProductsSchema,
   type CreateProductInput,
@@ -178,14 +179,42 @@ export async function listBrandFilterIndex(): Promise<{
   };
 }
 
+const PC_CATEGORY_SLUGS = new Set(PC_CATEGORIES.map((category) => category.slug));
+
+function assertPcCategory(category: { slug: string; name: string }) {
+  if (!PC_CATEGORY_SLUGS.has(category.slug)) {
+    throw new HttpValidationError(
+      "Only PC component categories are allowed on Aspera",
+      {
+        categoryId: [
+          `"${category.name}" is not a PC catalogue category. Choose a processors / GPU / motherboard / etc. category.`,
+        ],
+      },
+    );
+  }
+}
+
+/**
+ * Test/dev helper that ensures a throwaway category exists for integration
+ * fixtures. Never call from seller/admin storefront paths — production is
+ * PC-only and must not auto-activate `general-merchandise`.
+ */
 export async function ensureGenericCategory() {
+  if (
+    process.env.VERCEL_ENV === "production" ||
+    process.env.NODE_ENV === "production"
+  ) {
+    throw new Error(
+      "ensureGenericCategory is blocked in production — use PC_CATEGORIES only",
+    );
+  }
   return prisma.category.upsert({
     where: { slug: "general-merchandise" },
     create: {
       slug: "general-merchandise",
       name: "General merchandise",
       description:
-        "Configurable seed category. Not a launch-category business decision.",
+        "Test-only fixture category. Not part of the PC storefront taxonomy.",
       isActive: true,
     },
     update: {
@@ -208,6 +237,7 @@ export async function createProductDraft(
       categoryId: ["Category not found or inactive"],
     });
   }
+  assertPcCategory(category);
 
   let brandId: string | undefined;
   if (input.brandName) {
@@ -812,6 +842,7 @@ export async function updateSellerProduct(
         categoryId: ["Category not found or inactive"],
       });
     }
+    assertPcCategory(category);
   }
 
   if (input.variant) {

@@ -107,16 +107,58 @@ export class MockPaymentProvider implements PaymentProviderPort {
   }
 }
 
-export function getPaymentProvider(): PaymentProviderPort {
-  return new MockPaymentProvider();
+type PaymentEnv = {
+  PAYMENT_PROVIDER?: string;
+  ALLOW_MOCK_SELF_PAY?: string;
+  VERCEL_ENV?: string;
+  NODE_ENV?: string;
+};
+
+/**
+ * Select the active payment provider.
+ * Today only mock is wired. When Razorpay (or another PA) is added, branch on
+ * env (e.g. `PAYMENT_PROVIDER=razorpay`) so production cannot silently stay
+ * on MockPaymentProvider after cutover.
+ */
+export function getPaymentProvider(
+  env: PaymentEnv = process.env,
+): PaymentProviderPort {
+  const selected = (env.PAYMENT_PROVIDER ?? "mock").trim().toLowerCase();
+  if (selected === "mock" || selected === "") {
+    return new MockPaymentProvider();
+  }
+  // Real providers land here. Until then, refuse unknown names so a mistyped
+  // env var cannot leave mock self-pay open by accident.
+  throw new Error(
+    `Unsupported PAYMENT_PROVIDER="${selected}". Use "mock" until Razorpay is wired.`,
+  );
 }
 
 /**
- * True while the live payment provider is still the mock gateway. Used to allow
- * the authenticated demo "Pay now → mock-complete" path on production until a
- * real PA (Razorpay) is wired — at which point this returns false and
- * mock-complete 404s again.
+ * True while the live payment provider is still the mock gateway.
  */
-export function paymentsAreMockOnly(): boolean {
-  return getPaymentProvider() instanceof MockPaymentProvider;
+export function paymentsAreMockOnly(env: PaymentEnv = process.env): boolean {
+  try {
+    return getPaymentProvider(env) instanceof MockPaymentProvider;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whether the authenticated demo `POST /api/payments/mock-complete` path may run.
+ *
+ * Gate is environment-shaped, not only provider-identity-shaped:
+ * - provider must still be mock
+ * - production (`VERCEL_ENV=production` or `NODE_ENV=production`) requires an
+ *   explicit `ALLOW_MOCK_SELF_PAY=true`
+ * - unset that flag the moment a real PA is wired
+ */
+export function mockSelfPayAllowed(env: PaymentEnv = process.env): boolean {
+  if (!paymentsAreMockOnly(env)) return false;
+  const explicitAllow = env.ALLOW_MOCK_SELF_PAY === "true";
+  const isProduction =
+    env.VERCEL_ENV === "production" || env.NODE_ENV === "production";
+  if (isProduction) return explicitAllow;
+  return true;
 }

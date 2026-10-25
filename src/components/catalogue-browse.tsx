@@ -795,13 +795,13 @@ export function CatalogueBrowse({
           <input
             type="range"
             min={0}
-            max={5000}
-            step={50}
-            value={maxPrice.trim() ? Number(maxPrice) || 0 : 5000}
+            max={300000}
+            step={1000}
+            value={maxPrice.trim() ? Number(maxPrice) || 0 : 300000}
             onChange={(event) => {
               const value = event.target.value;
               setPricePreset("");
-              setMaxPrice(value === "5000" ? "" : value);
+              setMaxPrice(value === "300000" ? "" : value);
             }}
             onMouseUp={() => {
               startTransition(() => {
@@ -1040,7 +1040,7 @@ export function CatalogueBrowse({
             name="q"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Try Saree, Kurti or Search by Product Code"
+            placeholder="Search processors, GPUs, monitors…"
             className="min-h-11 min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2 text-base"
           />
           <button

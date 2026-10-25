@@ -10,7 +10,6 @@ import {
 } from "@/modules/catalogue/helpers";
 import { sellerStorefrontLabelText } from "@/modules/catalogue/claims";
 import { SHIPPING_POLICY } from "@/modules/cart/pricing";
-import { GridAddButton } from "@/components/grid-add-button";
 
 export type ProductCardModel = {
   id: string;
@@ -155,100 +154,89 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
 
   return (
     <article className="group relative flex h-full flex-col">
-      <div className="relative">
-        <WishlistButton productId={product.id} />
-        <Link
-          href={`/products/${product.slug}`}
-          className="block"
-          aria-label={`${product.title}, ${priceLabel}${offerLabel}`}
-        >
-          <div className="photo-well relative aspect-square overflow-hidden rounded-[10px]">
-            {product.badge ? <BadgePill badge={product.badge} /> : null}
-            {showImage ? (
-              <Image
-                src={product.primaryImageUrl as string}
-                alt={product.primaryImageAlt ?? product.title}
-                fill
-                sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
-                placeholder="blur"
-                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y3ZjhmYSIvPjwvc3ZnPg=="
-                className="card-photo object-contain object-center p-2"
-                loading="lazy"
-                onError={() => setImageFailed(true)}
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span
-                  className="text-4xl font-semibold text-accent/20"
-                  aria-hidden
-                >
-                  {initials}
-                </span>
-                <span className="sr-only">{product.title}</span>
-              </div>
-            )}
-            {discount && !product.badge ? (
-              <span className="offer-chip absolute bottom-2 left-2 z-10 px-2 py-1 text-[11px]">
-                {discount}% off
-              </span>
-            ) : null}
-            {!inStock ? (
-              <div className="absolute inset-x-0 bottom-0 z-10 bg-foreground/75 px-2 py-1 text-center text-xs text-background">
-                Out of stock
-              </div>
-            ) : null}
-          </div>
-        </Link>
-        {inStock ? (
-          <GridAddButton
-            slug={product.slug}
-            productId={product.id}
-            className="absolute right-2 bottom-2 z-10"
-          />
-        ) : null}
-      </div>
+      <WishlistButton productId={product.id} />
       <Link
         href={`/products/${product.slug}`}
-        className="flex flex-1 flex-col gap-1 px-0.5 pt-2.5 pb-1"
+        className="flex h-full flex-col"
+        aria-label={`${product.title}, ${priceLabel}${offerLabel}`}
       >
-        <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-          <span className="text-[18px] leading-6 font-bold tracking-tight text-foreground md:text-[20px]">
-            {priceLabel}
-          </span>
-          {product.minMrpPaise &&
-          product.minMrpPaise > product.minPricePaise ? (
-            <span className="text-[12px] leading-[18px] text-muted line-through">
-              {formatPaise(product.minMrpPaise)}
+        <div className="photo-well relative aspect-square overflow-hidden rounded-[10px]">
+          {product.badge ? <BadgePill badge={product.badge} /> : null}
+          {showImage ? (
+            <Image
+              src={product.primaryImageUrl as string}
+              alt={product.primaryImageAlt ?? product.title}
+              fill
+              sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y3ZjhmYSIvPjwvc3ZnPg=="
+              className="card-photo object-contain object-center p-2"
+              loading="lazy"
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span
+                className="text-4xl font-semibold text-accent/20"
+                aria-hidden
+              >
+                {initials}
+              </span>
+              <span className="sr-only">{product.title}</span>
+            </div>
+          )}
+          {discount && !product.badge ? (
+            <span className="offer-chip absolute bottom-2 left-2 z-10 px-2 py-1 text-[11px]">
+              {discount}% off
             </span>
           ) : null}
-        </p>
-        <h3 className="line-clamp-2 text-[13px] leading-[18px] font-medium text-foreground md:text-[14px] md:leading-5">
-          {product.title}
-        </h3>
-        {hasRating ? (
-          <p className="text-[11px] text-muted">
-            <span className="font-semibold text-foreground">
-              {product.ratingAverage!.toFixed(1)}★
-            </span>{" "}
-            ·{" "}
-            {(product.reviewCount ?? 0) >= 1000
-              ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}k reviews`
-              : `${product.reviewCount} reviews`}
+          {hasRating ? (
+            <span className="absolute right-2 bottom-2 z-10 inline-flex items-center rounded-full bg-foreground/85 px-1.5 py-1 text-[11px] font-semibold text-white">
+              {product.ratingAverage!.toFixed(1)} ★
+            </span>
+          ) : null}
+          {!inStock ? (
+            <div className="absolute inset-x-0 bottom-0 z-10 bg-foreground/75 px-2 py-1 text-center text-xs text-background">
+              Out of stock
+            </div>
+          ) : null}
+        </div>
+        <div className="flex flex-1 flex-col gap-1 px-0.5 pt-2.5 pb-1">
+          <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+            <span className="text-[18px] leading-6 font-bold tracking-tight text-foreground md:text-[20px]">
+              {priceLabel}
+            </span>
+            {product.minMrpPaise &&
+            product.minMrpPaise > product.minPricePaise ? (
+              <span className="text-[12px] leading-[18px] text-muted line-through">
+                {formatPaise(product.minMrpPaise)}
+              </span>
+            ) : null}
           </p>
-        ) : null}
-        {freeDelivery ? (
-          <span className="text-[12px] font-medium text-success">
-            Free delivery
-          </span>
-        ) : (
-          <span className="text-[12px] font-semibold text-accent">
-            Express delivery
-          </span>
-        )}
-        <p className="mt-auto pt-0.5 text-[12px] text-muted">
-          {sellerLabel ? `${sellerLabel} · ` : ""}
-          {product.sellerName}
-        </p>
+          <h3 className="line-clamp-2 text-[13px] leading-[18px] font-medium text-foreground md:text-[14px] md:leading-5">
+            {product.title}
+          </h3>
+          {hasRating ? (
+            <p className="text-[11px] text-muted">
+              {(product.reviewCount ?? 0) >= 1000
+                ? `${((product.reviewCount ?? 0) / 1000).toFixed(1)}k reviews`
+                : `${product.reviewCount} reviews`}
+            </p>
+          ) : null}
+          {freeDelivery ? (
+            <span className="text-[12px] font-medium text-success">
+              Free delivery
+            </span>
+          ) : (
+            <span className="text-[12px] font-semibold text-accent">
+              Express delivery
+            </span>
+          )}
+          <p className="mt-auto pt-0.5 text-[12px] text-muted">
+            {sellerLabel ? `${sellerLabel} · ` : ""}
+            {product.sellerName}
+          </p>
+        </div>
       </Link>
     </article>
   );

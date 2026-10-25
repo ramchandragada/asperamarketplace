@@ -103,22 +103,22 @@ function MegaBrandTile({
     <Link
       href={brand.href}
       onClick={onNavigate}
-      className="group flex flex-col items-center gap-2 rounded-xl border border-[#E8ECEC] bg-[#F7F9F9] p-3 transition-colors hover:border-accent/40 hover:bg-white"
+      className="group flex min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-[#E8ECEC] bg-[#F7F9F9] px-3 py-3.5 transition-colors hover:border-accent/40 hover:bg-white"
       aria-label={`Shop ${brand.label}`}
     >
-      <span className="relative flex h-14 w-full items-center justify-center overflow-hidden rounded-lg bg-white">
+      <span className="relative flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-white">
         {brand.imageUrl ? (
           <Image
             src={brand.imageUrl}
             alt=""
             fill
-            sizes="120px"
-            className="object-contain p-2 transition-transform duration-200 group-hover:scale-[1.04]"
+            sizes="160px"
+            className="object-contain p-2.5 transition-transform duration-200 group-hover:scale-[1.04]"
           />
         ) : (
           <span
             aria-hidden
-            className="font-display text-xl font-semibold tracking-tight text-[#222]"
+            className="font-display text-2xl font-semibold tracking-tight text-[#222]"
           >
             {brandMonogram(brand.label)}
           </span>
@@ -172,7 +172,7 @@ function MegaPanel({
         </ScrollEdgeRail>
 
         {brands.length > 0 ? (
-          <aside className="hidden min-w-0 flex-[1.15] border-l border-[#EEF1F1] pl-6 lg:block xl:pl-8">
+          <aside className="hidden min-w-0 flex-[1.55] border-l border-[#EEF1F1] pl-6 lg:block xl:pl-8">
             <div className="flex items-baseline justify-between gap-3">
               <p className="text-[13px] leading-none font-bold text-accent">
                 Popular brands
@@ -181,7 +181,17 @@ function MegaPanel({
                 in {categoryLabel}
               </p>
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-2.5 xl:grid-cols-4">
+            <div
+              className="mt-3 grid gap-3"
+              style={{
+                gridTemplateColumns:
+                  brands.length <= 2
+                    ? "repeat(2, minmax(0, 1fr))"
+                    : brands.length <= 4
+                      ? "repeat(2, minmax(0, 1fr))"
+                      : "repeat(auto-fill, minmax(8.5rem, 1fr))",
+              }}
+            >
               {brands.map((entry) => (
                 <MegaBrandTile
                   key={entry.href + entry.label}

@@ -65,6 +65,14 @@ export type SellerActionDashboard = {
     periodEnd: string;
   } | null;
   recentSalesPaise: number;
+  metrics: {
+    sales30dPaise: number;
+    salesTrendPct: number | null;
+    orders30d: number;
+    ordersTrendPct: number | null;
+    payoutDuePaise: number;
+    dailySales: Array<{ label: string; paise: number }>;
+  };
   alerts: Array<{
     id: string;
     priority: ActionPriority;
@@ -95,6 +103,7 @@ export async function getSellerActionDashboard(
     Date.now() - LATE_FULFILMENT_HOURS * 60 * 60 * 1000,
   );
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const sixtyAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
 
   const [
     lateGroups,
@@ -105,6 +114,8 @@ export async function getSellerActionDashboard(
     drafts,
     taxProfile,
     recentPaid,
+    salesGroups,
+    payoutAgg,
   ] = await Promise.all([
     prisma.orderFulfilmentGroup.findMany({
       where: {
@@ -166,7 +177,62 @@ export async function getSellerActionDashboard(
       },
       _sum: { lineTotalPaise: true },
     }),
+    prisma.orderFulfilmentGroup.findMany({
+      where: {
+        sellerId,
+        status: { in: ["shipped", "delivered"] },
+        updatedAt: { gte: sixtyAgo },
+      },
+      select: { updatedAt: true, lineTotalPaise: true, orderId: true },
+    }),
+    prisma.settlementBatch.aggregate({
+      where: { sellerId, status: { in: ["pending", "held"] } },
+      _sum: { netPaise: true },
+    }),
   ]);
+
+  // 30-day sales metrics, trend vs the prior 30 days, and a daily series.
+  const dayMs = 24 * 60 * 60 * 1000;
+  const thirtyMs = 30 * dayMs;
+  const nowTs = Date.now();
+  let sales30 = 0;
+  let salesPrev30 = 0;
+  const orders30 = new Set<string>();
+  const ordersPrev30 = new Set<string>();
+  const dayBuckets = new Map<string, number>();
+  for (let i = 29; i >= 0; i -= 1) {
+    dayBuckets.set(new Date(nowTs - i * dayMs).toISOString().slice(0, 10), 0);
+  }
+  for (const group of salesGroups) {
+    const age = nowTs - group.updatedAt.getTime();
+    if (age <= thirtyMs) {
+      sales30 += group.lineTotalPaise;
+      orders30.add(group.orderId);
+      const key = group.updatedAt.toISOString().slice(0, 10);
+      if (dayBuckets.has(key)) {
+        dayBuckets.set(key, (dayBuckets.get(key) ?? 0) + group.lineTotalPaise);
+      }
+    } else if (age <= 2 * thirtyMs) {
+      salesPrev30 += group.lineTotalPaise;
+      ordersPrev30.add(group.orderId);
+    }
+  }
+  const trendPct = (cur: number, prev: number) =>
+    prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null;
+  const metrics = {
+    sales30dPaise: sales30,
+    salesTrendPct: trendPct(sales30, salesPrev30),
+    orders30d: orders30.size,
+    ordersTrendPct: trendPct(orders30.size, ordersPrev30.size),
+    payoutDuePaise: payoutAgg._sum.netPaise ?? 0,
+    dailySales: Array.from(dayBuckets.entries()).map(([key, paise]) => ({
+      label: new Date(key).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+      }),
+      paise,
+    })),
+  };
 
   const stockRows = inventory
     .map((item) => ({
@@ -328,6 +394,7 @@ export async function getSellerActionDashboard(
         }
       : null,
     recentSalesPaise: recentPaid._sum.lineTotalPaise ?? 0,
+    metrics,
     alerts,
     capabilities,
   };

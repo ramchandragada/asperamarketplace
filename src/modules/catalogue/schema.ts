@@ -93,6 +93,13 @@ export const searchProductsSchema = z.object({
   brandSlug: z.string().trim().max(120).optional(),
   /** Fashion/kids audience segment stored on Product.attributes.audience */
   audience: z.enum(["women", "men", "kids", "unisex"]).optional(),
+  /**
+   * Category-specific facets from Product.attributes.facets
+   * (e.g. { socket: "AM5", memoryType: "DDR5" }).
+   */
+  facets: z
+    .record(z.string().trim().min(1).max(60), z.string().trim().min(1).max(80))
+    .optional(),
   minPricePaise: z.coerce.number().int().nonnegative().optional(),
   maxPricePaise: z.coerce.number().int().positive().optional(),
   inStockOnly: z.boolean().optional().default(false),

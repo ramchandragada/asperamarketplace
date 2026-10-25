@@ -1236,6 +1236,17 @@ export async function searchApprovedProducts(
               : Prisma.empty
           }
           ${
+            input.facets && Object.keys(input.facets).length > 0
+              ? Prisma.sql`AND ${Prisma.join(
+                  Object.entries(input.facets).map(
+                    ([key, value]) =>
+                      Prisma.sql`(p.attributes -> 'facets' ->> ${key}) = ${value}`,
+                  ),
+                  " AND ",
+                )}`
+              : Prisma.empty
+          }
+          ${
             input.verifiedSellerOnly
               ? Prisma.sql`AND s.status = 'approved'`
               : Prisma.empty
@@ -1305,6 +1316,16 @@ export async function searchApprovedProducts(
     };
   }
 
+  const facetFilters =
+    input.facets && Object.keys(input.facets).length > 0
+      ? Object.entries(input.facets).map(([key, value]) => ({
+          attributes: {
+            path: ["facets", key],
+            equals: value,
+          },
+        }))
+      : [];
+
   const where: Prisma.ProductWhereInput = {
     status: "approved",
     ...(input.categorySlug
@@ -1319,6 +1340,7 @@ export async function searchApprovedProducts(
           },
         }
       : {}),
+    ...(facetFilters.length > 0 ? { AND: facetFilters } : {}),
     ...(input.verifiedSellerOnly ? { seller: { status: "approved" } } : {}),
     variants: {
       some: {

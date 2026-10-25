@@ -11,10 +11,15 @@ import {
   useTransition,
   type ReactNode,
 } from "react";
+import { CategoryFacetFilters } from "@/components/category-facet-filters";
 import { ProductCard, type ProductCardModel } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProductCardSkeleton } from "@/components/ui/skeleton";
+import {
+  facetQueryEntries,
+  getCategoryFacetConfig,
+} from "@/modules/catalogue/category-facets";
 
 export type BrowseProduct = ProductCardModel & {
   summary: string;
@@ -25,10 +30,10 @@ type CategoryOption = { slug: string; name: string; productCount?: number };
 type BrandOption = { slug: string; name: string; productCount?: number };
 
 const PRICE_PRESETS = [
-  { key: "u200", label: "Under ₹200", min: 0, max: 200 },
-  { key: "200-500", label: "₹200 – ₹500", min: 200, max: 500 },
-  { key: "500-1000", label: "₹500 – ₹1,000", min: 500, max: 1000 },
-  { key: "a1000", label: "Above ₹1,000", min: 1000, max: null as number | null },
+  { key: "u5k", label: "Under ₹5,000", min: 0, max: 5000 },
+  { key: "5-15k", label: "₹5,000 – ₹15,000", min: 5000, max: 15000 },
+  { key: "15-40k", label: "₹15,000 – ₹40,000", min: 15000, max: 40000 },
+  { key: "a40k", label: "Above ₹40,000", min: 40000, max: null as number | null },
 ] as const;
 
 const RATING_OPTIONS = [
@@ -41,57 +46,6 @@ const DISCOUNT_OPTIONS = [
   { value: 20, label: "20%+" },
   { value: 30, label: "30%+" },
   { value: 40, label: "40%+" },
-] as const;
-
-const GENDER_OPTIONS = [
-  {
-    value: "boys",
-    label: "Boys",
-    categorySlug: "baby-kids",
-    audience: "kids",
-    q: "boy",
-  },
-  {
-    value: "girls",
-    label: "Girls",
-    categorySlug: "baby-kids",
-    audience: "kids",
-    q: "girl",
-  },
-  {
-    value: "men",
-    label: "Men",
-    categorySlug: "fashion",
-    audience: "men",
-    q: "",
-  },
-  {
-    value: "women",
-    label: "Women",
-    categorySlug: "fashion",
-    audience: "women",
-    q: "",
-  },
-] as const;
-
-const COLOR_OPTIONS = [
-  "Black",
-  "White",
-  "Blue",
-  "Red",
-  "Green",
-  "Pink",
-  "Yellow",
-  "Beige",
-] as const;
-
-const FABRIC_OPTIONS = [
-  "Cotton",
-  "Silk",
-  "Rayon",
-  "Polyester",
-  "Linen",
-  "Wool",
 ] as const;
 
 const SORT_OPTIONS = [
@@ -123,6 +77,7 @@ export function CatalogueBrowse({
   initialMinDiscount,
   initialMinPricePaise,
   initialMaxPricePaise,
+  initialFacets = {},
   heading,
   browseBasePath = "/browse",
   variant = "page",
@@ -145,6 +100,7 @@ export function CatalogueBrowse({
   initialMinDiscount?: number;
   initialMinPricePaise?: number;
   initialMaxPricePaise?: number;
+  initialFacets?: Record<string, string>;
   heading?: string;
   browseBasePath?: string;
   /** `home` hides breadcrumb/top sort; Meesho-style Products For You chrome */
@@ -173,14 +129,7 @@ export function CatalogueBrowse({
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
   const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
   const [audience, setAudience] = useState(initialAudience);
-  const [gender, setGender] = useState<string>(() => {
-    if (initialAudience === "women") return "women";
-    if (initialAudience === "men") return "men";
-    if (initialAudience === "kids") return "";
-    return "";
-  });
-  const [color, setColor] = useState<string>("");
-  const [fabric, setFabric] = useState<string>("");
+  const [facets, setFacets] = useState<Record<string, string>>(initialFacets);
   const [sort, setSort] = useState(initialSort);
   const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
   const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly);
@@ -206,9 +155,6 @@ export function CatalogueBrowse({
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
-    gender: true,
-    color: false,
-    fabric: false,
     brand: true,
     price: true,
     rating: true,
@@ -216,6 +162,7 @@ export function CatalogueBrowse({
     seller: false,
     availability: false,
   });
+  const categoryFacetConfig = getCategoryFacetConfig(categorySlug);
 
   const categoryName =
     categories.find((entry) => entry.slug === categorySlug)?.name ??
@@ -283,12 +230,15 @@ export function CatalogueBrowse({
     if (verifiedOnly) {
       list.push({ key: "verified", label: "Verified sellers" });
     }
-    if (gender && !audience) {
-      const option = GENDER_OPTIONS.find((entry) => entry.value === gender);
-      if (option) list.push({ key: "gender", label: option.label });
+    for (const [facetKey, facetValue] of Object.entries(facets)) {
+      const label =
+        categoryFacetConfig?.facets.find((f) => f.key === facetKey)?.label ??
+        facetKey;
+      list.push({
+        key: `facet:${facetKey}`,
+        label: `${label}: ${facetValue}`,
+      });
     }
-    if (color) list.push({ key: "color", label: color });
-    if (fabric) list.push({ key: "fabric", label: fabric });
     return list;
   }, [
     query,
@@ -304,9 +254,8 @@ export function CatalogueBrowse({
     maxPrice,
     minRating,
     minDiscount,
-    gender,
-    color,
-    fabric,
+    facets,
+    categoryFacetConfig,
   ]);
 
   async function runSearch(next?: {
@@ -314,6 +263,7 @@ export function CatalogueBrowse({
     categorySlug?: string;
     brandSlug?: string;
     audience?: string;
+    facets?: Record<string, string>;
     sort?: string;
     inStockOnly?: boolean;
     verifiedOnly?: boolean;
@@ -331,6 +281,7 @@ export function CatalogueBrowse({
     const brand = next?.brandSlug ?? brandSlug;
     const audienceValue =
       next?.audience !== undefined ? next.audience : audience;
+    const facetValues = next?.facets ?? facets;
     const sortValue = next?.sort ?? sort;
     const stock = next?.inStockOnly ?? inStockOnly;
     const verified = next?.verifiedOnly ?? verifiedOnly;
@@ -345,6 +296,9 @@ export function CatalogueBrowse({
     if (cat) params.set("categorySlug", cat);
     if (brand) params.set("brandSlug", brand);
     if (audienceValue) params.set("audience", audienceValue);
+    for (const [key, value] of facetQueryEntries(facetValues)) {
+      params.set(key, value);
+    }
     if (sortValue) params.set("sort", sortValue);
     if (stock) params.set("inStockOnly", "true");
     if (verified) params.set("verifiedSellerOnly", "true");
@@ -471,15 +425,14 @@ export function CatalogueBrowse({
     setPricePreset("");
     setCategorySearch("");
     setBrandSearch("");
-    setGender("");
-    setColor("");
-    setFabric("");
+    setFacets({});
     startTransition(() => {
       void runSearch({
         q: "",
         categorySlug: "",
         brandSlug: "",
         audience: "",
+        facets: {},
         sort: initialQuery.trim() ? "relevance" : "newest",
         inStockOnly: false,
         verifiedOnly: false,
@@ -499,30 +452,24 @@ export function CatalogueBrowse({
     }
     if (key === "cat") {
       setCategorySlug("");
+      setFacets({});
       next.categorySlug = "";
+      next.facets = {};
     }
-    if (key === "audience" || key === "gender") {
+    if (key === "audience") {
       setAudience("");
-      setGender("");
-      setCategorySlug("");
-      setQuery("");
       next.audience = "";
-      next.categorySlug = "";
-      next.q = "";
+    }
+    if (key.startsWith("facet:")) {
+      const facetKey = key.slice("facet:".length);
+      const nextFacets = { ...facets };
+      delete nextFacets[facetKey];
+      setFacets(nextFacets);
+      next.facets = nextFacets;
     }
     if (key === "brand") {
       setBrandSlug("");
       next.brandSlug = "";
-    }
-    if (key === "color") {
-      setColor("");
-      next.q = fabric || "";
-      setQuery(fabric || "");
-    }
-    if (key === "fabric") {
-      setFabric("");
-      next.q = color || "";
-      setQuery(color || "");
     }
     if (key === "price" || key === "priceCustom") {
       setPricePreset("");
@@ -658,8 +605,9 @@ export function CatalogueBrowse({
                     const next =
                       categorySlug === category.slug ? "" : category.slug;
                     setCategorySlug(next);
+                    setFacets({});
                     startTransition(() => {
-                      void runSearch({ categorySlug: next });
+                      void runSearch({ categorySlug: next, facets: {} });
                     });
                   }}
                   className="h-3.5 w-3.5 accent-[var(--accent)]"
@@ -683,115 +631,25 @@ export function CatalogueBrowse({
         ) : null}
       </FilterSection>
 
-      <FilterSection
-        title="Gender"
-        open={openSections.gender !== false}
-        onToggle={() => toggleSection("gender")}
-      >
-        <div className="flex flex-wrap gap-2">
-          {GENDER_OPTIONS.map((option) => {
-            const active = gender === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition ${
-                  active
-                    ? "border-accent bg-accent-soft text-accent"
-                    : "border-[#ddd] bg-white text-[#333] hover:border-accent"
-                }`}
-                onClick={() => {
-                  if (active) {
-                    setGender("");
-                    setAudience("");
-                    setCategorySlug("");
-                    setQuery("");
-                    startTransition(() => {
-                      void runSearch({
-                        categorySlug: "",
-                        q: "",
-                        audience: "",
-                      });
-                    });
-                    return;
-                  }
-                  setGender(option.value);
-                  setAudience(option.audience);
-                  setCategorySlug(option.categorySlug);
-                  setQuery(option.q);
-                  startTransition(() => {
-                    void runSearch({
-                      categorySlug: option.categorySlug,
-                      q: option.q,
-                      audience: option.audience,
-                    });
-                  });
-                }}
-              >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-      </FilterSection>
-
-      <FilterSection
-        title="Color"
-        open={openSections.color === true}
-        onToggle={() => toggleSection("color")}
-      >
-        <ul className="space-y-1.5">
-          {COLOR_OPTIONS.map((option) => (
-            <li key={option}>
-              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm lg:min-h-0">
-                <input
-                  type="radio"
-                  name="color"
-                  checked={color === option}
-                  onChange={() => {
-                    setColor(option);
-                    const nextQ = [option, fabric].filter(Boolean).join(" ");
-                    setQuery(nextQ);
-                    startTransition(() => {
-                      void runSearch({ q: nextQ });
-                    });
-                  }}
-                />
-                {option}
-              </label>
-            </li>
-          ))}
-        </ul>
-      </FilterSection>
-
-      <FilterSection
-        title="Fabric"
-        open={openSections.fabric === true}
-        onToggle={() => toggleSection("fabric")}
-      >
-        <ul className="space-y-1.5">
-          {FABRIC_OPTIONS.map((option) => (
-            <li key={option}>
-              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm lg:min-h-0">
-                <input
-                  type="radio"
-                  name="fabric"
-                  checked={fabric === option}
-                  onChange={() => {
-                    setFabric(option);
-                    const nextQ = [color, option].filter(Boolean).join(" ");
-                    setQuery(nextQ);
-                    startTransition(() => {
-                      void runSearch({ q: nextQ });
-                    });
-                  }}
-                />
-                {option}
-              </label>
-            </li>
-          ))}
-        </ul>
-      </FilterSection>
+      {categorySlug ? (
+        <CategoryFacetFilters
+          categorySlug={categorySlug}
+          selected={facets}
+          openSections={openSections}
+          onToggleSection={toggleSection}
+          onChange={(nextFacets) => {
+            setFacets(nextFacets);
+            startTransition(() => {
+              void runSearch({ facets: nextFacets });
+            });
+          }}
+        />
+      ) : (
+        <p className="border-b border-border py-3 text-[12px] leading-5 text-[#666]">
+          Pick a category to unlock precise filters (socket, VRAM, wattage,
+          panel size, and more).
+        </p>
+      )}
 
       {brands.length > 0 ? (
         <FilterSection

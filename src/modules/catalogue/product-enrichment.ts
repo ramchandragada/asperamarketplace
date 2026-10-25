@@ -1,3 +1,4 @@
+import { extractProductFacets } from "@/modules/catalogue/category-facets";
 import { LAPTOP_ENRICHMENT_OVERRIDES } from "@/modules/catalogue/laptop-enrichment-overrides";
 import type {
   DescriptionBlock,
@@ -669,5 +670,10 @@ export function toEnrichmentAttributes(
     descriptionBlocks: enrichment.descriptionBlocks,
     warranty: enrichment.warranty,
     cardBullets: enrichment.cardBullets,
+    facets: extractProductFacets({
+      slug: product.slug,
+      title: product.title,
+      categorySlug: product.categorySlug,
+    }),
   };
 }

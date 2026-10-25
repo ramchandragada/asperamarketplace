@@ -49,4 +49,6 @@ export type EnrichmentAttributes = {
   descriptionBlocks: DescriptionBlock[];
   warranty: WarrantyInfo;
   cardBullets: string[];
+  /** Category-specific browse filters (socket, VRAM, wattage, …). */
+  facets: Record<string, string>;
 };

@@ -21,14 +21,6 @@ const SORTS = new Set([
   "rating",
 ]);
 
-const AUDIENCES = new Set(["women", "men", "kids", "unisex"]);
-const AUDIENCE_HEADINGS: Record<string, string> = {
-  women: "Women",
-  men: "Men",
-  kids: "Kids",
-  unisex: "Unisex",
-};
-
 export default async function BrowsePage({
   searchParams,
 }: {
@@ -42,10 +34,6 @@ export default async function BrowsePage({
   const query = read("q")?.trim() ?? "";
   const categorySlug = read("categorySlug")?.trim() ?? "";
   const brandSlug = read("brandSlug")?.trim() ?? "";
-  const audienceRaw = read("audience")?.trim() ?? "";
-  const audience = AUDIENCES.has(audienceRaw)
-    ? (audienceRaw as "women" | "men" | "kids" | "unisex")
-    : undefined;
   const sort = SORTS.has(read("sort") ?? "")
     ? (read("sort") as string)
     : query
@@ -79,7 +67,6 @@ export default async function BrowsePage({
     q: query || undefined,
     categorySlug: categorySlug || undefined,
     brandSlug: resolvedBrandSlug || undefined,
-    audience,
     facets: Object.keys(facets).length > 0 ? facets : undefined,
     sort: sort as
       | "relevance"
@@ -100,7 +87,6 @@ export default async function BrowsePage({
   });
 
   const heading =
-    (audience ? AUDIENCE_HEADINGS[audience] : undefined) ??
     categories.find((category) => category.slug === categorySlug)?.name ??
     (query ? undefined : "Shop");
 
@@ -119,7 +105,6 @@ export default async function BrowsePage({
         brandsByCategory={brandIndex.byCategory}
         initialCategorySlug={categorySlug}
         initialBrandSlug={resolvedBrandSlug}
-        initialAudience={audience ?? ""}
         initialSort={sort}
         initialInStockOnly={inStockOnly}
         initialVerifiedOnly={verifiedSellerOnly}

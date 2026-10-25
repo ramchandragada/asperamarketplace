@@ -1321,11 +1321,6 @@ export async function searchApprovedProducts(
               : Prisma.empty
           }
           ${
-            input.audience
-              ? Prisma.sql`AND p.attributes->>'audience' = ${input.audience}`
-              : Prisma.empty
-          }
-          ${
             input.facets && Object.keys(input.facets).length > 0
               ? Prisma.sql`AND ${Prisma.join(
                   Object.entries(input.facets).map(([key, values]) => {
@@ -1437,21 +1432,12 @@ export async function searchApprovedProducts(
 
   const where: Prisma.ProductWhereInput = {
     status: "approved",
-    // Always require an active category so archived fashion/demo categories
-    // never leak into New arrivals / Trending / browse even if a product
-    // was left approved by mistake.
+    // Always require an active category so retired categories never leak
+    // into New arrivals / Trending / browse.
     category: input.categorySlug
       ? { slug: input.categorySlug, isActive: true }
       : { isActive: true },
     ...(input.brandSlug ? { brand: { slug: input.brandSlug } } : {}),
-    ...(input.audience
-      ? {
-          attributes: {
-            path: ["audience"],
-            equals: input.audience,
-          },
-        }
-      : {}),
     ...(facetFilters.length > 0 ? { AND: facetFilters } : {}),
     ...(input.verifiedSellerOnly ? { seller: { status: "approved" } } : {}),
     variants: {

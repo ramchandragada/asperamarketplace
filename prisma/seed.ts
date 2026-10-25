@@ -8,104 +8,10 @@ const prisma = new PrismaClient();
 
 const DEV_ADMIN_EMAIL = "admin@aspera.local";
 const DEV_ADMIN_PASSWORD = "AsperaAdminDevOnly1!";
-const DEV_SELLER_EMAIL = "seller@aspera.local";
-const DEV_SELLER_PASSWORD = "AsperaSellerDevOnly1!";
 const DEV_CUSTOMER_EMAIL = "customer@aspera.local";
 const DEV_CUSTOMER_PASSWORD = "AsperaCustomerDevOnly1!";
-
-async function ensureSeller(input: {
-  email: string;
-  password: string;
-  displayName: string;
-  legalName: string;
-  tradeName: string;
-  adminId: string;
-  sellerRoleId: string;
-}) {
-  const user = await prisma.user.upsert({
-    where: { email: input.email },
-    create: {
-      email: input.email,
-      displayName: input.displayName,
-      passwordHash: await hashPassword(input.password),
-      emailVerifiedAt: new Date(),
-    },
-    update: {},
-  });
-
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId_scopeKey: {
-        userId: user.id,
-        roleId: input.sellerRoleId,
-        scopeKey: "global",
-      },
-    },
-    create: {
-      userId: user.id,
-      roleId: input.sellerRoleId,
-      scopeKey: "global",
-    },
-    update: {},
-  });
-
-  let seller = await prisma.seller.findFirst({
-    where: { ownerUserId: user.id },
-  });
-  if (!seller) {
-    seller = await prisma.seller.create({
-      data: {
-        ownerUserId: user.id,
-        legalName: input.legalName,
-        tradeName: input.tradeName,
-        status: "approved",
-        contactEmail: input.email,
-        contactPhone: "9876543210",
-        panLast4: "234F",
-        gstinMasked: "29****F1Z5",
-        registeredState: "Karnataka",
-        agreementAcceptedAt: new Date(),
-        submittedAt: new Date(),
-        reviewedAt: new Date(),
-        reviewedByUserId: input.adminId,
-        approvedAt: new Date(),
-        statusReason: null,
-      },
-    });
-  } else {
-    seller = await prisma.seller.update({
-      where: { id: seller.id },
-      data: {
-        status: "approved",
-        tradeName: input.tradeName,
-        legalName: input.legalName,
-        approvedAt: seller.approvedAt ?? new Date(),
-        reviewedAt: new Date(),
-        reviewedByUserId: input.adminId,
-        statusReason: null,
-      },
-    });
-  }
-
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId_scopeKey: {
-        userId: user.id,
-        roleId: input.sellerRoleId,
-        scopeKey: seller.id,
-      },
-    },
-    create: {
-      userId: user.id,
-      roleId: input.sellerRoleId,
-      scopeKey: seller.id,
-      sellerId: seller.id,
-    },
-    update: { sellerId: seller.id },
-  });
-
-  return { user, seller };
-}
+const PRIMARY_SELLER_EMAIL = "pcc@aspera.local";
+const PRIMARY_SELLER_PASSWORD = "AsperaSellerDevOnly1!";
 
 async function main() {
   for (const [key, definition] of Object.entries(ROLE_DEFINITIONS)) {
@@ -125,9 +31,6 @@ async function main() {
 
   const adminRole = await prisma.role.findUniqueOrThrow({
     where: { key: "admin" },
-  });
-  const sellerRole = await prisma.role.findUniqueOrThrow({
-    where: { key: "seller_owner" },
   });
 
   const admin = await prisma.user.upsert({
@@ -156,79 +59,10 @@ async function main() {
     update: {},
   });
 
-  const home = await ensureSeller({
-    email: DEV_SELLER_EMAIL,
-    password: DEV_SELLER_PASSWORD,
-    displayName: "Home Seller",
-    legalName: "HomeCraft Essentials Private Limited",
-    tradeName: "HomeCraft Essentials",
-    adminId: admin.id,
-    sellerRoleId: sellerRole.id,
-  });
-  // Legacy fashion/demo sellers kept for local login compatibility; catalogue
-  // itself comes from seedPcCatalogue (Pune PC sellers).
-  await ensureSeller({
-    email: "seller.fashion@aspera.local",
-    password: "AsperaFashionDevOnly1!",
-    displayName: "Fashion Seller",
-    legalName: "Priya Boutique Private Limited",
-    tradeName: "Priya's Boutique",
-    adminId: admin.id,
-    sellerRoleId: sellerRole.id,
-  });
-  await ensureSeller({
-    email: "seller.tech@aspera.local",
-    password: "AsperaTechDevOnly1!",
-    displayName: "Tech Seller",
-    legalName: "TechZone India LLP",
-    tradeName: "TechZone India",
-    adminId: admin.id,
-    sellerRoleId: sellerRole.id,
-  });
-  await ensureSeller({
-    email: "seller.wellness@aspera.local",
-    password: "AsperaWellnessDevOnly1!",
-    displayName: "Wellness Seller",
-    legalName: "GreenLeaf Organics Private Limited",
-    tradeName: "GreenLeaf Organics",
-    adminId: admin.id,
-    sellerRoleId: sellerRole.id,
-  });
-  await ensureSeller({
-    email: "seller.textile@aspera.local",
-    password: "AsperaTextileDevOnly1!",
-    displayName: "Textile Seller",
-    legalName: "Delhi Textile House Private Limited",
-    tradeName: "Delhi Textile House",
-    adminId: admin.id,
-    sellerRoleId: sellerRole.id,
-  });
-  await ensureSeller({
-    email: "seller.sports@aspera.local",
-    password: "AsperaSportsDevOnly1!",
-    displayName: "Sports Seller",
-    legalName: "FitLife Sports Private Limited",
-    tradeName: "FitLife Sports",
-    adminId: admin.id,
-    sellerRoleId: sellerRole.id,
-  });
-  await ensureSeller({
-    email: "seller.mumbai@aspera.local",
-    password: "AsperaMumbaiDevOnly1!",
-    displayName: "Mumbai Fashion Seller",
-    legalName: "Mumbai Fashion Studio LLP",
-    tradeName: "Mumbai Fashion Studio",
-    adminId: admin.id,
-    sellerRoleId: sellerRole.id,
-  });
-  await ensureSeller({
-    email: "seller.artisan@aspera.local",
-    password: "AsperaArtisanDevOnly1!",
-    displayName: "Artisan Seller",
-    legalName: "Artisan Weaves Company Private Limited",
-    tradeName: "Artisan Weaves Co.",
-    adminId: admin.id,
-    sellerRoleId: sellerRole.id,
+  // Source of truth: Pune PC catalogue (creates PC sellers + products).
+  const catalogue = await seedPcCatalogue(prisma);
+  const primarySeller = await prisma.seller.findFirstOrThrow({
+    where: { contactEmail: PRIMARY_SELLER_EMAIL },
   });
 
   const staffSeeds = [
@@ -273,16 +107,16 @@ async function main() {
         userId_roleId_scopeKey: {
           userId: user.id,
           roleId: role.id,
-          scopeKey: home.seller.id,
+          scopeKey: primarySeller.id,
         },
       },
       create: {
         userId: user.id,
         roleId: role.id,
-        scopeKey: home.seller.id,
-        sellerId: home.seller.id,
+        scopeKey: primarySeller.id,
+        sellerId: primarySeller.id,
       },
-      update: { sellerId: home.seller.id },
+      update: { sellerId: primarySeller.id },
     });
     staffAccounts.push({
       email: staff.email,
@@ -290,10 +124,6 @@ async function main() {
       role: staff.roleKey,
     });
   }
-
-  // Source of truth: Pune PC catalogue (MD Computers import, ~385 SKUs).
-  // Archives leftover fashion demo products without hard-delete.
-  const catalogue = await seedPcCatalogue(prisma);
 
   const { ensureDefaultTaxProfiles } = await import("../src/modules/tax/service");
   await ensureDefaultTaxProfiles();
@@ -341,7 +171,11 @@ async function main() {
           password: DEV_CUSTOMER_PASSWORD,
         },
         sellers: [
-          { key: "home", email: DEV_SELLER_EMAIL, password: DEV_SELLER_PASSWORD },
+          {
+            key: "pcc",
+            email: PRIMARY_SELLER_EMAIL,
+            password: PRIMARY_SELLER_PASSWORD,
+          },
         ],
         sellerStaff: staffAccounts,
         catalogue: {
@@ -351,9 +185,9 @@ async function main() {
           puneSellers: catalogue.sellers,
           products: catalogue.products,
           productsDefined: PC_PRODUCTS.length,
-          archivedOld: catalogue.archivedOld,
+          removedNonPc: catalogue.removedNonPc,
         },
-        note: "PC marketplace seed. Fashion demo catalogue is archived, not hard-deleted.",
+        note: "PC-only marketplace seed. Non-PC catalogue data has been removed from the repo.",
       },
       null,
       2,

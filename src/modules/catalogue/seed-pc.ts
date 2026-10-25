@@ -1,12 +1,12 @@
 /**
  * Reseed the catalogue as a Pune PC-components marketplace.
  *
- * - Upserts the 9 PC categories + brands from pc-catalogue-data.
+ * - Upserts PC categories + brands from pc-catalogue-data.
  * - Ensures the Pune computer-shop sellers (approved).
- * - Archives every existing non-PC product (hidden from the storefront;
- *   no hard delete, so orders/cart references stay intact) and deactivates
- *   the old categories.
- * - Upserts the 90 PC products (one "Standard" variant + inventory + image).
+ * - Hard-deletes leftover non-PC products (and related rows) and removes
+ *   non-PC categories when empty. Prefer `scripts/hard-purge-non-pc.ts`
+ *   for a full marketplace wipe of sellers/orders/brands too.
+ * - Upserts PC products (one "Standard" variant + inventory + image).
  *
  * Idempotent — safe to run repeatedly.
  */
@@ -31,7 +31,7 @@ export type SeedPcResult = {
   brands: number;
   sellers: number;
   products: number;
-  archivedOld: number;
+  removedNonPc: number;
 };
 
 export async function seedPcCatalogue(
@@ -67,12 +67,6 @@ export async function seedPcCatalogue(
       },
     });
   }
-  // Retire old (non-PC) categories from the storefront.
-  await prisma.category.updateMany({
-    where: { slug: { notIn: pcCategorySlugs } },
-    data: { isActive: false },
-  });
-
   // Brands.
   const brandId: Record<string, string> = {};
   for (const brand of PC_BRANDS) {
@@ -141,10 +135,87 @@ export async function seedPcCatalogue(
     sellerId[seller.key] = row.id;
   }
 
-  // Archive existing non-PC products so only PC parts show.
-  const archived = await prisma.product.updateMany({
+  // Hard-delete leftover non-PC products so reseeds cannot revive fashion/demo data.
+  // Products still referenced by orders need `scripts/hard-purge-non-pc.ts`.
+  const nonPcProducts = await prisma.product.findMany({
     where: { slug: { notIn: pcProductSlugs } },
-    data: { status: "archived" },
+    select: { id: true },
+  });
+  const nonPcIds = nonPcProducts.map((p) => p.id);
+  let removedNonPc = 0;
+  if (nonPcIds.length > 0) {
+    const blockedIds = new Set(
+      (
+        await prisma.orderLine.findMany({
+          where: { productId: { in: nonPcIds } },
+          select: { productId: true },
+          distinct: ["productId"],
+        })
+      ).map((row) => row.productId),
+    );
+    const deletableIds = nonPcIds.filter((id) => !blockedIds.has(id));
+
+    if (deletableIds.length > 0) {
+      const variantIds = (
+        await prisma.productVariant.findMany({
+          where: { productId: { in: deletableIds } },
+          select: { id: true },
+        })
+      ).map((v) => v.id);
+
+      if (variantIds.length > 0) {
+        await prisma.cartItem.deleteMany({
+          where: { variantId: { in: variantIds } },
+        });
+        const inventoryIds = (
+          await prisma.inventoryItem.findMany({
+            where: { variantId: { in: variantIds } },
+            select: { id: true },
+          })
+        ).map((i) => i.id);
+        if (inventoryIds.length > 0) {
+          await prisma.stockMovement.deleteMany({
+            where: { inventoryItemId: { in: inventoryIds } },
+          });
+          await prisma.inventoryItem.deleteMany({
+            where: { id: { in: inventoryIds } },
+          });
+        }
+        await prisma.productVariant.deleteMany({
+          where: { id: { in: variantIds } },
+        });
+      }
+
+      await prisma.productImage.deleteMany({
+        where: { productId: { in: deletableIds } },
+      });
+      await prisma.productReview.deleteMany({
+        where: { productId: { in: deletableIds } },
+      });
+      await prisma.wishlistItem.deleteMany({
+        where: { productId: { in: deletableIds } },
+      });
+      await prisma.product.deleteMany({ where: { id: { in: deletableIds } } });
+      removedNonPc = deletableIds.length;
+    }
+
+    if (blockedIds.size > 0) {
+      console.warn(
+        JSON.stringify({
+          warn: "non-pc-products-blocked-by-orders",
+          count: blockedIds.size,
+          hint: "Run scripts/hard-purge-non-pc.ts to remove order-linked non-PC rows",
+        }),
+      );
+    }
+  }
+
+  // Remove empty non-PC categories entirely.
+  await prisma.category.deleteMany({
+    where: {
+      slug: { notIn: pcCategorySlugs },
+      products: { none: {} },
+    },
   });
 
   const brandName = Object.fromEntries(PC_BRANDS.map((b) => [b.slug, b.name]));
@@ -281,6 +352,6 @@ export async function seedPcCatalogue(
     brands: PC_BRANDS.length,
     sellers: PC_SELLERS.length,
     products: PC_PRODUCTS.length,
-    archivedOld: archived.count,
+    removedNonPc,
   };
 }

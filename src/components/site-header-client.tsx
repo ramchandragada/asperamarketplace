@@ -81,6 +81,17 @@ function OrdersIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+function brandMonogram(label: string) {
+  const parts = label.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return parts
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("");
+  }
+  return label.slice(0, 3).toUpperCase();
+}
+
 function MegaBrandTile({
   brand,
   onNavigate,
@@ -105,8 +116,11 @@ function MegaBrandTile({
             className="object-contain p-2 transition-transform duration-200 group-hover:scale-[1.04]"
           />
         ) : (
-          <span className="font-display text-lg font-semibold tracking-tight text-[#222]">
-            {brand.label}
+          <span
+            aria-hidden
+            className="font-display text-xl font-semibold tracking-tight text-[#222]"
+          >
+            {brandMonogram(brand.label)}
           </span>
         )}
       </span>

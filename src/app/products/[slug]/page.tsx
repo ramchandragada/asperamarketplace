@@ -379,18 +379,25 @@ export default async function ProductDetailPage({
         </ol>
       </nav>
 
-      <div className="grid gap-8 overflow-visible lg:grid-cols-2">
-        <ProductGallery
-          title={product.title}
-          images={product.images.map((image) => ({
-            id: image.id,
-            url: image.url,
-            altText: image.altText,
-            isPrimary: image.isPrimary,
-          }))}
-        />
+      {/*
+        Desktop: gallery + details stack in the left column; buy box sits sticky
+        on the right (row-span) so the empty gap under the image is filled.
+        Mobile DOM order stays Gallery → Buy → Details.
+      */}
+      <div className="grid gap-8 overflow-visible lg:grid-cols-2 lg:items-start">
+        <div className="order-1 min-w-0">
+          <ProductGallery
+            title={product.title}
+            images={product.images.map((image) => ({
+              id: image.id,
+              url: image.url,
+              altText: image.altText,
+              isPrimary: image.isPrimary,
+            }))}
+          />
+        </div>
 
-        <div className="flex flex-col gap-5">
+        <div className="order-2 flex flex-col gap-5 lg:row-span-2 lg:self-start lg:sticky lg:top-24">
           <div>
             <h1 className="font-display text-[1.75rem] leading-tight font-semibold tracking-tight md:text-4xl">
               {product.title}
@@ -456,15 +463,18 @@ export default async function ProductDetailPage({
 
           <OtherSellersPanel offers={siblingOffers} />
         </div>
-      </div>
 
-      <ProductDetailsSections
-        description={detailDescription}
-        highlightRows={highlightRows}
-        descriptionBlocks={descriptionBlocks}
-        specificationGroups={specificationGroups}
-        warranty={warranty}
-      />
+        <div className="order-3 min-w-0">
+          <ProductDetailsSections
+            description={detailDescription}
+            highlightRows={highlightRows}
+            descriptionBlocks={descriptionBlocks}
+            specificationGroups={specificationGroups}
+            warranty={warranty}
+            layout="besideGallery"
+          />
+        </div>
+      </div>
 
       <ProductReviewsPanel
         productId={product.id}

@@ -11,18 +11,28 @@ export function ProductDetailsSections({
   descriptionBlocks,
   specificationGroups,
   warranty,
+  layout = "stacked",
 }: {
   description: string;
   highlightRows: HighlightRow[];
   descriptionBlocks: DescriptionBlock[];
   specificationGroups: SpecGroup[];
   warranty: WarrantyInfo | null;
+  /** `besideGallery` sits under the PDP image column and fills the left gap. */
+  layout?: "stacked" | "besideGallery";
 }) {
   const hasBlocks = descriptionBlocks.length > 0;
   const hasSpecs = specificationGroups.some((g) => g.rows.length > 0);
+  const besideGallery = layout === "besideGallery";
 
   return (
-    <div className="mt-10 space-y-10 border-t border-border pt-10">
+    <div
+      className={
+        besideGallery
+          ? "space-y-8 border-t border-border pt-6 lg:pt-8"
+          : "mt-10 space-y-10 border-t border-border pt-10"
+      }
+    >
       <nav
         aria-label="Product details"
         className="flex flex-wrap gap-2 text-sm"
@@ -57,7 +67,11 @@ export function ProductDetailsSections({
             {highlightRows.map((row) => (
               <li
                 key={row.label}
-                className="grid gap-1 px-4 py-3 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] sm:gap-6"
+                className={
+                  besideGallery
+                    ? "grid gap-1 px-4 py-3"
+                    : "grid gap-1 px-4 py-3 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] sm:gap-6"
+                }
               >
                 <p className="text-sm font-semibold text-foreground">
                   {row.label}
@@ -111,7 +125,11 @@ export function ProductDetailsSections({
                     {group.rows.map((row, index) => (
                       <div
                         key={`${group.name}-${row.key}`}
-                        className={`grid grid-cols-1 gap-1 px-4 py-2.5 text-sm sm:grid-cols-[14rem_minmax(0,1fr)] sm:gap-4 ${
+                        className={`grid grid-cols-1 gap-1 px-4 py-2.5 text-sm ${
+                          besideGallery
+                            ? "sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:gap-3"
+                            : "sm:grid-cols-[14rem_minmax(0,1fr)] sm:gap-4"
+                        } ${
                           index % 2 === 0 ? "bg-surface" : "bg-background"
                         }`}
                       >
@@ -145,9 +163,11 @@ export function ProductDetailsSections({
             ).map(([key, value], index) => (
               <div
                 key={key}
-                className={`grid grid-cols-1 gap-1 px-4 py-2.5 text-sm sm:grid-cols-[14rem_minmax(0,1fr)] sm:gap-4 ${
-                  index % 2 === 0 ? "bg-surface" : "bg-background"
-                }`}
+                className={`grid grid-cols-1 gap-1 px-4 py-2.5 text-sm ${
+                  besideGallery
+                    ? "sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:gap-3"
+                    : "sm:grid-cols-[14rem_minmax(0,1fr)] sm:gap-4"
+                } ${index % 2 === 0 ? "bg-surface" : "bg-background"}`}
               >
                 <dt className="text-muted">{key}</dt>
                 <dd className="font-medium text-foreground">{value}</dd>

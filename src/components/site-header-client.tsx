@@ -116,8 +116,8 @@ function MegaBrandTile({
       <span
         className={
           featured
-            ? "relative flex h-28 w-full items-center justify-center overflow-hidden rounded-xl bg-[#F7F9F9]"
-            : "relative flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-[#F7F9F9]"
+            ? "relative flex h-28 w-full items-center justify-center overflow-hidden rounded-xl bg-white"
+            : "relative flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-white"
         }
       >
         {brand.imageUrl ? (
@@ -205,7 +205,7 @@ function MegaPanel({
         </ScrollEdgeRail>
 
         {brands.length > 0 ? (
-          <aside className="hidden w-full max-w-[42rem] min-w-0 flex-[1.35] self-stretch rounded-2xl bg-[linear-gradient(160deg,#F7F9F9_0%,#EEF3F3_100%)] p-4 md:block lg:max-w-none lg:p-5 xl:flex-[1.55]">
+          <aside className="hidden w-full max-w-[42rem] min-w-0 flex-[1.35] self-stretch rounded-2xl border border-border bg-white p-4 md:block lg:max-w-none lg:p-5 xl:flex-[1.55]">
             <div className="flex items-baseline justify-between gap-3">
               <p className="text-[13px] leading-none font-bold text-accent">
                 Popular brands

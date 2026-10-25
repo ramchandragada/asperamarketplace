@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "PC Builder — Aspera Express",
   description:
-    "Build a compatible PC from live Aspera stock. Socket, RAM, and PSU checks with Express delivery in 75–90 minutes.",
+    "Build a compatible PC from live Aspera stock. Socket, RAM, and PSU checks with Express delivery usually within 75–90 minutes in hub zones.",
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;

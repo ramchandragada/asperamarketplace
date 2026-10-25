@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { SellerCataloguePanel } from "@/components/seller-catalogue-panel";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
-  ensureGenericCategory,
   listActiveCategories,
   listSellerProducts,
 } from "@/modules/catalogue/service";
@@ -40,7 +39,6 @@ export default async function SellerCataloguePage({
   const page = Math.max(1, Number(params.page ?? "1") || 1);
   const status = params.status?.trim() ?? "";
   const q = params.q?.trim() ?? "";
-  await ensureGenericCategory();
   const [categories, listed] = await Promise.all([
     listActiveCategories(),
     listSellerProducts(actor, seller.id, {

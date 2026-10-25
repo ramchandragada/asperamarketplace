@@ -131,24 +131,23 @@ export function checkPincodeServiceability(raw: string): PincodeCheckResult {
       express: known.express,
       codAvailable: false,
       message: known.express
-        ? `Aspera Express · ${etaLabel} · Prepaid · 7-day returns`
-        : `Delivery ${etaLabel} · Prepaid · 7-day returns`,
+        ? `Aspera Express hub · usually ${etaLabel} when in stock · Prepaid · 7-day returns`
+        : `Usually ${etaLabel} · Prepaid · 7-day returns`,
     };
   }
 
-  // Other valid pins: same-day / next-morning, not full express.
-  const etaMinutes = 360 + (Number(postalCode) % 3) * 60;
-  const etaLabel = formatEtaMinutes(etaMinutes);
+  // Outside known hubs: serviceable, but do not invent a precise ETA.
   return {
     postalCode,
     serviceable: true,
     city: null,
     state: null,
-    etaLabel,
-    etaMinutes,
+    etaLabel: "Usually 1–3 days",
+    etaMinutes: null,
     express: false,
     codAvailable: false,
-    message: `Delivery ${etaLabel} · Prepaid checkout · 7-day returns`,
+    message:
+      "Standard delivery available · ETA confirmed at checkout · Prepaid · 7-day returns",
   };
 }
 

@@ -571,7 +571,7 @@ export function SiteHeaderClient({
             <span>Prepaid secure</span>
           </span>
           <span className="hidden md:inline">
-            Aspera Express — PC parts delivered in minutes from nearby hubs ·
+            Aspera Express — PC parts from nearby hubs, usually in minutes when in stock ·
             Verified sellers · Buyer protection
           </span>
         </p>

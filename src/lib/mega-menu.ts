@@ -12,13 +12,16 @@ export type MegaMenuCategory = {
 
 function browse(
   categorySlug: string,
-  opts?: { q?: string; facets?: Record<string, string> },
+  opts?: { q?: string; facets?: Record<string, string | string[]> },
 ) {
   const params = new URLSearchParams({ categorySlug });
   if (opts?.q) params.set("q", opts.q);
   if (opts?.facets) {
     for (const [key, value] of Object.entries(opts.facets)) {
-      params.set(`facet.${key}`, value);
+      const values = Array.isArray(value) ? value : [value];
+      for (const entry of values) {
+        params.append(`facet.${key}`, entry);
+      }
     }
   }
   return `/browse?${params.toString()}`;
@@ -27,7 +30,7 @@ function browse(
 function link(
   label: string,
   categorySlug: string,
-  opts?: { q?: string; facets?: Record<string, string> },
+  opts?: { q?: string; facets?: Record<string, string | string[]> },
 ) {
   return { label, href: browse(categorySlug, opts) };
 }

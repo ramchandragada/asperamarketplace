@@ -576,25 +576,90 @@ export function buildFacetOptionsForCatalogue(): Record<
 
 export const CATALOGUE_FACET_OPTIONS = buildFacetOptionsForCatalogue();
 
+/** Selected facet values — multi-select per key (OR within key, AND across keys). */
+export type FacetSelection = Record<string, string[]>;
+
+function pushFacetValue(
+  facets: FacetSelection,
+  facetKey: string,
+  raw: string,
+) {
+  const key = facetKey.trim();
+  if (!key) return;
+  for (const part of raw.split(",")) {
+    const value = part.trim().slice(0, 80);
+    if (!value) continue;
+    const existing = facets[key] ?? [];
+    if (!existing.includes(value)) {
+      facets[key] = [...existing, value];
+    }
+  }
+}
+
+/**
+ * Parse `facet.*` query params into multi-value selections.
+ * Accepts repeated keys (`facet.socket=AM5&facet.socket=AM4`) and
+ * comma-separated values (`facet.socket=AM5,AM4`).
+ */
 export function parseFacetSearchParams(
-  searchParams: URLSearchParams,
-): Record<string, string> {
-  const facets: Record<string, string> = {};
-  for (const [key, value] of searchParams.entries()) {
-    if (!key.startsWith("facet.")) continue;
-    const facetKey = key.slice("facet.".length).trim();
-    const trimmed = value.trim();
-    if (!facetKey || !trimmed) continue;
-    facets[facetKey] = trimmed.slice(0, 80);
+  searchParams:
+    | URLSearchParams
+    | Record<string, string | string[] | undefined>,
+): FacetSelection {
+  const facets: FacetSelection = {};
+  if (searchParams instanceof URLSearchParams) {
+    for (const [key, value] of searchParams.entries()) {
+      if (!key.startsWith("facet.")) continue;
+      pushFacetValue(facets, key.slice("facet.".length), value);
+    }
+  } else {
+    for (const [key, value] of Object.entries(searchParams)) {
+      if (!key.startsWith("facet.") || value == null) continue;
+      const facetKey = key.slice("facet.".length);
+      if (Array.isArray(value)) {
+        for (const entry of value) pushFacetValue(facets, facetKey, entry);
+      } else {
+        pushFacetValue(facets, facetKey, value);
+      }
+    }
+  }
+  // Stable sort values within each key for predictable URLs/chips
+  for (const key of Object.keys(facets)) {
+    facets[key] = [...(facets[key] ?? [])].sort((a, b) =>
+      a.localeCompare(b, "en", { numeric: true }),
+    );
   }
   return facets;
 }
 
+/** Flatten multi-select facets into repeated `facet.key=value` URL entries. */
 export function facetQueryEntries(
-  facets: Record<string, string>,
+  facets: FacetSelection,
 ): Array<[string, string]> {
-  return Object.entries(facets)
-    .filter(([, v]) => Boolean(v))
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([k, v]) => [`facet.${k}`, v] as [string, string]);
+  const entries: Array<[string, string]> = [];
+  for (const key of Object.keys(facets).sort((a, b) => a.localeCompare(b))) {
+    const values = facets[key] ?? [];
+    for (const value of [...values].sort((a, b) =>
+      a.localeCompare(b, "en", { numeric: true }),
+    )) {
+      if (!value) continue;
+      entries.push([`facet.${key}`, value]);
+    }
+  }
+  return entries;
+}
+
+export function toggleFacetValue(
+  selected: FacetSelection,
+  facetKey: string,
+  value: string,
+): FacetSelection {
+  const current = selected[facetKey] ?? [];
+  const nextValues = current.includes(value)
+    ? current.filter((entry) => entry !== value)
+    : [...current, value];
+  const next = { ...selected };
+  if (nextValues.length === 0) delete next[facetKey];
+  else next[facetKey] = nextValues;
+  return next;
 }

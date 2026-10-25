@@ -19,6 +19,7 @@ import { ProductCardSkeleton } from "@/components/ui/skeleton";
 import {
   facetQueryEntries,
   getCategoryFacetConfig,
+  type FacetSelection,
 } from "@/modules/catalogue/category-facets";
 
 export type BrowseProduct = ProductCardModel & {
@@ -100,7 +101,7 @@ export function CatalogueBrowse({
   initialMinDiscount?: number;
   initialMinPricePaise?: number;
   initialMaxPricePaise?: number;
-  initialFacets?: Record<string, string>;
+  initialFacets?: FacetSelection;
   heading?: string;
   browseBasePath?: string;
   /** `home` hides breadcrumb/top sort; Meesho-style Products For You chrome */
@@ -129,7 +130,7 @@ export function CatalogueBrowse({
   const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
   const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
   const [audience, setAudience] = useState(initialAudience);
-  const [facets, setFacets] = useState<Record<string, string>>(initialFacets);
+  const [facets, setFacets] = useState<FacetSelection>(initialFacets);
   const [sort, setSort] = useState(initialSort);
   const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
   const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly);
@@ -230,14 +231,16 @@ export function CatalogueBrowse({
     if (verifiedOnly) {
       list.push({ key: "verified", label: "Verified sellers" });
     }
-    for (const [facetKey, facetValue] of Object.entries(facets)) {
+    for (const [facetKey, facetValues] of Object.entries(facets)) {
       const label =
         categoryFacetConfig?.facets.find((f) => f.key === facetKey)?.label ??
         facetKey;
-      list.push({
-        key: `facet:${facetKey}`,
-        label: `${label}: ${facetValue}`,
-      });
+      for (const facetValue of facetValues) {
+        list.push({
+          key: `facet:${facetKey}:${facetValue}`,
+          label: `${label}: ${facetValue}`,
+        });
+      }
     }
     return list;
   }, [
@@ -263,7 +266,7 @@ export function CatalogueBrowse({
     categorySlug?: string;
     brandSlug?: string;
     audience?: string;
-    facets?: Record<string, string>;
+    facets?: FacetSelection;
     sort?: string;
     inStockOnly?: boolean;
     verifiedOnly?: boolean;
@@ -297,7 +300,7 @@ export function CatalogueBrowse({
     if (brand) params.set("brandSlug", brand);
     if (audienceValue) params.set("audience", audienceValue);
     for (const [key, value] of facetQueryEntries(facetValues)) {
-      params.set(key, value);
+      params.append(key, value);
     }
     if (sortValue) params.set("sort", sortValue);
     if (stock) params.set("inStockOnly", "true");
@@ -461,9 +464,19 @@ export function CatalogueBrowse({
       next.audience = "";
     }
     if (key.startsWith("facet:")) {
-      const facetKey = key.slice("facet:".length);
-      const nextFacets = { ...facets };
-      delete nextFacets[facetKey];
+      // chip key is facet:<facetKey>:<value>
+      const rest = key.slice("facet:".length);
+      const sep = rest.indexOf(":");
+      const facetKey = sep === -1 ? rest : rest.slice(0, sep);
+      const facetValue = sep === -1 ? "" : rest.slice(sep + 1);
+      const nextFacets: FacetSelection = { ...facets };
+      if (facetValue && nextFacets[facetKey]) {
+        const remaining = nextFacets[facetKey].filter((v) => v !== facetValue);
+        if (remaining.length === 0) delete nextFacets[facetKey];
+        else nextFacets[facetKey] = remaining;
+      } else {
+        delete nextFacets[facetKey];
+      }
       setFacets(nextFacets);
       next.facets = nextFacets;
     }

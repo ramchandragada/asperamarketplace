@@ -148,22 +148,38 @@ describe("facet catalogue options", () => {
 });
 
 describe("facet URL helpers", () => {
-  it("parses facet.* search params", () => {
+  it("parses single and multi-value facet.* search params", () => {
     const params = new URLSearchParams(
-      "facet.socket=AM5&facet.tier=Ryzen%205&q=test",
+      "facet.socket=AM5&facet.socket=AM4&facet.tier=Ryzen%205&q=test",
     );
     expect(parseFacetSearchParams(params)).toEqual({
-      socket: "AM5",
-      tier: "Ryzen 5",
+      socket: ["AM4", "AM5"],
+      tier: ["Ryzen 5"],
     });
   });
 
-  it("serializes facet entries stably", () => {
+  it("parses comma-separated facet values and Next.js param records", () => {
     expect(
-      facetQueryEntries({ tier: "Ryzen 5", socket: "AM5" }),
+      parseFacetSearchParams({
+        "facet.socket": ["AM5", "AM4"],
+        "facet.generation": "RTX 50-series,RTX 40-series",
+      }),
+    ).toEqual({
+      generation: ["RTX 40-series", "RTX 50-series"],
+      socket: ["AM4", "AM5"],
+    });
+  });
+
+  it("serializes multi-select facet entries as repeated keys", () => {
+    expect(
+      facetQueryEntries({
+        tier: ["Ryzen 5", "Ryzen 7"],
+        socket: ["AM5"],
+      }),
     ).toEqual([
       ["facet.socket", "AM5"],
       ["facet.tier", "Ryzen 5"],
+      ["facet.tier", "Ryzen 7"],
     ]);
   });
 });

@@ -56,11 +56,7 @@ export default async function ShopPage({
   const maxPricePaise = read("maxPricePaise")
     ? Number(read("maxPricePaise"))
     : undefined;
-  const urlParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (typeof value === "string") urlParams.set(key, value);
-  }
-  const facets = parseFacetSearchParams(urlParams);
+  const facets = parseFacetSearchParams(params);
 
   const [result, categories, brands] = await Promise.all([
     searchApprovedProducts({

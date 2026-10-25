@@ -1238,10 +1238,16 @@ export async function searchApprovedProducts(
           ${
             input.facets && Object.keys(input.facets).length > 0
               ? Prisma.sql`AND ${Prisma.join(
-                  Object.entries(input.facets).map(
-                    ([key, value]) =>
-                      Prisma.sql`(p.attributes -> 'facets' ->> ${key}) = ${value}`,
-                  ),
+                  Object.entries(input.facets).map(([key, values]) => {
+                    const list = Array.isArray(values) ? values : [values];
+                    return Prisma.sql`(${Prisma.join(
+                      list.map(
+                        (value) =>
+                          Prisma.sql`(p.attributes -> 'facets' ->> ${key}) = ${value}`,
+                      ),
+                      " OR ",
+                    )})`;
+                  }),
                   " AND ",
                 )}`
               : Prisma.empty
@@ -1318,12 +1324,25 @@ export async function searchApprovedProducts(
 
   const facetFilters =
     input.facets && Object.keys(input.facets).length > 0
-      ? Object.entries(input.facets).map(([key, value]) => ({
-          attributes: {
-            path: ["facets", key],
-            equals: value,
-          },
-        }))
+      ? Object.entries(input.facets).map(([key, values]) => {
+          const list = Array.isArray(values) ? values : [values];
+          if (list.length === 1) {
+            return {
+              attributes: {
+                path: ["facets", key],
+                equals: list[0],
+              },
+            } satisfies Prisma.ProductWhereInput;
+          }
+          return {
+            OR: list.map((value) => ({
+              attributes: {
+                path: ["facets", key],
+                equals: value,
+              },
+            })),
+          } satisfies Prisma.ProductWhereInput;
+        })
       : [];
 
   const where: Prisma.ProductWhereInput = {

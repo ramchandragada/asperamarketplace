@@ -94,11 +94,18 @@ export const searchProductsSchema = z.object({
   /** Fashion/kids audience segment stored on Product.attributes.audience */
   audience: z.enum(["women", "men", "kids", "unisex"]).optional(),
   /**
-   * Category-specific facets from Product.attributes.facets
-   * (e.g. { socket: "AM5", memoryType: "DDR5" }).
+   * Category-specific multi-select facets from Product.attributes.facets.
+   * Within a key values are OR'd; across keys they are AND'd.
+   * e.g. { socket: ["AM5", "AM4"], memoryType: ["DDR5"] }.
    */
   facets: z
-    .record(z.string().trim().min(1).max(60), z.string().trim().min(1).max(80))
+    .record(
+      z.string().trim().min(1).max(60),
+      z
+        .array(z.string().trim().min(1).max(80))
+        .min(1)
+        .max(24),
+    )
     .optional(),
   minPricePaise: z.coerce.number().int().nonnegative().optional(),
   maxPricePaise: z.coerce.number().int().positive().optional(),

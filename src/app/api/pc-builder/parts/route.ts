@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { BUILDER_SLOTS, type BuilderSlotId } from "@/lib/pc-builder";
+import {
+  BUILDER_SLOTS,
+  partMatchesCompatibilityFacets,
+  type BuilderPart,
+  type BuilderSlotId,
+} from "@/lib/pc-builder";
 import { searchApprovedProducts } from "@/modules/catalogue/service";
 import { prisma } from "@/platform/db/prisma";
 import { HttpValidationError } from "@/platform/http/errors";
@@ -82,39 +87,46 @@ export async function GET(request: Request) {
     });
     const byId = new Map(products.map((row) => [row.id, row]));
 
-    const items = result.items
-      .map((item) => {
-        const row = byId.get(item.id);
-        if (!row) return null;
-        const variant = row.variants.find((entry) => {
+    const mapped: BuilderPart[] = [];
+    for (const item of result.items) {
+      const row = byId.get(item.id);
+      if (!row) continue;
+      const variant =
+        row.variants.find((entry) => {
           const onHand = entry.inventory?.onHand ?? 0;
           const reserved = entry.inventory?.reserved ?? 0;
           return onHand - reserved > 0;
         }) ?? row.variants[0];
-        if (!variant) return null;
-        const attrs = (row.attributes ?? {}) as {
-          facets?: Record<string, string>;
-        };
-        return {
-          productId: item.id,
-          variantId: variant.id,
-          slug: item.slug,
-          title: item.title,
-          imageUrl: item.primaryImageUrl,
-          pricePaise: item.minPricePaise,
-          mrpPaise: item.minMrpPaise ?? null,
-          availableQty: item.availableQty,
-          sellerName: item.sellerName,
-          facets: attrs.facets ?? {},
-        };
-      })
-      .filter(Boolean);
+      if (!variant) continue;
+      const attrs = (row.attributes ?? {}) as {
+        facets?: Record<string, string>;
+      };
+      mapped.push({
+        productId: item.id,
+        variantId: variant.id,
+        slug: item.slug,
+        title: item.title,
+        imageUrl: item.primaryImageUrl,
+        pricePaise: item.minPricePaise,
+        mrpPaise: item.minMrpPaise ?? null,
+        availableQty: item.availableQty,
+        sellerName: item.sellerName,
+        facets: attrs.facets ?? {},
+      });
+    }
+
+    // Re-apply request facets in-process so soft matches (e.g. case support)
+    // and any SQL edge cases cannot leak incompatible SKUs into the picker.
+    const items = mapped.filter((entry) =>
+      partMatchesCompatibilityFacets(entry, facets),
+    );
 
     return jsonOk(
       {
         slot: parsed.slot as BuilderSlotId,
         items,
-        total: result.total,
+        total:
+          items.length === mapped.length ? result.total : items.length,
         page: result.page,
         pageSize: result.pageSize,
       },

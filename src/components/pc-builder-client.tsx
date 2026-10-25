@@ -9,9 +9,14 @@ import {
   BUILDER_SLOTS,
   buildShareQuery,
   compatibilityFacetsForSlot,
+  compatibilityLockLabels,
   evaluateCompatibility,
   estimateSystemWattage,
   formatPaiseINR,
+  nextEmptyBuilderSlot,
+  partMatchesCompatibilityFacets,
+  pruneIncompatibleSelection,
+  searchHintForSlot,
   type BuilderPart,
   type BuilderPresetId,
   type BuilderSelection,
@@ -96,17 +101,20 @@ export function PcBuilderClient({
       setLoading(true);
       setError(null);
       try {
+        // Compat locks win over preset nudges when keys collide.
+        const presetFacets = activePreset
+          ? (BUILDER_PRESETS.find((entry) => entry.id === activePreset)?.hints[
+              slotId
+            ]?.facets ?? {})
+          : {};
+        const compatFacets = compatibilityFacetsForSlot(slotId, current);
         const facets = {
-          ...compatibilityFacetsForSlot(slotId, current),
-          ...(activePreset
-            ? (BUILDER_PRESETS.find((entry) => entry.id === activePreset)?.hints[
-                slotId
-              ]?.facets ?? {})
-            : {}),
+          ...presetFacets,
+          ...compatFacets,
         };
         const params = new URLSearchParams({
           slot: slotId,
-          pageSize: "16",
+          pageSize: "24",
           inStockOnly: "true",
         });
         if (q.trim()) params.set("q", q.trim());
@@ -120,8 +128,17 @@ export function PcBuilderClient({
           setParts([]);
           return;
         }
-        setParts(body.data?.items ?? []);
-        setTotalParts(body.data?.total ?? 0);
+        const raw = body.data?.items ?? [];
+        // Defense in depth: drop any row that slipped past SQL facet equality.
+        const filtered = raw.filter((part) =>
+          partMatchesCompatibilityFacets(part, compatFacets),
+        );
+        setParts(filtered);
+        setTotalParts(
+          filtered.length === raw.length
+            ? (body.data?.total ?? filtered.length)
+            : filtered.length,
+        );
       } catch {
         setError("Network error while loading parts");
         setParts([]);
@@ -207,24 +224,34 @@ export function PcBuilderClient({
   }, [activeSlot, query, selection, loadParts, hydrating, preset]);
 
   function choosePart(part: BuilderPart) {
-    setSelection((current) => ({ ...current, [activeSlot]: part }));
+    const merged: BuilderSelection = { ...selection, [activeSlot]: part };
+    const pruned = pruneIncompatibleSelection(merged, activeSlot);
+    setSelection(pruned);
+    const nextSlot = nextEmptyBuilderSlot(pruned, activeSlot);
+    if (nextSlot && nextSlot !== activeSlot) {
+      setActiveSlot(nextSlot);
+      setQuery(searchHintForSlot(nextSlot, preset));
+    }
   }
 
   function clearSlot(slotId: BuilderSlotId) {
     setSelection((current) => {
       const next = { ...current };
       delete next[slotId];
-      return next;
+      return pruneIncompatibleSelection(next, slotId);
     });
+  }
+
+  function openSlot(slotId: BuilderSlotId) {
+    setActiveSlot(slotId);
+    setQuery(searchHintForSlot(slotId, preset));
   }
 
   function applyPreset(id: BuilderPresetId) {
     setPreset(id);
     setSelection({});
-    const hint = BUILDER_PRESETS.find((entry) => entry.id === id);
-    const first = hint?.hints.cpu?.q ? "cpu" : "cpu";
-    setActiveSlot(first);
-    setQuery(hint?.hints.cpu?.q ?? "");
+    setActiveSlot("cpu");
+    setQuery(searchHintForSlot("cpu", id));
   }
 
   async function addBuildToCart() {
@@ -277,6 +304,7 @@ export function PcBuilderClient({
 
   const activeMeta = BUILDER_SLOTS.find((slot) => slot.id === activeSlot)!;
   const activeCompat = compatibilityFacetsForSlot(activeSlot, selection);
+  const lockLabels = compatibilityLockLabels(activeSlot, selection);
 
   return (
     <div className="container-shell py-5 md:py-7">
@@ -334,15 +362,7 @@ export function PcBuilderClient({
                 <li key={slot.id}>
                   <button
                     type="button"
-                    onClick={() => {
-                      setActiveSlot(slot.id);
-                      const hint = preset
-                        ? BUILDER_PRESETS.find((p) => p.id === preset)?.hints[
-                            slot.id
-                          ]?.q
-                        : undefined;
-                      setQuery(hint ?? "");
-                    }}
+                    onClick={() => openSlot(slot.id)}
                     className={`flex w-full items-center gap-3 px-4 py-3 text-left transition ${
                       active ? "bg-[#f7f8fa]" : "hover:bg-[#fafbfc]"
                     }`}
@@ -414,19 +434,31 @@ export function PcBuilderClient({
               Choose {activeMeta.label}
             </p>
             <p className="mt-0.5 text-[12px] text-muted">{activeMeta.hint}</p>
-            {Object.keys(activeCompat).length > 0 ? (
+            {lockLabels.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {lockLabels.map((label) => (
+                  <span
+                    key={label}
+                    className="inline-flex items-center rounded-md border border-[#c5d4e8] bg-[#eef4fb] px-2 py-1 text-[11px] font-semibold text-[#1e3a5f]"
+                  >
+                    Compatible · {label}
+                  </span>
+                ))}
+              </div>
+            ) : Object.keys(activeCompat).length > 0 ? (
               <p className="mt-2 text-[11px] text-muted">
-                Compatibility filter:{" "}
-                {Object.entries(activeCompat)
-                  .map(([key, values]) => `${key}=${values.join("|")}`)
-                  .join(" · ")}
+                Filtered to match your build
               </p>
             ) : null}
             <div className="mt-3">
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={`Search ${activeMeta.label.toLowerCase()}…`}
+                placeholder={
+                  lockLabels.length > 0
+                    ? `Search compatible ${activeMeta.label.toLowerCase()}…`
+                    : `Search ${activeMeta.label.toLowerCase()}…`
+                }
                 className="w-full rounded-[10px] border border-border bg-white px-3 py-2.5 text-[14px] outline-none focus:border-foreground"
               />
             </div>

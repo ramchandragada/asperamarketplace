@@ -128,6 +128,15 @@ const SOCKET_TO_PLATFORM: Record<string, string> = {
   "LGA 1851": "Intel LGA 1851",
 };
 
+/** Facets that must match exactly — missing values fail the part. */
+const HARD_COMPAT_FACETS = new Set([
+  "socket",
+  "cpuPlatform",
+  "memoryType",
+  "type",
+  "formFactor",
+]);
+
 export function platformForSocket(socket?: string | null): string | null {
   if (!socket) return null;
   return SOCKET_TO_PLATFORM[socket] ?? null;
@@ -139,6 +148,47 @@ export function socketForPlatform(platform?: string | null): string | null {
     ([, value]) => value === platform,
   );
   return entry?.[0] ?? null;
+}
+
+/** DDR generation implied by socket / platform when the board omits it. */
+export function defaultMemoryTypeForPlatform(
+  platformOrSocket?: string | null,
+): string | null {
+  if (!platformOrSocket) return null;
+  if (/AM5|LGA\s*1851|1851/i.test(platformOrSocket)) return "DDR5";
+  if (/AM4/i.test(platformOrSocket)) return "DDR4";
+  return null;
+}
+
+/**
+ * Cases tagged with a max board size also fit smaller boards.
+ * Returns acceptable `motherboardSupport` facet values for a given board.
+ */
+export function caseSupportValuesForBoard(formFactor: string): string[] {
+  switch (formFactor) {
+    case "Mini-ITX":
+      return ["Mini-ITX", "mATX", "ATX", "E-ATX"];
+    case "mATX":
+      return ["mATX", "ATX", "E-ATX"];
+    case "ATX":
+      return ["ATX", "E-ATX"];
+    case "E-ATX":
+      return ["E-ATX"];
+    default:
+      return [formFactor];
+  }
+}
+
+function resolvedMemoryType(selection: BuilderSelection): string | null {
+  const cpu = selection.cpu?.facets ?? {};
+  const mobo = selection.motherboard?.facets ?? {};
+  return (
+    mobo.memoryType ??
+    cpu.memoryType ??
+    defaultMemoryTypeForPlatform(mobo.cpuPlatform) ??
+    defaultMemoryTypeForPlatform(cpu.socket) ??
+    defaultMemoryTypeForPlatform(platformForSocket(cpu.socket))
+  );
 }
 
 /** Facet filters applied when browsing a slot given current selections. */
@@ -163,12 +213,14 @@ export function compatibilityFacetsForSlot(
   }
 
   if (slotId === "memory") {
-    const mem = mobo.memoryType ?? cpu.memoryType;
+    const mem = resolvedMemoryType(selection);
     if (mem) filters.memoryType = [mem];
+    // Desktop builds should not surface laptop SO-DIMM kits
+    filters.formFactor = ["Desktop (DIMM)"];
   }
 
   if (slotId === "case" && mobo.formFactor) {
-    filters.motherboardSupport = [mobo.formFactor];
+    filters.motherboardSupport = caseSupportValuesForBoard(mobo.formFactor);
   }
 
   if (slotId === "psu") {
@@ -181,6 +233,130 @@ export function compatibilityFacetsForSlot(
   }
 
   return filters;
+}
+
+/** Human-readable lock chips shown above the part picker. */
+export function compatibilityLockLabels(
+  slotId: BuilderSlotId,
+  selection: BuilderSelection,
+): string[] {
+  const labels: string[] = [];
+  const cpu = selection.cpu;
+  const mobo = selection.motherboard;
+  const filters = compatibilityFacetsForSlot(slotId, selection);
+
+  if (slotId === "motherboard" && cpu?.facets.socket) {
+    labels.push(`Socket ${cpu.facets.socket} (matches your processor)`);
+  }
+  if (slotId === "cpu" && mobo?.facets.cpuPlatform) {
+    labels.push(`Only ${mobo.facets.cpuPlatform} CPUs`);
+  }
+  if (slotId === "memory") {
+    const mem = filters.memoryType?.[0];
+    if (mem) labels.push(`${mem} only`);
+    labels.push("Desktop DIMM");
+  }
+  if (slotId === "case" && mobo?.facets.formFactor) {
+    labels.push(`Fits ${mobo.facets.formFactor} boards`);
+  }
+  if (slotId === "psu" && filters.wattageBand?.length) {
+    const est = estimateSystemWattage(selection);
+    labels.push(`${est.recommendedPsuW} W+ recommended`);
+  }
+  if (slotId === "keyboard" && filters.type?.[0]) {
+    labels.push("Keyboards only");
+  }
+  if (slotId === "mouse" && filters.type?.[0]) {
+    labels.push("Mice only");
+  }
+  return labels;
+}
+
+export function partMatchesCompatibilityFacets(
+  part: BuilderPart,
+  filters: Record<string, string[]>,
+): boolean {
+  for (const [key, allowed] of Object.entries(filters)) {
+    if (!allowed.length) continue;
+    const value = part.facets[key];
+    if (!value) {
+      if (HARD_COMPAT_FACETS.has(key)) return false;
+      // Soft facets (wattageBand, motherboardSupport): keep if unknown
+      continue;
+    }
+    if (key === "motherboardSupport") {
+      const ok = allowed.some((entry) =>
+        value.toUpperCase().includes(entry.toUpperCase()),
+      );
+      if (!ok) return false;
+      continue;
+    }
+    if (!allowed.includes(value)) return false;
+  }
+  return true;
+}
+
+/**
+ * Drop downstream parts that no longer satisfy compatibility after a change.
+ * `anchorSlot` is the slot that just changed (or was cleared).
+ */
+export function pruneIncompatibleSelection(
+  selection: BuilderSelection,
+  anchorSlot?: BuilderSlotId,
+): BuilderSelection {
+  const next: BuilderSelection = { ...selection };
+  // Re-check every other configured slot against the latest selection.
+  // Iterate in slot order so upstream anchors stabilize before dependents.
+  for (const slot of BUILDER_SLOTS) {
+    if (anchorSlot && slot.id === anchorSlot) continue;
+    const part = next[slot.id];
+    if (!part) continue;
+    // Build a view without this slot so filters come only from peers
+    const peers: BuilderSelection = { ...next };
+    delete peers[slot.id];
+    const filters = compatibilityFacetsForSlot(slot.id, peers);
+    if (!partMatchesCompatibilityFacets(part, filters)) {
+      delete next[slot.id];
+    }
+  }
+  // PSU wattage can also fail via evaluateCompatibility even when band matches
+  if (next.psu) {
+    const power = estimateSystemWattage(next);
+    const psuW = parseWattage(next.psu.facets.wattage ?? next.psu.title);
+    if (psuW && psuW < power.recommendedPsuW) {
+      delete next.psu;
+    }
+  }
+  return next;
+}
+
+/** Next empty slot after `after` (required first, then optional). */
+export function nextEmptyBuilderSlot(
+  selection: BuilderSelection,
+  after?: BuilderSlotId,
+): BuilderSlotId | null {
+  const start = after
+    ? BUILDER_SLOTS.findIndex((slot) => slot.id === after) + 1
+    : 0;
+  const ordered = [
+    ...BUILDER_SLOTS.slice(Math.max(0, start)),
+    ...BUILDER_SLOTS.slice(0, Math.max(0, start)),
+  ];
+  const required = ordered.find((slot) => slot.required && !selection[slot.id]);
+  if (required) return required.id;
+  const optional = ordered.find((slot) => !selection[slot.id]);
+  return optional?.id ?? null;
+}
+
+export function searchHintForSlot(
+  slotId: BuilderSlotId,
+  presetId: BuilderPresetId | null,
+): string {
+  if (!presetId) return "";
+  return (
+    BUILDER_PRESETS.find((entry) => entry.id === presetId)?.hints[slotId]?.q ??
+    ""
+  );
 }
 
 export function evaluateCompatibility(

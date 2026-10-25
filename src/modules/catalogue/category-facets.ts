@@ -72,6 +72,13 @@ function processorFacets(title: string): Record<string, string> {
     facets.integratedGraphics = "Yes";
   }
 
+  // Desktop memory generation implied by socket (used by PC Builder locks)
+  if (facets.socket === "AM5" || facets.socket === "LGA 1851") {
+    facets.memoryType = "DDR5";
+  } else if (facets.socket === "AM4") {
+    facets.memoryType = "DDR4";
+  }
+
   return facets;
 }
 

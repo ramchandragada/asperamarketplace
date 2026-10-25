@@ -108,16 +108,16 @@ function MegaBrandTile({
       onClick={onNavigate}
       className={
         featured
-          ? "group flex h-full min-h-[11.5rem] flex-col items-center justify-center gap-3 rounded-2xl border border-[#E4E9E9] bg-white px-5 py-6 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-accent/45"
-          : "group flex min-h-[7rem] flex-col items-center justify-center gap-2 rounded-xl border border-[#E8ECEC] bg-white px-3 py-3.5 transition-colors hover:border-accent/40"
+          ? "group flex h-full min-h-[11.5rem] w-full flex-col items-center justify-center gap-3 rounded-2xl border border-[#E4E9E9] bg-white px-5 py-6 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-accent/45"
+          : "group flex h-full min-h-[7rem] w-full flex-col items-center justify-center gap-2 rounded-xl border border-[#E8ECEC] bg-white px-3 py-3.5 transition-colors hover:border-accent/40"
       }
       aria-label={`Shop ${brand.label}`}
     >
       <span
         className={
           featured
-            ? "relative flex h-24 w-full max-w-[16rem] items-center justify-center overflow-hidden rounded-xl bg-[#F7F9F9]"
-            : "relative flex h-14 w-full items-center justify-center overflow-hidden rounded-lg bg-[#F7F9F9]"
+            ? "relative flex h-28 w-full items-center justify-center overflow-hidden rounded-xl bg-[#F7F9F9]"
+            : "relative flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-[#F7F9F9]"
         }
       >
         {brand.imageUrl ? (
@@ -125,7 +125,7 @@ function MegaBrandTile({
             src={brand.imageUrl}
             alt=""
             fill
-            sizes={featured ? "220px" : "140px"}
+            sizes={featured ? "280px" : "160px"}
             className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.05]"
           />
         ) : (
@@ -154,6 +154,14 @@ function MegaBrandTile({
   );
 }
 
+function brandGridColumns(count: number): string {
+  if (count <= 2) return "repeat(2, minmax(0, 1fr))";
+  if (count === 3) return "repeat(3, minmax(0, 1fr))";
+  if (count === 4) return "repeat(2, minmax(0, 1fr))";
+  if (count <= 6) return "repeat(3, minmax(0, 1fr))";
+  return "repeat(4, minmax(0, 1fr))";
+}
+
 function MegaPanel({
   columns,
   brands,
@@ -165,7 +173,6 @@ function MegaPanel({
   categoryLabel: string;
   onNavigate: () => void;
 }) {
-  const sparse = brands.length > 0 && brands.length <= 4;
   const featured = brands.length > 0 && brands.length <= 4;
 
   return (
@@ -173,7 +180,7 @@ function MegaPanel({
       <div className="flex w-full items-stretch gap-5 px-4 py-5 md:gap-7 md:px-6 lg:gap-8 lg:px-8 xl:gap-10 xl:px-10">
         <ScrollEdgeRail
           label="Subcategories"
-          className="hide-scroll flex min-w-0 flex-[0.9] gap-8 overflow-x-auto md:gap-10 xl:gap-12"
+          className="hide-scroll flex min-w-0 flex-1 gap-8 overflow-x-auto md:gap-10 xl:gap-12"
         >
           {columns.map((column) => (
             <div key={column.heading} className="min-w-[9.5rem] shrink-0">
@@ -198,7 +205,7 @@ function MegaPanel({
         </ScrollEdgeRail>
 
         {brands.length > 0 ? (
-          <aside className="hidden min-w-0 flex-[2] self-stretch rounded-2xl bg-[linear-gradient(160deg,#F7F9F9_0%,#EEF3F3_100%)] p-4 md:block lg:p-5 xl:flex-[2.15]">
+          <aside className="hidden w-full max-w-[42rem] min-w-0 flex-[1.35] self-stretch rounded-2xl bg-[linear-gradient(160deg,#F7F9F9_0%,#EEF3F3_100%)] p-4 md:block lg:max-w-none lg:p-5 xl:flex-[1.55]">
             <div className="flex items-baseline justify-between gap-3">
               <p className="text-[13px] leading-none font-bold text-accent">
                 Popular brands
@@ -208,19 +215,8 @@ function MegaPanel({
               </p>
             </div>
             <div
-              className={
-                sparse
-                  ? "mt-3 grid min-h-[11.5rem] flex-1 gap-3 [grid-auto-rows:1fr]"
-                  : "mt-3 grid gap-2.5"
-              }
-              style={{
-                gridTemplateColumns:
-                  brands.length <= 2
-                    ? "repeat(2, minmax(0, 1fr))"
-                    : brands.length <= 4
-                      ? "repeat(2, minmax(0, 1fr))"
-                      : "repeat(auto-fill, minmax(7.75rem, 1fr))",
-              }}
+              className="mt-3 grid w-full gap-3 [grid-auto-rows:minmax(7.5rem,1fr)]"
+              style={{ gridTemplateColumns: brandGridColumns(brands.length) }}
             >
               {brands.map((entry) => (
                 <MegaBrandTile

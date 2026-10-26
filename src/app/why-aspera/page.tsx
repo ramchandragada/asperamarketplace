@@ -22,12 +22,13 @@ export default function WhyAsperaPage() {
         Why Aspera
       </p>
       <h1 className="font-display mt-2 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-        Built for PC buyers who need parts now — and support after
+        The Blinkit moment for PC parts
       </h1>
       <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
-        Aspera combines authorised dealer stock with hub Express delivery, then
-        backs every eligible order with warranty logistics, technical help, and
-        business-ready GST invoicing.
+        Big marketplaces trained India to wait days for a GPU. Aspera runs
+        authorised dealer stock from nearby hubs — minutes when you’re in zone —
+        then backs the buy with warranty pickup, free tech support, and GST
+        invoices. Six promises. One goal: make courier waits feel outdated.
       </p>
 
       <ol className="mt-10 space-y-8">

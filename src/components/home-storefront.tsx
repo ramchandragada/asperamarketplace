@@ -37,50 +37,74 @@ type HeroSlide = {
 /**
  * Full-bleed hero carousel. Self-hosted PC hardware plates under public/hero.
  */
+/**
+ * USP-led hero carousel — one promise per slide (Blinkit/Zepto energy for PC parts).
+ * No chips/overlays on the photo; brand + one headline + one line + CTAs only.
+ */
 const HERO_SLIDES: HeroSlide[] = [
   {
-    id: "build",
+    id: "express",
     eyebrow: "Aspera Express",
-    title: "PC parts in minutes",
+    title: "PC parts in minutes — not days",
     subtitle:
-      "Order from nearby hubs — Express delivery in under 90 minutes across Pune.",
-    ctaLabel: "Shop processors",
-    ctaHref: "/browse?categorySlug=processors",
-    image: "/hero/pc-express-build.jpg",
+      "Hub stock at your door in 10–90 mins* by pin. The end of waiting on courier for a GPU.",
+    ctaLabel: "Shop Express now",
+    ctaHref: "/browse",
+    image: "/hero/usp-express-minutes.jpg",
   },
   {
-    id: "gpu",
-    eyebrow: "Graphics cards · Express",
-    title: "GPUs, delivered fast",
+    id: "genuine",
+    eyebrow: "Authorised brand dealers",
+    title: "100% genuine. No grey-market lottery.",
     subtitle:
-      "GeForce RTX and Radeon RX in stock at local hubs — same-day express ready.",
-    ctaLabel: "Shop graphics cards",
-    ctaHref: "/browse?categorySlug=graphics-cards",
-    image: "/hero/pc-gpu-express.jpg",
+      "Every listing from authorised dealers — warranty-valid stock, not mystery marketplace sellers.",
+    ctaLabel: "Browse genuine parts",
+    ctaHref: "/browse",
+    image: "/hero/usp-authorised-genuine.jpg",
   },
   {
-    id: "monitors",
-    eyebrow: "Monitors & peripherals",
-    title: "Finish the setup today",
+    id: "warranty",
+    eyebrow: "Warranty support",
+    title: "Free pickup to the service centre — and back",
     subtitle:
-      "High-refresh monitors, keyboards, and mice with minute-level ETAs at your pin.",
-    ctaLabel: "Shop monitors",
-    ctaHref: "/browse?categorySlug=monitors",
-    image: "/hero/pc-monitor-desk.jpg",
+      "If it’s under warranty, we collect from your door, take it to service, and return it. You don’t ship RMA yourself.",
+    ctaLabel: "See warranty promise",
+    ctaHref: "/why-aspera#warranty",
+    image: "/hero/usp-warranty-pickup.jpg",
   },
   {
-    id: "storage",
-    eyebrow: "Storage & power",
-    title: "SSDs before the evening",
+    id: "tech",
+    eyebrow: "Free technical support",
+    title: "Build help included — not a chatbot dead-end",
     subtitle:
-      "NVMe, SATA, and UPS from verified sellers — Express when you’re in a hub zone.",
-    ctaLabel: "Shop SSDs",
-    ctaHref: "/browse?categorySlug=storage-ssd",
-    image: "/hero/pc-ssd-power.jpg",
+      "Compatibility, install, and setup support from people who know PC parts. Free with every order.",
+    ctaLabel: "Open PC Builder",
+    ctaHref: "/pc-builder",
+    image: "/hero/usp-tech-support.jpg",
+  },
+  {
+    id: "gst",
+    eyebrow: "Business buyers",
+    title: "GST invoice with input credit",
+    subtitle:
+      "Proper tax invoices for registered businesses — built for SMEs who buy CPUs and GPUs on GSTIN.",
+    ctaLabel: "Add business GSTIN",
+    ctaHref: "/account/business",
+    image: "/hero/usp-gst-business.jpg",
+  },
+  {
+    id: "price",
+    eyebrow: "Hub dealer pricing",
+    title: "Local dealer rates. Online. Express.",
+    subtitle:
+      "Competitive hub pricing on authorised stock — without the days-long wait of big marketplaces.",
+    ctaLabel: "Compare live prices",
+    ctaHref: "/browse?sort=price_asc",
+    image: "/hero/usp-hub-pricing.jpg",
   },
 ];
 
-const HERO_AUTO_MS = 5200;
+const HERO_AUTO_MS = 4800;
 
 /** Aspera Forge hero — brand-first PC components carousel */
 export function AsperaHero() {
@@ -165,7 +189,7 @@ export function AsperaHero() {
       }}
     >
       <h2 id={labelId} className="sr-only">
-        Category highlights
+        Aspera promises — Express PC parts
       </h2>
 
       <div className="relative grid grid-cols-[3.25rem_minmax(0,1fr)_3.25rem] md:grid-cols-[4.25rem_minmax(0,1fr)_4.25rem]">
@@ -229,11 +253,11 @@ export function AsperaHero() {
                       {entry.ctaLabel}
                     </Link>
                     <Link
-                      href="/browse"
+                      href="/why-aspera"
                       className="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-white/55 bg-white/10 px-5 text-[14px] font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
                       tabIndex={active ? 0 : -1}
                     >
-                      Browse parts
+                      Why Aspera wins
                     </Link>
                   </div>
                 </div>

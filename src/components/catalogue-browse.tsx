@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   FormEvent,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -20,6 +21,7 @@ import { ProductCardSkeleton } from "@/components/ui/skeleton";
 import {
   facetQueryEntries,
   getCategoryFacetConfig,
+  parseFacetSearchParams,
   type FacetSelection,
 } from "@/modules/catalogue/category-facets";
 
@@ -30,6 +32,81 @@ export type BrowseProduct = ProductCardModel & {
 
 type CategoryOption = { slug: string; name: string; productCount?: number };
 type BrandOption = { slug: string; name: string; productCount?: number };
+
+type CatalogueBrowseProps = {
+  initialItems: BrowseProduct[];
+  initialQuery: string;
+  initialTotal: number;
+  categories: CategoryOption[];
+  brands?: BrandOption[];
+  /** Brands that actually have approved products in each category slug. */
+  brandsByCategory?: Record<string, BrandOption[]>;
+  initialCategorySlug?: string;
+  initialBrandSlug?: string;
+  initialSort?: string;
+  initialInStockOnly?: boolean;
+  initialVerifiedOnly?: boolean;
+  initialMinRating?: number;
+  initialMinDiscount?: number;
+  initialMinPricePaise?: number;
+  initialMaxPricePaise?: number;
+  initialFacets?: FacetSelection;
+  heading?: string;
+  browseBasePath?: string;
+  /** `home` hides breadcrumb/top sort; Meesho-style Products For You chrome */
+  variant?: "page" | "home";
+  enableLoadMore?: boolean;
+  /** Auto-load next page when sentinel enters viewport */
+  infiniteScroll?: boolean;
+  updateUrl?: boolean;
+};
+
+/** Identity of the listing URL — soft-nav must remount when this changes. */
+function listingRouteKey(sp: URLSearchParams): string {
+  const facetKeys = [...sp.keys()]
+    .filter((key) => key.startsWith("facet."))
+    .sort();
+  const facets = facetKeys
+    .map((key) => `${key}=${sp.getAll(key).slice().sort().join(",")}`)
+    .join("&");
+  return [
+    sp.get("categorySlug") ?? "",
+    sp.get("brandSlug") ?? "",
+    sp.get("q") ?? "",
+    sp.get("sort") ?? "",
+    sp.get("inStockOnly") ?? "",
+    sp.get("verifiedSellerOnly") ?? "",
+    sp.get("minRating") ?? "",
+    sp.get("minDiscountPercent") ?? "",
+    sp.get("minPricePaise") ?? "",
+    sp.get("maxPricePaise") ?? "",
+    facets,
+  ].join("|");
+}
+
+/**
+ * Soft-nav between /browse?categorySlug=… reuses the client tree. Keying the
+ * inner browse on the URL forces a remount the moment the address bar changes
+ * (mega-menu / category chips / brand logos), even before RSC props catch up.
+ */
+export function CatalogueBrowse(props: CatalogueBrowseProps) {
+  if (props.variant === "home" || props.updateUrl === false) {
+    return <CatalogueBrowseInner {...props} />;
+  }
+  return (
+    <Suspense fallback={<CatalogueBrowseInner {...props} />}>
+      <CatalogueBrowseUrlKeyed {...props} />
+    </Suspense>
+  );
+}
+
+function CatalogueBrowseUrlKeyed(props: CatalogueBrowseProps) {
+  const searchParams = useSearchParams();
+  const routeKey = listingRouteKey(
+    new URLSearchParams(searchParams.toString()),
+  );
+  return <CatalogueBrowseInner key={routeKey} {...props} />;
+}
 
 const PRICE_PRESETS = [
   { key: "u5k", label: "Under ₹5,000", min: 0, max: 5000 },
@@ -63,7 +140,7 @@ function rupeesFromPaise(paise?: number) {
   return String(Math.round(paise / 100));
 }
 
-export function CatalogueBrowse({
+function CatalogueBrowseInner({
   initialItems,
   initialQuery,
   initialTotal,
@@ -86,38 +163,72 @@ export function CatalogueBrowse({
   enableLoadMore = false,
   infiniteScroll = false,
   updateUrl = true,
-}: {
-  initialItems: BrowseProduct[];
-  initialQuery: string;
-  initialTotal: number;
-  categories: CategoryOption[];
-  brands?: BrandOption[];
-  /** Brands that actually have approved products in each category slug. */
-  brandsByCategory?: Record<string, BrandOption[]>;
-  initialCategorySlug?: string;
-  initialBrandSlug?: string;
-  initialSort?: string;
-  initialInStockOnly?: boolean;
-  initialVerifiedOnly?: boolean;
-  initialMinRating?: number;
-  initialMinDiscount?: number;
-  initialMinPricePaise?: number;
-  initialMaxPricePaise?: number;
-  initialFacets?: FacetSelection;
-  heading?: string;
-  browseBasePath?: string;
-  /** `home` hides breadcrumb/top sort; Meesho-style Products For You chrome */
-  variant?: "page" | "home";
-  enableLoadMore?: boolean;
-  /** Auto-load next page when sentinel enters viewport */
-  infiniteScroll?: boolean;
-  updateUrl?: boolean;
-}) {
+}: CatalogueBrowseProps) {
   const router = useRouter();
   const isHome = variant === "home";
   const useInfinite = infiniteScroll || (isHome && enableLoadMore);
-  const initialMin = rupeesFromPaise(initialMinPricePaise);
-  const initialMax = rupeesFromPaise(initialMaxPricePaise);
+
+  /**
+   * Soft-nav remounts this inner tree with a new URL key while RSC props can
+   * still describe the *previous* category. Prefer the address bar on client
+   * mount so we never paint SSD cards under ?categorySlug=laptops.
+   */
+  const urlBoot = useMemo(() => {
+    if (typeof window === "undefined" || isHome || !updateUrl) return null;
+    const sp = new URLSearchParams(window.location.search);
+    return {
+      categorySlug: sp.get("categorySlug") ?? "",
+      brandSlug: sp.get("brandSlug") ?? "",
+      query: sp.get("q") ?? "",
+      sort: sp.get("sort") ?? initialSort,
+      inStockOnly: sp.get("inStockOnly") === "true",
+      verifiedOnly: sp.get("verifiedSellerOnly") === "true",
+      minRating: sp.get("minRating") ? Number(sp.get("minRating")) : null,
+      minDiscount: sp.get("minDiscountPercent")
+        ? Number(sp.get("minDiscountPercent"))
+        : null,
+      minPricePaise: sp.get("minPricePaise")
+        ? Number(sp.get("minPricePaise"))
+        : undefined,
+      maxPricePaise: sp.get("maxPricePaise")
+        ? Number(sp.get("maxPricePaise"))
+        : undefined,
+      facets: parseFacetSearchParams(sp),
+    };
+  }, [isHome, updateUrl, initialSort]);
+
+  const propsStale =
+    !!urlBoot &&
+    (urlBoot.categorySlug !== initialCategorySlug ||
+      urlBoot.brandSlug !== initialBrandSlug ||
+      urlBoot.query !== initialQuery);
+
+  const bootCategorySlug = propsStale
+    ? urlBoot!.categorySlug
+    : initialCategorySlug;
+  const bootBrandSlug = propsStale ? urlBoot!.brandSlug : initialBrandSlug;
+  const bootQuery = propsStale ? urlBoot!.query : initialQuery;
+  const bootSort = propsStale ? urlBoot!.sort : initialSort;
+  const bootInStock = propsStale ? urlBoot!.inStockOnly : initialInStockOnly;
+  const bootVerified = propsStale ? urlBoot!.verifiedOnly : initialVerifiedOnly;
+  const bootMinRating = propsStale
+    ? urlBoot!.minRating
+    : (initialMinRating ?? null);
+  const bootMinDiscount = propsStale
+    ? urlBoot!.minDiscount
+    : (initialMinDiscount ?? null);
+  const bootMinPaise = propsStale
+    ? urlBoot!.minPricePaise
+    : initialMinPricePaise;
+  const bootMaxPaise = propsStale
+    ? urlBoot!.maxPricePaise
+    : initialMaxPricePaise;
+  const bootFacets = propsStale ? urlBoot!.facets : initialFacets;
+  const bootItems = propsStale ? [] : initialItems;
+  const bootTotal = propsStale ? 0 : initialTotal;
+
+  const initialMin = rupeesFromPaise(bootMinPaise);
+  const initialMax = rupeesFromPaise(bootMaxPaise);
   const matchedPreset =
     PRICE_PRESETS.find(
       (preset) =>
@@ -125,26 +236,23 @@ export function CatalogueBrowse({
         (preset.max == null ? initialMax === "" : String(preset.max) === initialMax),
     )?.key ?? "";
 
-  const [items, setItems] = useState(initialItems);
-  const [total, setTotal] = useState(initialTotal);
+  const [items, setItems] = useState(bootItems);
+  const [total, setTotal] = useState(bootTotal);
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [query, setQuery] = useState(initialQuery);
-  const [categorySlug, setCategorySlug] = useState(initialCategorySlug);
-  const [brandSlug, setBrandSlug] = useState(initialBrandSlug);
-  const [facets, setFacets] = useState<FacetSelection>(initialFacets);
-  const [sort, setSort] = useState(initialSort);
-  const [inStockOnly, setInStockOnly] = useState(initialInStockOnly);
-  const [verifiedOnly, setVerifiedOnly] = useState(initialVerifiedOnly);
-  const [minRating, setMinRating] = useState<number | null>(
-    initialMinRating ?? null,
-  );
-  const [minDiscount, setMinDiscount] = useState<number | null>(
-    initialMinDiscount ?? null,
-  );
+  const [query, setQuery] = useState(bootQuery);
+  const [categorySlug, setCategorySlug] = useState(bootCategorySlug);
+  const [brandSlug, setBrandSlug] = useState(bootBrandSlug);
+  const [facets, setFacets] = useState<FacetSelection>(bootFacets);
+  const [sort, setSort] = useState(bootSort);
+  const [inStockOnly, setInStockOnly] = useState(bootInStock);
+  const [verifiedOnly, setVerifiedOnly] = useState(bootVerified);
+  const [minRating, setMinRating] = useState<number | null>(bootMinRating);
+  const [minDiscount, setMinDiscount] = useState<number | null>(bootMinDiscount);
   const [minPrice, setMinPrice] = useState(initialMin);
   const [maxPrice, setMaxPrice] = useState(initialMax);
   const [pricePreset, setPricePreset] = useState(matchedPreset);
+  const needsUrlFetch = propsStale;
   const [categorySearch, setCategorySearch] = useState("");
   const [brandSearch, setBrandSearch] = useState("");
   const [categoryShowAll, setCategoryShowAll] = useState(false);
@@ -156,8 +264,6 @@ export function CatalogueBrowse({
   const loadMoreLockRef = useRef(false);
   const loadMoreRef = useRef<() => void>(() => {});
   const observerRef = useRef<IntersectionObserver | null>(null);
-  // Soft-nav between /browse?… reuses this client tree unless the parent
-  // remounts us (see key={browseKey} on browse/shop pages).
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
     brand: true,
@@ -280,6 +386,8 @@ export function CatalogueBrowse({
     minDiscount?: number | null;
     page?: number;
     append?: boolean;
+    /** When true, do not write the address bar (Link / soft-nav already did). */
+    skipUrlUpdate?: boolean;
   }) {
     setError(null);
     const params = new URLSearchParams();
@@ -343,7 +451,7 @@ export function CatalogueBrowse({
       setItems((prev) => (append ? [...prev, ...nextItems] : nextItems));
       setTotal(body.data?.total ?? 0);
       setPage(nextPage);
-      if (updateUrl && !isHome) {
+      if (updateUrl && !isHome && !next?.skipUrlUpdate) {
         // Keep Next.js App Router in sync — raw history.replaceState made
         // subsequent mega-menu / brand Link soft-navs look dead.
         const nextPath = `${browseBasePath}?${params.toString()}`;
@@ -356,6 +464,16 @@ export function CatalogueBrowse({
       }
     }
   }
+
+  // Stale RSC props after URL soft-nav: fetch listing for the address bar.
+  useEffect(() => {
+    if (!needsUrlFetch) return;
+    startTransition(() => {
+      void runSearch({ skipUrlUpdate: true });
+    });
+    // Mount-only — keyed remount creates a fresh instance per URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function loadMore() {
     if (loadMoreLockRef.current || loadingMore || pending) return;

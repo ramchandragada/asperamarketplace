@@ -619,19 +619,20 @@ export const MEGA_MENU: MegaMenuCategory[] = [
   },
 ];
 
-/** Homepage shop-by-category tiles — real component crops on light wells. */
+/** Homepage shop-by-category tiles — one real product crop per category (no cross-reuse). */
 export const ASPERA_CATEGORY_TILES = [
   { id: "processors", label: "Processors", href: browse("processors"), imageUrl: "/category-tiles/pc-cpu.jpg", bgTint: "#ffffff" },
   { id: "graphics-cards", label: "Graphics Cards", href: browse("graphics-cards"), imageUrl: "/category-tiles/pc-gpu.jpg", bgTint: "#ffffff" },
   { id: "motherboards", label: "Motherboards", href: browse("motherboards"), imageUrl: "/category-tiles/pc-mobo.jpg", bgTint: "#ffffff" },
   { id: "memory-ram", label: "Memory", href: browse("memory-ram"), imageUrl: "/category-tiles/pc-ram.jpg", bgTint: "#ffffff" },
   { id: "storage-ssd", label: "SSD / Storage", href: browse("storage-ssd"), imageUrl: "/category-tiles/pc-ssd.jpg", bgTint: "#ffffff" },
-  { id: "laptops", label: "Laptops", href: browse("laptops"), imageUrl: "/category-tiles/pc-cpu.jpg", bgTint: "#ffffff" },
-  { id: "power-supplies", label: "Power Supplies", href: browse("power-supplies"), imageUrl: "/category-tiles/pc-cabinet.jpg", bgTint: "#ffffff" },
-  { id: "cpu-coolers", label: "CPU Coolers", href: browse("cpu-coolers"), imageUrl: "/category-tiles/pc-cpu.jpg", bgTint: "#ffffff" },
+  { id: "laptops", label: "Laptops", href: browse("laptops"), imageUrl: "/category-tiles/pc-laptop.jpg", bgTint: "#ffffff" },
+  { id: "power-supplies", label: "Power Supplies", href: browse("power-supplies"), imageUrl: "/category-tiles/pc-psu.jpg", bgTint: "#ffffff" },
+  { id: "cpu-coolers", label: "CPU Coolers", href: browse("cpu-coolers"), imageUrl: "/category-tiles/pc-cooler.jpg", bgTint: "#ffffff" },
   { id: "monitors", label: "Monitors", href: browse("monitors"), imageUrl: "/category-tiles/pc-monitor.jpg", bgTint: "#ffffff" },
   { id: "cabinets", label: "Cabinets", href: browse("cabinets"), imageUrl: "/category-tiles/pc-cabinet.jpg", bgTint: "#ffffff" },
   { id: "keyboard-mouse", label: "Keyboard & Mouse", href: browse("keyboard-mouse"), imageUrl: "/category-tiles/pc-keyboard.jpg", bgTint: "#ffffff" },
+  { id: "ups", label: "UPS", href: browse("ups"), imageUrl: "/category-tiles/pc-ups.jpg", bgTint: "#ffffff" },
 ] as const;
 
 /** Shop-by-brand lanes — logo only; deep-link to brand + category facets. */

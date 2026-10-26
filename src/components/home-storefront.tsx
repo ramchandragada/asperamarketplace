@@ -643,7 +643,7 @@ export function ShopByCategory({
   );
 }
 
-/** Shop By Brands — sober white cards; product on white, no nested grey wells */
+/** Shop By Brands — logo-only cards (no category eyebrow, no brand name caption). */
 export function ShopByBrands({
   brands,
 }: {
@@ -652,8 +652,6 @@ export function ShopByBrands({
     label: string;
     href: string;
     imageUrl: string;
-    bgTint?: string;
-    offer?: string;
   }>;
 }) {
   const tiles = brands.slice(0, 8);
@@ -703,24 +701,17 @@ export function ShopByBrands({
             renderItem={(brand) => (
               <Link
                 href={brand.href}
-                className="group flex flex-col overflow-hidden rounded-[10px] border border-border bg-white transition-[border-color] duration-200 hover:border-[#cfd6e0]"
+                aria-label={`Shop ${brand.label}`}
+                className="group flex overflow-hidden rounded-[10px] border border-border bg-white transition-[border-color] duration-200 hover:border-[#cfd6e0]"
               >
-                <span className="relative aspect-[3/4] w-full bg-white">
-                  {brand.offer ? (
-                    <span className="absolute top-2.5 left-2.5 z-10 text-[10px] font-medium tracking-[0.08em] text-muted uppercase">
-                      {brand.offer}
-                    </span>
-                  ) : null}
-                  <Image
+                <span className="relative aspect-[5/4] w-full bg-white">
+                  {/* Local SVG brand marks — next/image does not optimize them well. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={brand.imageUrl}
                     alt=""
-                    fill
-                    sizes="(max-width: 640px) 150px, 190px"
-                    className="object-contain object-center p-4 pt-8 transition duration-300 group-hover:scale-[1.02]"
+                    className="absolute inset-0 h-full w-full object-contain object-center p-6 transition duration-300 group-hover:scale-[1.03] md:p-7"
                   />
-                </span>
-                <span className="flex min-h-10 items-center justify-center border-t border-border/80 px-2 py-2 text-center text-[12px] font-semibold tracking-wide text-foreground md:min-h-11 md:text-[13px]">
-                  {brand.label}
                 </span>
               </Link>
             )}

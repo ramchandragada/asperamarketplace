@@ -49,8 +49,36 @@ function link(
   return { label, href: browse(categorySlug, opts) };
 }
 
-/** Official-style SVG wordmarks / marks in /public/brand-logos. */
-function brandLogo(brandSlug: string): string {
+/**
+ * Official brand SVG marks in /public/brand-logos.
+ * Only list slugs that have a real vector mark (Simple Icons / brand SVG).
+ * Never invent text-as-logo placeholders — missing → monogram fallback in UI.
+ */
+const OFFICIAL_BRAND_LOGOS = new Set([
+  "acer",
+  "amd",
+  "asus",
+  "cooler-master",
+  "corsair",
+  "deepcool",
+  "dell",
+  "hyperx",
+  "intel",
+  "kingston",
+  "lg",
+  "logitech",
+  "msi",
+  "nvidia",
+  "razer",
+  "redragon",
+  "samsung",
+  "sandisk",
+  "seagate",
+  "wd",
+]);
+
+function brandLogo(brandSlug: string): string | undefined {
+  if (!OFFICIAL_BRAND_LOGOS.has(brandSlug)) return undefined;
   return `/brand-logos/${brandSlug}.svg`;
 }
 
@@ -60,22 +88,23 @@ function brand(
   brandSlug: string,
   imageUrl?: string,
 ): MegaMenuBrand {
+  const resolved = imageUrl ?? brandLogo(brandSlug);
   return {
     label,
     href: browse(categorySlug, { brandSlug }),
-    imageUrl: imageUrl ?? brandLogo(brandSlug),
+    ...(resolved ? { imageUrl: resolved } : {}),
   };
 }
 
 const IMG = {
-  amd: brandLogo("amd"),
-  intel: brandLogo("intel"),
-  nvidia: brandLogo("nvidia"),
-  asus: brandLogo("asus"),
-  corsair: brandLogo("corsair"),
-  samsung: brandLogo("samsung"),
-  logitech: brandLogo("logitech"),
-  apc: brandLogo("apc"),
+  amd: brandLogo("amd")!,
+  intel: brandLogo("intel")!,
+  nvidia: brandLogo("nvidia")!,
+  asus: brandLogo("asus")!,
+  corsair: brandLogo("corsair")!,
+  samsung: brandLogo("samsung")!,
+  logitech: brandLogo("logitech")!,
+  msi: brandLogo("msi")!,
 } as const;
 
 export const SEARCH_PLACEHOLDER =
@@ -543,7 +572,7 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       },
     ],
     brands: [
-      brand("APC", "ups", "apc", IMG.apc),
+      brand("APC", "ups", "apc"),
       brand("CyberPower", "ups", "cyberpower"),
       brand("Microtek", "ups", "microtek"),
       brand("Fingers", "ups", "fingers"),
@@ -605,73 +634,57 @@ export const ASPERA_CATEGORY_TILES = [
   { id: "keyboard-mouse", label: "Keyboard & Mouse", href: browse("keyboard-mouse"), imageUrl: "/category-tiles/pc-keyboard.jpg", bgTint: "#ffffff" },
 ] as const;
 
-/** Shop-by-brand lanes (PC brands) — deep-link to brand + category facets. */
+/** Shop-by-brand lanes — logo only; deep-link to brand + category facets. */
 export const ASPERA_BRAND_LANES = [
   {
     id: "intel",
     label: "Intel",
     href: browse("processors", { facets: { brandFamily: "Intel Core" } }),
-    imageUrl: brandLogo("intel"),
-    bgTint: "#ffffff",
-    offer: "Core processors",
+    imageUrl: IMG.intel,
   },
   {
     id: "amd",
-    label: "AMD Ryzen",
+    label: "AMD",
     href: browse("processors", { facets: { brandFamily: "AMD Ryzen" } }),
-    imageUrl: brandLogo("amd"),
-    bgTint: "#ffffff",
-    offer: "Ryzen processors",
+    imageUrl: IMG.amd,
   },
   {
     id: "nvidia",
-    label: "NVIDIA RTX",
+    label: "NVIDIA",
     href: browse("graphics-cards", {
       facets: { generation: "RTX 50-series" },
     }),
-    imageUrl: brandLogo("nvidia"),
-    bgTint: "#ffffff",
-    offer: "GeForce GPUs",
+    imageUrl: IMG.nvidia,
   },
   {
     id: "asus",
     label: "ASUS",
     href: browse("motherboards", { q: "ASUS" }),
-    imageUrl: brandLogo("asus"),
-    bgTint: "#ffffff",
-    offer: "Boards & more",
+    imageUrl: IMG.asus,
   },
   {
     id: "corsair",
     label: "Corsair",
     href: browse("memory-ram", { q: "Corsair" }),
-    imageUrl: brandLogo("corsair"),
-    bgTint: "#ffffff",
-    offer: "Memory & cases",
+    imageUrl: IMG.corsair,
   },
   {
     id: "samsung",
     label: "Samsung",
     href: browse("storage-ssd", { q: "Samsung" }),
-    imageUrl: brandLogo("samsung"),
-    bgTint: "#ffffff",
-    offer: "SSDs & monitors",
+    imageUrl: IMG.samsung,
   },
   {
     id: "logitech",
     label: "Logitech",
     href: browse("keyboard-mouse", { q: "Logitech" }),
-    imageUrl: brandLogo("logitech"),
-    bgTint: "#ffffff",
-    offer: "Combos",
+    imageUrl: IMG.logitech,
   },
   {
-    id: "apc",
-    label: "APC",
-    href: browse("ups", { q: "APC" }),
-    imageUrl: brandLogo("apc"),
-    bgTint: "#ffffff",
-    offer: "Power backup",
+    id: "msi",
+    label: "MSI",
+    href: browse("motherboards", { q: "MSI" }),
+    imageUrl: IMG.msi,
   },
 ] as const;
 

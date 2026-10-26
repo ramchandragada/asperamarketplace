@@ -156,69 +156,8 @@ export function CatalogueBrowse({
   const loadMoreLockRef = useRef(false);
   const loadMoreRef = useRef<() => void>(() => {});
   const observerRef = useRef<IntersectionObserver | null>(null);
-
-  /**
-   * Soft-nav between /browse?categorySlug=… (mega-menu, brand logos, chips)
-   * reuses this client tree. useState only honors the first mount — without
-   * a reset, category/brand clicks look dead while the URL changes.
-   */
-  const routeBootKey = useMemo(
-    () =>
-      JSON.stringify({
-        q: initialQuery,
-        c: initialCategorySlug,
-        b: initialBrandSlug,
-        s: initialSort,
-        stock: initialInStockOnly,
-        verified: initialVerifiedOnly,
-        rating: initialMinRating ?? null,
-        discount: initialMinDiscount ?? null,
-        min: initialMinPricePaise ?? null,
-        max: initialMaxPricePaise ?? null,
-        facets: initialFacets,
-        total: initialTotal,
-        ids: initialItems.map((item) => item.id),
-      }),
-    [
-      initialQuery,
-      initialCategorySlug,
-      initialBrandSlug,
-      initialSort,
-      initialInStockOnly,
-      initialVerifiedOnly,
-      initialMinRating,
-      initialMinDiscount,
-      initialMinPricePaise,
-      initialMaxPricePaise,
-      initialFacets,
-      initialTotal,
-      initialItems,
-    ],
-  );
-
-  useEffect(() => {
-    setItems(initialItems);
-    setTotal(initialTotal);
-    setPage(1);
-    setLoadingMore(false);
-    loadMoreLockRef.current = false;
-    setQuery(initialQuery);
-    setCategorySlug(initialCategorySlug);
-    setBrandSlug(initialBrandSlug);
-    setFacets(initialFacets);
-    setSort(initialSort);
-    setInStockOnly(initialInStockOnly);
-    setVerifiedOnly(initialVerifiedOnly);
-    setMinRating(initialMinRating ?? null);
-    setMinDiscount(initialMinDiscount ?? null);
-    setMinPrice(initialMin);
-    setMaxPrice(initialMax);
-    setPricePreset(matchedPreset);
-    setCategorySearch("");
-    setBrandSearch("");
-    setError(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by routeBootKey
-  }, [routeBootKey]);
+  // Soft-nav between /browse?… reuses this client tree unless the parent
+  // remounts us (see key={browseKey} on browse/shop pages).
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
     brand: true,

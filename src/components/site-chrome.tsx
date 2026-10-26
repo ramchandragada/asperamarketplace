@@ -209,11 +209,20 @@ const ONLINE_SHOPPING_GROUPS = [
     ],
   },
   {
-    heading: "Shop by budget",
+    heading: "Popular upgrades",
     links: [
-      { label: "Under ₹5,000", href: "/browse?maxPricePaise=500000" },
-      { label: "Under ₹20,000", href: "/browse?maxPricePaise=2000000" },
-      { label: "Under ₹50,000", href: "/browse?maxPricePaise=5000000" },
+      {
+        label: "NVMe storage",
+        href: "/browse?categorySlug=storage-ssd&facet.interface=NVMe+%2F+PCIe",
+      },
+      {
+        label: "DDR5 memory",
+        href: "/browse?categorySlug=memory-ram&facet.memoryType=DDR5",
+      },
+      {
+        label: "Graphics cards",
+        href: "/browse?categorySlug=graphics-cards",
+      },
     ],
   },
 ] as const;

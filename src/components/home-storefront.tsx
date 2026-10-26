@@ -777,45 +777,60 @@ export function CampaignTiles({ tiles }: { tiles: CampaignTile[] }) {
   );
 }
 
-export type PriceCollection = {
+export type UpgradeIntent = {
   id: string;
   label: string;
   href: string;
   hint: string;
 };
 
-export function PriceLedCollections({
-  collections,
+/** Drop-in upgrade intents — complements Start a build (new PCs). */
+export function PopularUpgrades({
+  upgrades,
 }: {
-  collections: PriceCollection[];
+  upgrades: UpgradeIntent[];
 }) {
+  if (upgrades.length === 0) return null;
+
   return (
     <section className="container-shell py-4 md:py-5">
       <div className="mb-2.5 md:mb-3">
         <h2 className="text-[22px] leading-[28px] font-bold tracking-tight md:text-[24px] md:leading-[32px]">
-          Shop by budget
+          Popular upgrades
         </h2>
         <p className="mt-0.5 text-sm text-muted">
-          Price-led collections from published products
+          Drop-in parts for the PC you already have
         </p>
       </div>
       <ul className="grid gap-3 sm:grid-cols-3">
-        {collections.map((collection) => (
-          <li key={collection.id}>
+        {upgrades.map((upgrade) => (
+          <li key={upgrade.id}>
             <Link
-              href={collection.href}
+              href={upgrade.href}
               className="flex flex-col gap-1 rounded-2xl border border-border bg-white p-5 transition-[border-color] duration-200 hover:border-[#cfd6e0]"
             >
               <span className="font-display text-[22px] font-bold tracking-tight text-brand-accent">
-                {collection.label}
+                {upgrade.label}
               </span>
-              <span className="text-sm text-muted">{collection.hint}</span>
+              <span className="text-sm text-muted">{upgrade.hint}</span>
             </Link>
           </li>
         ))}
       </ul>
     </section>
   );
+}
+
+/** @deprecated Prefer PopularUpgrades — kept so older imports compile. */
+export type PriceCollection = UpgradeIntent;
+
+/** @deprecated Prefer PopularUpgrades */
+export function PriceLedCollections({
+  collections,
+}: {
+  collections: PriceCollection[];
+}) {
+  return <PopularUpgrades upgrades={collections} />;
 }
 
 export type SellerCardData = {

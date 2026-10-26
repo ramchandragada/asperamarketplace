@@ -10,7 +10,7 @@ import {
   AsperaHero,
   BuildLanes,
   FeaturedSellers,
-  PriceLedCollections,
+  PopularUpgrades,
   SellerConversionSection,
   ShopByBrands,
   ShopByCategory,
@@ -51,27 +51,28 @@ const BUILD_LANES = [
   },
 ] as const;
 
-const PRICE_COLLECTIONS = [
+/** Drop-in upgrades — complements Start a build for existing PCs */
+const UPGRADE_INTENTS = [
   {
-    id: "u5k",
-    label: "Under ₹5,000",
-    href: "/browse?maxPricePaise=500000",
-    hint: "SSDs, RAM, cabinets and peripherals",
-    maxPaise: 500000,
+    id: "nvme",
+    label: "NVMe storage",
+    href: "/browse?categorySlug=storage-ssd&facet.interface=NVMe+%2F+PCIe",
+    hint: "Faster boot and game load times",
+    categorySlug: "storage-ssd",
   },
   {
-    id: "u20k",
-    label: "Under ₹20,000",
-    href: "/browse?maxPricePaise=2000000",
-    hint: "CPUs, boards and entry GPUs",
-    maxPaise: 2000000,
+    id: "ddr5",
+    label: "DDR5 memory",
+    href: "/browse?categorySlug=memory-ram&facet.memoryType=DDR5",
+    hint: "More apps open without stutter",
+    categorySlug: "memory-ram",
   },
   {
-    id: "u50k",
-    label: "Under ₹50,000",
-    href: "/browse?maxPricePaise=5000000",
-    hint: "High-end CPUs and mid-range GPUs",
-    maxPaise: 5000000,
+    id: "gpu",
+    label: "Graphics cards",
+    href: "/browse?categorySlug=graphics-cards",
+    hint: "Higher frames for games and creators",
+    categorySlug: "graphics-cards",
   },
 ] as const;
 
@@ -85,9 +86,9 @@ export default async function Home() {
     newest,
     trendingPool,
     productsForYou,
-    under299,
-    under599,
-    under999,
+    storageStock,
+    memoryStock,
+    gpuStock,
     sellers,
   ] = await Promise.all([
     searchApprovedProducts({
@@ -110,23 +111,23 @@ export default async function Home() {
     }),
     searchApprovedProducts({
       page: 1,
-      pageSize: 4,
-      sort: "price_asc",
-      maxPricePaise: 500000,
+      pageSize: 1,
+      sort: "relevance",
+      categorySlug: "storage-ssd",
       inStockOnly: true,
     }),
     searchApprovedProducts({
       page: 1,
-      pageSize: 4,
-      sort: "price_asc",
-      maxPricePaise: 2000000,
+      pageSize: 1,
+      sort: "relevance",
+      categorySlug: "memory-ram",
       inStockOnly: true,
     }),
     searchApprovedProducts({
       page: 1,
-      pageSize: 4,
-      sort: "price_asc",
-      maxPricePaise: 5000000,
+      pageSize: 1,
+      sort: "relevance",
+      categorySlug: "graphics-cards",
       inStockOnly: true,
     }),
     prisma.seller.findMany({
@@ -203,11 +204,14 @@ export default async function Home() {
     ];
   }
 
-  const priceCollections = PRICE_COLLECTIONS.filter((collection) => {
-    if (collection.maxPaise === 500000) return under299.total > 0;
-    if (collection.maxPaise === 2000000) return under599.total > 0;
-    return under999.total > 0;
-  }).map(({ id, label, href, hint }) => ({ id, label, href, hint }));
+  const stockByCategory: Record<string, number> = {
+    "storage-ssd": storageStock.total,
+    "memory-ram": memoryStock.total,
+    "graphics-cards": gpuStock.total,
+  };
+  const popularUpgrades = UPGRADE_INTENTS.filter(
+    (intent) => (stockByCategory[intent.categorySlug] ?? 0) > 0,
+  ).map(({ id, label, href, hint }) => ({ id, label, href, hint }));
 
   return (
     <div className="flex flex-col">
@@ -220,8 +224,8 @@ export default async function Home() {
       {/* Beat 3 — Build lanes */}
       <BuildLanes lanes={[...BUILD_LANES]} />
 
-      {/* Beat 4 — Budget + brands */}
-      <PriceLedCollections collections={[...priceCollections]} />
+      {/* Beat 4 — Upgrades + brands */}
+      <PopularUpgrades upgrades={[...popularUpgrades]} />
       <div className="hidden md:block">
         <ShopByBrands brands={[...ASPERA_BRAND_LANES]} />
       </div>

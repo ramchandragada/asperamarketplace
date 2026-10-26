@@ -535,7 +535,10 @@ export function CategoryCircles({
   );
 }
 
-/** Square category tiles — white plate + hairline, no tinted wells */
+/**
+ * Square category tiles — mobile only for now.
+ * Desktop already exposes every category in the top nav; revisit mobile IA later.
+ */
 export function ShopByCategory({
   categories,
 }: {
@@ -551,10 +554,10 @@ export function ShopByCategory({
   const tiles = categories;
 
   return (
-    <section className="bg-background">
-      <div className="container-shell pt-5 pb-3 md:pt-6 md:pb-4">
-        <div className="mb-3 flex items-end justify-between gap-3 md:mb-3.5">
-          <h2 className="font-display text-[22px] leading-[28px] font-bold tracking-tight md:text-[26px] md:leading-[32px]">
+    <section className="bg-background md:hidden">
+      <div className="container-shell pt-5 pb-3">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <h2 className="font-display text-[22px] leading-[28px] font-bold tracking-tight">
             Shop by category
           </h2>
           <Link
@@ -579,10 +582,10 @@ export function ShopByCategory({
                   alt={category.label}
                   fill
                   sizes="(max-width: 640px) 140px, 180px"
-                  className="object-contain object-center p-2 transition duration-300 group-hover:scale-[1.03] md:p-2.5"
+                  className="object-contain object-center p-2 transition duration-300 group-hover:scale-[1.03]"
                 />
               </span>
-              <span className="text-[14px] font-medium text-foreground md:text-[15px]">
+              <span className="text-[14px] font-medium text-foreground">
                 {category.label}
               </span>
             </Link>

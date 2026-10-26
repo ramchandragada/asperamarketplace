@@ -237,9 +237,9 @@ export function SiteFooter() {
             ASPERA
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
-            Quick-commerce PC parts — Express delivery in minutes from nearby
-            hubs. CPUs, GPUs, boards, memory, and more with prepaid checkout and
-            buyer protection.
+            Express PC parts from authorised brand dealers — usually 10–90
+            minutes in hub zones, with warranty pickup, free tech support, and
+            GST invoices for businesses.
           </p>
           <div className="mt-4 space-y-1 text-xs text-muted">
             <p>
@@ -261,6 +261,10 @@ export function SiteFooter() {
               </a>
             </p>
             <p>
+              <Link href="/why-aspera" className="font-medium text-accent hover:underline">
+                Why Aspera
+              </Link>
+              {" · "}
               <Link href="/buyer-protection" className="font-medium text-accent hover:underline">
                 Buyer Protection
               </Link>
@@ -333,6 +337,11 @@ export function SiteFooter() {
         <div>
           <p className="font-semibold text-foreground">About Aspera</p>
           <ul className="mt-2 space-y-1.5 text-muted">
+            <li>
+              <Link href="/why-aspera" className="hover:text-accent">
+                Why Aspera
+              </Link>
+            </li>
             <li>
               <Link href="/about" className="hover:text-accent">
                 About us

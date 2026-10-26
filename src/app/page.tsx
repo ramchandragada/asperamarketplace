@@ -6,6 +6,7 @@ import {
 import { ProductCard } from "@/components/product-card";
 import { TrendingProductsRail } from "@/components/trending-products-rail";
 import { SectionHeading } from "@/components/ui/page-shell";
+import { AsperaPromiseStrip } from "@/components/aspera-promises";
 import {
   AsperaHero,
   BuildLanes,
@@ -217,6 +218,9 @@ export default async function Home() {
     <div className="flex flex-col">
       {/* Beat 1 — Hero owns viewport 1 */}
       <AsperaHero />
+
+      {/* Beat 1b — Differentiators (below hero, not inside it) */}
+      <AsperaPromiseStrip />
 
       {/* Beat 2 — Shop categories */}
       <ShopByCategory categories={[...ASPERA_CATEGORY_TILES]} />

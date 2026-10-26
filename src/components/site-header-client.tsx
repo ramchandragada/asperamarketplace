@@ -571,15 +571,13 @@ export function SiteHeaderClient({
       <div className="w-full bg-[linear-gradient(90deg,#0B1220_0%,#151E32_55%,#1A2740_100%)] text-accent-foreground">
         <p className="flex h-8 w-full items-center justify-center px-4 text-center text-[12px] font-medium tracking-wide md:h-9 md:px-8 md:text-[13px]">
           <span className="flex items-center justify-center gap-1.5 whitespace-nowrap md:hidden">
-            <span>⚡ Express in mins</span>
+            <span>Express 10–90 mins*</span>
             <span aria-hidden>·</span>
-            <span>Pune hubs</span>
-            <span aria-hidden>·</span>
-            <span>Prepaid secure</span>
+            <span>Authorised dealers</span>
           </span>
           <span className="hidden md:inline">
-            Aspera Express — PC parts from nearby hubs, usually in minutes when in stock ·
-            Verified sellers · Buyer protection
+            Aspera Express — PC parts usually in 10–90 mins in hub zones* ·
+            Authorised brand dealers · Genuine products
           </span>
         </p>
       </div>

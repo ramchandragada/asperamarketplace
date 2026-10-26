@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import type { CheckoutSnapshot } from "@/modules/cart/pricing";
 import { PincodeField } from "@/components/pincode-field";
+import {
+  CheckoutGstCallout,
+} from "@/components/aspera-promises";
 import { BuyerProtectionBadge } from "@/components/buyer-protection-badge";
 
 type Address = {
@@ -221,7 +224,10 @@ export function CheckoutPanel({
         </p>
       ) : null}
 
-      <BuyerProtectionBadge compact />
+      <div className="flex flex-col gap-2">
+        <BuyerProtectionBadge compact />
+        <CheckoutGstCallout />
+      </div>
 
       {!reserved ? (
         <section className="flex flex-col gap-3">

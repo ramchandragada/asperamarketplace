@@ -28,6 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/login",
     "/register",
     "/buyer-protection",
+    "/why-aspera",
   ].map((path) => ({
     url: `${siteUrl}${path || "/"}`,
     changeFrequency: path === "" ? "daily" : "weekly",

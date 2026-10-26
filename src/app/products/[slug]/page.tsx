@@ -8,7 +8,7 @@ import { ProductPurchasePanel } from "@/components/product-purchase-panel";
 import { ProductReviewsPanel } from "@/components/product-reviews-panel";
 import { ProductShareBar } from "@/components/product-share";
 import { PdpTrustBadgeRow } from "@/components/pdp-trust-badge-row";
-import { BuyerProtectionBadge } from "@/components/buyer-protection-badge";
+import { PdpPromiseCluster } from "@/components/aspera-promises";
 import { PageShell } from "@/components/ui/page-shell";
 import { OtherSellersPanel } from "@/components/other-sellers-panel";
 import { ProductDetailsSections } from "@/components/product-details-sections";
@@ -459,7 +459,7 @@ export default async function ProductDetailPage({
             </div>
           </div>
 
-          <BuyerProtectionBadge />
+          <PdpPromiseCluster />
 
           <OtherSellersPanel offers={siblingOffers} />
         </div>

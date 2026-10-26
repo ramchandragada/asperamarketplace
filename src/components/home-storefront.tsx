@@ -12,71 +12,12 @@ import {
 } from "react";
 import { ProductLoopRail } from "@/components/product-loop-rail";
 
-function TrustReturnIcon() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M7 8H4a8 8 0 1 1-1.5 5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7 4v4H3"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function TrustShieldIcon() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 3 4.5 6v6.2c0 4.4 3.1 7.4 7.5 8.8 4.4-1.4 7.5-4.4 7.5-8.8V6L12 3Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.5 12.2 11.2 14l3.4-3.8"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function TrustSellerIcon() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M4 9.5 12 4l8 5.5V20H4V9.5Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.5 20v-6h5v6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 /** Honest announcement strip for marketplace chrome */
 export function AnnouncementStrip() {
   return (
     <div className="bg-accent text-accent-foreground">
       <p className="container-shell flex h-8 items-center justify-center text-center text-[12px] font-medium tracking-wide md:h-9 md:text-[13px]">
-        Pune PC components · Buyer protection · Secure prepaid checkout
+        Express 10–90 mins* · Authorised dealers · Genuine PC parts
       </p>
     </div>
   );
@@ -507,28 +448,12 @@ export function AsperaSelectsBanner({ tiles }: { tiles: SelectTile[] }) {
   );
 }
 
-/** Compact trust chips — never advertise COD (deferred). */
+/**
+ * @deprecated Prefer AsperaPromiseStrip from `@/components/aspera-promises`.
+ * Kept so older imports compile.
+ */
 export function TrustSignalBar() {
-  const items = [
-    { label: "Buyer protection on eligible orders", Icon: TrustShieldIcon },
-    { label: "Secure prepaid checkout", Icon: TrustReturnIcon },
-    { label: "Verified Pune sellers", Icon: TrustSellerIcon },
-  ];
-  return (
-    <div className="w-full border-b border-border bg-surface">
-      <ul className="container-shell flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-2.5 text-[12px] text-foreground md:gap-x-10 md:py-3 md:text-[13px]">
-        {items.map((item) => (
-          <li
-            key={item.label}
-            className="flex items-center gap-2 px-2 text-accent"
-          >
-            <item.Icon />
-            <span className="font-medium">{item.label}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  return null;
 }
 
 export function CategoryCircles({

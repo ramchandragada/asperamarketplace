@@ -68,7 +68,7 @@ export function useDeliveryLocation() {
 }
 
 /**
- * Blinkit-style location + ETA control for the header.
+ * Location + ETA control for the header.
  * Compact: shows promise + area; expands to a pincode form on click.
  */
 export function DeliveryLocationBar({

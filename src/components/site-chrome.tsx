@@ -87,7 +87,7 @@ const SEO_BLOCKS = [
   },
   {
     title: "Storage, monitors & power",
-    body: "NVMe SSDs, monitors, cabinets, and UPS — ordered in minutes, delivered like Blinkit-speed for builders.",
+    body: "NVMe SSDs, monitors, cabinets, and UPS — ordered in minutes from nearby Express hubs.",
     href: "/browse?categorySlug=storage-ssd",
   },
   {

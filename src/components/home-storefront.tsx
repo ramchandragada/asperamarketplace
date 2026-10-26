@@ -38,7 +38,7 @@ type HeroSlide = {
  * Full-bleed hero carousel. Self-hosted PC hardware plates under public/hero.
  */
 /**
- * USP-led hero carousel — one promise per slide (Blinkit/Zepto energy for PC parts).
+ * USP-led hero carousel — one promise per slide.
  * No chips/overlays on the photo; brand + one headline + one line + CTAs only.
  */
 const HERO_SLIDES: HeroSlide[] = [

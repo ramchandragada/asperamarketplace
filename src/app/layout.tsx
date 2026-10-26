@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Aspera Express — PC parts in minutes",
     description:
-      "Blinkit-speed shopping for builders. Set your pin, see the ETA, get parts from local hubs.",
+      "Express PC parts for builders. Set your pin, see the ETA, get parts from local hubs.",
     type: "website",
     siteName: "Aspera",
   },

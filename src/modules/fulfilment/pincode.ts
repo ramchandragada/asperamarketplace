@@ -1,7 +1,7 @@
 /**
  * Quick-commerce pincode serviceability + city/state autofill.
  * Express hubs (Pune first, then metros) quote delivery in minutes / same-day
- * windows — Blinkit / Zepto / Bigbasket-style speed for in-stock parts.
+ * windows — minute-level Express speed for in-stock parts.
  */
 
 export type PincodeCheckResult = {

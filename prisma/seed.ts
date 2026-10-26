@@ -100,7 +100,20 @@ async function main() {
         passwordHash: await hashPassword(staff.password),
         emailVerifiedAt: new Date(),
       },
-      update: {},
+      update: {
+        displayName: staff.displayName,
+        passwordHash: await hashPassword(staff.password),
+        status: "active",
+        deletedAt: null,
+      },
+    });
+    // Drop orphan staff roles pointed at deleted/non-PC sellers, then bind to PCC.
+    await prisma.userRole.deleteMany({
+      where: {
+        userId: user.id,
+        roleId: role.id,
+        NOT: { scopeKey: primarySeller.id },
+      },
     });
     await prisma.userRole.upsert({
       where: {

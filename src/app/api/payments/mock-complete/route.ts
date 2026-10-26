@@ -11,9 +11,9 @@ export const dynamic = "force-dynamic";
  * Demo helper: emits a signed mock provider webhook so an authenticated buyer
  * can drive their own order to paid/failed without a real gateway.
  *
- * Allowed only while {@link mockSelfPayAllowed} is true (mock provider +
- * non-prod, or explicit `ALLOW_MOCK_SELF_PAY=true` in production). Shoppers
- * must never self-mark a real payment as paid.
+ * Allowed only while {@link mockSelfPayAllowed} is true. Live production
+ * (`VERCEL_ENV=production`) always returns 404 — shoppers must never
+ * self-mark a real payment as paid.
  */
 export async function POST(request: Request) {
   const requestId = getRequestId(request);

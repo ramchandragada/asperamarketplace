@@ -425,7 +425,14 @@ export async function resolveActorFromToken(
       if (!isRoleKey(entry.role.key)) {
         return null;
       }
-      return { key: entry.role.key, sellerId: entry.sellerId };
+      // Older seeds scoped staff via scopeKey only; treat a non-global scope
+      // as the seller id so ops/finance/support can resolve a workspace.
+      const sellerId =
+        entry.sellerId ??
+        (entry.scopeKey && entry.scopeKey !== "global"
+          ? entry.scopeKey
+          : null);
+      return { key: entry.role.key, sellerId };
     })
     .filter((entry): entry is { key: RoleKey; sellerId: string | null } =>
       Boolean(entry),

@@ -148,17 +148,20 @@ export function paymentsAreMockOnly(env: PaymentEnv = process.env): boolean {
 /**
  * Whether the authenticated demo `POST /api/payments/mock-complete` path may run.
  *
- * Gate is environment-shaped, not only provider-identity-shaped:
- * - provider must still be mock
- * - production (`VERCEL_ENV=production` or `NODE_ENV=production`) requires an
- *   explicit `ALLOW_MOCK_SELF_PAY=true`
- * - unset that flag the moment a real PA is wired
+ * CTO policy (2026-10-26):
+ * - Live production (`VERCEL_ENV=production`) — **never**. Buyers must not
+ *   self-mark orders paid. `ALLOW_MOCK_SELF_PAY` is ignored there.
+ * - Preview / local / test — allowed while the provider is still mock.
+ * - `ALLOW_MOCK_SELF_PAY=true` only unlocks mock self-pay when `NODE_ENV` is
+ *   production **and** `VERCEL_ENV` is not `production` (e.g. a mis-labelled
+ *   local build). Prefer unset.
  */
 export function mockSelfPayAllowed(env: PaymentEnv = process.env): boolean {
   if (!paymentsAreMockOnly(env)) return false;
-  const explicitAllow = env.ALLOW_MOCK_SELF_PAY === "true";
-  const isProduction =
-    env.VERCEL_ENV === "production" || env.NODE_ENV === "production";
-  if (isProduction) return explicitAllow;
+  // Absolute ban on the live production deployment — Grok P0-1.
+  if (env.VERCEL_ENV === "production") return false;
+  if (env.NODE_ENV === "production") {
+    return env.ALLOW_MOCK_SELF_PAY === "true";
+  }
   return true;
 }

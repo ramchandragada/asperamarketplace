@@ -148,7 +148,14 @@ function toggleSet<T>(set: Set<T>, value: T): Set<T> {
   return next;
 }
 
-export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }) {
+export function OrdersPanel({
+  initialOrders,
+  allowMockSelfPay = false,
+}: {
+  initialOrders: OrderSummary[];
+  /** Server-gated: never true on live production. */
+  allowMockSelfPay?: boolean;
+}) {
   const router = useRouter();
   const [orders, setOrders] = useState(initialOrders);
   const [query, setQuery] = useState("");
@@ -595,7 +602,7 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                   >
                     Get help
                   </Link>
-                  {canPay ? (
+                  {canPay && allowMockSelfPay ? (
                     <>
                       <button
                         type="button"
@@ -603,20 +610,24 @@ export function OrdersPanel({ initialOrders }: { initialOrders: OrderSummary[] }
                         className="btn-cta btn-cta-primary h-10 w-full"
                         onClick={() => void startAndSucceed(order.id)}
                       >
-                        Pay now
+                        Pay now (demo)
                       </button>
-                      {process.env.NODE_ENV !== "production" ? (
-                        <button
-                          type="button"
-                          disabled={pending}
-                          className="btn-cta btn-cta-ghost h-10 w-full text-xs"
-                          onClick={() => void startAndFail(order.id)}
-                          title="Test tool: simulate a failed payment (non-production only)"
-                        >
-                          Test failed payment
-                        </button>
-                      ) : null}
+                      <button
+                        type="button"
+                        disabled={pending}
+                        className="btn-cta btn-cta-ghost h-10 w-full text-xs"
+                        onClick={() => void startAndFail(order.id)}
+                        title="Test tool: simulate a failed payment"
+                      >
+                        Test failed payment
+                      </button>
                     </>
+                  ) : null}
+                  {canPay && !allowMockSelfPay ? (
+                    <p className="rounded-md border border-border bg-background px-3 py-2 text-center text-xs text-muted">
+                      Payment gateway coming soon. This order stays unpaid until
+                      checkout is connected to Razorpay.
+                    </p>
                   ) : null}
                 </div>
               </div>

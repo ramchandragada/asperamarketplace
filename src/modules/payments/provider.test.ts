@@ -27,7 +27,7 @@ describe("mockSelfPayAllowed", () => {
     ).toBe(true);
   });
 
-  it("blocks production unless ALLOW_MOCK_SELF_PAY=true", () => {
+  it("never allows mock self-pay on Vercel production, even with the allow flag", () => {
     expect(
       mockSelfPayAllowed({
         NODE_ENV: "production",
@@ -42,7 +42,25 @@ describe("mockSelfPayAllowed", () => {
         PAYMENT_PROVIDER: "mock",
         ALLOW_MOCK_SELF_PAY: "true",
       }),
+    ).toBe(false);
+  });
+
+  it("allows NODE_ENV=production only when not on Vercel production and flag is set", () => {
+    expect(
+      mockSelfPayAllowed({
+        NODE_ENV: "production",
+        VERCEL_ENV: "preview",
+        PAYMENT_PROVIDER: "mock",
+        ALLOW_MOCK_SELF_PAY: "true",
+      }),
     ).toBe(true);
+    expect(
+      mockSelfPayAllowed({
+        NODE_ENV: "production",
+        VERCEL_ENV: "preview",
+        PAYMENT_PROVIDER: "mock",
+      }),
+    ).toBe(false);
   });
 
   it("stays closed when the provider is no longer mock even with the allow flag", () => {

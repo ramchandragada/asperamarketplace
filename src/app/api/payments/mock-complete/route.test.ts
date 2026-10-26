@@ -20,11 +20,11 @@ describe("mock-complete payment guard", () => {
     expect(response.status).toBe(404);
   });
 
-  it("404s in production without ALLOW_MOCK_SELF_PAY even if the provider is mock", async () => {
+  it("404s on Vercel production even if ALLOW_MOCK_SELF_PAY is set", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL_ENV", "production");
     vi.stubEnv("PAYMENT_PROVIDER", "mock");
-    vi.stubEnv("ALLOW_MOCK_SELF_PAY", "");
+    vi.stubEnv("ALLOW_MOCK_SELF_PAY", "true");
     const response = await POST(
       new Request("http://localhost/api/payments/mock-complete", {
         method: "POST",

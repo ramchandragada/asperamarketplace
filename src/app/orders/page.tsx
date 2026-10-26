@@ -5,6 +5,7 @@ import { OrdersPanel } from "@/components/orders-panel";
 import { PageShell } from "@/components/ui/page-shell";
 import { listOrdersForActor } from "@/modules/orders/service";
 import { getOptionalActor } from "@/modules/identity/service";
+import { mockSelfPayAllowed } from "@/modules/payments/provider";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your Orders" };
@@ -44,6 +45,7 @@ export default async function OrdersPage() {
 
       <Suspense fallback={<p className="text-muted">Loading orders…</p>}>
         <OrdersPanel
+          allowMockSelfPay={mockSelfPayAllowed()}
           initialOrders={orders.map((order) => ({
             id: order.id,
             orderNumber: order.orderNumber,

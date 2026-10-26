@@ -598,7 +598,8 @@ export function ShopByCategory({
     bgTint?: string;
   }>;
 }) {
-  const tiles = categories.slice(0, 8);
+  // Show every PC category — truncating hid UPS and forced wrong tile reuse earlier.
+  const tiles = categories;
 
   return (
     <section className="bg-background">
@@ -626,7 +627,7 @@ export function ShopByCategory({
               <span className="relative aspect-square w-full overflow-hidden rounded-[10px] border border-border bg-white transition-[border-color] duration-200 group-hover:border-[#cfd6e0]">
                 <Image
                   src={category.imageUrl}
-                  alt=""
+                  alt={category.label}
                   fill
                   sizes="(max-width: 640px) 140px, 180px"
                   className="object-contain object-center p-2 transition duration-300 group-hover:scale-[1.03] md:p-2.5"

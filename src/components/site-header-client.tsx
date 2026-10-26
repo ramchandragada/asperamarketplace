@@ -237,16 +237,22 @@ function CategoryNav() {
     closeTimer.current = setTimeout(() => setOpenKey(null), 160);
   }
 
+  function closeNow() {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpenKey(null);
+  }
+
   const active = MEGA_MENU.find((entry) => entry.key === openKey) ?? null;
 
   return (
     <div
-      className="relative hidden w-full border-t border-[#E3E8E8] bg-white md:block"
+      className="relative z-50 hidden w-full border-t border-[#E3E8E8] bg-white md:block"
       onMouseLeave={scheduleClose}
     >
       <nav aria-label="Categories">
         <ScrollEdgeRail
           label="Category list"
+          showArrows={false}
           className="hide-scroll flex h-12 w-full items-stretch justify-between gap-1 overflow-x-auto px-4 text-[13px] font-medium text-foreground md:px-6 lg:gap-0 lg:px-8 xl:px-10 xl:text-[14px]"
         >
           {MEGA_MENU.map((entry) => {
@@ -262,6 +268,7 @@ function CategoryNav() {
                 }`}
                 onMouseEnter={() => open(entry.key)}
                 onFocus={() => open(entry.key)}
+                onClick={closeNow}
                 aria-expanded={isActive}
               >
                 {entry.label}
@@ -276,7 +283,7 @@ function CategoryNav() {
             columns={active.columns}
             brands={active.brands}
             categoryLabel={active.label}
-            onNavigate={() => setOpenKey(null)}
+            onNavigate={closeNow}
           />
         </div>
       ) : null}
@@ -577,7 +584,7 @@ export function SiteHeaderClient({
         </p>
       </div>
     <header
-      className={`sticky top-0 z-40 w-full border-border/80 bg-surface [overflow-anchor:none] max-md:border-b-0 md:border-b md:bg-surface/95 md:backdrop-blur-md ${
+      className={`sticky top-0 z-50 w-full border-border/80 bg-surface [overflow-anchor:none] max-md:border-b-0 md:border-b md:bg-surface/95 md:backdrop-blur-md ${
         compact ? "md:shadow-[0_1px_3px_rgba(18,59,74,0.08)]" : ""
       }`}
       data-compact={compact ? "true" : "false"}

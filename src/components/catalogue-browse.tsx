@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   FormEvent,
   useCallback,
@@ -112,6 +113,7 @@ export function CatalogueBrowse({
   infiniteScroll?: boolean;
   updateUrl?: boolean;
 }) {
+  const router = useRouter();
   const isHome = variant === "home";
   const useInfinite = infiniteScroll || (isHome && enableLoadMore);
   const initialMin = rupeesFromPaise(initialMinPricePaise);
@@ -154,6 +156,69 @@ export function CatalogueBrowse({
   const loadMoreLockRef = useRef(false);
   const loadMoreRef = useRef<() => void>(() => {});
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  /**
+   * Soft-nav between /browse?categorySlug=… (mega-menu, brand logos, chips)
+   * reuses this client tree. useState only honors the first mount — without
+   * a reset, category/brand clicks look dead while the URL changes.
+   */
+  const routeBootKey = useMemo(
+    () =>
+      JSON.stringify({
+        q: initialQuery,
+        c: initialCategorySlug,
+        b: initialBrandSlug,
+        s: initialSort,
+        stock: initialInStockOnly,
+        verified: initialVerifiedOnly,
+        rating: initialMinRating ?? null,
+        discount: initialMinDiscount ?? null,
+        min: initialMinPricePaise ?? null,
+        max: initialMaxPricePaise ?? null,
+        facets: initialFacets,
+        total: initialTotal,
+        ids: initialItems.map((item) => item.id),
+      }),
+    [
+      initialQuery,
+      initialCategorySlug,
+      initialBrandSlug,
+      initialSort,
+      initialInStockOnly,
+      initialVerifiedOnly,
+      initialMinRating,
+      initialMinDiscount,
+      initialMinPricePaise,
+      initialMaxPricePaise,
+      initialFacets,
+      initialTotal,
+      initialItems,
+    ],
+  );
+
+  useEffect(() => {
+    setItems(initialItems);
+    setTotal(initialTotal);
+    setPage(1);
+    setLoadingMore(false);
+    loadMoreLockRef.current = false;
+    setQuery(initialQuery);
+    setCategorySlug(initialCategorySlug);
+    setBrandSlug(initialBrandSlug);
+    setFacets(initialFacets);
+    setSort(initialSort);
+    setInStockOnly(initialInStockOnly);
+    setVerifiedOnly(initialVerifiedOnly);
+    setMinRating(initialMinRating ?? null);
+    setMinDiscount(initialMinDiscount ?? null);
+    setMinPrice(initialMin);
+    setMaxPrice(initialMax);
+    setPricePreset(matchedPreset);
+    setCategorySearch("");
+    setBrandSearch("");
+    setError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by routeBootKey
+  }, [routeBootKey]);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
     brand: true,
@@ -340,9 +405,10 @@ export function CatalogueBrowse({
       setTotal(body.data?.total ?? 0);
       setPage(nextPage);
       if (updateUrl && !isHome) {
-        const url = new URL(window.location.href);
-        url.search = params.toString();
-        window.history.replaceState({}, "", url.toString());
+        // Keep Next.js App Router in sync — raw history.replaceState made
+        // subsequent mega-menu / brand Link soft-navs look dead.
+        const nextPath = `${browseBasePath}?${params.toString()}`;
+        router.replace(nextPath, { scroll: false });
       }
     } finally {
       if (append) {

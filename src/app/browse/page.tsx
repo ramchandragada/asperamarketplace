@@ -90,9 +90,24 @@ export default async function BrowsePage({
     categories.find((category) => category.slug === categorySlug)?.name ??
     (query ? undefined : "Shop");
 
+  const browseKey = [
+    categorySlug,
+    resolvedBrandSlug,
+    query,
+    sort,
+    inStockOnly ? "1" : "0",
+    verifiedSellerOnly ? "1" : "0",
+    read("minRating") ?? "",
+    read("minDiscountPercent") ?? "",
+    minPricePaise ?? "",
+    maxPricePaise ?? "",
+    JSON.stringify(facets),
+  ].join("|");
+
   return (
     <PageShell>
       <CatalogueBrowse
+        key={browseKey}
         initialItems={result.items as BrowseProduct[]}
         initialQuery={query}
         initialTotal={result.total}

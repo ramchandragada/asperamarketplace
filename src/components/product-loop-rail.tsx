@@ -221,10 +221,13 @@ export function ScrollEdgeRail({
   children,
   label,
   className = "",
+  /** When false, never overlay edge arrows (category mega-nav links must stay clickable). */
+  showArrows = true,
 }: {
   children: ReactNode;
   label: string;
   className?: string;
+  showArrows?: boolean;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [canPrev, setCanPrev] = useState(false);
@@ -272,16 +275,20 @@ export function ScrollEdgeRail({
 
   return (
     <div className="relative">
-      <EdgeArrow
-        direction="left"
-        visible={canPrev}
-        onClick={() => scrollByPage(-1)}
-      />
-      <EdgeArrow
-        direction="right"
-        visible={canNext}
-        onClick={() => scrollByPage(1)}
-      />
+      {showArrows ? (
+        <>
+          <EdgeArrow
+            direction="left"
+            visible={canPrev}
+            onClick={() => scrollByPage(-1)}
+          />
+          <EdgeArrow
+            direction="right"
+            visible={canNext}
+            onClick={() => scrollByPage(1)}
+          />
+        </>
+      ) : null}
       <div
         ref={scrollerRef}
         role="region"

@@ -135,16 +135,6 @@ export function AsperaPromiseStrip({
       className={`border-y border-border/70 bg-[#0B1220] text-white ${className}`.trim()}
       aria-label="Why shop Aspera"
     >
-      <div className="container-shell pt-4 pb-1 md:pt-5">
-        <p className="font-display text-[18px] font-bold tracking-tight md:text-[22px]">
-          Built to take the wait out of PC parts
-        </p>
-        <p className="mt-1 max-w-2xl text-[13px] leading-snug text-white/75 md:text-[14px]">
-          Express hubs. Authorised dealers. Warranty pickup. Free tech help. GST
-          invoices. The marketplace habits Blinkit rewrote for groceries — Aspera
-          rewrites for builders.
-        </p>
-      </div>
       <ul className="container-shell grid grid-cols-2 gap-x-4 gap-y-3 py-3.5 sm:grid-cols-3 md:grid-cols-5 md:gap-3 md:py-4">
         {ASPERA_TRUST_STRIP.map((item) => {
           const Icon = ICONS[item.id];
@@ -170,16 +160,6 @@ export function AsperaPromiseStrip({
           );
         })}
       </ul>
-      <p className="container-shell pb-3 text-[11px] leading-snug text-white/55 md:pb-3.5">
-        *Delivery window depends on your pincode and live stock (typically
-        10–90 minutes in Express hub zones).{" "}
-        <Link
-          href="/why-aspera"
-          className="font-medium text-[color:var(--brand-accent)] hover:underline"
-        >
-          Why Aspera wins →
-        </Link>
-      </p>
     </section>
   );
 }

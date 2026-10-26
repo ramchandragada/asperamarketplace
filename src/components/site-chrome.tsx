@@ -5,6 +5,7 @@ import { prisma } from "@/platform/db/prisma";
 import { SiteHeaderClient } from "@/components/site-header-client";
 import { readGuestCartToken } from "@/modules/cart/guest";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
+import { ASPERA_PROMO } from "@/lib/aspera-promises";
 import { siteContact } from "@/platform/config/site-contact";
 
 async function cartCount(userId: string | undefined, guestToken: string | null) {
@@ -466,6 +467,7 @@ export function SiteFooter() {
               Registered entity: {siteContact.legalEntity} ·{" "}
               {siteContact.registeredRegion}
             </p>
+            <p>{ASPERA_PROMO.finePrint}</p>
           </div>
           <p className="flex flex-wrap gap-3">
             <Link href="/terms" className="hover:text-foreground">

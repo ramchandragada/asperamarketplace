@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   FormEvent,
   useCallback,
@@ -112,6 +113,7 @@ export function CatalogueBrowse({
   infiniteScroll?: boolean;
   updateUrl?: boolean;
 }) {
+  const router = useRouter();
   const isHome = variant === "home";
   const useInfinite = infiniteScroll || (isHome && enableLoadMore);
   const initialMin = rupeesFromPaise(initialMinPricePaise);
@@ -154,6 +156,8 @@ export function CatalogueBrowse({
   const loadMoreLockRef = useRef(false);
   const loadMoreRef = useRef<() => void>(() => {});
   const observerRef = useRef<IntersectionObserver | null>(null);
+  // Soft-nav between /browse?… reuses this client tree unless the parent
+  // remounts us (see key={browseKey} on browse/shop pages).
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     category: true,
     brand: true,
@@ -340,9 +344,10 @@ export function CatalogueBrowse({
       setTotal(body.data?.total ?? 0);
       setPage(nextPage);
       if (updateUrl && !isHome) {
-        const url = new URL(window.location.href);
-        url.search = params.toString();
-        window.history.replaceState({}, "", url.toString());
+        // Keep Next.js App Router in sync — raw history.replaceState made
+        // subsequent mega-menu / brand Link soft-navs look dead.
+        const nextPath = `${browseBasePath}?${params.toString()}`;
+        router.replace(nextPath, { scroll: false });
       }
     } finally {
       if (append) {

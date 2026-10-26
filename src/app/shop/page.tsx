@@ -88,9 +88,24 @@ export default async function ShopPage({
     pageSize: 24,
   });
 
+  const shopKey = [
+    categorySlug,
+    resolvedBrandSlug,
+    query,
+    sort,
+    inStockOnly ? "1" : "0",
+    verifiedSellerOnly ? "1" : "0",
+    read("minRating") ?? "",
+    read("minDiscountPercent") ?? "",
+    minPricePaise ?? "",
+    maxPricePaise ?? "",
+    JSON.stringify(facets),
+  ].join("|");
+
   return (
     <PageShell>
       <CatalogueBrowse
+        key={shopKey}
         initialItems={result.items as BrowseProduct[]}
         initialQuery={query}
         initialTotal={result.total}

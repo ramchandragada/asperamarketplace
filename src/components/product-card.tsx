@@ -10,6 +10,7 @@ import {
 } from "@/modules/catalogue/helpers";
 import { sellerStorefrontLabelText } from "@/modules/catalogue/claims";
 import { SHIPPING_POLICY } from "@/modules/cart/pricing";
+import { useDeliveryLocation } from "@/components/delivery-location";
 
 export type ProductCardModel = {
   id: string;
@@ -131,7 +132,37 @@ function BadgePill({ badge }: { badge: ProductCardBadge }) {
   );
 }
 
+function deliveryPromiseLabel({
+  freeDelivery,
+  etaLabel,
+  express,
+}: {
+  freeDelivery: boolean;
+  etaLabel: string | null | undefined;
+  express: boolean;
+}): { text: string; className: string } {
+  if (express && etaLabel) {
+    return {
+      text: `Express · ${etaLabel}`,
+      className: "font-semibold text-accent",
+    };
+  }
+  if (etaLabel && !express) {
+    return {
+      text: freeDelivery ? `Free delivery · ${etaLabel}` : etaLabel,
+      className: freeDelivery
+        ? "font-medium text-success"
+        : "font-semibold text-accent",
+    };
+  }
+  if (freeDelivery) {
+    return { text: "Free delivery", className: "font-medium text-success" };
+  }
+  return { text: "Express delivery", className: "font-semibold text-accent" };
+}
+
 export function ProductCard({ product }: { product: ProductCardModel }) {
+  const location = useDeliveryLocation();
   const discount =
     product.minMrpPaise != null
       ? discountPercent(product.minMrpPaise, product.minPricePaise)
@@ -148,6 +179,11 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
   const sellerLabel = product.sellerVerified
     ? sellerStorefrontLabelText("approved_seller")
     : null;
+  const delivery = deliveryPromiseLabel({
+    freeDelivery,
+    etaLabel: location?.etaLabel,
+    express: Boolean(location?.express),
+  });
 
   const priceLabel = formatPaise(product.minPricePaise);
   const offerLabel = discount ? `, ${discount}% off` : "";
@@ -223,15 +259,9 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
                 : `${product.reviewCount} reviews`}
             </p>
           ) : null}
-          {freeDelivery ? (
-            <span className="text-[12px] font-medium text-success">
-              Free delivery
-            </span>
-          ) : (
-            <span className="text-[12px] font-semibold text-accent">
-              Express delivery
-            </span>
-          )}
+          <span className={`text-[12px] ${delivery.className}`}>
+            {delivery.text}
+          </span>
           <p className="mt-auto pt-0.5 text-[12px] text-muted">
             {sellerLabel ? `${sellerLabel} · ` : ""}
             {product.sellerName}

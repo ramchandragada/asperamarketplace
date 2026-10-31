@@ -10,6 +10,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   useTransition,
   type ReactNode,
 } from "react";
@@ -59,6 +60,8 @@ type CatalogueBrowseProps = {
   /** Auto-load next page when sentinel enters viewport */
   infiniteScroll?: boolean;
   updateUrl?: boolean;
+  /** Soft-nav address-bar query (without leading ?) when RSC props lag behind */
+  urlSearchOverride?: string;
 };
 
 /** Identity of the listing URL — soft-nav must remount when this changes. */
@@ -89,23 +92,83 @@ function listingRouteKey(sp: URLSearchParams): string {
  * inner browse on the URL forces a remount the moment the address bar changes
  * (mega-menu / category chips / brand logos), even before RSC props catch up.
  */
+function BrowseSkeletonFallback() {
+  return (
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <ProductCardSkeleton key={index} />
+      ))}
+    </div>
+  );
+}
+
 export function CatalogueBrowse(props: CatalogueBrowseProps) {
   if (props.variant === "home" || props.updateUrl === false) {
     return <CatalogueBrowseInner {...props} />;
   }
   return (
-    <Suspense fallback={<CatalogueBrowseInner {...props} />}>
+    <Suspense fallback={<BrowseSkeletonFallback />}>
       <CatalogueBrowseUrlKeyed {...props} />
     </Suspense>
   );
 }
 
+/** Subscribe to the real address bar so soft-nav remounts even if useSearchParams lags. */
+function useLocationSearchKey() {
+  return useSyncExternalStore(
+    (onStoreChange) => {
+      if (typeof window === "undefined") return () => {};
+      const notify = () => onStoreChange();
+      window.addEventListener("popstate", notify);
+      const originalPush = history.pushState.bind(history);
+      const originalReplace = history.replaceState.bind(history);
+      history.pushState = (...args) => {
+        originalPush(...args);
+        notify();
+      };
+      history.replaceState = (...args) => {
+        originalReplace(...args);
+        notify();
+      };
+      return () => {
+        window.removeEventListener("popstate", notify);
+        history.pushState = originalPush;
+        history.replaceState = originalReplace;
+      };
+    },
+    () => (typeof window === "undefined" ? "" : window.location.search),
+    () => "",
+  );
+}
+
 function CatalogueBrowseUrlKeyed(props: CatalogueBrowseProps) {
   const searchParams = useSearchParams();
-  const routeKey = listingRouteKey(
+  const locationSearch = useLocationSearchKey();
+  const fromHook = listingRouteKey(
     new URLSearchParams(searchParams.toString()),
   );
-  return <CatalogueBrowseInner key={routeKey} {...props} />;
+  const fromWindow = listingRouteKey(
+    new URLSearchParams(
+      locationSearch.startsWith("?")
+        ? locationSearch.slice(1)
+        : locationSearch,
+    ),
+  );
+  // Prefer the address bar when it already moved ahead of useSearchParams.
+  const routeKey = fromWindow || fromHook;
+  return (
+    <CatalogueBrowseInner
+      key={routeKey}
+      {...props}
+      urlSearchOverride={
+        locationSearch
+          ? locationSearch.startsWith("?")
+            ? locationSearch.slice(1)
+            : locationSearch
+          : searchParams.toString()
+      }
+    />
+  );
 }
 
 const PRICE_PRESETS = [
@@ -163,6 +226,7 @@ function CatalogueBrowseInner({
   enableLoadMore = false,
   infiniteScroll = false,
   updateUrl = true,
+  urlSearchOverride,
 }: CatalogueBrowseProps) {
   const router = useRouter();
   const isHome = variant === "home";
@@ -174,8 +238,14 @@ function CatalogueBrowseInner({
    * mount so we never paint SSD cards under ?categorySlug=laptops.
    */
   const urlBoot = useMemo(() => {
-    if (typeof window === "undefined" || isHome || !updateUrl) return null;
-    const sp = new URLSearchParams(window.location.search);
+    if (isHome || !updateUrl) return null;
+    const raw =
+      urlSearchOverride ??
+      (typeof window === "undefined"
+        ? ""
+        : window.location.search.replace(/^\?/, ""));
+    if (!raw && typeof window === "undefined") return null;
+    const sp = new URLSearchParams(raw);
     return {
       categorySlug: sp.get("categorySlug") ?? "",
       brandSlug: sp.get("brandSlug") ?? "",
@@ -194,14 +264,40 @@ function CatalogueBrowseInner({
         ? Number(sp.get("maxPricePaise"))
         : undefined,
       facets: parseFacetSearchParams(sp),
+      routeKey: listingRouteKey(sp),
     };
-  }, [isHome, updateUrl, initialSort]);
+  }, [isHome, updateUrl, initialSort, urlSearchOverride]);
+
+  const propsRouteKey = listingRouteKey(
+    new URLSearchParams(
+      [
+        initialCategorySlug ? `categorySlug=${initialCategorySlug}` : "",
+        initialBrandSlug ? `brandSlug=${initialBrandSlug}` : "",
+        initialQuery ? `q=${initialQuery}` : "",
+        initialSort ? `sort=${initialSort}` : "",
+        initialInStockOnly ? "inStockOnly=true" : "",
+        initialVerifiedOnly ? "verifiedSellerOnly=true" : "",
+        initialMinRating != null ? `minRating=${initialMinRating}` : "",
+        initialMinDiscount != null
+          ? `minDiscountPercent=${initialMinDiscount}`
+          : "",
+        initialMinPricePaise != null
+          ? `minPricePaise=${initialMinPricePaise}`
+          : "",
+        initialMaxPricePaise != null
+          ? `maxPricePaise=${initialMaxPricePaise}`
+          : "",
+        ...facetQueryEntries(initialFacets ?? {}).map(
+          ([key, value]) => `${key}=${value}`,
+        ),
+      ]
+        .filter(Boolean)
+        .join("&"),
+    ),
+  );
 
   const propsStale =
-    !!urlBoot &&
-    (urlBoot.categorySlug !== initialCategorySlug ||
-      urlBoot.brandSlug !== initialBrandSlug ||
-      urlBoot.query !== initialQuery);
+    !!urlBoot && urlBoot.routeKey !== propsRouteKey;
 
   const bootCategorySlug = propsStale
     ? urlBoot!.categorySlug
@@ -1128,28 +1224,7 @@ function CatalogueBrowseInner({
               </p>
             )}
           </div>
-          {!isHome ? (
-            <label className="flex items-center gap-2 text-sm">
-              <span className="text-muted">Sort by:</span>
-              <select
-                value={sort}
-                onChange={(event) => {
-                  setSort(event.target.value);
-                  startTransition(() => {
-                    void runSearch({ sort: event.target.value, page: 1 });
-                  });
-                }}
-                className="min-h-11 rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-1.5 text-base font-medium md:min-h-0 md:text-sm"
-                aria-label="Sort by"
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
+          {/* Sort lives in the left filter rail only — avoid a second Sort by control */}
         </div>
       </div>
 

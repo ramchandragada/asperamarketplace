@@ -4,11 +4,11 @@
  */
 
 export const ASPERA_PROMO = {
-  mobile: "Express 10–90 mins* · Authorised dealers · Genuine parts",
+  mobile: "Express under 90 mins* · Authorised dealers · Genuine parts",
   desktop:
-    "Aspera Express — PC parts usually in 10–90 mins in hub zones* · Authorised brand dealers · Genuine products",
+    "Aspera Express — PC parts usually under 90 mins in hub zones* · Authorised brand dealers · Genuine products",
   finePrint:
-    "*Delivery window depends on your pincode and live stock (typically 10–90 minutes in Express hub zones).",
+    "*Pin-specific ETA is shown before you buy (often 30–90 minutes in Express hub zones, depending on stock).",
 } as const;
 
 export type AsperaPromiseId =
@@ -34,9 +34,9 @@ export type AsperaPromise = {
 export const ASPERA_TRUST_STRIP: AsperaPromise[] = [
   {
     id: "express",
-    label: "Express 10–90 mins*",
+    label: "Express under 90 mins*",
     hint: "Hub delivery by pin and stock",
-    body: "In-stock PC parts from nearby hubs. Typical windows are 10–90 minutes depending on your pincode and live stock — the header location bar shows your quote before you buy.",
+    body: "In-stock PC parts from nearby hubs. Typical windows are under 90 minutes depending on your pincode and live stock — the header location bar and product page show your pin-specific quote before you buy.",
     href: "/shipping",
   },
   {

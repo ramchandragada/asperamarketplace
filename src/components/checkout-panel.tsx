@@ -59,6 +59,9 @@ export function CheckoutPanel({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<
+    "upi" | "card" | "cod" | ""
+  >("");
 
   const [idempotencyKey] = useState(() => `chk-${crypto.randomUUID()}`);
 
@@ -159,6 +162,10 @@ export function CheckoutPanel({
       setError("Add a delivery address first");
       return;
     }
+    if (!paymentMethod) {
+      setError("Choose how you want to pay");
+      return;
+    }
     setPending(true);
     setError(null);
     setMessage(null);
@@ -213,7 +220,7 @@ export function CheckoutPanel({
     );
   }
 
-  const canPlace = Boolean(addressId) && !pending;
+  const canPlace = Boolean(addressId) && Boolean(paymentMethod) && !pending;
 
   return (
     <div className="flex flex-col gap-8">
@@ -304,7 +311,7 @@ export function CheckoutPanel({
                 <input
                   name="state"
                   required
-                  defaultValue="Karnataka"
+                  defaultValue="Maharashtra"
                   className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
                 />
               </label>
@@ -369,7 +376,10 @@ export function CheckoutPanel({
                     : "FREE"
                 }
               />
-              <Row label="GST" value={formatPaise(snapshot.taxPaise)} />
+              <Row
+                label="Estimated GST (on listed prices)"
+                value={formatPaise(snapshot.taxPaise)}
+              />
               <div className="mt-1 flex justify-between border-t border-border pt-2 text-base font-semibold">
                 <span>Total</span>
                 <span>{formatPaise(snapshot.totalPaise)}</span>
@@ -412,6 +422,42 @@ export function CheckoutPanel({
         ) : null}
       </section>
 
+      <section className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4">
+        <h2 className="text-lg font-semibold">Payment method</h2>
+        <p className="text-xs text-muted">
+          Choose how you want to pay before placing the order. Demo checkout
+          uses a mock payment step after the order is created.
+        </p>
+        <div className="flex flex-col gap-2" role="radiogroup" aria-label="Payment method">
+          {(
+            [
+              { id: "upi", label: "UPI" },
+              { id: "card", label: "Credit / debit card" },
+              { id: "cod", label: "Cash on delivery" },
+            ] as const
+          ).map((option) => (
+            <label
+              key={option.id}
+              className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm ${
+                paymentMethod === option.id
+                  ? "border-accent bg-accent-soft"
+                  : "border-border bg-background"
+              }`}
+            >
+              <input
+                type="radio"
+                name="paymentMethod"
+                value={option.id}
+                checked={paymentMethod === option.id}
+                onChange={() => setPaymentMethod(option.id)}
+                className="accent-[var(--accent)]"
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
+      </section>
+
       <div className="flex flex-col gap-2">
         <button
           type="button"
@@ -426,8 +472,13 @@ export function CheckoutPanel({
               : "Place order"}
         </button>
         <p className="text-center text-xs text-muted">
-          You’ll choose how to pay on the next step. Your stock is reserved when
-          you place the order.
+          Stock is reserved when you place the order. You will confirm{" "}
+          {paymentMethod === "cod"
+            ? "cash on delivery"
+            : paymentMethod
+              ? "payment"
+              : "payment"}{" "}
+          on the next screen (demo).
         </p>
       </div>
     </div>

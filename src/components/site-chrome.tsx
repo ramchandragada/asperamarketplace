@@ -238,7 +238,7 @@ export function SiteFooter() {
             ASPERA
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
-            Express PC parts from authorised brand dealers — usually 10–90
+            Express PC parts from authorised brand dealers — usually under 90
             minutes in hub zones, with warranty pickup, free tech support, and
             GST invoices for businesses.
           </p>

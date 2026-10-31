@@ -110,6 +110,7 @@ export function ProductGallery({
                     alt=""
                     fill
                     sizes="64px"
+                    unoptimized={image.url.startsWith("/")}
                     className="object-cover"
                     onError={() =>
                       setFailed((prev) => ({ ...prev, [image.id]: true }))
@@ -161,6 +162,7 @@ export function ProductGallery({
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
+                unoptimized={current.url.startsWith("/")}
                 placeholder="blur"
                 blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2U4ZjRmNCIvPjwvc3ZnPg=="
                 className="object-cover"

@@ -26,7 +26,14 @@ export default async function LoginPage({
         </p>
         <p className="mt-3 text-sm text-muted">
           Need an account?{" "}
-          <Link href="/register" className="font-medium text-accent underline">
+          <Link
+            href={
+              nextPath
+                ? `/register?next=${encodeURIComponent(nextPath)}`
+                : "/register"
+            }
+            className="font-medium text-accent underline"
+          >
             Register
           </Link>
         </p>

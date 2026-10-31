@@ -234,7 +234,7 @@ export function CartPanel({
                             <input
                               key={`${item.variantId}-${item.quantity}`}
                               type="number"
-                              min={0}
+                              min={1}
                               max={Math.min(99, item.availableQty)}
                               defaultValue={item.quantity}
                               disabled={pending}
@@ -243,6 +243,7 @@ export function CartPanel({
                                 const next = Number(event.target.value);
                                 if (
                                   Number.isFinite(next) &&
+                                  next >= 1 &&
                                   next !== item.quantity
                                 ) {
                                   void setQuantity(item.variantId, next);
@@ -292,7 +293,7 @@ export function CartPanel({
                 </dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-muted">Discount</dt>
+                <dt className="text-muted">Coupon discount</dt>
                 <dd>
                   {snapshot && snapshot.discountPaise > 0
                     ? `−${formatPaise(snapshot.discountPaise)}`
@@ -300,7 +301,7 @@ export function CartPanel({
                 </dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-muted">Estimated GST</dt>
+                <dt className="text-muted">Estimated GST (18%)</dt>
                 <dd>{formatPaise(snapshot?.taxPaise ?? 0)}</dd>
               </div>
               <div className="flex justify-between gap-4 border-t border-border pt-2 text-base font-semibold">
@@ -314,7 +315,11 @@ export function CartPanel({
             </dl>
             {savingsPaise > 0 ? (
               <p className="mt-2 text-sm font-medium text-success">
-                You save {formatPaise(savingsPaise)}
+                MRP savings {formatPaise(savingsPaise)}
+                <span className="font-normal text-muted">
+                  {" "}
+                  (before GST)
+                </span>
               </p>
             ) : null}
             {snapshot?.coupon.accepted ? (

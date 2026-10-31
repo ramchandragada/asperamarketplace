@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountProfileForm } from "@/components/account-profile-form";
 import { getOptionalActor } from "@/modules/identity/service";
@@ -45,12 +44,6 @@ export default async function AccountProfilePage() {
           </li>
         </ul>
       </section>
-
-      <p className="text-sm">
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
-      </p>
     </div>
   );
 }

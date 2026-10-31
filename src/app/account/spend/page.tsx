@@ -123,12 +123,6 @@ export default async function AccountSpendPage() {
           ) : null}
         </div>
       )}
-
-      <p className="text-sm">
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
-      </p>
     </>
   );
 }

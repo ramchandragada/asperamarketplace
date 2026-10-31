@@ -67,10 +67,6 @@ export default async function AccountReturnsPage() {
         <Link href="/orders" className="underline">
           Your orders
         </Link>
-        {" · "}
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
       </p>
     </div>
   );

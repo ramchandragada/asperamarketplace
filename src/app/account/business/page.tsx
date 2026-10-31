@@ -59,10 +59,6 @@ export default async function AccountBusinessPage() {
         <Link href="/account/addresses" className="underline">
           Manage addresses
         </Link>
-        {" · "}
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
       </p>
     </div>
   );

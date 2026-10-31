@@ -49,10 +49,6 @@ export default async function AccountPaymentsPage() {
         <Link href="/orders" className="underline">
           View orders & invoices
         </Link>
-        {" · "}
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
       </p>
     </div>
   );

@@ -32,10 +32,6 @@ export default async function AccountCouponsPage() {
         <Link href="/checkout" className="underline">
           Go to checkout
         </Link>
-        {" · "}
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
       </p>
     </div>
   );

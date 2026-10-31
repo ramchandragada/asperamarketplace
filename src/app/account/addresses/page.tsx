@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountAddressesPanel } from "@/components/account-addresses-panel";
 import { listAddresses } from "@/modules/cart/service";
@@ -42,12 +41,6 @@ export default async function AccountAddressesPage() {
           isDefault: address.isDefault,
         }))}
       />
-
-      <p className="text-sm">
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
-      </p>
     </>
   );
 }

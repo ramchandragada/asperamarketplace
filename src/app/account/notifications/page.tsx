@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { listBuyerNotifications } from "@/modules/account/service";
 import { getOptionalActor } from "@/modules/identity/service";
@@ -54,12 +53,6 @@ export default async function AccountNotificationsPage() {
           ))}
         </ul>
       )}
-
-      <p className="text-sm">
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
-      </p>
     </div>
   );
 }

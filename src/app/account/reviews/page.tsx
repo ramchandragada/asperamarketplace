@@ -92,12 +92,6 @@ export default async function AccountReviewsPage() {
           </ul>
         )}
       </section>
-
-      <p className="text-sm">
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
-      </p>
     </div>
   );
 }

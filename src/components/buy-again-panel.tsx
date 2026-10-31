@@ -87,8 +87,8 @@ export function BuyAgainPanel({ items }: { items: BuyAgainItem[] }) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-      <aside className="h-fit rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] lg:sticky lg:top-36">
+    <div className="grid gap-6 xl:grid-cols-[14rem_minmax(0,1fr)]">
+      <aside className="h-fit rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] xl:sticky xl:top-6">
         <h2 className="text-base font-semibold">Filters</h2>
 
         <label className="mt-4 block">

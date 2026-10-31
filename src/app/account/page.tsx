@@ -247,9 +247,6 @@ export default async function AccountPage() {
         <Link href="/shop" className="font-medium text-accent hover:underline">
           Continue shopping
         </Link>
-        <Link href="/seller" className="font-medium text-accent hover:underline">
-          Seller dashboard
-        </Link>
       </nav>
     </>
   );

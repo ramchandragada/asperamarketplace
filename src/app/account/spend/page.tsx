@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageShell } from "@/components/ui/page-shell";
 import { buildSpendReport } from "@/modules/account/service";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { getOptionalActor } from "@/modules/identity/service";
@@ -16,7 +15,7 @@ export default async function AccountSpendPage() {
   const report = await buildSpendReport(actor);
 
   return (
-    <PageShell>
+    <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
@@ -130,6 +129,6 @@ export default async function AccountSpendPage() {
           Back to account
         </Link>
       </p>
-    </PageShell>
+    </>
   );
 }

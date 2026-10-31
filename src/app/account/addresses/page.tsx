@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountAddressesPanel } from "@/components/account-addresses-panel";
-import { PageShell } from "@/components/ui/page-shell";
 import { listAddresses } from "@/modules/cart/service";
 import { getOptionalActor } from "@/modules/identity/service";
 
@@ -16,7 +15,7 @@ export default async function AccountAddressesPage() {
   const addresses = await listAddresses(actor);
 
   return (
-    <PageShell>
+    <>
       <div>
         <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
           Account settings
@@ -49,6 +48,6 @@ export default async function AccountAddressesPage() {
           Back to account
         </Link>
       </p>
-    </PageShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountBusinessForm } from "@/components/account-business-form";
-import { PageShell } from "@/components/ui/page-shell";
 import { getBuyerProfile } from "@/modules/account/service";
 import { listAddresses } from "@/modules/cart/service";
 import { maskGstin } from "@/modules/identity/crypto";
@@ -23,7 +22,7 @@ export default async function AccountBusinessPage() {
     addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
 
   return (
-    <PageShell narrow>
+    <div className="flex max-w-3xl flex-col gap-8">
       <div>
         <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
           Account settings
@@ -65,6 +64,6 @@ export default async function AccountBusinessPage() {
           Back to account
         </Link>
       </p>
-    </PageShell>
+    </div>
   );
 }

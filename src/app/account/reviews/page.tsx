@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageShell } from "@/components/ui/page-shell";
 import {
   listBuyerReviews,
   listPendingReviews,
@@ -21,7 +20,7 @@ export default async function AccountReviewsPage() {
   ]);
 
   return (
-    <PageShell narrow>
+    <div className="flex max-w-3xl flex-col gap-8">
       <div>
         <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
           Activity
@@ -99,6 +98,6 @@ export default async function AccountReviewsPage() {
           Back to account
         </Link>
       </p>
-    </PageShell>
+    </div>
   );
 }

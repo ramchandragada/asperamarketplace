@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountCouponsPanel } from "@/components/account-coupons-panel";
-import { PageShell } from "@/components/ui/page-shell";
 import { listCouponWallet } from "@/modules/account/service";
 import { getOptionalActor } from "@/modules/identity/service";
 
@@ -16,7 +15,7 @@ export default async function AccountCouponsPage() {
   const wallet = await listCouponWallet(actor);
 
   return (
-    <PageShell narrow>
+    <div className="flex max-w-3xl flex-col gap-8">
       <div>
         <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
           Payments & savings
@@ -38,6 +37,6 @@ export default async function AccountCouponsPage() {
           Back to account
         </Link>
       </p>
-    </PageShell>
+    </div>
   );
 }

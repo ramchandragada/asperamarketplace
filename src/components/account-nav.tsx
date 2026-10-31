@@ -15,7 +15,7 @@ type NavGroup = {
   links: NavLink[];
 };
 
-const GROUPS: NavGroup[] = [
+const SHOPPER_GROUPS: NavGroup[] = [
   {
     label: "Shopping",
     links: [
@@ -52,28 +52,45 @@ const GROUPS: NavGroup[] = [
   },
 ];
 
+/** Sellers only hit /account for login & security — never shopper Buy Again. */
+const SELLER_GROUPS: NavGroup[] = [
+  {
+    label: "Account settings",
+    links: [{ href: "/account/profile", label: "Login & security" }],
+  },
+];
+
 function linkIsActive(pathname: string, link: NavLink) {
   if (link.exact) return pathname === link.href;
   return pathname === link.href || pathname.startsWith(`${link.href}/`);
 }
 
-export function AccountNav({ displayName }: { displayName: string }) {
+export function AccountNav({
+  displayName,
+  mode = "shopper",
+}: {
+  displayName: string;
+  /** Seller staff see login/security only — no Buy Again / shopper rail. */
+  mode?: "shopper" | "seller";
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const groups = mode === "seller" ? SELLER_GROUPS : SHOPPER_GROUPS;
+  const isSeller = mode === "seller";
 
   return (
     <div className="rounded-[var(--radius)] border border-border bg-surface p-3 shadow-[var(--shadow-card)]">
       <div className="flex items-center justify-between gap-3 md:block">
         <div>
           <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
-            Your account
+            {isSeller ? "Seller account" : "Your account"}
           </p>
           <p className="font-semibold">{displayName}</p>
           <Link
-            href="/"
+            href={isSeller ? "/seller" : "/"}
             className="mt-1 inline-block text-xs text-muted hover:text-accent"
           >
-            Continue shopping
+            {isSeller ? "Back to Seller Central" : "Continue shopping"}
           </Link>
         </div>
         <button
@@ -90,7 +107,7 @@ export function AccountNav({ displayName }: { displayName: string }) {
         aria-label="Account"
         className={`${open ? "flex" : "hidden"} mt-3 flex-col gap-4 md:flex`}
       >
-        {GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.label}>
             <p className="mb-1 px-3 text-[11px] font-semibold tracking-wide text-muted uppercase">
               {group.label}

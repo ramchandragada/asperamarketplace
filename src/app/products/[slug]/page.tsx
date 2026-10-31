@@ -43,7 +43,7 @@ export async function generateMetadata({
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
     "https://aspera.market";
   if (!product) {
-    return { title: "Product" };
+    notFound();
   }
   const image = product.images.find((img) => img.isPrimary)?.url ?? product.images[0]?.url;
   const ogTitle = `${product.title} · Aspera Marketplace`;

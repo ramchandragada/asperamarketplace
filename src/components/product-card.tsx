@@ -204,6 +204,11 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               alt={product.primaryImageAlt ?? product.title}
               fill
               sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 280px"
+              // Local /products assets: skip Vercel image optimizer (avoids 402 quota)
+              unoptimized={
+                (product.primaryImageUrl as string).startsWith("/") ||
+                (product.primaryImageUrl as string).startsWith("/products/")
+              }
               placeholder="blur"
               blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y3ZjhmYSIvPjwvc3ZnPg=="
               className="card-photo object-contain object-center p-2"

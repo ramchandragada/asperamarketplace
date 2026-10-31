@@ -10,7 +10,7 @@ import { siteContact } from "@/platform/config/site-contact";
 export const metadata: Metadata = {
   title: "Why Aspera",
   description:
-    "Express PC parts in 10–90 minutes in hub zones, authorised brand dealers, free warranty pickup, free technical support, and GST invoices with input credit.",
+    "Express PC parts usually under 90 minutes in hub zones, authorised brand dealers, free warranty pickup, free technical support, and GST invoices with input credit.",
 };
 
 const SECTIONS = [...ASPERA_TRUST_STRIP, ASPERA_PRICE_PROMISE] as const;

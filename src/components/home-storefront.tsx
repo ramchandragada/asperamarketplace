@@ -17,7 +17,7 @@ export function AnnouncementStrip() {
   return (
     <div className="bg-accent text-accent-foreground">
       <p className="container-shell flex h-8 items-center justify-center text-center text-[12px] font-medium tracking-wide md:h-9 md:text-[13px]">
-        Express 10–90 mins* · Authorised dealers · Genuine PC parts
+        Express under 90 mins* · Authorised dealers · Genuine PC parts
       </p>
     </div>
   );
@@ -47,7 +47,7 @@ const HERO_SLIDES: HeroSlide[] = [
     eyebrow: "Aspera Express",
     title: "PC parts in minutes — not days",
     subtitle:
-      "Hub stock at your door in 10–90 mins* by pin. The end of waiting on courier for a GPU.",
+      "Hub stock at your door in under 90 mins* by pin. The end of waiting on courier for a GPU.",
     ctaLabel: "Shop Express now",
     ctaHref: "/browse",
     image: "/hero/usp-express-minutes.jpg",

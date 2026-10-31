@@ -576,7 +576,7 @@ export function SiteHeaderClient({
             <span>Express PC parts*</span>
           </span>
           <span className="hidden md:inline">
-            Minutes, not days — Aspera Express PC parts in 10–90 mins* ·
+            Minutes, not days — Aspera Express PC parts in under 90 mins* ·
             Authorised dealers · Free warranty pickup · GST invoices
           </span>
         </p>

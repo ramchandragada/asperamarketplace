@@ -176,7 +176,7 @@ export function ProductPurchasePanel({
           ) : null}
         </p>
         <p className="mt-1 text-sm text-muted">
-          Inclusive of taxes
+          Excl. GST · estimated at checkout
           {showFromPrice
             ? ` · select a size (up to ${formatPaise(maxSellingPaise)})`
             : ""}
@@ -348,7 +348,7 @@ export function ProductPurchasePanel({
             <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-success-soft text-[10px] font-bold text-success">
               ✓
             </span>
-            Fast Delivery
+            Express hub delivery
           </li>
         </ul>
         {sizeVariants.length > 1 ? (

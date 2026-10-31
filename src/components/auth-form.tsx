@@ -40,7 +40,8 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
     setPending(true);
     setError(null);
     const form = new FormData(event.currentTarget);
-    const intent = String(form.get("intent") ?? "customer");
+    // Shopper self-serve only — seller onboarding is via /sell, not register.
+    const intent = "customer";
 
     if (totpChallenge) {
       const response = await fetch("/api/auth/totp/verify", {
@@ -97,11 +98,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
       setTotpChallenge(body.data.challengeToken);
       return;
     }
-    const destination =
-      mode === "register" && intent === "seller"
-        ? "/seller/onboarding"
-        : await resolveDestination();
-    router.push(destination);
+    router.push(await resolveDestination());
     router.refresh();
   }
 
@@ -156,19 +153,6 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
               className="rounded-lg border border-border bg-surface px-3 py-2"
             />
           </label>
-          {mode === "register" ? (
-            <label className="flex flex-col gap-1 text-sm">
-              Account intent
-              <select
-                name="intent"
-                defaultValue="customer"
-                className="rounded-lg border border-border bg-surface px-3 py-2"
-              >
-                <option value="seller">Seller</option>
-                <option value="customer">Customer</option>
-              </select>
-            </label>
-          ) : null}
         </>
       )}
       {error ? (

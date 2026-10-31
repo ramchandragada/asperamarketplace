@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const TIERS = [
   {
     title: "Pune Express",
-    eta: "10–90 minutes*",
+    eta: "under 90 minutes*",
     body: "In-stock CPUs, boards, GPUs, SSDs, and peripherals from local hubs when your pin starts with 411. Exact window depends on pin and stock.",
   },
   {
@@ -37,7 +37,7 @@ export default function ShippingPage() {
       <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
         Aspera runs a quick-commerce model for PC components — set your pincode
         once, see a live ETA, and get in-stock parts from nearby seller hubs.
-        Typical Express windows are 10–90 minutes depending on your location and
+        Typical Express windows are under 90 minutes depending on your location and
         live stock.
       </p>
 
@@ -74,7 +74,7 @@ export default function ShippingPage() {
             quoted window.
           </li>
           <li>
-            *Express windows are typically 10–90 minutes in hub zones depending
+            *Express windows are typically under 90 minutes in hub zones depending
             on your pincode and live stock.
           </li>
           <li>7-day easy returns on eligible parts after delivery.</li>

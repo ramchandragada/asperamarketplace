@@ -26,45 +26,43 @@ export function OperatorChrome({
   const sellerVisible = showSeller || surface === "seller";
 
   return (
-    <div className="min-h-full bg-background">
-      <header className="border-b border-border bg-accent text-accent-foreground">
-        <div className="container-shell flex flex-wrap items-center justify-between gap-3 py-2.5">
+    <div className="min-h-full bg-[linear-gradient(180deg,#f7f3ec_0%,#f3efe6_40%,#efe9de_100%)]">
+      <header className="border-b border-border/80 bg-[color-mix(in_oklab,var(--accent)_92%,black)] text-accent-foreground">
+        <div className="container-shell flex flex-wrap items-center justify-between gap-3 py-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               href="/"
-              className="font-display text-[17px] font-semibold tracking-tight text-white"
+              className="font-display text-lg font-semibold tracking-tight text-white"
             >
               Aspera
             </Link>
-            <span className="hidden h-4 w-px bg-white/25 sm:block" aria-hidden />
+            <span className="hidden h-4 w-px bg-white/30 sm:block" aria-hidden />
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold tracking-[0.14em] text-white/65 uppercase">
-                {surface === "admin" ? "Admin console" : "Seller Central"}
+              <p className="text-[11px] font-semibold tracking-[0.16em] text-white/70 uppercase">
+                {surface === "admin" ? "Admin console" : "Seller console"}
               </p>
-              <p className="truncate text-[13px] font-medium text-white">
-                {title}
-              </p>
+              <p className="truncate text-sm font-medium text-white">{title}</p>
               {subtitle ? (
-                <p className="truncate text-[11px] text-white/65">{subtitle}</p>
+                <p className="truncate text-xs text-white/70">{subtitle}</p>
               ) : null}
             </div>
           </div>
           <nav
             aria-label="Aspera surfaces"
-            className="flex flex-wrap items-center gap-1.5 text-xs"
+            className="flex flex-wrap items-center gap-2 text-xs"
           >
             <Link
               href="/"
-              className="border border-white/25 px-2.5 py-1.5 text-white/90 hover:bg-white/10"
+              className="rounded-full border border-white/25 px-3 py-1.5 text-white/90 hover:bg-white/10"
             >
               Shopping
             </Link>
             {sellerVisible ? (
               <Link
                 href="/seller"
-                className={`px-2.5 py-1.5 ${
+                className={`rounded-full px-3 py-1.5 ${
                   surface === "seller"
-                    ? "bg-white font-semibold text-accent"
+                    ? "bg-white text-accent"
                     : "border border-white/25 text-white/90 hover:bg-white/10"
                 }`}
               >
@@ -74,9 +72,9 @@ export function OperatorChrome({
             {adminVisible ? (
               <Link
                 href="/admin"
-                className={`px-2.5 py-1.5 ${
+                className={`rounded-full px-3 py-1.5 ${
                   surface === "admin"
-                    ? "bg-white font-semibold text-accent"
+                    ? "bg-white text-accent"
                     : "border border-white/25 text-white/90 hover:bg-white/10"
                 }`}
               >

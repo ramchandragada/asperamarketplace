@@ -31,6 +31,8 @@ export type SellerActionDashboard = {
     orderNumber: string;
     status: string;
     lineTotalPaise: number;
+    ageHours: number;
+    createdAt: string;
   }>;
   outOfStock: Array<{
     inventoryItemId: string;
@@ -65,12 +67,21 @@ export type SellerActionDashboard = {
     periodEnd: string;
   } | null;
   recentSalesPaise: number;
+  catalogue: {
+    live: number;
+    submitted: number;
+    draft: number;
+    rejected: number;
+    totalSkus: number;
+    inStockSkus: number;
+  };
   metrics: {
     sales30dPaise: number;
     salesTrendPct: number | null;
     orders30d: number;
     ordersTrendPct: number | null;
     payoutDuePaise: number;
+    sales7dPaise: number;
     dailySales: Array<{ label: string; paise: number }>;
   };
   alerts: Array<{
@@ -116,6 +127,10 @@ export async function getSellerActionDashboard(
     recentPaid,
     salesGroups,
     payoutAgg,
+    liveCount,
+    submittedCount,
+    draftCount,
+    rejectedCount,
   ] = await Promise.all([
     prisma.orderFulfilmentGroup.findMany({
       where: {
@@ -189,6 +204,10 @@ export async function getSellerActionDashboard(
       where: { sellerId, status: { in: ["pending", "held"] } },
       _sum: { netPaise: true },
     }),
+    prisma.product.count({ where: { sellerId, status: "approved" } }),
+    prisma.product.count({ where: { sellerId, status: "submitted" } }),
+    prisma.product.count({ where: { sellerId, status: "draft" } }),
+    prisma.product.count({ where: { sellerId, status: "rejected" } }),
   ]);
 
   // 30-day sales metrics, trend vs the prior 30 days, and a daily series.
@@ -219,12 +238,16 @@ export async function getSellerActionDashboard(
   }
   const trendPct = (cur: number, prev: number) =>
     prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null;
+  const sales7d = Array.from(dayBuckets.entries())
+    .slice(-7)
+    .reduce((sum, [, paise]) => sum + paise, 0);
   const metrics = {
     sales30dPaise: sales30,
     salesTrendPct: trendPct(sales30, salesPrev30),
     orders30d: orders30.size,
     ordersTrendPct: trendPct(orders30.size, ordersPrev30.size),
     payoutDuePaise: payoutAgg._sum.netPaise ?? 0,
+    sales7dPaise: sales7d,
     dailySales: Array.from(dayBuckets.entries()).map(([key, paise]) => ({
       label: new Date(key).toLocaleDateString("en-IN", {
         day: "numeric",
@@ -372,6 +395,10 @@ export async function getSellerActionDashboard(
       orderNumber: group.order.orderNumber,
       status: group.status,
       lineTotalPaise: group.lineTotalPaise,
+      ageHours: Math.floor(
+        (now - group.createdAt.getTime()) / (60 * 60 * 1000),
+      ),
+      createdAt: group.createdAt.toISOString(),
     })),
     outOfStock,
     lowStock,
@@ -394,6 +421,14 @@ export async function getSellerActionDashboard(
         }
       : null,
     recentSalesPaise: recentPaid._sum.lineTotalPaise ?? 0,
+    catalogue: {
+      live: liveCount,
+      submitted: submittedCount,
+      draft: draftCount,
+      rejected: rejectedCount,
+      totalSkus: stockRows.length,
+      inStockSkus: stockRows.filter((row) => row.available > 0).length,
+    },
     metrics,
     alerts,
     capabilities,

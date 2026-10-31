@@ -230,9 +230,7 @@ export default async function Home() {
 
       {/* Beat 4 — Upgrades + brands */}
       <PopularUpgrades upgrades={[...popularUpgrades]} />
-      <div className="hidden md:block">
-        <ShopByBrands brands={[...ASPERA_BRAND_LANES]} />
-      </div>
+      <ShopByBrands brands={[...ASPERA_BRAND_LANES]} />
 
       {/* Beat 5 — New / trending */}
       {newArrivals.length > 0 ? (
@@ -305,9 +303,8 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {/* Beat 6 — Seller trust */}
-      <div className="hidden md:block">
-        <FeaturedSellers
+      {/* Beat 6 — Seller trust (mobile + desktop) */}
+      <FeaturedSellers
           sellers={sellers
             .filter((seller) => seller._count.products > 0)
             .map((seller) => {
@@ -339,8 +336,7 @@ export default async function Home() {
                 imageUrl,
               };
             })}
-        />
-      </div>
+      />
 
       <SellerConversionSection />
     </div>

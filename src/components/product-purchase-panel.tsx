@@ -390,7 +390,7 @@ export function ProductPurchasePanel({
             </span>
           ) : null}
         </p>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-nowrap items-center gap-2">
           <AddToCartButton
             compact
             variantId={activeVariantId}
@@ -404,7 +404,7 @@ export function ProductPurchasePanel({
             type="button"
             disabled={selectionRequired || buyPending}
             onClick={() => void buyNow()}
-            className="btn-cta btn-cta-primary min-w-0 flex-1 basis-[8.5rem] md:min-w-[9.5rem] md:flex-none"
+            className="btn-cta btn-cta-primary min-w-[7.5rem] shrink-0 whitespace-nowrap px-3 md:min-w-[9.5rem] md:flex-none"
           >
             {buyPending ? "Starting…" : "Buy now"}
           </button>
@@ -424,8 +424,12 @@ export function ProductPurchasePanel({
           </p>
         ) : null}
       </div>
-      {/* Spacer so the fixed bar sits above the mobile tab nav */}
-      <div className="h-28 md:hidden" aria-hidden />
+      {/* Reserve room for sticky buy bar + mobile tab nav so Delivery & pincode stay clear */}
+      <div
+        className="h-[11.5rem] md:hidden"
+        aria-hidden
+        style={{ scrollMarginBottom: "12rem" }}
+      />
     </div>
   );
 }

@@ -124,9 +124,13 @@ export function AddToCartButton({
           type="button"
           disabled={pending}
           onClick={() => void add()}
-          className={`btn-cta btn-cta-secondary ${compact ? "min-w-0 flex-1" : "min-w-[9.5rem]"}`}
+          className={`btn-cta btn-cta-secondary ${
+            compact
+              ? "min-w-[7.75rem] flex-1 basis-[7.75rem] whitespace-nowrap px-3 text-[13px] sm:text-sm"
+              : "min-w-[9.5rem]"
+          }`}
         >
-          {pending ? "Adding…" : "Add to cart"}
+          {pending ? "Adding…" : compact ? "Add to cart" : "Add to cart"}
         </button>
         {!compact ? (
           <a

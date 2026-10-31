@@ -64,8 +64,21 @@ type CatalogueBrowseProps = {
   urlSearchOverride?: string;
 };
 
-/** Identity of the listing URL — soft-nav must remount when this changes. */
+/**
+ * Soft-nav remount identity — category / brand / search only.
+ * Filter-sheet tweaks (sort, price, facets) update via runSearch without
+ * remounting, so the mobile sheet stays open until Apply/Close.
+ */
 function listingRouteKey(sp: URLSearchParams): string {
+  return [
+    sp.get("categorySlug") ?? "",
+    sp.get("brandSlug") ?? "",
+    sp.get("q") ?? "",
+  ].join("|");
+}
+
+/** Full query fingerprint for detecting stale RSC props vs the address bar. */
+function listingPropsKey(sp: URLSearchParams): string {
   const facetKeys = [...sp.keys()]
     .filter((key) => key.startsWith("facet."))
     .sort();
@@ -73,9 +86,7 @@ function listingRouteKey(sp: URLSearchParams): string {
     .map((key) => `${key}=${sp.getAll(key).slice().sort().join(",")}`)
     .join("&");
   return [
-    sp.get("categorySlug") ?? "",
-    sp.get("brandSlug") ?? "",
-    sp.get("q") ?? "",
+    listingRouteKey(sp),
     sp.get("sort") ?? "",
     sp.get("inStockOnly") ?? "",
     sp.get("verifiedSellerOnly") ?? "",
@@ -86,6 +97,9 @@ function listingRouteKey(sp: URLSearchParams): string {
     facets,
   ].join("|");
 }
+
+/** Keep the mobile filter sheet open across soft-nav remounts until closed. */
+let browseFiltersSheetIntent = false;
 
 /**
  * Soft-nav between /browse?categorySlug=… reuses the client tree. Keying the
@@ -265,10 +279,11 @@ function CatalogueBrowseInner({
         : undefined,
       facets: parseFacetSearchParams(sp),
       routeKey: listingRouteKey(sp),
+      propsKey: listingPropsKey(sp),
     };
   }, [isHome, updateUrl, initialSort, urlSearchOverride]);
 
-  const propsRouteKey = listingRouteKey(
+  const propsRouteKey = listingPropsKey(
     new URLSearchParams(
       [
         initialCategorySlug ? `categorySlug=${initialCategorySlug}` : "",
@@ -297,7 +312,7 @@ function CatalogueBrowseInner({
   );
 
   const propsStale =
-    !!urlBoot && urlBoot.routeKey !== propsRouteKey;
+    !!urlBoot && urlBoot.propsKey !== propsRouteKey;
 
   const bootCategorySlug = propsStale
     ? urlBoot!.categorySlug
@@ -354,7 +369,9 @@ function CatalogueBrowseInner({
   const [categoryShowAll, setCategoryShowAll] = useState(false);
   const [brandShowAll, setBrandShowAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(browseFiltersSheetIntent);
+  const [urlFetchDone, setUrlFetchDone] = useState(!needsUrlFetch);
+  const bootLoading = needsUrlFetch && !urlFetchDone;
   const [pending, startTransition] = useTransition();
   /** Sync gate so IntersectionObserver never re-fires mid-fetch / mid-render. */
   const loadMoreLockRef = useRef(false);
@@ -565,7 +582,9 @@ function CatalogueBrowseInner({
   useEffect(() => {
     if (!needsUrlFetch) return;
     startTransition(() => {
-      void runSearch({ skipUrlUpdate: true });
+      void runSearch({ skipUrlUpdate: true }).finally(() => {
+        setUrlFetchDone(true);
+      });
     });
     // Mount-only — keyed remount creates a fresh instance per URL.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -624,10 +643,20 @@ function CatalogueBrowseInner({
     };
   }, [filtersOpen]);
 
+  function openFilters() {
+    browseFiltersSheetIntent = true;
+    setFiltersOpen(true);
+  }
+
+  function closeFilters() {
+    browseFiltersSheetIntent = false;
+    setFiltersOpen(false);
+  }
+
   function applyAndClose() {
     startTransition(() => {
       void runSearch();
-      setFiltersOpen(false);
+      closeFilters();
     });
   }
 
@@ -1213,9 +1242,11 @@ function CatalogueBrowseInner({
             </h1>
             {!isHome ? (
               <p className="mt-1 text-sm text-muted">
-                {total >= 1000
-                  ? "1000+ Products"
-                  : `Showing ${items.length === 0 ? 0 : 1}–${items.length} of ${total} products`}
+                {bootLoading || (pending && items.length === 0)
+                  ? "Loading products…"
+                  : total >= 1000
+                    ? "1000+ Products"
+                    : `Showing ${items.length === 0 ? 0 : 1}–${items.length} of ${total} products`}
               </p>
             ) : (
               <p className="mt-1 text-sm text-muted">
@@ -1252,7 +1283,7 @@ function CatalogueBrowseInner({
           type="button"
           variant="secondary"
           className="min-h-11"
-          onClick={() => setFiltersOpen(true)}
+          onClick={openFilters}
         >
           Filter
           {chips.length > 0 ? ` (${chips.length})` : ""}
@@ -1288,19 +1319,22 @@ function CatalogueBrowseInner({
             type="button"
             className="absolute inset-0 bg-black/40"
             aria-label="Close filters"
-            onClick={() => setFiltersOpen(false)}
+            onClick={closeFilters}
           />
-          <div className="absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-3xl bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[var(--shadow-mega)]">
-            <div className="mb-2 flex justify-end">
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-3xl bg-surface shadow-[var(--shadow-mega)]">
+            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-2">
+              <p className="text-sm font-semibold">Filters</p>
               <button
                 type="button"
                 className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-muted hover:text-foreground"
-                onClick={() => setFiltersOpen(false)}
+                onClick={closeFilters}
               >
                 Close
               </button>
             </div>
-            {filterPanel}
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              {filterPanel}
+            </div>
           </div>
         </div>
       ) : null}
@@ -1314,7 +1348,7 @@ function CatalogueBrowseInner({
 
         <div className="flex flex-col gap-4">
           {error ? <p className="text-sm text-danger">{error}</p> : null}
-          {pending && !loadingMore ? (
+          {(bootLoading || pending) && !loadingMore && items.length === 0 ? (
             <div
               className={`grid grid-cols-2 gap-3 ${
                 isHome

@@ -114,7 +114,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
             required
             minLength={6}
             maxLength={8}
-            className="rounded-lg border border-border bg-surface px-3 py-2"
+            className="min-h-11 rounded-lg border border-border bg-surface px-3 py-2 text-base"
             placeholder="6-digit code"
           />
         </label>
@@ -126,7 +126,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
               <input
                 name="displayName"
                 required
-                className="rounded-lg border border-border bg-surface px-3 py-2"
+                className="min-h-11 rounded-lg border border-border bg-surface px-3 py-2 text-base"
               />
             </label>
           ) : null}
@@ -137,7 +137,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
               type="email"
               required
               autoComplete="email"
-              className="rounded-lg border border-border bg-surface px-3 py-2"
+              className="min-h-11 rounded-lg border border-border bg-surface px-3 py-2 text-base"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
@@ -150,7 +150,7 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
               autoComplete={
                 mode === "login" ? "current-password" : "new-password"
               }
-              className="rounded-lg border border-border bg-surface px-3 py-2"
+              className="min-h-11 rounded-lg border border-border bg-surface px-3 py-2 text-base"
             />
           </label>
         </>

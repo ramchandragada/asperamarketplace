@@ -226,7 +226,7 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
               <span className="sr-only">{product.title}</span>
             </div>
           )}
-          {discount && !product.badge ? (
+          {discount ? (
             <span className="offer-chip absolute bottom-2 left-2 z-10 px-2 py-1 text-[11px]">
               {discount}% off
             </span>
@@ -251,6 +251,11 @@ export function ProductCard({ product }: { product: ProductCardModel }) {
             product.minMrpPaise > product.minPricePaise ? (
               <span className="text-[12px] leading-[18px] text-muted line-through">
                 {formatPaise(product.minMrpPaise)}
+              </span>
+            ) : null}
+            {discount ? (
+              <span className="text-[12px] leading-[18px] font-semibold text-success">
+                {discount}% off
               </span>
             ) : null}
           </p>

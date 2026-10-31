@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -15,6 +16,8 @@ type CartItem = {
   mrpPaise?: number;
   lineTotalPaise: number;
   availableQty: number;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
   sellerId: string;
   sellerName: string;
   inStock: boolean;
@@ -64,6 +67,7 @@ export function CartPanel({
     initialSnapshot,
   );
   const [savingsPaise, setSavingsPaise] = useState(initialSavingsPaise);
+  const [qtyDrafts, setQtyDrafts] = useState<Record<string, string>>({});
 
   const sellerGroups = useMemo(() => {
     const map = new Map<
@@ -86,6 +90,47 @@ export function CartPanel({
     }
     return [...map.values()];
   }, [cart.items]);
+
+  function clampQuantity(raw: number, availableQty: number) {
+    const max = Math.max(1, Math.min(99, availableQty));
+    if (!Number.isFinite(raw)) return 1;
+    return Math.max(1, Math.min(max, Math.trunc(raw)));
+  }
+
+  function optimisticCart(
+    previous: CartView,
+    variantId: string,
+    quantity: number,
+  ): CartView {
+    if (quantity < 1) {
+      const items = previous.items.filter((item) => item.variantId !== variantId);
+      return {
+        ...previous,
+        items,
+        merchandisePaise: items.reduce(
+          (sum, item) => sum + item.lineTotalPaise,
+          0,
+        ),
+      };
+    }
+    const items = previous.items.map((item) => {
+      if (item.variantId !== variantId) return item;
+      const nextQty = clampQuantity(quantity, item.availableQty);
+      return {
+        ...item,
+        quantity: nextQty,
+        lineTotalPaise: item.unitPricePaise * nextQty,
+      };
+    });
+    return {
+      ...previous,
+      items,
+      merchandisePaise: items.reduce(
+        (sum, item) => sum + item.lineTotalPaise,
+        0,
+      ),
+    };
+  }
 
   async function refreshEstimate(coupon?: string) {
     if (cart.items.length === 0) {
@@ -119,12 +164,56 @@ export function CartPanel({
   }
 
   async function setQuantity(variantId: string, quantity: number) {
+    const current = cart.items.find((item) => item.variantId === variantId);
+    const max = current ? Math.min(99, current.availableQty) : 99;
+    const clamped = quantity < 1 ? 0 : clampQuantity(quantity, max);
+    if (quantity > max && current) {
+      setError(`Only ${max} unit(s) available for this variant`);
+      setQtyDrafts((drafts) => ({
+        ...drafts,
+        [variantId]: String(clamped || current.quantity),
+      }));
+    } else {
+      setQtyDrafts((drafts) => {
+        const next = { ...drafts };
+        delete next[variantId];
+        return next;
+      });
+    }
+
+    const previous = cart;
+    const previousSnapshot = snapshot;
+    const previousSavings = savingsPaise;
+    const nextCart = optimisticCart(previous, variantId, clamped);
+    setCart(nextCart);
+    // Clear stale price-details flash while estimate refreshes.
+    if (clamped < 1) {
+      setSnapshot(null);
+      setSavingsPaise(0);
+    } else if (snapshot) {
+      const ratio =
+        previous.merchandisePaise > 0
+          ? nextCart.merchandisePaise / previous.merchandisePaise
+          : 1;
+      setSnapshot({
+        ...snapshot,
+        subtotalPaise: nextCart.merchandisePaise,
+        taxPaise: Math.round(snapshot.taxPaise * ratio),
+        totalPaise: Math.round(
+          nextCart.merchandisePaise -
+            snapshot.discountPaise +
+            snapshot.shippingPaise +
+            snapshot.taxPaise * ratio,
+        ),
+      });
+    }
+
     setPending(true);
-    setError(null);
+    if (quantity <= max) setError(null);
     const response = await fetch("/api/cart/items", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ variantId, quantity }),
+      body: JSON.stringify({ variantId, quantity: clamped }),
     });
     const body = (await response.json()) as {
       data?: { cart: CartView };
@@ -132,6 +221,9 @@ export function CartPanel({
     };
     setPending(false);
     if (!response.ok) {
+      setCart(previous);
+      setSnapshot(previousSnapshot);
+      setSavingsPaise(previousSavings);
       setError(body.message ?? "Could not update cart");
       return;
     }
@@ -199,70 +291,124 @@ export function CartPanel({
                   </p>
                 </div>
                 <ul className="flex flex-col gap-3">
-                  {group.items.map((item) => (
-                    <li
-                      key={item.variantId}
-                      className="flex gap-3 rounded-2xl bg-surface p-3 shadow-[var(--shadow-card)]"
-                    >
-                      <span
-                        className="photo-well flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-accent/50"
-                        aria-hidden
+                  {group.items.map((item) => {
+                    const maxQty = Math.min(99, item.availableQty);
+                    const draft = qtyDrafts[item.variantId];
+                    const displayQty =
+                      draft ?? String(item.quantity);
+                    const showImage = Boolean(item.imageUrl);
+                    return (
+                      <li
+                        key={item.variantId}
+                        className="flex gap-3 rounded-2xl bg-surface p-3 shadow-[var(--shadow-card)]"
                       >
-                        {item.productTitle.slice(0, 1).toUpperCase()}
-                      </span>
-                      <div className="min-w-0 flex-1">
                         <Link
                           href={`/products/${item.productSlug}`}
-                          className="font-medium hover:underline"
+                          className="photo-well relative h-16 w-16 shrink-0 overflow-hidden rounded-xl"
+                          aria-label={item.productTitle}
                         >
-                          {item.productTitle}
-                        </Link>
-                        <p className="text-sm text-muted">{item.variantTitle}</p>
-                        <p className="mt-1 text-sm">
-                          <span className="font-semibold">
-                            {formatPaise(item.lineTotalPaise)}
-                          </span>
-                          <span className="text-muted">
-                            {" "}
-                            · {formatPaise(item.unitPricePaise)} each
-                          </span>
-                          {!item.inStock ? " · stock issue" : ""}
-                        </p>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <label className="inline-flex items-center gap-2 text-sm text-muted">
-                            Qty
-                            <input
-                              key={`${item.variantId}-${item.quantity}`}
-                              type="number"
-                              min={1}
-                              max={Math.min(99, item.availableQty)}
-                              defaultValue={item.quantity}
-                              disabled={pending}
-                              className="h-11 w-16 rounded-[var(--radius-sm)] border border-border bg-background px-2 text-center text-sm font-semibold text-foreground md:h-9"
-                              onBlur={(event) => {
-                                const next = Number(event.target.value);
-                                if (
-                                  Number.isFinite(next) &&
-                                  next >= 1 &&
-                                  next !== item.quantity
-                                ) {
-                                  void setQuantity(item.variantId, next);
-                                }
-                              }}
+                          {showImage ? (
+                            <Image
+                              src={item.imageUrl as string}
+                              alt={item.imageAlt ?? item.productTitle}
+                              fill
+                              sizes="64px"
+                              unoptimized={
+                                (item.imageUrl as string).startsWith("/") ||
+                                (item.imageUrl as string).startsWith(
+                                  "/products/",
+                                )
+                              }
+                              className="object-contain object-center p-1"
                             />
-                          </label>
-                          <button
-                            type="button"
-                            className="btn-cta btn-cta-ghost h-11 px-3 text-danger md:h-9"
-                            disabled={pending}
-                            onClick={() => void setQuantity(item.variantId, 0)}
+                          ) : (
+                            <span
+                              className="flex h-full w-full items-center justify-center text-lg font-bold text-accent/50"
+                              aria-hidden
+                            >
+                              {item.productTitle.slice(0, 1).toUpperCase()}
+                            </span>
+                          )}
+                        </Link>
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            href={`/products/${item.productSlug}`}
+                            className="font-medium hover:underline"
                           >
-                            Remove
-                          </button>
+                            {item.productTitle}
+                          </Link>
+                          <p className="text-sm text-muted">
+                            {item.variantTitle}
+                          </p>
+                          <p className="mt-1 text-sm">
+                            <span className="font-semibold">
+                              {formatPaise(item.lineTotalPaise)}
+                            </span>
+                            <span className="text-muted">
+                              {" "}
+                              · {formatPaise(item.unitPricePaise)} each
+                            </span>
+                            {!item.inStock ? " · stock issue" : ""}
+                          </p>
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <label className="inline-flex items-center gap-2 text-sm text-muted">
+                              Qty
+                              <input
+                                type="number"
+                                inputMode="numeric"
+                                min={1}
+                                max={maxQty}
+                                value={displayQty}
+                                disabled={pending}
+                                className="h-11 w-16 rounded-[var(--radius-sm)] border border-border bg-background px-2 text-center text-base font-semibold text-foreground md:h-9"
+                                onChange={(event) => {
+                                  const raw = event.target.value;
+                                  setQtyDrafts((drafts) => ({
+                                    ...drafts,
+                                    [item.variantId]: raw,
+                                  }));
+                                }}
+                                onBlur={(event) => {
+                                  const parsed = Number(event.target.value);
+                                  const next = clampQuantity(
+                                    parsed,
+                                    item.availableQty,
+                                  );
+                                  if (
+                                    Number.isFinite(parsed) &&
+                                    parsed > item.availableQty
+                                  ) {
+                                    setError(
+                                      `Only ${item.availableQty} unit(s) available for this variant`,
+                                    );
+                                  }
+                                  if (next !== item.quantity) {
+                                    void setQuantity(item.variantId, next);
+                                  } else {
+                                    setQtyDrafts((drafts) => {
+                                      const copy = { ...drafts };
+                                      delete copy[item.variantId];
+                                      return copy;
+                                    });
+                                  }
+                                }}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              className="btn-cta btn-cta-ghost h-11 px-3 text-danger md:h-9"
+                              disabled={pending}
+                              onClick={() =>
+                                void setQuantity(item.variantId, 0)
+                              }
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
                 {sellerGroups.length > 1 ? (
                   <p className="text-xs text-muted">
@@ -277,7 +423,7 @@ export function CartPanel({
             <h2 className="text-lg font-semibold">Price details</h2>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between gap-4">
-                <dt className="text-muted">Items total</dt>
+                <dt className="text-muted">Items total (excl. GST)</dt>
                 <dd>
                   {formatPaise(snapshot?.subtotalPaise ?? cart.merchandisePaise)}
                 </dd>
@@ -333,7 +479,7 @@ export function CartPanel({
                 value={couponCode}
                 onChange={(event) => setCouponCode(event.target.value)}
                 placeholder="Coupon code (e.g. ASPERA10)"
-                className="h-11 min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border bg-background px-3 text-sm"
+                className="h-11 min-w-0 flex-1 rounded-[var(--radius-sm)] border border-border bg-background px-3 text-base"
                 disabled={pending}
               />
               <button
@@ -347,7 +493,7 @@ export function CartPanel({
             </div>
 
             <p className="mt-3 text-xs text-muted">
-              Aspera Express ETA and tax confirmed at checkout
+              Listed prices exclude GST · Express ETA confirmed at checkout
               {sellerGroups.length > 1
                 ? ` · ${sellerGroups.length} hub shipments`
                 : ""}

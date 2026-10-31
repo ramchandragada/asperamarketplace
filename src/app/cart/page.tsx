@@ -66,8 +66,9 @@ export default async function CartPage() {
       <div>
         <h1 className="font-display text-3xl font-semibold">Your cart</h1>
         <p className="mt-2 text-muted">
-          Review items and update quantities. Sign in is required only at
-          checkout.
+          {actor
+            ? "Review items and update quantities before checkout."
+            : "Review items and update quantities. Sign in is required only at checkout."}
         </p>
       </div>
       <CartPanel

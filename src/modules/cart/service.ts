@@ -99,6 +99,7 @@ function serializeCart(
           title: string;
           slug: string;
           status: string;
+          images?: Array<{ url: string; altText: string }>;
           seller: {
             id: string;
             legalName: string;
@@ -116,6 +117,7 @@ function serializeCart(
       item.variant.inventory?.onHand ?? 0,
       item.variant.inventory?.reserved ?? 0,
     );
+    const image = item.variant.product.images?.[0];
     return {
       id: item.id,
       variantId: item.variant.id,
@@ -128,6 +130,8 @@ function serializeCart(
       mrpPaise: item.variant.mrpPaise,
       lineTotalPaise: item.variant.sellingPricePaise * item.quantity,
       availableQty: available,
+      imageUrl: image?.url ?? null,
+      imageAlt: image?.altText ?? item.variant.product.title,
       sellerName:
         item.variant.product.seller.tradeName ??
         item.variant.product.seller.legalName,
@@ -159,6 +163,10 @@ const cartInclude = {
           inventory: true,
           product: {
             include: {
+              images: {
+                orderBy: { sortOrder: "asc" as const },
+                take: 1,
+              },
               seller: {
                 select: {
                   id: true,

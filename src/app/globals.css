@@ -388,7 +388,8 @@ h2,
   border-inline: 1px solid var(--border);
   background: transparent;
   text-align: center;
-  font-size: 0.875rem;
+  /* 16px avoids iOS Safari zoom-on-focus */
+  font-size: 1rem;
   font-weight: 600;
   color: var(--foreground);
   outline: none;

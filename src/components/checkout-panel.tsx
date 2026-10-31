@@ -360,7 +360,10 @@ export function CheckoutPanel({
               ))}
             </ul>
             <dl className="flex flex-col gap-1 border-t border-border pt-3 text-sm">
-              <Row label="Subtotal" value={formatPaise(snapshot.subtotalPaise)} />
+              <Row
+                label="Subtotal (excl. GST)"
+                value={formatPaise(snapshot.subtotalPaise)}
+              />
               {snapshot.discountPaise > 0 ? (
                 <Row
                   label="Discount"
@@ -377,7 +380,7 @@ export function CheckoutPanel({
                 }
               />
               <Row
-                label="Estimated GST (on listed prices)"
+                label="Estimated GST (18% on excl. prices)"
                 value={formatPaise(snapshot.taxPaise)}
               />
               <div className="mt-1 flex justify-between border-t border-border pt-2 text-base font-semibold">

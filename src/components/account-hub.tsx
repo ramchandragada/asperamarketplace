@@ -9,6 +9,7 @@ type Tile = {
   group: "shopping" | "account" | "money" | "activity";
 };
 
+/** Shopper-only hub. Seller staff never see this — they redirect to /seller. */
 const TILES: Tile[] = [
   {
     href: "/orders",

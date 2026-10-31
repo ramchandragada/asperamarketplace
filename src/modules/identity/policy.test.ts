@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   actorHasSellerCapability,
   actorIsAdmin,
+  actorIsSellerStaff,
   requireAdmin,
   requireSellerCapability,
   AuthorizationError,
@@ -105,5 +106,37 @@ describe("seller RBAC capabilities", () => {
   it("lets admins pass any seller capability", () => {
     const actor = makeActor([{ key: "admin", sellerId: null }]);
     expect(actorHasSellerCapability(actor, sellerId, "finance.read")).toBe(true);
+  });
+});
+
+describe("actorIsSellerStaff", () => {
+  it("detects owner and ops staff with a seller scope", () => {
+    expect(
+      actorIsSellerStaff(
+        makeActor([{ key: "seller_owner", sellerId: "seller-1" }]),
+      ),
+    ).toBe(true);
+    expect(
+      actorIsSellerStaff(
+        makeActor([{ key: "seller_operations", sellerId: "seller-1" }]),
+      ),
+    ).toBe(true);
+  });
+
+  it("ignores customers and unscope seller roles", () => {
+    expect(
+      actorIsSellerStaff(makeActor([{ key: "customer", sellerId: null }])),
+    ).toBe(false);
+    expect(
+      actorIsSellerStaff(
+        makeActor([{ key: "seller_operations", sellerId: null }]),
+      ),
+    ).toBe(false);
+  });
+
+  it("does not classify admins as seller staff for account routing", () => {
+    expect(
+      actorIsSellerStaff(makeActor([{ key: "admin", sellerId: null }])),
+    ).toBe(false);
   });
 });

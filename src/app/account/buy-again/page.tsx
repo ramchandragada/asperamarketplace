@@ -4,7 +4,7 @@ import {
   BuyAgainPanel,
   type BuyAgainItem,
 } from "@/components/buy-again-panel";
-import { PageShell } from "@/components/ui/page-shell";
+import { actorIsSellerStaff } from "@/modules/identity/policy";
 import { getOptionalActor } from "@/modules/identity/service";
 import { prisma } from "@/platform/db/prisma";
 
@@ -15,6 +15,11 @@ export default async function BuyAgainPage() {
   const actor = await getOptionalActor();
   if (!actor) {
     redirect("/login?next=/account/buy-again");
+  }
+
+  // Buy Again is a shopper reorder desk — seller staff use Seller Central.
+  if (actorIsSellerStaff(actor)) {
+    redirect("/seller");
   }
 
   const lines = await prisma.orderLine.findMany({
@@ -106,7 +111,7 @@ export default async function BuyAgainPage() {
   );
 
   return (
-    <PageShell>
+    <>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
@@ -130,6 +135,6 @@ export default async function BuyAgainPage() {
       </div>
 
       <BuyAgainPanel items={items} />
-    </PageShell>
+    </>
   );
 }

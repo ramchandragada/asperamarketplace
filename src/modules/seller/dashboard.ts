@@ -292,8 +292,9 @@ export async function getSellerActionDashboard(
         deliveredAt: { gte: startOfToday },
       },
     }),
-    prisma.orderLine.groupBy({
-      by: ["productId", "productTitle"],
+    // Aggregate in JS — Prisma groupBy + relation filter can emit ambiguous
+    // SQL for line_total_paise on Postgres.
+    prisma.orderLine.findMany({
       where: {
         sellerId,
         fulfilmentGroup: {
@@ -301,9 +302,13 @@ export async function getSellerActionDashboard(
           updatedAt: { gte: thirtyAgo },
         },
       },
-      _sum: { quantity: true, lineTotalPaise: true },
-      orderBy: { _sum: { lineTotalPaise: "desc" } },
-      take: 5,
+      select: {
+        productId: true,
+        productTitle: true,
+        quantity: true,
+        lineTotalPaise: true,
+      },
+      take: 4000,
     }),
   ]);
 
@@ -338,10 +343,28 @@ export async function getSellerActionDashboard(
     .slice(-7)
     .reduce((sum, [, paise]) => sum + paise, 0);
 
-  const units30d = topLineAgg.reduce(
-    (sum, row) => sum + (row._sum.quantity ?? 0),
-    0,
-  );
+  const topProductMap = new Map<
+    string,
+    { productId: string; title: string; units: number; salesPaise: number }
+  >();
+  for (const row of topLineAgg) {
+    const existing = topProductMap.get(row.productId);
+    if (existing) {
+      existing.units += row.quantity;
+      existing.salesPaise += row.lineTotalPaise;
+    } else {
+      topProductMap.set(row.productId, {
+        productId: row.productId,
+        title: row.productTitle,
+        units: row.quantity,
+        salesPaise: row.lineTotalPaise,
+      });
+    }
+  }
+  const topProducts = Array.from(topProductMap.values())
+    .sort((a, b) => b.salesPaise - a.salesPaise)
+    .slice(0, 5);
+  const units30d = topLineAgg.reduce((sum, row) => sum + row.quantity, 0);
 
   const metrics = {
     sales30dPaise: sales30,
@@ -590,12 +613,7 @@ export async function getSellerActionDashboard(
       oosSkuRatePct,
       targets,
     },
-    topProducts: topLineAgg.map((row) => ({
-      productId: row.productId,
-      title: row.productTitle,
-      units: row._sum.quantity ?? 0,
-      salesPaise: row._sum.lineTotalPaise ?? 0,
-    })),
+    topProducts,
     alerts,
     capabilities,
   };

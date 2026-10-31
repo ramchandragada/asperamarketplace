@@ -1,83 +1,34 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  AreaChart,
-  AttentionList,
-  DashboardCard,
-  QuickAction,
-  StatTile,
-  Trend,
-  type AttentionItem,
-} from "@/components/dashboard/dashboard-kit";
+import { AreaChart, Trend } from "@/components/dashboard/dashboard-kit";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { getOptionalActor } from "@/modules/identity/service";
 import { resolveSellerForActor } from "@/modules/seller/access";
-import {
-  getSellerActionDashboard,
-  type ActionPriority,
-} from "@/modules/seller/dashboard";
+import { getSellerActionDashboard } from "@/modules/seller/dashboard";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Seller dashboard" };
 
-const severityFor: Record<
-  Exclude<ActionPriority, "completed">,
-  AttentionItem["severity"]
-> = {
-  critical: "critical",
-  action: "warning",
-  info: "info",
-};
-
-const ctaLabelFor: Record<string, string> = {
-  late: "Ship now",
-  returns: "Review",
-  oos: "Restock",
-  stock: "Restock",
-  drafts: "Open catalogue",
-  kyc: "Complete",
-  tax: "Open",
-};
-
-const statusTone: Record<string, string> = {
-  pending: "bg-warning-soft text-warning",
-  processing: "bg-accent-soft text-accent",
-  shipped: "bg-info-soft text-info",
-  delivered: "bg-success-soft text-success",
-};
-
-function RupeeIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M7 5h10M7 9h10M7 5c6 0 7 8 0 8h3l5 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+function ageLabel(hours: number) {
+  if (hours < 1) return "<1h";
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ${hours % 24}h`;
 }
-function BagIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M6 8h12l-1 11H7L6 8Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="M9 8V7a3 3 0 0 1 6 0v1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-    </svg>
-  );
-}
-function TruckIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <circle cx="7" cy="18" r="1.6" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="17.5" cy="18" r="1.6" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
-  );
-}
-function WalletIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M4 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1V7Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="M4 7l12-3 1 3" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <circle cx="16.5" cy="13" r="1.3" fill="currentColor" />
-    </svg>
-  );
+
+function statusBadge(status: string) {
+  const map: Record<string, string> = {
+    pending: "bg-warning-soft text-warning",
+    processing: "bg-accent-soft text-accent",
+    shipped: "bg-info-soft text-info",
+    delivered: "bg-success-soft text-success",
+    requested: "bg-warning-soft text-warning",
+    approved: "bg-accent-soft text-accent",
+    draft: "bg-accent-soft text-muted",
+    submitted: "bg-info-soft text-info",
+    rejected: "bg-danger-soft text-danger",
+  };
+  return map[status] ?? "bg-accent-soft text-accent";
 }
 
 export default async function SellerDashboardPage() {
@@ -85,93 +36,169 @@ export default async function SellerDashboardPage() {
   if (!actor) redirect("/login?next=%2Fseller");
 
   const seller = await resolveSellerForActor(actor, "dashboard.read");
-  // Layout already redirects shoppers without a workspace to /sell.
-  if (!seller) {
-    redirect("/sell");
-  }
+  if (!seller) redirect("/sell");
 
   const dash = await getSellerActionDashboard(actor, seller.id);
   const name = dash.tradeName ?? dash.legalName;
   const m = dash.metrics;
+  const cat = dash.catalogue;
 
-  const attentionItems: AttentionItem[] = dash.alerts
-    .filter((a) => a.priority !== "completed")
-    .map((a) => ({
-      id: a.id,
-      severity: severityFor[a.priority as Exclude<ActionPriority, "completed">],
-      title: a.title,
-      detail: a.detail,
-      cta: { label: ctaLabelFor[a.id] ?? "Open", href: a.href },
-    }));
-
-  const allClearParts: string[] = [];
-  if (dash.kycStatus === "approved") allClearParts.push("KYC approved");
-  if (dash.taxProfileActive) allClearParts.push("Tax profile active");
-  const allClear = allClearParts.length ? allClearParts.join(" · ") : undefined;
+  const openAlerts = dash.alerts.filter((a) => a.priority !== "completed");
+  const criticalCount = openAlerts.filter((a) => a.priority === "critical").length;
+  const toShip = dash.awaitingFulfilment.length;
+  const late = dash.lateFulfilment.length;
+  const returnsOpen = dash.openReturns.length;
+  const oos = dash.outOfStock.length;
+  const low = dash.lowStock.length;
 
   const chartData = m.dailySales.map((d) => ({
     label: d.label,
     value: d.paise / 100,
   }));
-  const lowStockRows = [...dash.outOfStock, ...dash.lowStock].slice(0, 6);
+
+  const todayLabel = new Date().toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   const isNewSeller =
-    m.orders30d === 0 &&
-    dash.awaitingFulfilment.length === 0 &&
-    dash.recentSalesPaise === 0;
+    m.orders30d === 0 && toShip === 0 && dash.recentSalesPaise === 0 && cat.live === 0;
+
+  const pulse = [
+    {
+      label: "To ship",
+      value: String(toShip),
+      tone: late > 0 ? "danger" : toShip > 0 ? "warning" : "ok",
+      href: "/seller/fulfilment",
+      hint: late > 0 ? `${late} late` : "Queue",
+    },
+    {
+      label: "Returns",
+      value: String(returnsOpen),
+      tone: returnsOpen > 0 ? "warning" : "ok",
+      href: "/seller/returns",
+      hint: returnsOpen > 0 ? "Need review" : "Clear",
+    },
+    {
+      label: "Live listings",
+      value: String(cat.live),
+      tone: cat.live === 0 ? "warning" : "ok",
+      href: "/seller/catalogue",
+      hint:
+        cat.submitted > 0
+          ? `${cat.submitted} in review`
+          : cat.draft > 0
+            ? `${cat.draft} drafts`
+            : "Approved",
+    },
+    {
+      label: "Out of stock",
+      value: String(oos),
+      tone: oos > 0 ? "danger" : "ok",
+      href: "/seller/inventory?filter=out_of_stock",
+      hint: low > 0 ? `${low} low` : "Healthy",
+    },
+    {
+      label: "Payout due",
+      value: formatPaise(m.payoutDuePaise),
+      tone: "ok",
+      href: "/seller/finance",
+      hint: dash.nextSettlement
+        ? dash.nextSettlement.batchNumber
+        : "No batch",
+    },
+  ] as const;
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Header */}
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
-            Dashboard
-          </p>
-          <h1 className="mt-1 text-[26px] font-semibold tracking-tight">
-            Welcome back, {name}
-          </h1>
-          <div className="mt-2.5 flex flex-wrap gap-2 text-xs font-medium">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-success-soft px-2.5 py-1 text-success">
-              <span className="h-1.5 w-1.5 rounded-full bg-success" />
-              KYC {dash.kycStatus}
-            </span>
-            {dash.gstinMasked ? (
-              <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-1 text-accent">
-                GSTIN {dash.gstinMasked}
+    <div className="flex flex-col gap-5 pb-8">
+      {/* Command header */}
+      <header className="rounded-[var(--radius)] border border-border bg-surface px-4 py-4 shadow-[var(--shadow-card)] sm:px-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-muted uppercase">
+              <span>Seller central</span>
+              <span aria-hidden>·</span>
+              <span className="normal-case tracking-normal text-muted">
+                {todayLabel}
               </span>
-            ) : (
-              <span className="inline-flex items-center rounded-full bg-warning-soft px-2.5 py-1 text-warning">
-                GSTIN not on file
+            </div>
+            <h1 className="mt-1 truncate font-display text-[26px] leading-tight font-semibold tracking-tight sm:text-[30px]">
+              {name}
+            </h1>
+            <div className="mt-2.5 flex flex-wrap gap-2 text-xs font-medium">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${
+                  dash.kycStatus === "approved"
+                    ? "bg-success-soft text-success"
+                    : "bg-warning-soft text-warning"
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    dash.kycStatus === "approved" ? "bg-success" : "bg-warning"
+                  }`}
+                />
+                KYC {dash.kycStatus}
               </span>
-            )}
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${
-                dash.taxProfileActive
-                  ? "bg-success-soft text-success"
-                  : "bg-warning-soft text-warning"
-              }`}
+              {dash.gstinMasked ? (
+                <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-1 text-foreground">
+                  GSTIN {dash.gstinMasked}
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-warning-soft px-2.5 py-1 text-warning">
+                  Add GSTIN
+                </span>
+              )}
+              {criticalCount > 0 ? (
+                <span className="inline-flex items-center rounded-full bg-danger-soft px-2.5 py-1 text-danger">
+                  {criticalCount} critical
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-success-soft px-2.5 py-1 text-success">
+                  Ops clear
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {dash.capabilities.fulfilment ? (
+              <Link
+                href="/seller/fulfilment"
+                className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] bg-accent px-4 text-sm font-semibold text-accent-foreground"
+              >
+                Process orders
+                {toShip > 0 ? ` (${toShip})` : ""}
+              </Link>
+            ) : null}
+            {dash.capabilities.catalogue ? (
+              <Link
+                href="/seller/catalogue"
+                className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] border border-border bg-background px-4 text-sm font-semibold"
+              >
+                Add listing
+              </Link>
+            ) : null}
+            <Link
+              href={`/shops/${seller.id}`}
+              className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] border border-border bg-background px-4 text-sm font-semibold text-muted hover:text-foreground"
             >
-              Tax profile {dash.taxProfileActive ? "active" : "missing"}
-            </span>
+              Storefront
+            </Link>
           </div>
         </div>
-        <Link
-          href={`/shops/${seller.id}`}
-          className="rounded-[var(--radius-sm)] border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground shadow-[var(--shadow-card)] hover:border-accent"
-        >
-          View storefront
-        </Link>
       </header>
 
       {isNewSeller ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius)] border border-border bg-accent-soft px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius)] border border-accent/20 bg-accent-soft px-5 py-4">
           <div>
-            <p className="text-sm font-semibold text-accent">
-              Let’s get your first sale
+            <p className="text-sm font-semibold text-foreground">
+              Launch checklist — get your first sale
             </p>
-            <p className="text-[13px] text-muted">
-              Add your products and stock — your sales, orders and payouts will
-              show up here as they come in.
+            <p className="mt-0.5 text-[13px] text-muted">
+              Add approved listings, set stock, then watch orders and payouts
+              land here.
             </p>
           </div>
           <Link
@@ -183,197 +210,374 @@ export default async function SellerDashboardPage() {
         </div>
       ) : null}
 
-      {/* KPI row */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile
-          label="Sales (30d)"
-          value={formatPaise(m.sales30dPaise)}
-          icon={<RupeeIcon />}
-          trendPct={m.salesTrendPct}
-          trendSuffix="vs prev 30d"
-          series={m.dailySales.map((d) => d.paise)}
-        />
-        <StatTile
-          label="Orders (30d)"
-          value={String(m.orders30d)}
-          icon={<BagIcon />}
-          trendPct={m.ordersTrendPct}
-          trendSuffix="vs prev 30d"
-        />
-        <StatTile
-          label="Awaiting fulfilment"
-          value={String(dash.awaitingFulfilment.length)}
-          icon={<TruckIcon />}
-          flag={
-            dash.lateFulfilment.length > 0
-              ? {
-                  text: `${dash.lateFulfilment.length} late (>24h)`,
-                  tone: "danger",
-                }
-              : null
-          }
-          footnote={dash.lateFulfilment.length === 0 ? "On track" : undefined}
-        />
-        <StatTile
-          label="Payout due"
-          value={formatPaise(m.payoutDuePaise)}
-          icon={<WalletIcon />}
-          footnote={
-            dash.nextSettlement
-              ? `Next: ${dash.nextSettlement.batchNumber} · ${dash.nextSettlement.status}`
-              : "No pending batch"
-          }
-        />
+      {/* Today’s ops pulse */}
+      <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+        {pulse.map((item) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            className="rounded-[var(--radius)] border border-border bg-surface p-3.5 shadow-[var(--shadow-card)] transition hover:border-foreground/25"
+          >
+            <p className="text-[11px] font-semibold tracking-wide text-muted uppercase">
+              {item.label}
+            </p>
+            <p
+              className={`mt-1.5 text-[22px] font-bold tracking-tight ${
+                item.tone === "danger"
+                  ? "text-danger"
+                  : item.tone === "warning"
+                    ? "text-warning"
+                    : "text-foreground"
+              }`}
+            >
+              {item.value}
+            </p>
+            <p className="mt-1 text-[11px] text-muted">{item.hint}</p>
+          </Link>
+        ))}
       </section>
 
-      {/* Chart + attention */}
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.25fr_1fr]">
-        <DashboardCard
-          title="Revenue"
-          action={
-            dash.capabilities.finance
-              ? { label: "Open analytics", href: "/seller/analytics" }
-              : undefined
-          }
-        >
-          <div className="flex items-baseline gap-3">
-            <span className="text-[24px] font-bold tracking-tight">
-              {formatPaise(m.sales30dPaise)}
-            </span>
-            <span className="text-[12.5px] text-muted">
-              last 30 days · <Trend pct={m.salesTrendPct} />
+      {/* Priority queue + fulfilment */}
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_1.15fr]">
+        <section className="rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-card)]">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-5">
+            <div>
+              <h2 className="text-[15px] font-semibold">Priority queue</h2>
+              <p className="text-[12px] text-muted">
+                Ship, restock, and clear returns first
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-muted">
+              {openAlerts.length} open
             </span>
           </div>
-          <div className="mt-3">
-            <AreaChart data={chartData} />
-          </div>
-        </DashboardCard>
-
-        <DashboardCard
-          title="Needs attention"
-          aside={`${attentionItems.length} open`}
-        >
-          <AttentionList items={attentionItems} allClear={allClear} />
-        </DashboardCard>
-      </section>
-
-      {/* Orders to fulfil */}
-      <DashboardCard
-        title="Orders to fulfil"
-        action={{ label: "View all orders", href: "/seller/fulfilment" }}
-      >
-        {dash.awaitingFulfilment.length === 0 ? (
-          <p className="py-2 text-sm text-muted">
-            Nothing waiting — all caught up on fulfilment.
-          </p>
-        ) : (
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="text-left text-[11px] tracking-wide text-muted uppercase">
-                <th className="py-2 font-medium">Order</th>
-                <th className="py-2 font-medium">Status</th>
-                <th className="py-2 text-right font-medium">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dash.awaitingFulfilment.slice(0, 6).map((row) => (
-                <tr key={row.id} className="border-t border-border text-[13px]">
-                  <td className="py-2.5 font-semibold">{row.orderNumber}</td>
-                  <td className="py-2.5">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                        statusTone[row.status] ?? "bg-accent-soft text-accent"
-                      }`}
+          {openAlerts.length === 0 ? (
+            <div className="m-4 rounded-[var(--radius-sm)] bg-success-soft px-3 py-3 text-[13px] font-semibold text-success sm:m-5">
+              ✓ Nothing blocking sales — KYC and tax look good.
+            </div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {openAlerts.map((alert) => {
+                const tone =
+                  alert.priority === "critical"
+                    ? "border-l-danger bg-danger-soft/40"
+                    : alert.priority === "action"
+                      ? "border-l-warning bg-warning-soft/35"
+                      : "border-l-accent bg-accent-soft/40";
+                const cta =
+                  alert.id === "late" || alert.id === "returns"
+                    ? "Review"
+                    : alert.id === "oos" || alert.id === "stock"
+                      ? "Restock"
+                      : alert.id === "drafts"
+                        ? "Open catalogue"
+                        : alert.id === "kyc"
+                          ? "Complete"
+                          : "Open";
+                return (
+                  <li
+                    key={alert.id}
+                    className={`flex flex-wrap items-center justify-between gap-3 border-l-4 px-4 py-3.5 sm:px-5 ${tone}`}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold tracking-wide text-muted uppercase">
+                        {alert.priority}
+                      </p>
+                      <p className="mt-0.5 text-[14px] font-semibold text-foreground">
+                        {alert.title}
+                      </p>
+                      <p className="mt-0.5 text-[12.5px] text-muted">
+                        {alert.detail}
+                      </p>
+                    </div>
+                    <Link
+                      href={alert.href}
+                      className="shrink-0 rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2 text-[12.5px] font-semibold hover:border-foreground/30"
                     >
-                      ● {row.status}
-                    </span>
-                  </td>
-                  <td className="py-2.5 text-right font-semibold">
-                    {formatPaise(row.lineTotalPaise)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </DashboardCard>
+                      {cta} →
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
 
-      {/* Low stock + payouts */}
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <DashboardCard
-          title="Low & out of stock"
-          action={{ label: "Manage inventory", href: "/seller/inventory" }}
-        >
-          {lowStockRows.length === 0 ? (
-            <p className="py-2 text-sm text-muted">
+        <section className="rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-card)]">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-5">
+            <div>
+              <h2 className="text-[15px] font-semibold">Orders to fulfil</h2>
+              <p className="text-[12px] text-muted">
+                SLA clock from order create · ship within 24h
+              </p>
+            </div>
+            <Link
+              href="/seller/fulfilment"
+              className="text-[12.5px] font-semibold text-accent hover:underline"
+            >
+              All orders →
+            </Link>
+          </div>
+          {dash.awaitingFulfilment.length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-muted sm:px-5">
+              No open fulfilment groups. You’re caught up.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[28rem] border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-border text-[11px] tracking-wide text-muted uppercase">
+                    <th className="px-4 py-2.5 font-medium sm:px-5">Order</th>
+                    <th className="px-2 py-2.5 font-medium">Status</th>
+                    <th className="px-2 py-2.5 font-medium">Age</th>
+                    <th className="px-4 py-2.5 text-right font-medium sm:px-5">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dash.awaitingFulfilment.slice(0, 8).map((row) => {
+                    const lateRow = row.ageHours >= 24;
+                    return (
+                      <tr
+                        key={row.id}
+                        className="border-b border-border/80 text-[13px] last:border-b-0"
+                      >
+                        <td className="px-4 py-3 font-semibold sm:px-5">
+                          <Link
+                            href="/seller/fulfilment"
+                            className="hover:underline"
+                          >
+                            {row.orderNumber}
+                          </Link>
+                        </td>
+                        <td className="px-2 py-3">
+                          <span
+                            className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusBadge(row.status)}`}
+                          >
+                            {row.status}
+                          </span>
+                        </td>
+                        <td
+                          className={`px-2 py-3 font-semibold ${
+                            lateRow ? "text-danger" : "text-muted"
+                          }`}
+                        >
+                          {ageLabel(row.ageHours)}
+                          {lateRow ? " · late" : ""}
+                        </td>
+                        <td className="px-4 py-3 text-right font-semibold sm:px-5">
+                          {formatPaise(row.lineTotalPaise)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </section>
+
+      {/* Catalogue health + inventory + payouts */}
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <section className="rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] sm:p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[15px] font-semibold">Catalogue health</h2>
+            <Link
+              href="/seller/catalogue"
+              className="text-[12.5px] font-semibold text-accent hover:underline"
+            >
+              Manage →
+            </Link>
+          </div>
+          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            {(
+              [
+                ["Live", cat.live, "text-success"],
+                ["In review", cat.submitted, "text-info"],
+                ["Drafts", cat.draft, "text-muted"],
+                ["Rejected", cat.rejected, "text-danger"],
+              ] as const
+            ).map(([label, value, tone]) => (
+              <div
+                key={label}
+                className="rounded-[var(--radius-sm)] border border-border bg-background px-3 py-2.5"
+              >
+                <dt className="text-[11px] font-semibold text-muted uppercase">
+                  {label}
+                </dt>
+                <dd className={`mt-1 text-xl font-bold ${tone}`}>{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-3 text-[12px] text-muted">
+            {cat.inStockSkus}/{cat.totalSkus} SKUs in stock
+          </p>
+        </section>
+
+        <section className="rounded-[var(--radius)] border border-border bg-surface shadow-[var(--shadow-card)]">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-5">
+            <h2 className="text-[15px] font-semibold">Inventory risk</h2>
+            <Link
+              href="/seller/inventory"
+              className="text-[12.5px] font-semibold text-accent hover:underline"
+            >
+              Inventory →
+            </Link>
+          </div>
+          {[...dash.outOfStock, ...dash.lowStock].length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-muted sm:px-5">
               Stock levels look healthy.
             </p>
           ) : (
-            <ul className="text-[13px]">
-              {lowStockRows.map((row) => (
+            <ul className="divide-y divide-border">
+              {[...dash.outOfStock, ...dash.lowStock].slice(0, 7).map((row) => (
                 <li
                   key={row.inventoryItemId}
-                  className="flex items-center justify-between gap-3 border-t border-border py-2.5 first:border-t-0"
+                  className="flex items-center justify-between gap-3 px-4 py-2.5 text-[13px] sm:px-5"
                 >
                   <span className="min-w-0 truncate">
-                    {row.productTitle}{" "}
-                    <span className="text-muted">({row.sku})</span>
+                    <span className="font-medium">{row.productTitle}</span>
+                    <span className="text-muted"> · {row.sku}</span>
                   </span>
                   <span
-                    className={`shrink-0 font-semibold ${
+                    className={`shrink-0 text-[12px] font-bold ${
                       row.available === 0 ? "text-danger" : "text-warning"
                     }`}
                   >
-                    {row.available === 0 ? "Out" : `${row.available} left`}
+                    {row.available === 0 ? "OUT" : `${row.available} left`}
                   </span>
                 </li>
               ))}
             </ul>
           )}
-        </DashboardCard>
+        </section>
 
-        <DashboardCard
-          title="Payouts"
-          action={
-            dash.capabilities.finance
-              ? { label: "View payouts", href: "/seller/finance" }
-              : undefined
-          }
-        >
-          <div className="text-[24px] font-bold tracking-tight">
-            {formatPaise(m.payoutDuePaise)}
+        <section className="rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] sm:p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[15px] font-semibold">Payouts</h2>
+            {dash.capabilities.finance ? (
+              <Link
+                href="/seller/finance"
+                className="text-[12.5px] font-semibold text-accent hover:underline"
+              >
+                Ledger →
+              </Link>
+            ) : null}
           </div>
+          <p className="mt-4 text-[28px] font-bold tracking-tight">
+            {formatPaise(m.payoutDuePaise)}
+          </p>
           <p className="mt-1 text-[12.5px] text-muted">
             {dash.nextSettlement
-              ? `Next batch ${dash.nextSettlement.batchNumber} · ${dash.nextSettlement.status} · period ends ${new Date(
+              ? `Batch ${dash.nextSettlement.batchNumber} · ${dash.nextSettlement.status} · period ends ${new Date(
                   dash.nextSettlement.periodEnd,
                 ).toLocaleDateString("en-IN")}`
-              : "No pending or held settlement batch yet."}
+              : "No pending or held settlement yet."}
           </p>
-          <p className="mt-3 text-[12px] text-muted">
-            Payouts are net of 10% platform commission and 0.5% TCS.
-          </p>
-        </DashboardCard>
+          <div className="mt-4 space-y-2 rounded-[var(--radius-sm)] border border-border bg-background px-3 py-3 text-[12px] text-muted">
+            <p>Net of 10% platform commission</p>
+            <p>TCS withheld at 0.5%</p>
+            <p>7d sales {formatPaise(m.sales7dPaise)}</p>
+          </div>
+        </section>
       </section>
 
-      {/* Quick actions */}
-      <section>
-        <h2 className="mb-2.5 text-[15px] font-semibold">Quick actions</h2>
-        <div className="flex flex-wrap gap-2.5">
-          {dash.capabilities.catalogue ? (
-            <>
-              <QuickAction href="/seller/catalogue" label="Add / edit catalogue" primary />
-              <QuickAction href="/seller/inventory" label="Manage inventory" />
-            </>
-          ) : null}
-          {dash.capabilities.fulfilment ? (
-            <QuickAction href="/seller/fulfilment" label="View orders" />
-          ) : null}
-          <QuickAction href="/seller/compliance" label="Tax / compliance" />
-          {dash.capabilities.finance ? (
-            <QuickAction href="/seller/finance" label="View payouts" />
-          ) : null}
-        </div>
+      {/* Performance */}
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <section className="rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] sm:p-5">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-[15px] font-semibold">Revenue · 30 days</h2>
+              <div className="mt-1 flex flex-wrap items-baseline gap-3">
+                <span className="text-[26px] font-bold tracking-tight">
+                  {formatPaise(m.sales30dPaise)}
+                </span>
+                <span className="text-[12.5px] text-muted">
+                  <Trend pct={m.salesTrendPct} suffix="vs prior 30d" />
+                </span>
+              </div>
+            </div>
+            {dash.capabilities.finance ? (
+              <Link
+                href="/seller/analytics"
+                className="text-[12.5px] font-semibold text-accent hover:underline"
+              >
+                Analytics →
+              </Link>
+            ) : null}
+          </div>
+          <div className="mt-3">
+            <AreaChart data={chartData} height={160} />
+          </div>
+        </section>
+
+        <section className="rounded-[var(--radius)] border border-border bg-surface p-4 shadow-[var(--shadow-card)] sm:p-5">
+          <h2 className="text-[15px] font-semibold">30-day snapshot</h2>
+          <dl className="mt-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <dt className="text-sm text-muted">Orders</dt>
+              <dd className="text-sm font-bold">
+                {m.orders30d}{" "}
+                <span className="font-medium text-muted">
+                  <Trend pct={m.ordersTrendPct} />
+                </span>
+              </dd>
+            </div>
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <dt className="text-sm text-muted">Avg order value</dt>
+              <dd className="text-sm font-bold">
+                {m.orders30d > 0
+                  ? formatPaise(Math.round(m.sales30dPaise / m.orders30d))
+                  : "—"}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <dt className="text-sm text-muted">Open returns</dt>
+              <dd className="text-sm font-bold">{returnsOpen}</dd>
+            </div>
+            <div className="flex items-center justify-between">
+              <dt className="text-sm text-muted">Fulfilment backlog</dt>
+              <dd
+                className={`text-sm font-bold ${late > 0 ? "text-danger" : ""}`}
+              >
+                {toShip}
+                {late > 0 ? ` · ${late} late` : ""}
+              </dd>
+            </div>
+          </dl>
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            {dash.capabilities.catalogue ? (
+              <Link
+                href="/seller/inventory"
+                className="rounded-[var(--radius-sm)] border border-border px-3 py-2.5 text-center text-[12.5px] font-semibold hover:border-foreground/30"
+              >
+                Update stock
+              </Link>
+            ) : null}
+            {dash.capabilities.returns ? (
+              <Link
+                href="/seller/returns"
+                className="rounded-[var(--radius-sm)] border border-border px-3 py-2.5 text-center text-[12.5px] font-semibold hover:border-foreground/30"
+              >
+                Review returns
+              </Link>
+            ) : null}
+            <Link
+              href="/seller/compliance"
+              className="rounded-[var(--radius-sm)] border border-border px-3 py-2.5 text-center text-[12.5px] font-semibold hover:border-foreground/30"
+            >
+              Tax / GST
+            </Link>
+            <Link
+              href="/seller/profile"
+              className="rounded-[var(--radius-sm)] border border-border px-3 py-2.5 text-center text-[12.5px] font-semibold hover:border-foreground/30"
+            >
+              Store profile
+            </Link>
+          </div>
+        </section>
       </section>
     </div>
   );

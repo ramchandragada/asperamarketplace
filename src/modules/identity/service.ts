@@ -22,7 +22,10 @@ import {
   isLoginLocked,
   LOGIN_LOCK_WINDOW_MS,
 } from "@/modules/identity/login-guard";
-import { assertDemoLoginAllowed } from "@/modules/identity/demo-gate";
+import {
+  assertDemoLoginAllowed,
+  demoLoginsAllowed,
+} from "@/modules/identity/demo-gate";
 import {
   decryptTotpSecret,
   encryptTotpSecret,
@@ -36,8 +39,65 @@ import {
 export const SESSION_COOKIE = "aspera_session";
 const SESSION_DAYS = 14;
 
+/** Demo seller staff that must stay bound to the primary PC seller workspace. */
+const DEMO_SELLER_STAFF = [
+  { email: "seller.ops@aspera.local", roleKey: "seller_operations" },
+  { email: "seller.finance@aspera.local", roleKey: "seller_finance" },
+  { email: "seller.support@aspera.local", roleKey: "seller_support" },
+] as const;
+
 function sessionExpiry(from = new Date()): Date {
   return new Date(from.getTime() + SESSION_DAYS * 24 * 60 * 60 * 1000);
+}
+
+/**
+ * Repair missing demo staff → seller bindings (prod can drift after catalogue
+ * reseed). Only runs when demo logins are explicitly allowed.
+ */
+async function ensureDemoSellerStaffBinding(
+  userId: string,
+  email: string,
+): Promise<boolean> {
+  if (!demoLoginsAllowed()) return false;
+  const staff = DEMO_SELLER_STAFF.find((row) => row.email === email);
+  if (!staff) return false;
+
+  const role = await prisma.role.findUnique({ where: { key: staff.roleKey } });
+  if (!role) return false;
+
+  const primarySeller = await prisma.seller.findFirst({
+    where: {
+      OR: [
+        { contactEmail: "pcc@aspera.local" },
+        { owner: { email: "pcc@aspera.local" } },
+      ],
+      status: "approved",
+    },
+    orderBy: { createdAt: "asc" },
+  });
+  if (!primarySeller) return false;
+
+  const existing = await prisma.userRole.findFirst({
+    where: {
+      userId,
+      roleId: role.id,
+      sellerId: primarySeller.id,
+    },
+  });
+  if (existing) return false;
+
+  await prisma.userRole.deleteMany({
+    where: { userId, roleId: role.id },
+  });
+  await prisma.userRole.create({
+    data: {
+      userId,
+      roleId: role.id,
+      scopeKey: primarySeller.id,
+      sellerId: primarySeller.id,
+    },
+  });
+  return true;
 }
 
 export async function ensureSystemRoles() {
@@ -228,7 +288,13 @@ export async function loginUser(
     throw new AuthenticationError("Invalid email or password");
   }
 
-  const actorRoles = user.roles.map((row) => ({
+  await ensureDemoSellerStaffBinding(user.id, user.email);
+
+  const refreshedRoles = await prisma.userRole.findMany({
+    where: { userId: user.id },
+    include: { role: true },
+  });
+  const actorRoles = refreshedRoles.map((row) => ({
     key: row.role.key,
     sellerId: row.sellerId,
   }));
@@ -420,7 +486,19 @@ export async function resolveActorFromToken(
     data: { lastSeenAt: new Date() },
   });
 
-  const roles = session.user.roles
+  let roleRows = session.user.roles;
+  const repaired = await ensureDemoSellerStaffBinding(
+    session.user.id,
+    session.user.email,
+  );
+  if (repaired) {
+    roleRows = await prisma.userRole.findMany({
+      where: { userId: session.user.id },
+      include: { role: true },
+    });
+  }
+
+  const roles = roleRows
     .map((entry) => {
       if (!isRoleKey(entry.role.key)) {
         return null;

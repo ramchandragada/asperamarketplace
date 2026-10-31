@@ -76,13 +76,14 @@ export function actorHasSellerStaffRole(
   return ANY_SELLER_STAFF.some((role) => actorHasRole(actor, role, sellerId));
 }
 
-/** True when the actor operates any seller workspace (owner or staff). */
+/**
+ * True when the actor has any seller workspace role.
+ * Owners often have sellerId null on the role row (access via ownerUserId),
+ * so do not require a scoped sellerId here.
+ */
 export function actorIsSellerStaff(actor: Actor): boolean {
   if (actorIsAdmin(actor)) return false;
-  return actor.roles.some(
-    (entry) =>
-      ANY_SELLER_STAFF.includes(entry.key) && entry.sellerId != null,
-  );
+  return actor.roles.some((entry) => ANY_SELLER_STAFF.includes(entry.key));
 }
 
 export function actorHasSellerCapability(

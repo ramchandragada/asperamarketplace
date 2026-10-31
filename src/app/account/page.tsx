@@ -60,7 +60,8 @@ export default async function AccountPage() {
     redirect("/login?next=/account");
   }
 
-  // Seller staff belong in Seller Central — not the shopper hub with Buy Again.
+  // Seller staff / owners belong in Seller Central — not shopper Buy Again.
+  // Layout also gates this; keep the page-level guard for safety.
   if (actorIsSellerStaff(actor)) {
     redirect("/seller");
   }

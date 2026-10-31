@@ -123,7 +123,7 @@ describe("actorIsSellerStaff", () => {
     ).toBe(true);
   });
 
-  it("ignores customers and unscope seller roles", () => {
+  it("treats unscope owner/ops role keys as seller staff", () => {
     expect(
       actorIsSellerStaff(makeActor([{ key: "customer", sellerId: null }])),
     ).toBe(false);
@@ -131,7 +131,12 @@ describe("actorIsSellerStaff", () => {
       actorIsSellerStaff(
         makeActor([{ key: "seller_operations", sellerId: null }]),
       ),
-    ).toBe(false);
+    ).toBe(true);
+    expect(
+      actorIsSellerStaff(
+        makeActor([{ key: "seller_owner", sellerId: null }]),
+      ),
+    ).toBe(true);
   });
 
   it("does not classify admins as seller staff for account routing", () => {

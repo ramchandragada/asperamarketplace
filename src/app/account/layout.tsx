@@ -20,7 +20,8 @@ export default async function AccountLayout({
 
   // Seller ops belong in Seller Central. Allow profile only for password/name.
   const sellerWorkspace = await resolveSellerForActor(actor, "dashboard.read");
-  if (actorIsSellerStaff(actor) || sellerWorkspace) {
+  const isSellerAccount = actorIsSellerStaff(actor) || Boolean(sellerWorkspace);
+  if (isSellerAccount) {
     const path = (await headers()).get("x-aspera-pathname") ?? "";
     const allowProfile =
       path === "/account/profile" || path.startsWith("/account/profile/");
@@ -33,7 +34,10 @@ export default async function AccountLayout({
     <PageShell>
       <div className="grid gap-6 md:grid-cols-[15rem_minmax(0,1fr)]">
         <aside className="md:sticky md:top-6 md:self-start">
-          <AccountNav displayName={actor.displayName} />
+          <AccountNav
+            displayName={actor.displayName}
+            mode={isSellerAccount ? "seller" : "shopper"}
+          />
         </aside>
         <div className="flex min-w-0 flex-col gap-8">{children}</div>
       </div>

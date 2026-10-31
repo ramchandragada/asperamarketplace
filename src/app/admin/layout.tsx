@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin-nav";
 import { OperatorChrome } from "@/components/operator-chrome";
 import { PageShell } from "@/components/ui/page-shell";
+import { redirectToLogin } from "@/lib/login-redirect";
 import {
   actorHasSellerStaffRole,
   actorIsAdmin,
@@ -21,15 +22,18 @@ export default async function AdminLayout({
 }) {
   const actor = await getOptionalActor();
   if (!actor) {
-    redirect("/login?next=/admin");
+    await redirectToLogin("/admin");
   }
+  // redirectToLogin never returns; narrow for TypeScript.
+  if (!actor) return null;
   if (!actorIsAdmin(actor)) {
     redirect("/account");
   }
 
   const headerList = await headers();
   const path = headerList.get("x-aspera-pathname") ?? "";
-  const onSecurityPage = path === "/admin/security" || path.startsWith("/admin/security/");
+  const onSecurityPage =
+    path === "/admin/security" || path.startsWith("/admin/security/");
 
   if (adminTotpRequiredInProduction(actor) && !onSecurityPage) {
     const enabled = await adminHasTotpEnabled(actor.userId);
@@ -48,7 +52,12 @@ export default async function AdminLayout({
     );
 
   return (
-    <OperatorChrome surface="admin" title={actor.displayName}>
+    <OperatorChrome
+      surface="admin"
+      title={actor.displayName}
+      showAdmin
+      showSeller={showSeller}
+    >
       <PageShell>
         <div className="grid gap-6 md:grid-cols-[15rem_minmax(0,1fr)]">
           <aside className="md:sticky md:top-6 md:self-start">

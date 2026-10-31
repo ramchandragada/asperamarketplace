@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { EmptyState } from "@/components/ui/empty-state";
 import {
   AreaChart,
   AttentionList,
@@ -83,21 +82,12 @@ function WalletIcon() {
 
 export default async function SellerDashboardPage() {
   const actor = await getOptionalActor();
-  if (!actor) redirect("/login");
+  if (!actor) redirect("/login?next=%2Fseller");
 
   const seller = await resolveSellerForActor(actor, "dashboard.read");
+  // Layout already redirects shoppers without a workspace to /sell.
   if (!seller) {
-    return (
-      <EmptyState
-        title="No seller workspace yet"
-        description="Complete onboarding and wait for approval, or ask an owner to grant a staff role."
-        action={
-          <Link href="/seller/onboarding" className="text-sm font-medium text-accent underline">
-            Seller onboarding
-          </Link>
-        }
-      />
-    );
+    redirect("/sell");
   }
 
   const dash = await getSellerActionDashboard(actor, seller.id);

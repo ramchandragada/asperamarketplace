@@ -5,6 +5,7 @@ import { PageShell } from "@/components/ui/page-shell";
 import { redirectToLogin } from "@/lib/login-redirect";
 import { actorIsSellerStaff } from "@/modules/identity/policy";
 import { getOptionalActor } from "@/modules/identity/service";
+import { resolveSellerForActor } from "@/modules/seller/access";
 
 export default async function AccountLayout({
   children,
@@ -18,7 +19,8 @@ export default async function AccountLayout({
   if (!actor) return null;
 
   // Seller ops belong in Seller Central. Allow profile only for password/name.
-  if (actorIsSellerStaff(actor)) {
+  const sellerWorkspace = await resolveSellerForActor(actor, "dashboard.read");
+  if (actorIsSellerStaff(actor) || sellerWorkspace) {
     const path = (await headers()).get("x-aspera-pathname") ?? "";
     const allowProfile =
       path === "/account/profile" || path.startsWith("/account/profile/");

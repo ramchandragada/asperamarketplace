@@ -23,8 +23,6 @@ export default async function SellerLayout({
   if (!actor) return null;
 
   const seller = await resolveSellerForActor(actor, "dashboard.read");
-  // Shoppers (and any signed-in user without a seller workspace) should not
-  // land in the operator shell with an empty "No seller workspace" state.
   if (!seller) {
     if (actorIsAdmin(actor)) {
       redirect("/admin");
@@ -89,9 +87,9 @@ export default async function SellerLayout({
       showAdmin={actorIsAdmin(actor)}
       showSeller
     >
-      <PageShell className="gap-5 py-5 md:py-6">
-        <div className="grid gap-5 md:grid-cols-[14.5rem_minmax(0,1fr)]">
-          <aside className="md:sticky md:top-4 md:self-start">
+      <PageShell>
+        <div className="grid gap-6 md:grid-cols-[15rem_minmax(0,1fr)]">
+          <aside className="md:sticky md:top-6 md:self-start">
             <SellerNav
               sellerName={sellerName}
               displayName={actor.displayName}

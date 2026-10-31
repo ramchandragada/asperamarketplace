@@ -31,13 +31,30 @@ export default async function SellerFulfilmentPage() {
 
   const groups = await listSellerFulfilment(actor, seller.id);
 
+  const openCount = groups.filter(
+    (g) => g.status === "pending" || g.status === "processing",
+  ).length;
+
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-semibold">Orders</h1>
-        <p className="mt-2 text-muted">
-          Process, ship, deliver, or cancel paid groups for{" "}
-          {seller.tradeName ?? seller.legalName}.
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-3 border border-border bg-surface px-4 py-3.5 sm:px-5">
+        <div>
+          <p className="text-[10px] font-semibold tracking-[0.12em] text-muted uppercase">
+            Order desk
+          </p>
+          <h1 className="mt-0.5 font-display text-[22px] font-semibold tracking-tight">
+            Manage orders
+          </h1>
+          <p className="mt-1 text-[13px] text-muted">
+            Process, ship, deliver, or cancel paid groups ·{" "}
+            {seller.tradeName ?? seller.legalName}
+          </p>
+        </div>
+        <p className="text-[13px] font-semibold">
+          <span className={openCount > 0 ? "text-warning" : "text-success"}>
+            {openCount} to ship
+          </span>
+          <span className="text-muted"> · {groups.length} total</span>
         </p>
       </div>
       <SellerFulfilmentPanel

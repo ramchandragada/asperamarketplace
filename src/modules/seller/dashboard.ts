@@ -9,6 +9,7 @@ import { formatPaise } from "@/modules/catalogue/helpers";
 
 const LATE_FULFILMENT_HOURS = 24;
 const LOW_STOCK_AVAILABLE = 5;
+const SHIP_SLA_HOURS = 24;
 
 export type ActionPriority = "critical" | "action" | "info" | "completed";
 
@@ -33,6 +34,11 @@ export type SellerActionDashboard = {
     lineTotalPaise: number;
     ageHours: number;
     createdAt: string;
+    shipByAt: string;
+    itemCount: number;
+    city: string;
+    postalCode: string;
+    firstTitle: string;
   }>;
   outOfStock: Array<{
     inventoryItemId: string;
@@ -82,8 +88,31 @@ export type SellerActionDashboard = {
     ordersTrendPct: number | null;
     payoutDuePaise: number;
     sales7dPaise: number;
+    units30d: number;
+    shippedToday: number;
+    deliveredToday: number;
+    cancelled30d: number;
     dailySales: Array<{ label: string; paise: number }>;
   };
+  accountHealth: {
+    rating: "healthy" | "at_risk" | "critical";
+    lateShipmentRatePct: number;
+    cancellationRatePct: number;
+    returnRatePct: number;
+    oosSkuRatePct: number;
+    targets: {
+      lateShipmentMaxPct: number;
+      cancellationMaxPct: number;
+      returnMaxPct: number;
+      oosSkuMaxPct: number;
+    };
+  };
+  topProducts: Array<{
+    productId: string;
+    title: string;
+    units: number;
+    salesPaise: number;
+  }>;
   alerts: Array<{
     id: string;
     priority: ActionPriority;
@@ -98,6 +127,11 @@ export type SellerActionDashboard = {
     finance: boolean;
   };
 };
+
+function ratePct(num: number, den: number) {
+  if (den <= 0) return 0;
+  return Math.round((num / den) * 1000) / 10;
+}
 
 export async function getSellerActionDashboard(
   actor: Actor,
@@ -114,7 +148,10 @@ export async function getSellerActionDashboard(
     Date.now() - LATE_FULFILMENT_HOURS * 60 * 60 * 1000,
   );
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const thirtyAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const sixtyAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
 
   const [
     lateGroups,
@@ -131,6 +168,11 @@ export async function getSellerActionDashboard(
     submittedCount,
     draftCount,
     rejectedCount,
+    cancelled30d,
+    delivered30d,
+    shippedToday,
+    deliveredToday,
+    topLineAgg,
   ] = await Promise.all([
     prisma.orderFulfilmentGroup.findMany({
       where: {
@@ -148,8 +190,22 @@ export async function getSellerActionDashboard(
         status: { in: ["pending", "processing"] },
       },
       orderBy: { createdAt: "asc" },
-      take: 20,
-      include: { order: { select: { orderNumber: true } } },
+      take: 25,
+      include: {
+        order: {
+          select: {
+            orderNumber: true,
+            address: { select: { city: true, postalCode: true } },
+          },
+        },
+        lines: {
+          select: {
+            quantity: true,
+            productTitle: true,
+            lineTotalPaise: true,
+          },
+        },
+      },
     }),
     prisma.inventoryItem.findMany({
       where: {
@@ -208,9 +264,49 @@ export async function getSellerActionDashboard(
     prisma.product.count({ where: { sellerId, status: "submitted" } }),
     prisma.product.count({ where: { sellerId, status: "draft" } }),
     prisma.product.count({ where: { sellerId, status: "rejected" } }),
+    prisma.orderFulfilmentGroup.count({
+      where: {
+        sellerId,
+        status: "cancelled",
+        cancelledAt: { gte: thirtyAgo },
+      },
+    }),
+    prisma.orderFulfilmentGroup.count({
+      where: {
+        sellerId,
+        status: "delivered",
+        deliveredAt: { gte: thirtyAgo },
+      },
+    }),
+    prisma.orderFulfilmentGroup.count({
+      where: {
+        sellerId,
+        status: { in: ["shipped", "delivered"] },
+        shippedAt: { gte: startOfToday },
+      },
+    }),
+    prisma.orderFulfilmentGroup.count({
+      where: {
+        sellerId,
+        status: "delivered",
+        deliveredAt: { gte: startOfToday },
+      },
+    }),
+    prisma.orderLine.groupBy({
+      by: ["productId", "productTitle"],
+      where: {
+        sellerId,
+        fulfilmentGroup: {
+          status: { in: ["shipped", "delivered"] },
+          updatedAt: { gte: thirtyAgo },
+        },
+      },
+      _sum: { quantity: true, lineTotalPaise: true },
+      orderBy: { _sum: { lineTotalPaise: "desc" } },
+      take: 5,
+    }),
   ]);
 
-  // 30-day sales metrics, trend vs the prior 30 days, and a daily series.
   const dayMs = 24 * 60 * 60 * 1000;
   const thirtyMs = 30 * dayMs;
   const nowTs = Date.now();
@@ -241,6 +337,12 @@ export async function getSellerActionDashboard(
   const sales7d = Array.from(dayBuckets.entries())
     .slice(-7)
     .reduce((sum, [, paise]) => sum + paise, 0);
+
+  const units30d = topLineAgg.reduce(
+    (sum, row) => sum + (row._sum.quantity ?? 0),
+    0,
+  );
+
   const metrics = {
     sales30dPaise: sales30,
     salesTrendPct: trendPct(sales30, salesPrev30),
@@ -248,6 +350,10 @@ export async function getSellerActionDashboard(
     ordersTrendPct: trendPct(orders30.size, ordersPrev30.size),
     payoutDuePaise: payoutAgg._sum.netPaise ?? 0,
     sales7dPaise: sales7d,
+    units30d,
+    shippedToday,
+    deliveredToday,
+    cancelled30d,
     dailySales: Array.from(dayBuckets.entries()).map(([key, paise]) => ({
       label: new Date(key).toLocaleDateString("en-IN", {
         day: "numeric",
@@ -275,6 +381,38 @@ export async function getSellerActionDashboard(
       (row) => row.available > 0 && row.available <= LOW_STOCK_AVAILABLE,
     )
     .slice(0, 20);
+
+  const openShipCount = awaitingGroups.length;
+  const lateCount = lateGroups.length;
+  const shippedOrOpen30 =
+    orders30.size + cancelled30d + openShipCount;
+  const lateShipmentRatePct = ratePct(lateCount, Math.max(openShipCount, 1));
+  const cancellationRatePct = ratePct(
+    cancelled30d,
+    Math.max(orders30.size + cancelled30d, 1),
+  );
+  const returnRatePct = ratePct(returns.length, Math.max(delivered30d, 1));
+  const oosSkuRatePct = ratePct(outOfStock.length, Math.max(stockRows.length, 1));
+
+  const targets = {
+    lateShipmentMaxPct: 4,
+    cancellationMaxPct: 2.5,
+    returnMaxPct: 5,
+    oosSkuMaxPct: 10,
+  };
+  const breaches = [
+    lateShipmentRatePct > targets.lateShipmentMaxPct,
+    cancellationRatePct > targets.cancellationMaxPct,
+    returnRatePct > targets.returnMaxPct,
+    oosSkuRatePct > targets.oosSkuMaxPct,
+    seller.status !== "approved",
+  ].filter(Boolean).length;
+  const rating: SellerActionDashboard["accountHealth"]["rating"] =
+    breaches >= 2 || seller.status !== "approved"
+      ? "critical"
+      : breaches === 1
+        ? "at_risk"
+        : "healthy";
 
   const now = Date.now();
   const capabilities = {
@@ -325,7 +463,7 @@ export async function getSellerActionDashboard(
       id: "oos",
       priority: "critical",
       title: `${outOfStock.length} out-of-stock SKU(s)`,
-      detail: "Available units = 0",
+      detail: "Available units = 0 — listings risk suppression",
       href: "/seller/inventory?filter=out_of_stock",
     });
   }
@@ -343,7 +481,7 @@ export async function getSellerActionDashboard(
       id: "drafts",
       priority: "info",
       title: `${drafts.length} catalogue item(s) need attention`,
-      detail: "Draft, submitted, or rejected listings — filter on the catalogue page",
+      detail: "Draft, submitted, or rejected listings",
       href: "/seller/catalogue",
     });
   }
@@ -374,6 +512,9 @@ export async function getSellerActionDashboard(
     });
   }
 
+  // shippedOrOpen30 kept for future health expansions
+  void shippedOrOpen30;
+
   return {
     sellerId: seller.id,
     tradeName: seller.tradeName,
@@ -390,16 +531,27 @@ export async function getSellerActionDashboard(
       ),
       lineTotalPaise: group.lineTotalPaise,
     })),
-    awaitingFulfilment: awaitingGroups.map((group) => ({
-      id: group.id,
-      orderNumber: group.order.orderNumber,
-      status: group.status,
-      lineTotalPaise: group.lineTotalPaise,
-      ageHours: Math.floor(
-        (now - group.createdAt.getTime()) / (60 * 60 * 1000),
-      ),
-      createdAt: group.createdAt.toISOString(),
-    })),
+    awaitingFulfilment: awaitingGroups.map((group) => {
+      const itemCount = group.lines.reduce((sum, line) => sum + line.quantity, 0);
+      const shipBy = new Date(
+        group.createdAt.getTime() + SHIP_SLA_HOURS * 60 * 60 * 1000,
+      );
+      return {
+        id: group.id,
+        orderNumber: group.order.orderNumber,
+        status: group.status,
+        lineTotalPaise: group.lineTotalPaise,
+        ageHours: Math.floor(
+          (now - group.createdAt.getTime()) / (60 * 60 * 1000),
+        ),
+        createdAt: group.createdAt.toISOString(),
+        shipByAt: shipBy.toISOString(),
+        itemCount,
+        city: group.order.address.city,
+        postalCode: group.order.address.postalCode,
+        firstTitle: group.lines[0]?.productTitle ?? "Items",
+      };
+    }),
     outOfStock,
     lowStock,
     draftProducts: drafts,
@@ -430,6 +582,20 @@ export async function getSellerActionDashboard(
       inStockSkus: stockRows.filter((row) => row.available > 0).length,
     },
     metrics,
+    accountHealth: {
+      rating,
+      lateShipmentRatePct,
+      cancellationRatePct,
+      returnRatePct,
+      oosSkuRatePct,
+      targets,
+    },
+    topProducts: topLineAgg.map((row) => ({
+      productId: row.productId,
+      title: row.productTitle,
+      units: row._sum.quantity ?? 0,
+      salesPaise: row._sum.lineTotalPaise ?? 0,
+    })),
     alerts,
     capabilities,
   };

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageShell } from "@/components/ui/page-shell";
 import { listReturnsForBuyer } from "@/modules/fulfilment/service";
 import { getOptionalActor } from "@/modules/identity/service";
 
@@ -15,7 +14,7 @@ export default async function AccountReturnsPage() {
   const returns = await listReturnsForBuyer(actor);
 
   return (
-    <PageShell narrow>
+    <div className="flex max-w-3xl flex-col gap-8">
       <div>
         <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
           Shopping
@@ -68,11 +67,7 @@ export default async function AccountReturnsPage() {
         <Link href="/orders" className="underline">
           Your orders
         </Link>
-        {" · "}
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
       </p>
-    </PageShell>
+    </div>
   );
 }

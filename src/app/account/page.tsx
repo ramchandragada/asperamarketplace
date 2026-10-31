@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "@/components/logout-button";
-import { AccountHub } from "@/components/account-hub";
-import { PageShell } from "@/components/ui/page-shell";
 import {
   AttentionList,
   DashboardCard,
   StatTile,
   type AttentionItem,
 } from "@/components/dashboard/dashboard-kit";
+import { actorIsSellerStaff } from "@/modules/identity/policy";
 import { getOptionalActor } from "@/modules/identity/service";
 import { formatPaise } from "@/modules/catalogue/helpers";
 import { prisma } from "@/platform/db/prisma";
@@ -59,6 +58,11 @@ export default async function AccountPage() {
   const actor = await getOptionalActor();
   if (!actor) {
     redirect("/login?next=/account");
+  }
+
+  // Seller staff belong in Seller Central — not the shopper hub with Buy Again.
+  if (actorIsSellerStaff(actor)) {
+    redirect("/seller");
   }
 
   const [
@@ -122,11 +126,11 @@ export default async function AccountPage() {
     });
 
   return (
-    <PageShell>
+    <>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
-            Your account
+            Overview
           </p>
           <h1 className="mt-1 font-display text-[26px] font-semibold tracking-tight">
             Hello, {actor.displayName}
@@ -136,7 +140,6 @@ export default async function AccountPage() {
         <LogoutButton />
       </div>
 
-      {/* KPI row */}
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile
           label="Orders"
@@ -169,7 +172,6 @@ export default async function AccountPage() {
         />
       </section>
 
-      {/* Recent orders + attention */}
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
         <DashboardCard
           title="Recent orders"
@@ -238,9 +240,6 @@ export default async function AccountPage() {
         </DashboardCard>
       </section>
 
-      {/* Navigation hub */}
-      <AccountHub />
-
       <nav className="flex flex-wrap gap-4 border-t border-border pt-4 text-sm">
         <Link href="/cart" className="font-medium text-accent hover:underline">
           Cart
@@ -248,10 +247,7 @@ export default async function AccountPage() {
         <Link href="/shop" className="font-medium text-accent hover:underline">
           Continue shopping
         </Link>
-        <Link href="/seller" className="font-medium text-accent hover:underline">
-          Seller dashboard
-        </Link>
       </nav>
-    </PageShell>
+    </>
   );
 }

@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   BuyAgainPanel,
   type BuyAgainItem,
 } from "@/components/buy-again-panel";
-import { PageShell } from "@/components/ui/page-shell";
+import { actorIsSellerStaff } from "@/modules/identity/policy";
 import { getOptionalActor } from "@/modules/identity/service";
 import { prisma } from "@/platform/db/prisma";
 
@@ -15,6 +14,11 @@ export default async function BuyAgainPage() {
   const actor = await getOptionalActor();
   if (!actor) {
     redirect("/login?next=/account/buy-again");
+  }
+
+  // Buy Again is a shopper reorder desk — seller staff use Seller Central.
+  if (actorIsSellerStaff(actor)) {
+    redirect("/seller");
   }
 
   const lines = await prisma.orderLine.findMany({
@@ -106,30 +110,19 @@ export default async function BuyAgainPage() {
   );
 
   return (
-    <PageShell>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
-            Account
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-semibold">Buy Again</h1>
-          <p className="mt-2 max-w-2xl text-muted">
-            Reorder products from past purchases. Use the left panel to filter by
-            time or stock — one click adds the item back to your cart.
-          </p>
-        </div>
-        <p className="text-sm text-muted">
-          <Link href="/account" className="text-accent hover:underline">
-            Back to account
-          </Link>
-          {" · "}
-          <Link href="/orders" className="text-accent hover:underline">
-            Your Orders
-          </Link>
+    <>
+      <div>
+        <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
+          Shopping
+        </p>
+        <h1 className="mt-1 font-display text-3xl font-semibold">Buy Again</h1>
+        <p className="mt-2 max-w-2xl text-muted">
+          Reorder products from past purchases. Use Filters to narrow by time or
+          stock — one click adds the item back to your cart.
         </p>
       </div>
 
       <BuyAgainPanel items={items} />
-    </PageShell>
+    </>
   );
 }

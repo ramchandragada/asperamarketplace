@@ -61,8 +61,10 @@ export async function SiteHeader() {
   return (
     <SiteHeaderClient
       cartCount={count}
-      accountHref={actor ? "/account" : "/login"}
-      accountLabel={actor ? "Account" : "Account"}
+      accountHref={
+        actor ? (hasSellerRole ? "/seller" : "/account") : "/login"
+      }
+      accountLabel={actor ? (hasSellerRole ? "Selling" : "Account") : "Account"}
       sellHref={hasSellerRole || actor ? "/seller" : "/sell"}
       showAdmin={isAdmin}
     />

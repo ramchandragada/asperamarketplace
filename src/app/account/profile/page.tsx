@@ -1,7 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountProfileForm } from "@/components/account-profile-form";
-import { PageShell } from "@/components/ui/page-shell";
 import { getOptionalActor } from "@/modules/identity/service";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +12,7 @@ export default async function AccountProfilePage() {
   }
 
   return (
-    <PageShell narrow>
+    <div className="flex max-w-3xl flex-col gap-8">
       <div>
         <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
           Account settings
@@ -46,12 +44,6 @@ export default async function AccountProfilePage() {
           </li>
         </ul>
       </section>
-
-      <p className="text-sm">
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
-      </p>
-    </PageShell>
+    </div>
   );
 }

@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageShell } from "@/components/ui/page-shell";
 import { listBuyerNotifications } from "@/modules/account/service";
 import { getOptionalActor } from "@/modules/identity/service";
 
@@ -15,7 +13,7 @@ export default async function AccountNotificationsPage() {
   const notifications = await listBuyerNotifications(actor);
 
   return (
-    <PageShell narrow>
+    <div className="flex max-w-3xl flex-col gap-8">
       <div>
         <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
           Activity
@@ -55,12 +53,6 @@ export default async function AccountNotificationsPage() {
           ))}
         </ul>
       )}
-
-      <p className="text-sm">
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
-      </p>
-    </PageShell>
+    </div>
   );
 }

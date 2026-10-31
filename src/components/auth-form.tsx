@@ -25,8 +25,20 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
         data?: { roles?: { key: string; sellerId?: string | null }[] };
       };
       const roles = body.data?.roles ?? [];
-      if (roles.some((role) => role.key === "admin")) return "/admin";
-      if (roles.some((role) => role.key === "seller_owner" || role.sellerId)) {
+      if (roles.some((role) => role.key === "admin" || role.key === "super_admin")) {
+        return "/admin";
+      }
+      // Any seller workspace role — never dump ops staff on shopper Buy Again.
+      if (
+        roles.some(
+          (role) =>
+            role.sellerId ||
+            role.key === "seller_owner" ||
+            role.key === "seller_operations" ||
+            role.key === "seller_finance" ||
+            role.key === "seller_support",
+        )
+      ) {
         return "/seller";
       }
     } catch {

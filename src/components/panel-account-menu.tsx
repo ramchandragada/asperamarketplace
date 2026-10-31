@@ -48,13 +48,6 @@ export function PanelAccountMenu({
       </button>
       {open ? (
         <div className="absolute left-0 right-0 z-50 mt-1 flex flex-col rounded-[var(--radius-sm)] border border-border bg-background py-1 shadow-sm">
-          <Link
-            href="/account"
-            className="px-3 py-2 text-sm hover:bg-accent-soft/60"
-            onClick={() => setOpen(false)}
-          >
-            Account
-          </Link>
           {showSeller ? (
             <Link
               href="/seller"
@@ -64,6 +57,13 @@ export function PanelAccountMenu({
               Seller dashboard
             </Link>
           ) : null}
+          <Link
+            href={showSeller ? "/account/profile" : "/account"}
+            className="px-3 py-2 text-sm hover:bg-accent-soft/60"
+            onClick={() => setOpen(false)}
+          >
+            {showSeller ? "Login & security" : "Account"}
+          </Link>
           {showAdmin ? (
             <Link
               href="/admin"

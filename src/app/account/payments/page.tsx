@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageShell } from "@/components/ui/page-shell";
 import { getOptionalActor } from "@/modules/identity/service";
 import { mockSelfPayAllowed } from "@/modules/payments/provider";
 
@@ -15,7 +14,7 @@ export default async function AccountPaymentsPage() {
   const demoPay = mockSelfPayAllowed();
 
   return (
-    <PageShell narrow>
+    <div className="flex max-w-3xl flex-col gap-8">
       <div>
         <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
           Payments & savings
@@ -50,11 +49,7 @@ export default async function AccountPaymentsPage() {
         <Link href="/orders" className="underline">
           View orders & invoices
         </Link>
-        {" · "}
-        <Link href="/account" className="underline">
-          Back to account
-        </Link>
       </p>
-    </PageShell>
+    </div>
   );
 }

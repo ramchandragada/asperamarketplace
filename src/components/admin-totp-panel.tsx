@@ -2,7 +2,14 @@
 
 import { type FormEvent, useState } from "react";
 
-export function AdminTotpPanel({ enabled }: { enabled: boolean }) {
+export function AdminTotpPanel({
+  enabled,
+  required = false,
+}: {
+  enabled: boolean;
+  /** When false, TOTP is optional (ENABLE_ADMIN_TOTP is off). */
+  required?: boolean;
+}) {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
@@ -48,7 +55,11 @@ export function AdminTotpPanel({ enabled }: { enabled: boolean }) {
       setError(body.message ?? body.error ?? "Could not enable authenticator");
       return;
     }
-    setMessage("Authenticator enabled. Future admin sign-ins will ask for a code.");
+    setMessage(
+      required
+        ? "Authenticator enabled. Future admin sign-ins will ask for a code."
+        : "Authenticator enabled. It will be required on sign-in once ENABLE_ADMIN_TOTP is turned on.",
+    );
     setSecret(null);
     setOtpauthUrl(null);
     window.location.reload();
@@ -59,8 +70,12 @@ export function AdminTotpPanel({ enabled }: { enabled: boolean }) {
       <h2 className="text-lg font-semibold">Admin authenticator (2FA)</h2>
       <p className="mt-1 text-sm text-muted">
         {enabled
-          ? "Authenticator is enabled for this admin account."
-          : "Production admin access requires an authenticator app (TOTP)."}
+          ? required
+            ? "Authenticator is enabled for this admin account."
+            : "Authenticator is enabled. Enforcement is currently off (ENABLE_ADMIN_TOTP is not set)."
+          : required
+            ? "Production admin access requires an authenticator app (TOTP)."
+            : "Optional authenticator (TOTP). Not required for admin sign-in while ENABLE_ADMIN_TOTP is off."}
       </p>
       {!enabled ? (
         <div className="mt-4 flex flex-col gap-3">

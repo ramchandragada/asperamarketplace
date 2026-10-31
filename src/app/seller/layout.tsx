@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { OperatorChrome } from "@/components/operator-chrome";
 import { SellerNav } from "@/components/seller-nav";
 import { PageShell } from "@/components/ui/page-shell";
+import { redirectToLogin } from "@/lib/login-redirect";
 import { getOptionalActor } from "@/modules/identity/service";
 import { resolveSellerForActor } from "@/modules/seller/access";
 import {
@@ -16,34 +17,36 @@ export default async function SellerLayout({
 }) {
   const actor = await getOptionalActor();
   if (!actor) {
-    redirect("/login");
+    await redirectToLogin("/seller");
   }
+  if (!actor) return null;
 
   const seller = await resolveSellerForActor(actor, "dashboard.read");
-  const sellerName = seller
-    ? (seller.tradeName ?? seller.legalName)
-    : "Seller workspace";
-  const sellerId = seller?.id;
-  const isOwner = seller ? seller.ownerUserId === actor.userId : false;
+  // Shoppers (and any signed-in user without a seller workspace) should not
+  // land in the operator shell with an empty "No seller workspace" state.
+  if (!seller) {
+    if (actorIsAdmin(actor)) {
+      redirect("/admin");
+    }
+    redirect("/sell");
+  }
+
+  const sellerName = seller.tradeName ?? seller.legalName;
+  const sellerId = seller.id;
+  const isOwner = seller.ownerUserId === actor.userId;
   const capabilities = {
     catalogue: Boolean(
-      sellerId &&
-        (isOwner ||
-          actorHasSellerCapability(actor, sellerId, "catalogue.write")),
+      isOwner || actorHasSellerCapability(actor, sellerId, "catalogue.write"),
     ),
     fulfilment: Boolean(
-      sellerId &&
-        (isOwner ||
-          actorHasSellerCapability(actor, sellerId, "fulfilment.write")),
+      isOwner ||
+        actorHasSellerCapability(actor, sellerId, "fulfilment.write"),
     ),
     returns: Boolean(
-      sellerId &&
-        (isOwner ||
-          actorHasSellerCapability(actor, sellerId, "returns.review")),
+      isOwner || actorHasSellerCapability(actor, sellerId, "returns.review"),
     ),
     finance: Boolean(
-      sellerId &&
-        (isOwner || actorHasSellerCapability(actor, sellerId, "finance.read")),
+      isOwner || actorHasSellerCapability(actor, sellerId, "finance.read"),
     ),
   };
 
@@ -52,6 +55,8 @@ export default async function SellerLayout({
       surface="seller"
       title={sellerName}
       subtitle={actor.displayName}
+      showAdmin={actorIsAdmin(actor)}
+      showSeller
     >
       <PageShell>
         <div className="grid gap-6 md:grid-cols-[15rem_minmax(0,1fr)]">

@@ -20,7 +20,9 @@ export function proxy(request: NextRequest) {
     const token = request.cookies.get(SESSION_COOKIE)?.value;
     if (!token) {
       const login = new URL("/login", request.url);
-      login.searchParams.set("next", pathname);
+      // Preserve path + query so deep links (and encoding) stay consistent.
+      const nextPath = `${pathname}${request.nextUrl.search}`;
+      login.searchParams.set("next", nextPath);
       const redirect = NextResponse.redirect(login);
       redirect.headers.set(REQUEST_ID_HEADER, requestId);
       return redirect;

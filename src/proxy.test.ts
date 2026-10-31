@@ -35,6 +35,16 @@ describe("proxy auth gates", () => {
     expect(response.headers.get("location")).toContain("/login?next=%2Fseller");
   });
 
+  it("preserves query string on logged-out admin deep link", () => {
+    const response = proxy(request("/admin/orders?tab=open"));
+    expect(response.status).toBe(307);
+    const location = response.headers.get("location") ?? "";
+    expect(location).toContain("/login?next=");
+    expect(decodeURIComponent(location)).toContain(
+      "/admin/orders?tab=open",
+    );
+  });
+
   it("allows logged-in /seller through and marks seller surface", () => {
     const response = proxy(
       request("/seller/catalogue", "aspera_session=test-token"),

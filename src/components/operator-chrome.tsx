@@ -26,7 +26,7 @@ export function OperatorChrome({
   const sellerVisible = showSeller || surface === "seller";
 
   return (
-    <div className="min-h-full bg-[linear-gradient(180deg,#f7f3ec_0%,#f3efe6_40%,#efe9de_100%)]">
+    <div className="min-h-full bg-photo-well">
       <header className="border-b border-border/80 bg-[color-mix(in_oklab,var(--accent)_92%,black)] text-accent-foreground">
         <div className="container-shell flex flex-wrap items-center justify-between gap-3 py-3">
           <div className="flex min-w-0 items-center gap-3">

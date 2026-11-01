@@ -78,8 +78,10 @@ export async function seedPcCatalogue(
     brandId[brand.slug] = row.id;
   }
 
-  // Pune sellers.
+  // Pune sellers — seed shops have no real Regular GSTIN, so they stay
+  // suspended and their catalogue stays unpublished until KYC completes.
   const sellerId: Record<string, string> = {};
+  const sellerHasGstin: Record<string, boolean> = {};
   for (const seller of PC_SELLERS) {
     const email = `${seller.key}@aspera.local`;
     const user = await prisma.user.upsert({
@@ -106,16 +108,20 @@ export async function seedPcCatalogue(
     let row = await prisma.seller.findFirst({
       where: { ownerUserId: user.id },
     });
+    const liveReady = Boolean(row?.gstin);
     if (!row) {
       row = await prisma.seller.create({
         data: {
           ownerUserId: user.id,
           legalName: seller.legalName,
           tradeName: seller.tradeName,
-          status: "approved",
+          status: "suspended",
+          statusReason:
+            "Missing Regular GSTIN — complete KYC before catalogue goes live",
           contactEmail: email,
           registeredState: "Maharashtra",
-          approvedAt: new Date(),
+          pickupCity: "Pune",
+          fulfilmentBy: "seller_shop",
           submittedAt: new Date(),
           reviewedAt: new Date(),
           reviewedByUserId: reviewerId,
@@ -128,11 +134,22 @@ export async function seedPcCatalogue(
         data: {
           legalName: seller.legalName,
           tradeName: seller.tradeName,
-          status: "approved",
+          pickupCity: row.pickupCity ?? "Pune",
+          fulfilmentBy: row.fulfilmentBy || "seller_shop",
+          registeredState: row.registeredState ?? "Maharashtra",
+          ...(liveReady
+            ? {}
+            : {
+                status: "suspended" as const,
+                statusReason:
+                  "Missing Regular GSTIN — complete KYC before catalogue goes live",
+                approvedAt: null,
+              }),
         },
       });
     }
     sellerId[seller.key] = row.id;
+    sellerHasGstin[seller.key] = Boolean(row.gstin);
   }
 
   // Hard-delete leftover non-PC products so reseeds cannot revive fashion/demo data.
@@ -266,6 +283,7 @@ export async function seedPcCatalogue(
       enrichment,
     ) as Prisma.InputJsonValue;
 
+    const publishable = sellerHasGstin[item.sellerKey] === true;
     const product = await prisma.product.upsert({
       where: { slug: item.slug },
       create: {
@@ -276,15 +294,15 @@ export async function seedPcCatalogue(
         title: item.title,
         summary,
         description,
-        status: "approved",
+        status: publishable ? "approved" : "draft",
         countryOfOrigin: "India",
         hsnCode: item.hsnCode,
         searchDocument,
         attributes,
-        submittedAt: new Date(),
-        reviewedAt: new Date(),
-        reviewedByUserId: reviewerId,
-        publishedAt: new Date(),
+        submittedAt: publishable ? new Date() : null,
+        reviewedAt: publishable ? new Date() : null,
+        reviewedByUserId: publishable ? reviewerId : null,
+        publishedAt: publishable ? new Date() : null,
       },
       update: {
         sellerId: seller,
@@ -293,11 +311,11 @@ export async function seedPcCatalogue(
         title: item.title,
         summary,
         description,
-        status: "approved",
+        status: publishable ? "approved" : "draft",
         hsnCode: item.hsnCode,
         searchDocument,
         attributes,
-        publishedAt: new Date(),
+        publishedAt: publishable ? new Date() : null,
       },
     });
 
@@ -347,6 +365,9 @@ export async function seedPcCatalogue(
     }
   }
 
+  // Any historical approved seller without a real GSTIN must not stay live.
+  await unpublishSellersWithoutGstin(prisma);
+
   return {
     categories: PC_CATEGORIES.length,
     brands: PC_BRANDS.length,
@@ -354,4 +375,38 @@ export async function seedPcCatalogue(
     products: PC_PRODUCTS.length,
     removedNonPc,
   };
+}
+
+/** Suspend sellers missing Regular GSTIN and take their listings offline. */
+export async function unpublishSellersWithoutGstin(prisma: PrismaClient) {
+  const sellers = await prisma.seller.findMany({
+    where: {
+      OR: [{ gstin: null }, { gstin: "" }],
+      status: { in: ["approved", "under_review", "submitted"] },
+    },
+    select: { id: true },
+  });
+  if (sellers.length === 0) return { sellers: 0, products: 0 };
+
+  const ids = sellers.map((s) => s.id);
+  await prisma.seller.updateMany({
+    where: { id: { in: ids } },
+    data: {
+      status: "suspended",
+      statusReason:
+        "Missing Regular GSTIN — complete KYC before catalogue goes live",
+      approvedAt: null,
+    },
+  });
+  const products = await prisma.product.updateMany({
+    where: {
+      sellerId: { in: ids },
+      status: "approved",
+    },
+    data: {
+      status: "draft",
+      publishedAt: null,
+    },
+  });
+  return { sellers: ids.length, products: products.count };
 }

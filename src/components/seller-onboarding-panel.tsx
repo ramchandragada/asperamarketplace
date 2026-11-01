@@ -40,8 +40,9 @@ export function SellerOnboardingPanel({
       contactEmail: String(form.get("contactEmail") ?? ""),
       contactPhone: String(form.get("contactPhone") ?? "") || undefined,
       pan: String(form.get("pan") ?? ""),
-      gstin: String(form.get("gstin") ?? "") || undefined,
+      gstin: String(form.get("gstin") ?? ""),
       registeredState: String(form.get("registeredState") ?? ""),
+      pickupCity: String(form.get("pickupCity") ?? ""),
     };
     const response = await fetch("/api/seller", {
       method: "POST",
@@ -103,8 +104,9 @@ export function SellerOnboardingPanel({
         <input name="contactEmail" type="email" required placeholder="Contact email" className="rounded-lg border border-border bg-surface px-3 py-2" />
         <input name="contactPhone" placeholder="10-digit mobile" className="rounded-lg border border-border bg-surface px-3 py-2" />
         <input name="pan" required placeholder="PAN e.g. ABCDE1234F" className="rounded-lg border border-border bg-surface px-3 py-2" />
-        <input name="gstin" placeholder="GSTIN optional" className="rounded-lg border border-border bg-surface px-3 py-2" />
-        <input name="registeredState" required placeholder="Registered state" className="rounded-lg border border-border bg-surface px-3 py-2" />
+        <input name="gstin" required placeholder="Regular GSTIN (15 chars)" className="rounded-lg border border-border bg-surface px-3 py-2" />
+        <input name="registeredState" required placeholder="Registered state (e.g. Maharashtra)" className="rounded-lg border border-border bg-surface px-3 py-2" />
+        <input name="pickupCity" required placeholder="Pickup city (e.g. Pune)" className="rounded-lg border border-border bg-surface px-3 py-2" />
         <button type="submit" className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground">
           Save draft
         </button>

@@ -50,8 +50,11 @@ export async function createSellerDraft(
         contactEmail: input.contactEmail.toLowerCase(),
         contactPhone: input.contactPhone,
         panLast4: maskPan(input.pan),
-        gstinMasked: input.gstin ? maskGstin(input.gstin) : null,
+        gstin: input.gstin,
+        gstinMasked: maskGstin(input.gstin),
         registeredState: input.registeredState,
+        pickupCity: input.pickupCity,
+        fulfilmentBy: "seller_shop",
       },
     });
 
@@ -172,6 +175,12 @@ export async function submitSellerForReview(
   });
   assertSellerOwner(actor, seller.ownerUserId);
   assertSellerTransition(seller.status, "submitted");
+  if (!seller.gstin) {
+    throw new ValidationError("GSTIN is required before submitting for review");
+  }
+  if (!seller.pickupCity) {
+    throw new ValidationError("Pickup city is required before submitting");
+  }
   if (seller.documents.length < 1) {
     throw new ValidationError("Upload at least one KYC document before submitting");
   }
@@ -495,6 +504,11 @@ export async function reviewSeller(
   const nextStatus = input.decision === "approve" ? "approved" : "rejected";
   if (seller.status !== "submitted" && seller.status !== "under_review") {
     throw new ConflictError("Seller is not waiting for review");
+  }
+  if (nextStatus === "approved" && !seller.gstin) {
+    throw new ConflictError(
+      "Cannot approve a seller without a Regular GSTIN on file",
+    );
   }
 
   return prisma.$transaction(async (tx) => {

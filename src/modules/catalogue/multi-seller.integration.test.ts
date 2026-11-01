@@ -49,6 +49,7 @@ async function approveSeller(label: string, suffix: string, adminActor: Actor) {
       pan: "ABCDE1234F",
       gstin: "29ABCDE1234F1Z5",
       registeredState: "Karnataka",
+        pickupCity: "Bengaluru",
     },
     crypto.randomUUID(),
   );

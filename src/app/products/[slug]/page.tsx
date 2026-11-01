@@ -123,7 +123,15 @@ export default async function ProductDetailPage({
   ]);
 
   const sellerName = product.seller.tradeName ?? product.seller.legalName;
+  const sellerLegalName = product.seller.legalName;
+  const sellerGstin = product.seller.gstin;
   const sellerVerified = product.seller.status === "approved";
+  const fulfilmentLabel =
+    product.seller.fulfilmentBy === "aspera_warehouse"
+      ? "Fulfilled by Aspera warehouse"
+      : product.seller.pickupCity
+        ? `Fulfilled by seller from ${product.seller.pickupCity}`
+        : "Fulfilled by seller";
   const attrs = readAttrs(product.attributes);
   const average =
     reviews.length > 0
@@ -436,6 +444,9 @@ export default async function ProductDetailPage({
             <div className="mt-2 flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold">{sellerName}</p>
+                {sellerName !== sellerLegalName ? (
+                  <p className="mt-0.5 text-sm text-muted">{sellerLegalName}</p>
+                ) : null}
                 <p className="mt-1 text-sm text-muted">
                   {sellerVerified ? "Verified seller" : "Seller"} ·{" "}
                   {sellerProductCount} products
@@ -443,6 +454,13 @@ export default async function ProductDetailPage({
                     ? ` · ${product.seller.ratingAvg.toFixed(1)}★ (${product.seller.ratingCount})`
                     : ""}
                 </p>
+                <p className="mt-2 text-sm">
+                  GSTIN:{" "}
+                  <span className="font-mono text-[0.8125rem]">
+                    {sellerGstin ?? "Not on file"}
+                  </span>
+                </p>
+                <p className="mt-1 text-sm text-muted">{fulfilmentLabel}</p>
               </div>
               <Link
                 href={`/shops/${encodeURIComponent(

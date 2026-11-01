@@ -111,6 +111,7 @@ describe.runIf(hasDatabase)("cart checkout integration", () => {
         pan: "ABCDE1234F",
         gstin: "29ABCDE1234F1Z5",
         registeredState: "Karnataka",
+        pickupCity: "Bengaluru",
       },
       crypto.randomUUID(),
     );

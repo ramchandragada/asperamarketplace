@@ -11,6 +11,12 @@ import {
   MockPaymentProvider,
   type MockWebhookPayload,
 } from "@/modules/payments/provider";
+import {
+  buildEcoInvoiceDocument,
+  renderInvoiceHtml,
+} from "@/modules/orders/invoice-document";
+import { computeTcsSection52 } from "@/modules/tax/tcs-section52";
+import { asperaLegal } from "@/platform/config/aspera-legal";
 import { getNotificationPort } from "@/platform/notifications/port";
 import {
   assertOrderTransition,
@@ -521,16 +527,27 @@ async function markPaymentSucceeded(
     where: { id: paymentAttemptId },
     include: {
       order: {
-        include: { lines: true, user: true, address: true },
+        include: {
+          lines: true,
+          user: { include: { buyerProfile: true } },
+          address: true,
+          groups: {
+            include: {
+              seller: true,
+              lines: true,
+            },
+          },
+        },
       },
     },
   });
+  const providerName = payment.provider || "mock";
 
   if (payment.status === "succeeded") {
     await prisma.paymentWebhookEvent.update({
       where: {
         provider_providerEventId: {
-          provider: "mock",
+          provider: providerName,
           providerEventId,
         },
       },
@@ -545,11 +562,12 @@ async function markPaymentSucceeded(
   await ensureChartOfAccounts();
 
   await prisma.$transaction(async (tx) => {
+    const paidAt = new Date();
     await tx.paymentAttempt.update({
       where: { id: payment.id, version: payment.version },
       data: {
         status: "succeeded",
-        paidAt: new Date(),
+        paidAt,
         version: { increment: 1 },
       },
     });
@@ -557,7 +575,7 @@ async function markPaymentSucceeded(
       where: { id: payment.orderId, version: payment.order.version },
       data: {
         status: "paid",
-        paidAt: new Date(),
+        paidAt,
         version: { increment: 1 },
       },
     });
@@ -594,14 +612,39 @@ async function markPaymentSucceeded(
       });
     }
 
-    const document = {
+    const sellerSlices = payment.order.groups.map((group) => {
+      const taxablePaise = group.lines.reduce(
+        (sum, line) => sum + line.lineTotalPaise,
+        0,
+      );
+      return {
+        sellerId: group.sellerId,
+        legalName: group.seller.legalName,
+        tradeName: group.seller.tradeName,
+        gstin: group.seller.gstin,
+        registeredState: group.seller.registeredState,
+        pickupCity: group.seller.pickupCity,
+        fulfilmentBy: group.seller.fulfilmentBy,
+        taxablePaise,
+        lines: group.lines.map((line) => ({
+          sku: line.sku,
+          title: `${line.productTitle} / ${line.variantTitle}`,
+          quantity: line.quantity,
+          unitPricePaise: line.unitPricePaise,
+          lineTotalPaise: line.lineTotalPaise,
+        })),
+      };
+    });
+
+    const document = buildEcoInvoiceDocument({
       invoiceNumber: invoiceNumber(payment.order.orderNumber),
       orderNumber: payment.order.orderNumber,
-      issuedAt: new Date().toISOString(),
+      orderId: payment.orderId,
       buyer: {
         userId: payment.order.userId,
         email: payment.order.user.email,
         name: payment.order.user.displayName,
+        gstin: payment.order.user.buyerProfile?.gstin ?? null,
       },
       shipTo: {
         fullName: payment.order.address.fullName,
@@ -612,13 +655,7 @@ async function markPaymentSucceeded(
         postalCode: payment.order.address.postalCode,
         country: payment.order.address.country,
       },
-      lines: payment.order.lines.map((line) => ({
-        sku: line.sku,
-        title: `${line.productTitle} / ${line.variantTitle}`,
-        quantity: line.quantity,
-        unitPricePaise: line.unitPricePaise,
-        lineTotalPaise: line.lineTotalPaise,
-      })),
+      sellers: sellerSlices,
       totals: {
         subtotalPaise: payment.order.subtotalPaise,
         discountPaise: payment.order.discountPaise,
@@ -626,18 +663,60 @@ async function markPaymentSucceeded(
         taxPaise: payment.order.taxPaise,
         totalPaise: payment.order.totalPaise,
       },
-      disclaimer:
-        "Development invoice document. Not a legally reviewed tax invoice. Seller-of-record and GST treatment remain open (A-21, A-24).",
-    };
+    });
+
+    const periodMonth = `${paidAt.getUTCFullYear()}-${String(
+      paidAt.getUTCMonth() + 1,
+    ).padStart(2, "0")}`;
+
+    for (const slice of sellerSlices) {
+      if (!slice.gstin) continue;
+      const tcs = computeTcsSection52({
+        taxablePaise: slice.taxablePaise,
+        originState: slice.registeredState ?? "Maharashtra",
+        destinationState: payment.order.address.state,
+      });
+      await tx.tcsCollectionLine.upsert({
+        where: {
+          orderId_sellerId: {
+            orderId: payment.orderId,
+            sellerId: slice.sellerId,
+          },
+        },
+        create: {
+          orderId: payment.orderId,
+          sellerId: slice.sellerId,
+          sellerGstin: slice.gstin,
+          supplyType: tcs.supplyType,
+          taxablePaise: tcs.taxablePaise,
+          cgstPaise: tcs.cgstPaise,
+          sgstPaise: tcs.sgstPaise,
+          igstPaise: tcs.igstPaise,
+          tcsPaise: tcs.tcsPaise,
+          tcsGstin: tcs.tcsGstin,
+          periodMonth,
+        },
+        update: {
+          taxablePaise: tcs.taxablePaise,
+          cgstPaise: tcs.cgstPaise,
+          sgstPaise: tcs.sgstPaise,
+          igstPaise: tcs.igstPaise,
+          tcsPaise: tcs.tcsPaise,
+          supplyType: tcs.supplyType,
+          tcsGstin: tcs.tcsGstin,
+          periodMonth,
+        },
+      });
+    }
 
     // Vercel functions are read-only except /tmp — use shared storage root.
     const storage = createDocumentStorage();
-    const bytes = Buffer.from(JSON.stringify(document, null, 2), "utf8");
+    const htmlBytes = Buffer.from(renderInvoiceHtml(document), "utf8");
     const stored = await storage.put({
       namespace: "invoices",
-      fileName: `${document.invoiceNumber}.json`,
-      contentType: "application/json",
-      bytes,
+      fileName: `${document.invoiceNumber}.html`,
+      contentType: "text/html; charset=utf-8",
+      bytes: htmlBytes,
     });
 
     await tx.invoice.create({
@@ -648,7 +727,7 @@ async function markPaymentSucceeded(
         totalPaise: payment.order.totalPaise,
         document,
         storageKey: stored.key,
-        issuedAt: new Date(),
+        issuedAt: paidAt,
       },
     });
 
@@ -662,8 +741,9 @@ async function markPaymentSucceeded(
           paymentAttemptId: payment.id,
           providerEventId,
           invoiceNumber: document.invoiceNumber,
+          ecoGstinTcs: asperaLegal.gstinTcs,
         },
-        reason: "Verified mock payment webhook",
+        reason: "Verified payment webhook",
         correlationId,
       },
     });
@@ -685,7 +765,7 @@ async function markPaymentSucceeded(
     await tx.paymentWebhookEvent.update({
       where: {
         provider_providerEventId: {
-          provider: "mock",
+          provider: providerName,
           providerEventId,
         },
       },
@@ -1169,4 +1249,35 @@ export async function getInvoiceForActor(
     throw new OrderValidationError("Invoice not found");
   }
   return invoice;
+}
+
+/** Printable ECO invoice HTML (seller = supplier, Aspera = ECO, TCS line). */
+export async function getInvoiceHtmlForActor(
+  actor: Actor,
+  orderId: string,
+  invoiceId: string,
+) {
+  const invoice = await getInvoiceForActor(actor, orderId, invoiceId);
+  if (invoice.storageKey) {
+    try {
+      const storage = createDocumentStorage();
+      const bytes = await storage.get(invoice.storageKey);
+      return {
+        invoiceNumber: invoice.invoiceNumber,
+        html: bytes.toString("utf8"),
+      };
+    } catch {
+      // Fall through to document JSON render when /tmp storage was wiped.
+    }
+  }
+  const document = invoice.document as Parameters<
+    typeof renderInvoiceHtml
+  >[0] | null;
+  if (!document || typeof document !== "object") {
+    throw new OrderValidationError("Invoice document missing");
+  }
+  return {
+    invoiceNumber: invoice.invoiceNumber,
+    html: renderInvoiceHtml(document),
+  };
 }

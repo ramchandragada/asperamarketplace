@@ -539,10 +539,22 @@ export async function createSettlementBatch(
     };
   });
 
-  const { computeMarketplaceTcs } = await import("@/modules/tax/gst");
+  const { computeTcsSection52 } = await import("@/modules/tax/tcs-section52");
+  const { asperaLegal } = await import("@/platform/config/aspera-legal");
+  const seller = await prisma.seller.findUniqueOrThrow({
+    where: { id: input.sellerId },
+  });
+  // Settlement taxable base for s.52 = net consideration before TCS (gross − commission).
   const preTcsNet = gross - commission;
-  const tcs = computeMarketplaceTcs(preTcsNet);
-  const netAfterTcs = preTcsNet - tcs;
+  // Destination for settlement-period TCS uses seller's registered state as both
+  // ends when we lack per-order POS aggregation here; order-level TcsCollectionLine
+  // remains the GSTR-8 source of truth with correct POS.
+  const tcs = computeTcsSection52({
+    taxablePaise: preTcsNet,
+    originState: seller.registeredState ?? "Maharashtra",
+    destinationState: seller.registeredState ?? "Maharashtra",
+  });
+  const netAfterTcs = preTcsNet - tcs.tcsPaise;
 
   return prisma.$transaction(async (tx) => {
     const batch = await tx.settlementBatch.create({
@@ -554,7 +566,12 @@ export async function createSettlementBatch(
         periodEnd,
         grossPaise: gross,
         commissionPaise: commission,
-        tcsPaise: tcs,
+        tcsPaise: tcs.tcsPaise,
+        tcsCgstPaise: tcs.cgstPaise,
+        tcsSgstPaise: tcs.sgstPaise,
+        tcsIgstPaise: tcs.igstPaise,
+        tcsSupplyType: tcs.supplyType,
+        tcsGstin: tcs.tcsGstin || asperaLegal.gstinTcs,
         netPaise: netAfterTcs,
         lines: { create: lineCreates },
       },
@@ -570,9 +587,11 @@ export async function createSettlementBatch(
           batchNumber: batch.batchNumber,
           netPaise: batch.netPaise,
           tcsPaise: batch.tcsPaise,
+          tcsSupplyType: batch.tcsSupplyType,
           lines: batch.lines.length,
         },
-        reason: "Finance created settlement batch (GST settlement + TCS withhold)",
+        reason:
+          "Finance created settlement batch (commission + GST s.52 TCS withhold)",
         correlationId,
       },
     });
@@ -790,7 +809,7 @@ export async function exportSettlementsCsv(actor: Actor) {
     take: 500,
   });
   const header =
-    "batchNumber,sellerId,status,grossPaise,commissionPaise,netPaise,periodStart,periodEnd,releasedAt";
+    "batchNumber,sellerId,status,grossPaise,commissionPaise,tcsPaise,tcsCgstPaise,tcsSgstPaise,tcsIgstPaise,tcsSupplyType,tcsGstin,netPaise,periodStart,periodEnd,releasedAt";
   const rows = batches.map((batch) =>
     [
       batch.batchNumber,
@@ -798,6 +817,12 @@ export async function exportSettlementsCsv(actor: Actor) {
       batch.status,
       batch.grossPaise,
       batch.commissionPaise,
+      batch.tcsPaise,
+      batch.tcsCgstPaise,
+      batch.tcsSgstPaise,
+      batch.tcsIgstPaise,
+      batch.tcsSupplyType ?? "",
+      batch.tcsGstin ?? "",
       batch.netPaise,
       batch.periodStart.toISOString(),
       batch.periodEnd.toISOString(),

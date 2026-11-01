@@ -95,8 +95,8 @@ export default async function SellerFinancePage() {
         <p className="mt-2 text-sm text-muted">
           Payouts for {seller.tradeName ?? seller.legalName}. Each batch settles
           your delivered orders: merchandise, minus marketplace commission and
-          TCS (0.5%), equals your net payout. GST collected at checkout is
-          remitted separately and isn’t deducted from your payout. Confirm
+          GST TCS under CGST Act s.52, equals your net payout. TCS is withheld
+          by Aspera as ECO — it is not added to the buyer price. Confirm
           filings with a tax professional.
         </p>
       </header>
@@ -163,7 +163,7 @@ export default async function SellerFinancePage() {
                       muted
                     />
                     <WaterfallRow
-                      label="TCS withheld (0.5%)"
+                      label="GST TCS u/s 52 withheld"
                       value={`− ${formatPaise(batch.tcsPaise)}`}
                       muted
                     />

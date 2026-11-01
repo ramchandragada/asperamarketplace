@@ -59,9 +59,7 @@ export function CheckoutPanel({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<
-    "upi" | "card" | "cod" | ""
-  >("");
+  const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "netbanking" | "">("");
 
   const [idempotencyKey] = useState(() => `chk-${crypto.randomUUID()}`);
 
@@ -240,8 +238,8 @@ export function CheckoutPanel({
         <section className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">Express delivery address</h2>
           <p className="text-xs text-muted">
-            ETA is calculated from your pincode — Pune hubs deliver in under 90
-            minutes for in-stock parts.
+            ETA is calculated from your pincode. Configured Pune 411xxx Express
+            pins typically quote under 90 minutes for in-stock seller fulfilment.
           </p>
           {addresses.length > 0 ? (
             <select
@@ -428,15 +426,15 @@ export function CheckoutPanel({
       <section className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4">
         <h2 className="text-lg font-semibold">Payment method</h2>
         <p className="text-xs text-muted">
-          Choose how you want to pay before placing the order. Demo checkout
-          uses a mock payment step after the order is created.
+          Prepaid only. Your order is marked paid after the payment gateway
+          confirms capture — not when you return from the bank page.
         </p>
         <div className="flex flex-col gap-2" role="radiogroup" aria-label="Payment method">
           {(
             [
               { id: "upi", label: "UPI" },
               { id: "card", label: "Credit / debit card" },
-              { id: "cod", label: "Cash on delivery" },
+              { id: "netbanking", label: "Netbanking" },
             ] as const
           ).map((option) => (
             <label
@@ -475,13 +473,8 @@ export function CheckoutPanel({
               : "Place order"}
         </button>
         <p className="text-center text-xs text-muted">
-          Stock is reserved when you place the order. You will confirm{" "}
-          {paymentMethod === "cod"
-            ? "cash on delivery"
-            : paymentMethod
-              ? "payment"
-              : "payment"}{" "}
-          on the next screen (demo).
+          Stock is reserved when you place the order. You complete prepaid
+          payment on the next screen.
         </p>
       </div>
     </div>

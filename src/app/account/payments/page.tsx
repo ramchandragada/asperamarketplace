@@ -11,7 +11,7 @@ export default async function AccountPaymentsPage() {
   if (!actor) {
     redirect("/login?next=/account/payments");
   }
-  const demoPay = mockSelfPayAllowed();
+  const selfPay = mockSelfPayAllowed();
 
   return (
     <div className="flex max-w-3xl flex-col gap-8">
@@ -23,25 +23,29 @@ export default async function AccountPaymentsPage() {
           Payment options
         </h1>
         <p className="mt-2 text-muted">
-          {demoPay
-            ? "This environment still allows demo self-pay on unpaid orders. Saved UPI and cards will appear after Razorpay goes live."
-            : "Live card/UPI checkout is being connected. Unpaid orders stay awaiting payment until Razorpay is enabled — buyers cannot mark orders paid themselves."}
+          Checkout is prepaid (UPI, card, or netbanking). Orders are marked paid
+          only after the payment gateway webhook confirms capture. Cash on
+          delivery is not offered.
         </p>
       </div>
 
       <div className="rounded-[var(--radius)] border border-border bg-surface p-5 text-sm">
-        <p className="font-semibold">Available now</p>
+        <p className="font-semibold">Available</p>
         <ul className="mt-2 flex flex-col gap-1 text-muted">
-          {demoPay ? <li>· Demo payment on unpaid orders (non-production only)</li> : null}
+          <li>· Prepaid payment on unpaid orders</li>
           <li>· Invoice download from each paid order</li>
           <li>· Refund history on cancelled / returned lines</li>
+          {selfPay ? (
+            <li>
+              · Development self-pay helper enabled in this environment (not for
+              production buyers)
+            </li>
+          ) : null}
         </ul>
-        <p className="mt-4 font-semibold">Coming with live payments</p>
+        <p className="mt-4 font-semibold">Not offered</p>
         <ul className="mt-2 flex flex-col gap-1 text-muted">
-          <li>· Razorpay checkout (UPI, cards, netbanking)</li>
-          <li>· Saved UPI handles</li>
-          <li>· Tokenized cards</li>
-          <li>· Wallet / gift balance</li>
+          <li>· Cash on delivery</li>
+          <li>· Saved cards / UPI handles until gateway tokenization is enabled</li>
         </ul>
       </div>
 

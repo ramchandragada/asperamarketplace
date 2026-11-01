@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     const result = await createOrderFromCheckout(actor, body, requestId);
     return jsonOk(result, requestId, {
       status: 201,
-      message: "Order created. Start mock payment next.",
+      message: "Order created. Complete prepaid payment next.",
     });
   } catch (error) {
     return jsonError(requestId, error);

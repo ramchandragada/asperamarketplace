@@ -610,23 +610,26 @@ export function OrdersPanel({
                         className="btn-cta btn-cta-primary h-10 w-full"
                         onClick={() => void startAndSucceed(order.id)}
                       >
-                        Pay now (demo)
+                        Complete prepaid payment
                       </button>
-                      <button
-                        type="button"
-                        disabled={pending}
-                        className="btn-cta btn-cta-ghost h-10 w-full text-xs"
-                        onClick={() => void startAndFail(order.id)}
-                        title="Test tool: simulate a failed payment"
-                      >
-                        Test failed payment
-                      </button>
+                      {process.env.NODE_ENV === "development" ? (
+                        <button
+                          type="button"
+                          disabled={pending}
+                          className="btn-cta btn-cta-ghost h-10 w-full text-xs"
+                          onClick={() => void startAndFail(order.id)}
+                          title="Development only: simulate a failed payment"
+                        >
+                          Simulate failed payment (dev)
+                        </button>
+                      ) : null}
                     </>
                   ) : null}
                   {canPay && !allowMockSelfPay ? (
                     <p className="rounded-md border border-border bg-background px-3 py-2 text-center text-xs text-muted">
-                      Payment gateway coming soon. This order stays unpaid until
-                      checkout is connected to Razorpay.
+                      Complete prepaid payment from this order. Paid status is
+                      set only after the payment gateway webhook confirms
+                      capture.
                     </p>
                   ) : null}
                 </div>

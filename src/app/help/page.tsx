@@ -1,27 +1,29 @@
 import Link from "next/link";
+import { LegalImprint } from "@/components/legal-imprint";
 import { PageShell } from "@/components/ui/page-shell";
+import { asperaLegal } from "@/platform/config/aspera-legal";
 
 export const metadata = {
   title: "Help centre",
   description:
-    "Orders, Express delivery, payments, returns, and grievance contacts for Aspera Marketplace.",
+    "Orders, Express delivery, payments, returns, and grievance contacts for Aspera Express.",
 };
 
 const TOPICS = [
   {
     title: "Orders & tracking",
-    body: "Sign in and open Orders for live status. Express hub orders usually move within minutes of payment confirmation.",
+    body: "Sign in and open Orders for status. Dispatch starts after prepaid payment is confirmed by the gateway webhook.",
     href: "/orders",
   },
   {
     title: "Delivery ETAs",
-    body: "Pin-specific Express windows are shown on the product page and checkout. Hub zones are typically under 90 minutes when stock is local.",
+    body: "Pin-specific windows appear on the product page and checkout. Serviceable area is limited to configured pins (Pune 411xxx Express today).",
     href: "/shipping",
   },
   {
     title: "Payments & GST",
-    body: "Listed prices exclude GST; estimated tax is added at cart/checkout. Business buyers can add a GSTIN under account business settings.",
-    href: "/account",
+    body: "Listed prices include applicable GST presentation at checkout. Business buyers can add a GSTIN under account business settings. The seller issues the goods invoice; Aspera collects TCS as ECO.",
+    href: "/account/business",
   },
   {
     title: "Returns",
@@ -35,7 +37,8 @@ export default function HelpPage() {
     <PageShell narrow>
       <h1 className="font-display text-3xl font-semibold">Help centre</h1>
       <p className="mt-3 text-muted">
-        Quick answers for shoppers on Aspera. For seller onboarding, use{" "}
+        Quick answers for shoppers on {asperaLegal.marketplaceName}. For seller
+        onboarding, use{" "}
         <Link href="/sell" className="font-medium text-accent underline">
           Sell on Aspera
         </Link>
@@ -63,30 +66,41 @@ export default function HelpPage() {
       <section className="mt-10 rounded-[var(--radius)] border border-border bg-accent-soft/40 p-4">
         <h2 className="font-semibold text-foreground">Grievance officer</h2>
         <p className="mt-2 text-sm text-muted">
-          For unresolved complaints under India consumer / e-commerce rules
-          (demo contact):
+          Unresolved consumer complaints under the Consumer Protection
+          (E-commerce) Rules, 2020:
         </p>
         <ul className="mt-2 space-y-1 text-sm text-foreground">
           <li>
+            {asperaLegal.grievanceOfficer.name} (
+            {asperaLegal.grievanceOfficer.designation})
+          </li>
+          <li>
             Email:{" "}
             <a
-              href="mailto:grievance@asperamarketplace.example"
+              href={`mailto:${asperaLegal.grievanceEmail}`}
               className="font-medium text-accent underline"
             >
-              grievance@asperamarketplace.example
+              {asperaLegal.grievanceEmail}
             </a>
           </li>
-          <li>Phone: +91 00000 00000 (demo)</li>
-          <li>Response target: within 48 business hours</li>
+          <li>Phone: {asperaLegal.grievanceOfficer.phoneDisplay}</li>
+          <li>Acknowledgement within 48 hours; redressal within one month</li>
         </ul>
         <p className="mt-3 text-sm">
-          Or write to{" "}
+          Full details:{" "}
+          <Link
+            href="/grievance"
+            className="font-semibold text-accent underline"
+          >
+            /grievance
+          </Link>
+          {" · "}
           <Link href="/support" className="font-semibold text-accent underline">
             Customer support
           </Link>
-          .
         </p>
       </section>
+      <LegalImprint />
     </PageShell>
   );
 }

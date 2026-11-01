@@ -62,24 +62,52 @@ export function SellerCataloguePanel({
   const [status, setStatus] = useState(initialStatus);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sourceProductId, setSourceProductId] = useState("");
   const [offerSku, setOfferSku] = useState("");
   const [offerVariantTitle, setOfferVariantTitle] = useState("Standard");
   const [offerMrpRupees, setOfferMrpRupees] = useState("");
   const [offerSellingRupees, setOfferSellingRupees] = useState("");
   const [offerStock, setOfferStock] = useState("10");
   const [pickerKey, setPickerKey] = useState(0);
+  const [busy, setBusy] = useState(false);
   const pageSize = initialPageSize;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
   function applyCataloguePick(selection: CataloguePickSelection | null) {
-    if (!selection) return;
+    if (!selection) {
+      setSourceProductId("");
+      return;
+    }
     // Never reuse the catalogue shell SKU — variant.sku is globally unique.
+    setSourceProductId(selection.sourceProductId);
     setOfferSku(suggestSellerOfferSku(sellerName, selection.catalogueSku));
     setOfferVariantTitle(selection.variantTitle || "Standard");
-    setOfferMrpRupees(rupeesFromPaise(selection.mrpPaise));
-    setOfferSellingRupees(rupeesFromPaise(selection.sellingPricePaise));
-    if (!offerStock.trim()) setOfferStock("10");
+    const mrp = Number(selection.mrpPaise);
+    const selling = Number(selection.sellingPricePaise);
+    setOfferMrpRupees(
+      Number.isFinite(mrp) && mrp > 0 ? rupeesFromPaise(mrp) : "",
+    );
+    setOfferSellingRupees(
+      Number.isFinite(selling) && selling > 0 ? rupeesFromPaise(selling) : "",
+    );
+    setOfferStock((prev) => (prev.trim() ? prev : "10"));
   }
+
+  const canList =
+    Boolean(sourceProductId) &&
+    Boolean(offerSku.trim()) &&
+    Number(offerMrpRupees) > 0 &&
+    Number(offerSellingRupees) > 0 &&
+    Number(offerStock) >= 0 &&
+    !busy;
+
+  const listBlockReason = !sourceProductId
+    ? "Select Category → Sub category → Brand → Product → SKU first"
+    : !offerSku.trim()
+      ? "Enter your shop SKU"
+      : !(Number(offerMrpRupees) > 0) || !(Number(offerSellingRupees) > 0)
+        ? "Enter MRP and selling price"
+        : null;
 
   const statusOptions = useMemo(
     () => ["", "draft", "submitted", "approved", "rejected", "archived"],
@@ -127,9 +155,12 @@ export function SellerCataloguePanel({
     event.preventDefault();
     setError(null);
     setMessage(null);
-    const form = new FormData(event.currentTarget);
-    const mrpRupees = Number(form.get("offerMrpRupees"));
-    const sellingRupees = Number(form.get("offerSellingRupees"));
+    if (!sourceProductId) {
+      setError("Select a catalogue product (Category → … → SKU) first");
+      return;
+    }
+    const mrpRupees = Number(offerMrpRupees);
+    const sellingRupees = Number(offerSellingRupees);
     if (!(mrpRupees > 0) || !(sellingRupees > 0)) {
       setError("Enter MRP and selling price in rupees");
       return;
@@ -138,41 +169,54 @@ export function SellerCataloguePanel({
       setError("Selling price cannot be greater than MRP");
       return;
     }
-    const payload = {
-      sellerId,
-      sourceProductId: String(form.get("sourceProductId") ?? "").trim(),
-      variant: {
-        sku: String(form.get("offerSku") ?? "").toUpperCase(),
-        title: String(form.get("offerVariantTitle") ?? "") || undefined,
-        mrpPaise: paiseFromRupees(mrpRupees),
-        sellingPricePaise: paiseFromRupees(sellingRupees),
-        initialStock: Number(form.get("offerInitialStock")),
-      },
-    };
-    const response = await fetch("/api/seller/products/offer", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const body = (await response.json()) as {
-      message?: string;
-      fieldErrors?: Record<string, string[]> | null;
-    };
-    if (!response.ok) {
-      setError(apiErrorMessage(body, "Could not create offer"));
+    const sku = offerSku.trim().toUpperCase();
+    if (!/^[A-Z0-9-]{3,64}$/.test(sku)) {
+      setError("Your SKU must be 3–64 characters: A–Z, 0–9, or hyphen");
       return;
     }
-    setMessage(
-      body.message ?? "Listing live — manage price and stock from your catalogue",
-    );
-    event.currentTarget.reset();
-    setOfferSku("");
-    setOfferVariantTitle("Standard");
-    setOfferMrpRupees("");
-    setOfferSellingRupees("");
-    setOfferStock("10");
-    setPickerKey((value) => value + 1);
-    await refresh({ page: 1 });
+    const payload = {
+      sellerId,
+      sourceProductId,
+      variant: {
+        sku,
+        title: offerVariantTitle.trim() || undefined,
+        mrpPaise: paiseFromRupees(mrpRupees),
+        sellingPricePaise: paiseFromRupees(sellingRupees),
+        initialStock: Math.max(0, Number(offerStock) || 0),
+      },
+    };
+    setBusy(true);
+    try {
+      const response = await fetch("/api/seller/products/offer", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = (await response.json()) as {
+        message?: string;
+        fieldErrors?: Record<string, string[]> | null;
+      };
+      if (!response.ok) {
+        setError(apiErrorMessage(body, "Could not create offer"));
+        return;
+      }
+      setMessage(
+        body.message ??
+          "Listing live — manage price and stock from your catalogue",
+      );
+      setSourceProductId("");
+      setOfferSku("");
+      setOfferVariantTitle("Standard");
+      setOfferMrpRupees("");
+      setOfferSellingRupees("");
+      setOfferStock("10");
+      setPickerKey((value) => value + 1);
+      await refresh({ page: 1 });
+    } catch {
+      setError("Network error — could not list product");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -181,6 +225,7 @@ export function SellerCataloguePanel({
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 
       <form
+        noValidate
         onSubmit={createOffer}
         className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-2"
       >
@@ -200,8 +245,6 @@ export function SellerCataloguePanel({
           Your SKU
           <input
             name="offerSku"
-            required
-            pattern="[A-Z0-9-]+"
             value={offerSku}
             onChange={(event) => setOfferSku(event.target.value.toUpperCase())}
             placeholder="Shop-unique SKU"
@@ -225,7 +268,6 @@ export function SellerCataloguePanel({
           <input
             name="offerMrpRupees"
             type="number"
-            required
             min={0.01}
             step="0.01"
             value={offerMrpRupees}
@@ -239,7 +281,6 @@ export function SellerCataloguePanel({
           <input
             name="offerSellingRupees"
             type="number"
-            required
             min={0.01}
             step="0.01"
             value={offerSellingRupees}
@@ -253,7 +294,6 @@ export function SellerCataloguePanel({
           <input
             name="offerInitialStock"
             type="number"
-            required
             min={0}
             step={1}
             value={offerStock}
@@ -262,11 +302,15 @@ export function SellerCataloguePanel({
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />
         </label>
+        {listBlockReason ? (
+          <p className="sm:col-span-2 text-sm text-muted">{listBlockReason}</p>
+        ) : null}
         <button
           type="submit"
-          className="sm:col-span-2 rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground"
+          disabled={!canList}
+          className="sm:col-span-2 rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
         >
-          List product
+          {busy ? "Listing…" : "List product"}
         </button>
       </form>
 

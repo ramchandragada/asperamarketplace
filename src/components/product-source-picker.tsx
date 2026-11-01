@@ -239,11 +239,12 @@ export function ProductSourcePicker({
 
   return (
     <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
+      {/* Not `required`: hidden+required blocks submit with no visible hint. */}
       <input
         type="hidden"
         name={name}
         value={selectedVariant ? productId : ""}
-        required={required}
+        aria-required={required || undefined}
       />
 
       {treeError ? (

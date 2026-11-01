@@ -44,8 +44,8 @@ import {
   NotFoundError,
 } from "@/platform/http/errors";
 
-/** Trade name for the marketplace-owned catalogue shell seller. */
-export const CATALOGUE_OWNER_TRADE_NAME = "Aspera Catalogue";
+import { CATALOGUE_OWNER_TRADE_NAME } from "@/modules/catalogue/constants";
+export { CATALOGUE_OWNER_TRADE_NAME };
 
 async function requireApprovedSellerOwnership(actor: Actor, sellerId: string) {
   const seller = await prisma.seller.findUniqueOrThrow({

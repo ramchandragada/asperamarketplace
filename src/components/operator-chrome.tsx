@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { LogoutButton } from "@/components/logout-button";
 
 /**
  * Shared Aspera brand bar for seller + admin panels so operator surfaces
@@ -24,6 +25,8 @@ export function OperatorChrome({
 }) {
   const adminVisible = showAdmin || surface === "admin";
   const sellerVisible = showSeller || surface === "seller";
+  const pill =
+    "rounded-full border border-white/25 px-3 py-1.5 text-white/90 hover:bg-white/10";
 
   return (
     <div className="min-h-full bg-photo-well">
@@ -51,10 +54,7 @@ export function OperatorChrome({
             aria-label="Aspera surfaces"
             className="flex flex-wrap items-center gap-2 text-xs"
           >
-            <Link
-              href="/"
-              className="rounded-full border border-white/25 px-3 py-1.5 text-white/90 hover:bg-white/10"
-            >
+            <Link href="/" className={pill}>
               Shopping
             </Link>
             {sellerVisible ? (
@@ -81,6 +81,7 @@ export function OperatorChrome({
                 Admin
               </Link>
             ) : null}
+            <LogoutButton className={pill} redirectTo="/login" />
           </nav>
         </div>
       </header>

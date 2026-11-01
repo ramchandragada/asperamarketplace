@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  actorCanStartSellerApplication,
   actorHasSellerCapability,
   actorIsAdmin,
   actorIsSellerStaff,
@@ -20,6 +21,44 @@ function makeActor(
     roles,
   };
 }
+
+describe("actorCanStartSellerApplication", () => {
+  it("allows customers, owners, and admins", () => {
+    expect(
+      actorCanStartSellerApplication(
+        makeActor([{ key: "customer", sellerId: null }]),
+      ),
+    ).toBe(true);
+    expect(
+      actorCanStartSellerApplication(
+        makeActor([{ key: "seller_owner", sellerId: null }]),
+      ),
+    ).toBe(true);
+    expect(
+      actorCanStartSellerApplication(
+        makeActor([{ key: "admin", sellerId: null }]),
+      ),
+    ).toBe(true);
+  });
+
+  it("blocks seller ops/finance/support staff", () => {
+    expect(
+      actorCanStartSellerApplication(
+        makeActor([{ key: "seller_operations", sellerId: "seller-1" }]),
+      ),
+    ).toBe(false);
+    expect(
+      actorCanStartSellerApplication(
+        makeActor([{ key: "seller_finance", sellerId: "seller-1" }]),
+      ),
+    ).toBe(false);
+    expect(
+      actorCanStartSellerApplication(
+        makeActor([{ key: "seller_support", sellerId: "seller-1" }]),
+      ),
+    ).toBe(false);
+  });
+});
 
 describe("admin role checks", () => {
   it("treats admin and super_admin as administrators", () => {

@@ -99,8 +99,10 @@ describe("seller/admin schemas accept loose DB ids", () => {
   it("fulfilment ship", () => {
     const parsed = shipGroupSchema.parse({
       fulfilmentGroupId: LOOSE_GROUP,
-      carrier: "Mock Logistics",
+      carrier: "Delhivery",
+      trackingNumber: "DLV123456789IN",
     });
     expect(parsed.fulfilmentGroupId).toBe(LOOSE_GROUP);
+    expect(parsed.trackingNumber).toBe("DLV123456789IN");
   });
 });

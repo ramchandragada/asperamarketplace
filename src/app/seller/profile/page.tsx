@@ -54,6 +54,26 @@ export default async function SellerProfilePage() {
         {seller.panLast4 ? (
           <p className="text-muted">PAN last4: {seller.panLast4}</p>
         ) : null}
+        {seller.pickupCity ? (
+          <p className="text-muted">
+            Pickup: {seller.pickupLine1 ? `${seller.pickupLine1}, ` : ""}
+            {seller.pickupCity}
+            {seller.pickupPostalCode ? ` ${seller.pickupPostalCode}` : ""}
+          </p>
+        ) : null}
+        {seller.bankIfsc ? (
+          <p className="text-muted">
+            Payout: {seller.bankAccountHolder ?? "—"} · {seller.bankName ?? "Bank"}{" "}
+            · IFSC {seller.bankIfsc}
+            {seller.bankAccountLast4
+              ? ` · ****${seller.bankAccountLast4}`
+              : ""}
+          </p>
+        ) : (
+          <p className="text-warning">
+            Add payout bank details during onboarding so settlements can be paid.
+          </p>
+        )}
       </Card>
       <Link href="/seller/onboarding" className="text-sm underline">
         Edit via onboarding

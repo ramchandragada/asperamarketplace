@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const body = shipGroupSchema.parse(await request.json());
     const group = await shipGroup(actor, body, requestId);
     return jsonOk({ group }, requestId, {
-      message: "Shipment created with mock tracking",
+      message: "Shipment recorded with courier AWB",
     });
   } catch (error) {
     return jsonError(requestId, error);

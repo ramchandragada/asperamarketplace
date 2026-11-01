@@ -51,6 +51,12 @@ export async function createSellerDraft(
         gstinMasked: maskGstin(input.gstin),
         registeredState: input.registeredState,
         pickupCity: input.pickupCity,
+        pickupLine1: input.pickupLine1,
+        pickupPostalCode: input.pickupPostalCode,
+        bankAccountHolder: input.bankAccountHolder,
+        bankName: input.bankName,
+        bankIfsc: input.bankIfsc,
+        bankAccountLast4: input.bankAccountNumber.slice(-4),
         fulfilmentBy: "seller_shop",
       },
     });

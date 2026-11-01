@@ -6,9 +6,15 @@ import { useRouter } from "next/navigation";
 type AuthFormProps = {
   mode: "login" | "register";
   nextPath?: string | null;
+  /** Seller signup sets intent=seller and lands on KYC after register. */
+  intent?: "customer" | "seller";
 };
 
-export function AuthForm({ mode, nextPath }: AuthFormProps) {
+export function AuthForm({
+  mode,
+  nextPath,
+  intent = "customer",
+}: AuthFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -19,6 +25,9 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
   // has to hunt for the right link from the shopper account page.
   async function resolveDestination(): Promise<string> {
     if (nextPath) return nextPath;
+    if (mode === "register" && intent === "seller") {
+      return "/seller/onboarding";
+    }
     try {
       const response = await fetch("/api/auth/me");
       const body = (await response.json()) as {
@@ -52,8 +61,6 @@ export function AuthForm({ mode, nextPath }: AuthFormProps) {
     setPending(true);
     setError(null);
     const form = new FormData(event.currentTarget);
-    // Shopper self-serve only — seller onboarding is via /sell, not register.
-    const intent = "customer";
 
     if (totpChallenge) {
       const response = await fetch("/api/auth/totp/verify", {

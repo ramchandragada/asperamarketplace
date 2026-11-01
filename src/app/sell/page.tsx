@@ -44,12 +44,20 @@ export default function SellLandingPage() {
             orders, section 52 TCS via GSTIN {asperaLegal.gstinTcs}, serviceable
             pins configured honestly ({asperaLegal.serviceableAreaSummary}).
           </p>
-          <Link
-            href="/seller/onboarding"
-            className="inline-flex w-fit rounded-[var(--radius-sm)] bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white"
-          >
-            Start seller KYC
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/register?intent=seller&next=%2Fseller%2Fonboarding"
+              className="inline-flex w-fit rounded-[var(--radius-sm)] bg-brand-accent px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Create seller account
+            </Link>
+            <Link
+              href="/login?next=%2Fseller%2Fonboarding"
+              className="inline-flex w-fit rounded-[var(--radius-sm)] border border-white/40 bg-transparent px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
+            >
+              Already have an account? Sign in
+            </Link>
+          </div>
         </div>
       </section>
       <PageShell>

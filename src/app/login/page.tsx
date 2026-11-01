@@ -14,6 +14,9 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const nextPath = safeInternalPath(params.next);
+  const sellerNext =
+    nextPath === "/seller/onboarding" ||
+    Boolean(nextPath?.startsWith("/seller/"));
 
   let actor: Awaited<ReturnType<typeof getOptionalActor>> = null;
   try {
@@ -25,10 +28,22 @@ export default async function LoginPage({
     redirect(nextPath ?? "/account");
   }
 
+  const registerHref = sellerNext
+    ? `/register?intent=seller&next=${encodeURIComponent(nextPath ?? "/seller/onboarding")}`
+    : nextPath
+      ? `/register?next=${encodeURIComponent(nextPath)}`
+      : "/register";
+
   return (
     <PageShell narrow className="items-center justify-center py-16 md:py-24">
       <div className="w-full max-w-md rounded-[var(--radius)] border border-border bg-surface p-6 shadow-[var(--shadow-card)] md:p-8">
         <h1 className="font-display text-3xl font-semibold">Sign in</h1>
+        {sellerNext ? (
+          <p className="mt-2 text-sm text-muted">
+            Sign in to continue your seller application, or create a seller
+            account if you are new.
+          </p>
+        ) : null}
         <div className="mt-6">
           <AuthForm mode="login" nextPath={nextPath} />
         </div>
@@ -39,15 +54,8 @@ export default async function LoginPage({
         </p>
         <p className="mt-3 text-sm text-muted">
           Need an account?{" "}
-          <Link
-            href={
-              nextPath
-                ? `/register?next=${encodeURIComponent(nextPath)}`
-                : "/register"
-            }
-            className="font-medium text-accent underline"
-          >
-            Register
+          <Link href={registerHref} className="font-medium text-accent underline">
+            {sellerNext ? "Create a seller account" : "Register"}
           </Link>
         </p>
       </div>

@@ -77,6 +77,29 @@ export async function createSellerDraft(
       },
     });
 
+    // Bind owner capability as soon as the draft exists so Seller console
+    // chrome and /seller routes recognize the applicant (approval still required
+    // for a live catalogue).
+    const ownerRole = await tx.role.findUniqueOrThrow({
+      where: { key: "seller_owner" },
+    });
+    await tx.userRole.upsert({
+      where: {
+        userId_roleId_scopeKey: {
+          userId: actor.userId,
+          roleId: ownerRole.id,
+          scopeKey: seller.id,
+        },
+      },
+      create: {
+        userId: actor.userId,
+        roleId: ownerRole.id,
+        scopeKey: seller.id,
+        sellerId: seller.id,
+      },
+      update: { sellerId: seller.id },
+    });
+
     await tx.auditLog.create({
       data: {
         actorId: actor.userId,

@@ -26,8 +26,9 @@ export default async function SellerOnboardingPage() {
         </p>
         <h1 className="mt-2 text-3xl font-semibold">Apply as a seller</h1>
         <p className="mt-2 text-muted">
-          Signed in as {actor.displayName}. PAN and GSTIN are stored masked.
-          Upload only fictional sample documents.
+          Signed in as {actor.displayName}. Enter your Regular GSTIN to
+          auto-fill legal name, PAN, and state. Upload a clear GST certificate
+          or business registration proof before you submit.
         </p>
       </div>
       {canApply ? (
@@ -44,17 +45,17 @@ export default async function SellerOnboardingPage() {
             cannot open a new KYC application.
           </p>
           <p className="mt-3 text-sm text-muted">
-            Sign out, then register or sign in with a{" "}
-            <strong>customer</strong> account to apply. Or open Seller Central
-            if you need the shop you already work for.
+            Sign out, then create a{" "}
+            <strong>seller account</strong> (business owner) to apply. Or open
+            Seller Central if you need the shop you already work for.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
             <LogoutButton />
             <Link
-              href="/register?next=%2Fseller%2Fonboarding"
+              href="/register?intent=seller&next=%2Fseller%2Fonboarding"
               className="underline"
             >
-              Register a customer account
+              Create a seller account
             </Link>
             <Link href="/seller" className="underline">
               Seller dashboard

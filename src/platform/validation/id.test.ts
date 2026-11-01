@@ -63,7 +63,7 @@ describe("seller/admin schemas accept loose DB ids", () => {
     expect(parsed.sourceProductId).toBe(LOOSE_PRODUCT);
   });
 
-  it("patch stock / price / content", () => {
+  it("patch stock / price only (closed catalogue)", () => {
     const stock = updateSellerProductSchema.parse({
       sellerId: LOOSE_ID,
       productId: LOOSE_PRODUCT,
@@ -78,12 +78,19 @@ describe("seller/admin schemas accept loose DB ids", () => {
     });
     expect(price.variant?.sellingPricePaise).toBe(7500);
 
-    const content = updateSellerProductSchema.parse({
+    const content = updateSellerProductSchema.safeParse({
       sellerId: LOOSE_ID,
       productId: LOOSE_PRODUCT,
       title: "Updated title for content edit",
     });
-    expect(content.title).toContain("Updated");
+    // Extra content keys are stripped by Zod object default; ensure parse still works
+    // without accepting title as a typed field.
+    expect(content.success).toBe(true);
+    if (content.success) {
+      expect(
+        (content.data as { title?: string }).title,
+      ).toBeUndefined();
+    }
   });
 
   it("admin seller review", () => {

@@ -29,7 +29,11 @@ describe("seller products API guards", () => {
     expect(() => assertUuid(id, "sellerId")).not.toThrow();
   });
 
-  it("allows approved listings to return to submitted for content edits", () => {
-    expect(canTransitionProductStatus("approved", "submitted")).toBe(true);
+  it("allows approved listings to be archived by the seller", () => {
+    expect(canTransitionProductStatus("approved", "archived")).toBe(true);
+  });
+
+  it("allows admin to restore archived catalogue SKUs", () => {
+    expect(canTransitionProductStatus("archived", "approved")).toBe(true);
   });
 });

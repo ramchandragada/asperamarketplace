@@ -6,7 +6,8 @@ const ALLOWED: Record<ProductStatus, ProductStatus[]> = {
   /** Content edits on live listings return them to moderation. */
   approved: ["archived", "submitted"],
   rejected: ["draft", "submitted", "archived"],
-  archived: ["draft"],
+  /** Admin can restore an archived catalogue SKU straight to live. */
+  archived: ["draft", "approved"],
 };
 
 export function canTransitionProductStatus(

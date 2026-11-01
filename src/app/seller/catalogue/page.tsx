@@ -2,10 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SellerCataloguePanel } from "@/components/seller-catalogue-panel";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  listActiveCategories,
-  listSellerProducts,
-} from "@/modules/catalogue/service";
+import { listSellerProducts } from "@/modules/catalogue/service";
 import { getOptionalActor } from "@/modules/identity/service";
 import { resolveSellerForActor } from "@/modules/seller/access";
 
@@ -39,35 +36,32 @@ export default async function SellerCataloguePage({
   const page = Math.max(1, Number(params.page ?? "1") || 1);
   const status = params.status?.trim() ?? "";
   const q = params.q?.trim() ?? "";
-  const [categories, listed] = await Promise.all([
-    listActiveCategories(),
-    listSellerProducts(actor, seller.id, {
-      page,
-      pageSize: 25,
-      q: q || undefined,
-      status: (status || undefined) as
-        | "draft"
-        | "submitted"
-        | "approved"
-        | "rejected"
-        | "archived"
-        | undefined,
-    }),
-  ]);
+  const listed = await listSellerProducts(actor, seller.id, {
+    page,
+    pageSize: 25,
+    q: q || undefined,
+    status: (status || undefined) as
+      | "draft"
+      | "submitted"
+      | "approved"
+      | "rejected"
+      | "archived"
+      | undefined,
+  });
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-3xl font-semibold">Products</h1>
         <p className="mt-2 text-muted">
-          Draft and manage listings for {seller.tradeName ?? seller.legalName}.
-          Submit for moderation before they appear publicly.
+          List approved catalogue SKUs for{" "}
+          {seller.tradeName ?? seller.legalName}. You control price and stock
+          only — Aspera owns product identity.
         </p>
       </div>
       <SellerCataloguePanel
         key={`${status}|${q}|${listed.page}`}
         sellerId={seller.id}
-        categories={categories}
         initialProducts={listed.items}
         initialTotal={listed.total}
         initialPage={listed.page}

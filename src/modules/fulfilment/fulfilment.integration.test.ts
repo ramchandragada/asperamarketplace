@@ -161,7 +161,7 @@ describe.runIf(hasDatabase)("fulfilment and care integration", () => {
     sellerActor.roles = [{ key: "seller_owner", sellerId: sellerDraft.id }];
 
     const created = await createProductDraft(
-      sellerActor,
+      adminActor,
       {
         sellerId: sellerDraft.id,
         categoryId: category.id,

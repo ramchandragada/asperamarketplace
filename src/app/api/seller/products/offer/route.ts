@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const created = await createProductOffer(actor, body, requestId);
     return jsonOk(created, requestId, {
       status: 201,
-      message: "Offer draft created for an existing product",
+      message: "Listing live — price and stock are yours to manage",
     });
   } catch (error) {
     return jsonError(requestId, error);

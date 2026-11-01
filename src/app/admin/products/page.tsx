@@ -1,3 +1,4 @@
+import { AdminCatalogueCreatePanel } from "@/components/admin-catalogue-create-panel";
 import {
   AdminProductQueue,
   type AdminProductTab,
@@ -10,7 +11,7 @@ import { getOptionalActor } from "@/modules/identity/service";
 import { prisma } from "@/platform/db/prisma";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Product moderation" };
+export const metadata = { title: "Product catalogue" };
 
 const TABS = ["pending", "approved", "rejected", "paused"] as const;
 
@@ -58,14 +59,19 @@ export default async function AdminProductsPage({
     }),
   ]);
 
+  const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
+
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-3xl font-semibold">Product moderation</h1>
+        <h1 className="text-3xl font-semibold">Product catalogue</h1>
         <p className="mt-2 text-muted">
-          Review catalogue listings by status, search, and seller.
+          Author closed-catalogue SKUs and review any remaining moderation
+          queue. Sellers may only list from this catalogue with their own price
+          and stock.
         </p>
       </div>
+      <AdminCatalogueCreatePanel categories={categoryOptions} />
       <AdminProductQueue
         tab={tab}
         query={q}
@@ -76,7 +82,7 @@ export default async function AdminProductsPage({
         counts={result.counts}
         categoryId={categoryId ?? ""}
         sellerId={sellerId ?? ""}
-        categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+        categories={categoryOptions}
         sellers={sellers}
         products={result.items}
       />

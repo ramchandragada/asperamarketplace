@@ -151,7 +151,7 @@ describe.runIf(hasDatabase)("orders and mock payments integration", () => {
     );
 
     const created = await createProductDraft(
-      sellerActor,
+      adminActor,
       {
         sellerId: sellerDraft.id,
         categoryId: category.id,

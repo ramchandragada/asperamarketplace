@@ -119,17 +119,16 @@ export const searchProductsSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(48).default(12),
 });
 
+/**
+ * Closed catalogue: sellers may only change price, stock, and pause/unlist.
+ * Product identity (title, specs, images) is admin-owned.
+ */
 export const updateSellerProductSchema = z
   .object({
     sellerId: dbUuid,
     productId: dbUuid,
-    title: z.string().trim().min(3).max(200).optional(),
-    summary: z.string().trim().min(10).max(400).optional(),
-    description: z.string().trim().min(20).max(5000).optional(),
-    categoryId: dbUuid.optional(),
     /** archive = pause/unlist from storefront */
     status: z.enum(["draft", "archived"]).optional(),
-    imageUrl: catalogueImageUrlSchema.optional(),
     variant: z
       .object({
         id: dbUuid,
@@ -150,8 +149,66 @@ export const updateSellerProductSchema = z
     },
   );
 
+/** Admin authors a canonical catalogue SKU (live immediately). */
+export const createAdminCatalogueProductSchema = z
+  .object({
+    categoryId: dbUuid,
+    brandName: z.string().trim().min(1).max(120).optional(),
+    title: z.string().trim().min(3).max(200),
+    summary: z.string().trim().min(10).max(400),
+    description: z.string().trim().min(20).max(5000),
+    countryOfOrigin: z.string().trim().min(2).max(80).optional(),
+    hsnCode: z
+      .string()
+      .trim()
+      .regex(/^\d{4,8}$/, "HSN must be 4 to 8 digits")
+      .optional(),
+    imageUrl: catalogueImageUrlSchema,
+    variant: z.object({
+      sku: z
+        .string()
+        .trim()
+        .min(3)
+        .max(64)
+        .regex(/^[A-Z0-9-]+$/, "SKU must be uppercase letters, numbers, or hyphen"),
+      title: z.string().trim().min(1).max(120),
+      mrpPaise: z.number().int().positive(),
+      /** Reference / list price on the catalogue shell; dealers set their own offer prices. */
+      sellingPricePaise: z.number().int().positive(),
+      weightGrams: z.number().int().positive().optional(),
+    }),
+  })
+  .refine((value) => value.variant.mrpPaise >= value.variant.sellingPricePaise, {
+    message: "MRP must be greater than or equal to selling price",
+    path: ["variant", "mrpPaise"],
+  });
+
+export const updateAdminCatalogueProductSchema = z.object({
+  productId: dbUuid,
+  title: z.string().trim().min(3).max(200).optional(),
+  summary: z.string().trim().min(10).max(400).optional(),
+  description: z.string().trim().min(20).max(5000).optional(),
+  categoryId: dbUuid.optional(),
+  imageUrl: catalogueImageUrlSchema.optional(),
+  countryOfOrigin: z.string().trim().min(2).max(80).optional(),
+  hsnCode: z
+    .string()
+    .trim()
+    .regex(/^\d{4,8}$/, "HSN must be 4 to 8 digits")
+    .optional()
+    .nullable(),
+  /** archive = remove from storefront picker and public browse */
+  status: z.enum(["approved", "archived"]).optional(),
+});
+
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type CreateProductOfferInput = z.infer<typeof createProductOfferSchema>;
+export type CreateAdminCatalogueProductInput = z.infer<
+  typeof createAdminCatalogueProductSchema
+>;
+export type UpdateAdminCatalogueProductInput = z.infer<
+  typeof updateAdminCatalogueProductSchema
+>;
 export type UpdateSellerProductInput = z.infer<typeof updateSellerProductSchema>;
 export type SubmitProductInput = z.infer<typeof submitProductSchema>;
 export type ReviewProductInput = z.infer<typeof reviewProductSchema>;

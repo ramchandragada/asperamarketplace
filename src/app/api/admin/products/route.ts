@@ -1,5 +1,7 @@
 import { requireActor } from "@/modules/identity/service";
+import { createAdminCatalogueProductSchema } from "@/modules/catalogue/schema";
 import {
+  createAdminCatalogueProduct,
   listAdminProducts,
   type AdminProductTab,
 } from "@/modules/catalogue/service";
@@ -59,6 +61,21 @@ export async function GET(request: Request) {
       },
       requestId,
     );
+  } catch (error) {
+    return jsonError(requestId, error);
+  }
+}
+
+export async function POST(request: Request) {
+  const requestId = getRequestId(request);
+  try {
+    const actor = await requireActor();
+    const body = createAdminCatalogueProductSchema.parse(await request.json());
+    const created = await createAdminCatalogueProduct(actor, body, requestId);
+    return jsonOk(created, requestId, {
+      status: 201,
+      message: "Catalogue product published",
+    });
   } catch (error) {
     return jsonError(requestId, error);
   }

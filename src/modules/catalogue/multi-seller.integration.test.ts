@@ -131,7 +131,7 @@ describe.runIf(hasDatabase)("multi-seller same product", () => {
     const secondary = await approveSeller("ms-second", suffix, adminActor);
 
     const created = await createProductDraft(
-      primary.actor,
+      adminActor,
       {
         sellerId: primary.sellerId,
         categoryId: category.id,
@@ -185,23 +185,8 @@ describe.runIf(hasDatabase)("multi-seller same product", () => {
       crypto.randomUUID(),
     );
     expect(offer.sharedListingKey).toBeTruthy();
-    expect(offer.product.status).toBe("draft");
-
-    const offerSubmitted = await submitProductForReview(
-      secondary.actor,
-      { productId: offer.product.id },
-      crypto.randomUUID(),
-    );
-    await reviewProduct(
-      adminActor,
-      {
-        productId: offer.product.id,
-        decision: "approve",
-        reason: "Approved sibling offer",
-        expectedVersion: offerSubmitted.version,
-      },
-      crypto.randomUUID(),
-    );
+    expect(offer.product.status).toBe("approved");
+    expect(offer.product.publishedAt).toBeTruthy();
 
     const siblings = await listSiblingSellerOffers(created.product.id);
     expect(siblings).toHaveLength(2);

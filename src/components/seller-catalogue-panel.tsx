@@ -10,8 +10,6 @@ import {
 import { ProductSourcePicker } from "@/components/product-source-picker";
 import { apiErrorMessage } from "@/platform/http/api-error-message";
 
-type Category = { id: string; slug: string; name: string };
-
 type SellerProduct = {
   id: string;
   title: string;
@@ -33,7 +31,6 @@ type SellerProduct = {
 
 export function SellerCataloguePanel({
   sellerId,
-  categories,
   initialProducts,
   initialTotal,
   initialPage,
@@ -42,7 +39,8 @@ export function SellerCataloguePanel({
   initialStatus,
 }: {
   sellerId: string;
-  categories: Category[];
+  /** @deprecated Closed catalogue — categories kept optional for call-site compat */
+  categories?: Array<{ id: string; slug: string; name: string }>;
   initialProducts: SellerProduct[];
   initialTotal: number;
   initialPage: number;
@@ -102,65 +100,6 @@ export function SellerCataloguePanel({
     setStatus(nextStatus);
   }
 
-  async function createDraft(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setMessage(null);
-    const form = new FormData(event.currentTarget);
-    const mrpRupees = Number(form.get("mrpRupees"));
-    const sellingRupees = Number(form.get("sellingRupees"));
-    if (!(mrpRupees > 0) || !(sellingRupees > 0)) {
-      setError("Enter MRP and selling price in rupees");
-      return;
-    }
-    if (sellingRupees > mrpRupees) {
-      setError("Selling price cannot be greater than MRP");
-      return;
-    }
-    const imageUrl = String(form.get("imageUrl") ?? "").trim();
-    if (!imageUrl) {
-      setError("Add at least one product image URL (Unsplash https link)");
-      return;
-    }
-    const payload = {
-      sellerId,
-      categoryId: String(form.get("categoryId") ?? ""),
-      brandName: String(form.get("brandName") ?? "") || undefined,
-      title: String(form.get("title") ?? ""),
-      summary: String(form.get("summary") ?? ""),
-      description: String(form.get("description") ?? ""),
-      countryOfOrigin: String(form.get("countryOfOrigin") ?? "") || undefined,
-      hsnCode: String(form.get("hsnCode") ?? "") || undefined,
-      imageUrl,
-      variant: {
-        sku: String(form.get("sku") ?? "").toUpperCase(),
-        title: String(form.get("variantTitle") ?? ""),
-        mrpPaise: paiseFromRupees(mrpRupees),
-        sellingPricePaise: paiseFromRupees(sellingRupees),
-        initialStock: Number(form.get("initialStock")),
-        weightGrams: form.get("weightGrams")
-          ? Number(form.get("weightGrams"))
-          : undefined,
-      },
-    };
-    const response = await fetch("/api/seller/products", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const body = (await response.json()) as {
-      message?: string;
-      fieldErrors?: Record<string, string[]> | null;
-    };
-    if (!response.ok) {
-      setError(apiErrorMessage(body, "Could not create draft"));
-      return;
-    }
-    setMessage("Product draft created");
-    event.currentTarget.reset();
-    await refresh({ page: 1 });
-  }
-
   async function createOffer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
@@ -201,31 +140,10 @@ export function SellerCataloguePanel({
       return;
     }
     setMessage(
-      body.message ??
-        "Offer draft created — submit it for review to appear on the product page",
+      body.message ?? "Listing live — manage price and stock from your catalogue",
     );
     event.currentTarget.reset();
     await refresh({ page: 1 });
-  }
-
-  async function submitProduct(productId: string) {
-    setError(null);
-    setMessage(null);
-    const response = await fetch("/api/seller/products/submit", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ productId }),
-    });
-    const body = (await response.json()) as {
-      message?: string;
-      fieldErrors?: Record<string, string[]> | null;
-    };
-    if (!response.ok) {
-      setError(apiErrorMessage(body, "Submit failed"));
-      return;
-    }
-    setMessage(body.message ?? "Submitted");
-    await refresh();
   }
 
   return (
@@ -233,205 +151,16 @@ export function SellerCataloguePanel({
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 
-      <section className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="text-lg font-semibold">Your listings</h2>
-          <form
-            className="flex flex-wrap gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const form = new FormData(event.currentTarget);
-              void refresh({
-                page: 1,
-                q: String(form.get("q") ?? ""),
-                status: String(form.get("status") ?? ""),
-              });
-            }}
-          >
-            <input
-              name="q"
-              defaultValue={query}
-              placeholder="Search title or SKU"
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            />
-            <select
-              name="status"
-              defaultValue={status}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            >
-              {statusOptions.map((value) => (
-                <option key={value || "all"} value={value}>
-                  {value || "All statuses"}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="rounded-lg border border-border px-3 py-2 text-sm"
-            >
-              Filter
-            </button>
-          </form>
-        </div>
-        <p className="text-sm text-muted">
-          {total} listing{total === 1 ? "" : "s"} · page {page} of {pageCount}
-        </p>
-        {products.length > 0 ? (
-          <div className="overflow-x-auto">
-            {/* Responsive table: columns on desktop, a card per row on mobile. */}
-            <table className="w-full border-collapse text-sm">
-              <thead className="hidden md:table-header-group">
-                <tr className="border-b border-border text-left text-xs font-medium tracking-wide text-muted uppercase">
-                  <th className="py-2 pr-3">Product</th>
-                  <th className="py-2 pr-3">SKU</th>
-                  <th className="py-2 pr-3">Price</th>
-                  <th className="py-2 pr-3">Stock</th>
-                  <th className="py-2 pr-3">Status</th>
-                  <th className="py-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="md:divide-y md:divide-border">
-                {products.map((product) => {
-                  const variant = product.variants[0];
-                  const available = Math.max(
-                    (variant?.inventory?.onHand ?? 0) -
-                      (variant?.inventory?.reserved ?? 0),
-                    0,
-                  );
-                  const off =
-                    variant != null
-                      ? discountPercent(
-                          variant.mrpPaise,
-                          variant.sellingPricePaise,
-                        )
-                      : null;
-                  const statusClass =
-                    product.status === "approved"
-                      ? "text-success"
-                      : product.status === "submitted"
-                        ? "text-warning"
-                        : product.status === "rejected"
-                          ? "text-danger"
-                          : "text-muted";
-                  return (
-                    <tr
-                      key={product.id}
-                      className="mb-3 block rounded-card border border-border bg-surface p-4 align-top md:mb-0 md:table-row md:border-0 md:bg-transparent md:p-0"
-                    >
-                      <td className="block md:table-cell md:py-3 md:pr-3">
-                        <Link
-                          href={`/seller/catalogue/${product.id}`}
-                          className="font-semibold text-accent hover:underline"
-                        >
-                          {product.title}
-                        </Link>
-                        <span className="block text-xs text-muted">
-                          {product.category.name}
-                        </span>
-                        {product.status === "rejected" &&
-                        product.statusReason ? (
-                          <span className="mt-1 block text-xs text-danger">
-                            Rejected: {product.statusReason}
-                          </span>
-                        ) : null}
-                      </td>
-                      <td className="block py-0.5 text-muted md:table-cell md:py-3 md:pr-3">
-                        <span className="font-medium text-foreground md:hidden">
-                          SKU:{" "}
-                        </span>
-                        {variant?.sku ?? "—"}
-                      </td>
-                      <td className="block py-0.5 md:table-cell md:py-3 md:pr-3">
-                        {variant ? (
-                          <>
-                            {formatPaise(variant.sellingPricePaise)}
-                            {variant.mrpPaise > variant.sellingPricePaise ? (
-                              <span className="ml-2 text-muted line-through">
-                                {formatPaise(variant.mrpPaise)}
-                              </span>
-                            ) : null}
-                            {off ? (
-                              <span className="ml-2 text-accent">{off}% off</span>
-                            ) : null}
-                          </>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="block py-0.5 md:table-cell md:py-3 md:pr-3">
-                        <span className="font-medium text-foreground md:hidden">
-                          Stock:{" "}
-                        </span>
-                        {available}
-                        <span className="text-muted"> available</span>
-                      </td>
-                      <td className="block py-0.5 md:table-cell md:py-3 md:pr-3">
-                        <span className={`font-medium capitalize ${statusClass}`}>
-                          {product.status}
-                        </span>
-                      </td>
-                      <td className="mt-3 flex flex-wrap gap-2 md:mt-0 md:table-cell md:py-3 md:text-right">
-                        <Link
-                          href={`/seller/catalogue/${product.id}`}
-                          className="rounded-lg border border-border px-3 py-1.5 text-sm"
-                        >
-                          Edit
-                        </Link>
-                        {product.status === "draft" ||
-                        product.status === "rejected" ? (
-                          <button
-                            type="button"
-                            className="rounded-lg border border-border px-3 py-1.5 text-sm"
-                            onClick={() => void submitProduct(product.id)}
-                          >
-                            Submit for review
-                          </button>
-                        ) : null}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
-        {products.length === 0 ? (
-          <p className="text-sm text-muted">No products match this filter.</p>
-        ) : null}
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={page <= 1}
-            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40"
-            onClick={() => void refresh({ page: page - 1 })}
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            disabled={page >= pageCount}
-            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40"
-            onClick={() => void refresh({ page: page + 1 })}
-          >
-            Next
-          </button>
-        </div>
-      </section>
-
-      <details className="rounded-card border border-border bg-surface p-4">
-        <summary className="cursor-pointer text-lg font-semibold">
-          Add product
-        </summary>
-        <div className="mt-4 flex flex-col gap-6">
       <form
         onSubmit={createOffer}
         className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-2"
       >
         <h2 className="sm:col-span-2 text-lg font-semibold">
-          Sell an existing product
+          List from catalogue
         </h2>
         <p className="sm:col-span-2 text-sm text-muted">
-          Search an approved listing. You keep your own price, SKU, and stock.
+          Pick an admin-approved SKU. You only set your price, SKU, and stock —
+          product title, specs, and images stay with Aspera.
         </p>
         <ProductSourcePicker name="sourceProductId" />
         <label className="text-sm">
@@ -489,165 +218,179 @@ export function SellerCataloguePanel({
         </label>
         <button
           type="submit"
-          className="sm:col-span-2 rounded-lg border border-border bg-background px-4 py-2 font-medium"
-        >
-          Create offer draft
-        </button>
-      </form>
-      <form
-        onSubmit={createDraft}
-        className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-2"
-      >
-        <h2 className="sm:col-span-2 text-lg font-semibold">New product draft</h2>
-        <label className="text-sm sm:col-span-2">
-          Category
-          <select
-            name="categoryId"
-            required
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-            defaultValue={categories[0]?.id}
-          >
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-sm sm:col-span-2">
-          Title
-          <input
-            name="title"
-            required
-            minLength={3}
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm sm:col-span-2">
-          Summary
-          <input
-            name="summary"
-            required
-            minLength={10}
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm sm:col-span-2">
-          Description
-          <textarea
-            name="description"
-            required
-            minLength={20}
-            rows={4}
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm sm:col-span-2">
-          Primary image URL (Unsplash https)
-          <input
-            name="imageUrl"
-            type="url"
-            required
-            placeholder="https://images.unsplash.com/photo-..."
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          Brand (optional)
-          <input
-            name="brandName"
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          Country of origin
-          <input
-            name="countryOfOrigin"
-            defaultValue="India"
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          HSN (optional)
-          <input
-            name="hsnCode"
-            pattern="\d{4,8}"
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          SKU
-          <input
-            name="sku"
-            required
-            pattern="[A-Z0-9-]+"
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 uppercase"
-          />
-        </label>
-        <label className="text-sm">
-          Variant title
-          <input
-            name="variantTitle"
-            required
-            defaultValue="Default"
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          MRP (₹)
-          <input
-            name="mrpRupees"
-            type="number"
-            required
-            min={0.01}
-            step="0.01"
-            placeholder="e.g. 499"
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          Selling price (₹)
-          <input
-            name="sellingRupees"
-            type="number"
-            required
-            min={0.01}
-            step="0.01"
-            placeholder="e.g. 399"
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          Initial stock
-          <input
-            name="initialStock"
-            type="number"
-            required
-            min={0}
-            step={1}
-            placeholder="e.g. 25"
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          Weight grams (optional)
-          <input
-            name="weightGrams"
-            type="number"
-            min={1}
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <button
-          type="submit"
           className="sm:col-span-2 rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground"
         >
-          Create draft
+          List product
         </button>
       </form>
-        </div>
-      </details>
 
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="text-lg font-semibold">Your listings</h2>
+          <form
+            className="flex flex-wrap gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const form = new FormData(event.currentTarget);
+              void refresh({
+                page: 1,
+                q: String(form.get("q") ?? ""),
+                status: String(form.get("status") ?? ""),
+              });
+            }}
+          >
+            <input
+              name="q"
+              defaultValue={query}
+              placeholder="Search title or SKU"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+            <select
+              name="status"
+              defaultValue={status}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            >
+              {statusOptions.map((value) => (
+                <option key={value || "all"} value={value}>
+                  {value || "All statuses"}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="rounded-lg border border-border px-3 py-2 text-sm"
+            >
+              Filter
+            </button>
+          </form>
+        </div>
+        <p className="text-sm text-muted">
+          {total} listing{total === 1 ? "" : "s"} · page {page} of {pageCount}
+        </p>
+        {products.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead className="hidden md:table-header-group">
+                <tr className="border-b border-border text-left text-xs font-medium tracking-wide text-muted uppercase">
+                  <th className="py-2 pr-3">Product</th>
+                  <th className="py-2 pr-3">SKU</th>
+                  <th className="py-2 pr-3">Price</th>
+                  <th className="py-2 pr-3">Stock</th>
+                  <th className="py-2 pr-3">Status</th>
+                  <th className="py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="md:divide-y md:divide-border">
+                {products.map((product) => {
+                  const variant = product.variants[0];
+                  const available = Math.max(
+                    (variant?.inventory?.onHand ?? 0) -
+                      (variant?.inventory?.reserved ?? 0),
+                    0,
+                  );
+                  const off =
+                    variant != null
+                      ? discountPercent(
+                          variant.mrpPaise,
+                          variant.sellingPricePaise,
+                        )
+                      : null;
+                  const statusClass =
+                    product.status === "approved"
+                      ? "text-success"
+                      : product.status === "submitted"
+                        ? "text-warning"
+                        : product.status === "rejected"
+                          ? "text-danger"
+                          : "text-muted";
+                  return (
+                    <tr
+                      key={product.id}
+                      className="mb-3 block rounded-card border border-border bg-surface p-4 align-top md:mb-0 md:table-row md:border-0 md:bg-transparent md:p-0"
+                    >
+                      <td className="block md:table-cell md:py-3 md:pr-3">
+                        <Link
+                          href={`/seller/catalogue/${product.id}`}
+                          className="font-semibold text-accent hover:underline"
+                        >
+                          {product.title}
+                        </Link>
+                        <span className="block text-xs text-muted">
+                          {product.category.name}
+                        </span>
+                      </td>
+                      <td className="block py-0.5 text-muted md:table-cell md:py-3 md:pr-3">
+                        <span className="font-medium text-foreground md:hidden">
+                          SKU:{" "}
+                        </span>
+                        {variant?.sku ?? "—"}
+                      </td>
+                      <td className="block py-0.5 md:table-cell md:py-3 md:pr-3">
+                        {variant ? (
+                          <>
+                            {formatPaise(variant.sellingPricePaise)}
+                            {variant.mrpPaise > variant.sellingPricePaise ? (
+                              <span className="ml-2 text-muted line-through">
+                                {formatPaise(variant.mrpPaise)}
+                              </span>
+                            ) : null}
+                            {off ? (
+                              <span className="ml-2 text-accent">{off}% off</span>
+                            ) : null}
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="block py-0.5 md:table-cell md:py-3 md:pr-3">
+                        <span className="font-medium text-foreground md:hidden">
+                          Stock:{" "}
+                        </span>
+                        {available}
+                        <span className="text-muted"> available</span>
+                      </td>
+                      <td className="block py-0.5 md:table-cell md:py-3 md:pr-3">
+                        <span className={`font-medium capitalize ${statusClass}`}>
+                          {product.status}
+                        </span>
+                      </td>
+                      <td className="mt-3 flex flex-wrap gap-2 md:mt-0 md:table-cell md:py-3 md:text-right">
+                        <Link
+                          href={`/seller/catalogue/${product.id}`}
+                          className="rounded-lg border border-border px-3 py-1.5 text-sm"
+                        >
+                          Price &amp; stock
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+        {products.length === 0 ? (
+          <p className="text-sm text-muted">No products match this filter.</p>
+        ) : null}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            disabled={page <= 1}
+            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40"
+            onClick={() => void refresh({ page: page - 1 })}
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            disabled={page >= pageCount}
+            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-40"
+            onClick={() => void refresh({ page: page + 1 })}
+          >
+            Next
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

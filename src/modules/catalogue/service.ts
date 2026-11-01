@@ -4,6 +4,7 @@ import { prisma } from "@/platform/db/prisma";
 import {
   AuthorizationError,
   actorIsAdmin,
+  requireAdmin,
   requireSellerCapability,
   type Actor,
 } from "@/modules/identity/policy";
@@ -25,15 +26,21 @@ import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations"
 import { PC_CATEGORIES } from "@/modules/catalogue/pc-catalogue-data";
 import {
   searchProductsSchema,
+  type CreateAdminCatalogueProductInput,
   type CreateProductInput,
   type CreateProductOfferInput,
   type ReviewProductInput,
   type SubmitProductInput,
+  type UpdateAdminCatalogueProductInput,
 } from "@/modules/catalogue/schema";
+import { asperaLegal } from "@/platform/config/aspera-legal";
 import {
   HttpValidationError,
   NotFoundError,
 } from "@/platform/http/errors";
+
+/** Trade name for the marketplace-owned catalogue shell seller. */
+export const CATALOGUE_OWNER_TRADE_NAME = "Aspera Catalogue";
 
 async function requireApprovedSellerOwnership(actor: Actor, sellerId: string) {
   const seller = await prisma.seller.findUniqueOrThrow({
@@ -230,11 +237,87 @@ export async function ensureGenericCategory() {
   });
 }
 
+/**
+ * Ensures the marketplace catalogue-owner seller exists (Aspera legal GSTIN).
+ * Owns canonical SKU shells; dealers list via createProductOffer.
+ */
+export async function ensurePlatformCatalogueSeller(adminActor: Actor) {
+  requireAdmin(adminActor);
+  const existing = await prisma.seller.findFirst({
+    where: {
+      gstin: asperaLegal.gstinRegular,
+      tradeName: CATALOGUE_OWNER_TRADE_NAME,
+    },
+  });
+  if (existing) {
+    if (existing.status !== "approved") {
+      return prisma.seller.update({
+        where: { id: existing.id },
+        data: {
+          status: "approved",
+          approvedAt: existing.approvedAt ?? new Date(),
+          statusReason: "Platform catalogue owner",
+        },
+      });
+    }
+    return existing;
+  }
+
+  const byGstin = await prisma.seller.findFirst({
+    where: { gstin: asperaLegal.gstinRegular },
+  });
+  if (byGstin) {
+    return prisma.seller.update({
+      where: { id: byGstin.id },
+      data: {
+        tradeName: CATALOGUE_OWNER_TRADE_NAME,
+        status: "approved",
+        approvedAt: byGstin.approvedAt ?? new Date(),
+        statusReason: "Platform catalogue owner",
+        legalName: asperaLegal.legalEntity,
+        contactEmail: asperaLegal.supportEmail.toLowerCase(),
+        registeredState: asperaLegal.state,
+        pickupCity: asperaLegal.tcsPpob.city,
+        pickupLine1: asperaLegal.tcsPpob.lines[0],
+        pickupPostalCode: asperaLegal.tcsPpob.pincode,
+        fulfilmentBy: "aspera_warehouse",
+      },
+    });
+  }
+
+  return prisma.seller.create({
+    data: {
+      ownerUserId: adminActor.userId,
+      legalName: asperaLegal.legalEntity,
+      tradeName: CATALOGUE_OWNER_TRADE_NAME,
+      status: "approved",
+      statusReason: "Platform catalogue owner",
+      contactEmail: asperaLegal.supportEmail.toLowerCase(),
+      contactPhone: asperaLegal.supportPhoneDisplay.replace(/\s+/g, ""),
+      panLast4: asperaLegal.pan.slice(-4),
+      gstin: asperaLegal.gstinRegular,
+      gstinMasked: `${asperaLegal.gstinRegular.slice(0, 2)}****${asperaLegal.gstinRegular.slice(-3)}`,
+      registeredState: asperaLegal.state,
+      pickupCity: asperaLegal.tcsPpob.city,
+      pickupLine1: asperaLegal.tcsPpob.lines[0],
+      pickupPostalCode: asperaLegal.tcsPpob.pincode,
+      fulfilmentBy: "aspera_warehouse",
+      approvedAt: new Date(),
+      agreementAcceptedAt: new Date(),
+    },
+  });
+}
+
+/**
+ * Admin-only product authoring. Integration tests and admin APIs use this
+ * (or createAdminCatalogueProduct). Sellers cannot create products.
+ */
 export async function createProductDraft(
   actor: Actor,
   input: CreateProductInput,
   correlationId: string,
 ) {
+  requireAdmin(actor);
   const seller = await requireApprovedSellerOwnership(actor, input.sellerId);
   const category = await prisma.category.findFirst({
     where: { id: input.categoryId, isActive: true },
@@ -354,9 +437,9 @@ export async function createProductDraft(
 }
 
 /**
- * Lets an approved seller create their own listing of an existing approved product.
- * Catalogue copy and images are copied; price, SKU, and stock stay with this seller.
- * Cart and fulfilment keep using that seller's variant (existing multi-seller checkout).
+ * Lets an approved seller list an existing approved catalogue product.
+ * Copy/images come from the catalogue SKU; seller sets price, SKU, and stock.
+ * Offers auto-approve — product identity was already admin-approved.
  */
 export async function createProductOffer(
   actor: Actor,
@@ -379,7 +462,7 @@ export async function createProductOffer(
   });
   if (!source) {
     throw new CatalogueValidationError(
-      "Source product must be an approved storefront listing",
+      "Source product must be an approved catalogue listing",
     );
   }
   if (source.sellerId === seller.id) {
@@ -417,6 +500,7 @@ export async function createProductOffer(
   });
   const weightGrams =
     input.variant.weightGrams ?? source.variants[0]?.weightGrams ?? undefined;
+  const now = new Date();
 
   return prisma.$transaction(async (tx) => {
     if (!source.sharedListingKey) {
@@ -435,12 +519,16 @@ export async function createProductOffer(
         title: source.title,
         summary: source.summary,
         description: source.description,
-        status: "draft",
+        status: "approved",
+        statusReason: "Auto-approved offer on admin catalogue SKU",
         countryOfOrigin: source.countryOfOrigin,
         hsnCode: source.hsnCode,
         sharedListingKey,
         attributes: source.attributes ?? undefined,
         searchDocument,
+        submittedAt: now,
+        reviewedAt: now,
+        publishedAt: now,
       },
     });
 
@@ -483,7 +571,7 @@ export async function createProductOffer(
           inventoryItemId: inventory.id,
           movementType: "receive",
           quantity: input.variant.initialStock,
-          reason: "Initial stock on multi-seller offer draft",
+          reason: "Initial stock on catalogue offer",
           actorId: actor.userId,
           correlationId,
         },
@@ -493,7 +581,7 @@ export async function createProductOffer(
     await tx.auditLog.create({
       data: {
         actorId: actor.userId,
-        action: "product.offer_draft_created",
+        action: "product.offer_created",
         targetType: "product",
         targetId: product.id,
         afterState: {
@@ -505,12 +593,323 @@ export async function createProductOffer(
           sellingPricePaise: variant.sellingPricePaise,
           onHand: inventory.onHand,
         },
-        reason: "Seller created offer on an existing product",
+        reason: "Seller listed an approved catalogue product",
         correlationId,
       },
     });
 
+    await tx.outboxEvent.create({
+      data: {
+        eventType: "ProductApproved",
+        aggregateType: "product",
+        aggregateId: product.id,
+        payload: {
+          status: product.status,
+          sellerId: product.sellerId,
+          sourceProductId: source.id,
+          autoApprovedOffer: true,
+        },
+      },
+    });
+
     return { product, variant, inventory, sharedListingKey, sourceProductId: source.id };
+  });
+}
+
+/**
+ * Admin creates a live catalogue SKU under the platform catalogue owner.
+ * Sellers then list it via createProductOffer (price + qty only).
+ */
+export async function createAdminCatalogueProduct(
+  actor: Actor,
+  input: CreateAdminCatalogueProductInput,
+  correlationId: string,
+) {
+  requireAdmin(actor);
+  const owner = await ensurePlatformCatalogueSeller(actor);
+  const category = await prisma.category.findFirst({
+    where: { id: input.categoryId, isActive: true },
+  });
+  if (!category) {
+    throw new HttpValidationError("Category not found or inactive", {
+      categoryId: ["Category not found or inactive"],
+    });
+  }
+  assertPcCategory(category);
+
+  let brandId: string | undefined;
+  if (input.brandName) {
+    const brandSlug = slugify(input.brandName);
+    const brand = await prisma.brand.upsert({
+      where: { slug: brandSlug },
+      create: { slug: brandSlug, name: input.brandName },
+      update: { name: input.brandName },
+    });
+    brandId = brand.id;
+  }
+
+  const baseSlug = slugify(input.title);
+  const slug = `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`;
+  const sharedListingKey = `listing-${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+  const searchDocument = buildSearchDocument({
+    title: input.title,
+    summary: input.summary,
+    description: input.description,
+    brandName: input.brandName,
+    categoryName: category.name,
+    sku: input.variant.sku,
+  });
+  const now = new Date();
+
+  return prisma.$transaction(async (tx) => {
+    const product = await tx.product.create({
+      data: {
+        sellerId: owner.id,
+        categoryId: category.id,
+        brandId,
+        slug,
+        title: input.title,
+        summary: input.summary,
+        description: input.description,
+        status: "approved",
+        statusReason: "Admin catalogue SKU",
+        countryOfOrigin: input.countryOfOrigin ?? "India",
+        hsnCode: input.hsnCode,
+        sharedListingKey,
+        searchDocument,
+        submittedAt: now,
+        reviewedAt: now,
+        reviewedByUserId: actor.userId,
+        publishedAt: now,
+      },
+    });
+
+    await tx.productImage.create({
+      data: {
+        productId: product.id,
+        url: input.imageUrl,
+        altText: input.title,
+        sortOrder: 0,
+        isPrimary: true,
+      },
+    });
+
+    const variant = await tx.productVariant.create({
+      data: {
+        productId: product.id,
+        sku: input.variant.sku,
+        title: input.variant.title,
+        mrpPaise: input.variant.mrpPaise,
+        sellingPricePaise: input.variant.sellingPricePaise,
+        weightGrams: input.variant.weightGrams,
+      },
+    });
+
+    const inventory = await tx.inventoryItem.create({
+      data: {
+        variantId: variant.id,
+        sellerId: owner.id,
+        onHand: 0,
+        reserved: 0,
+        damaged: 0,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "product.catalogue_created",
+        targetType: "product",
+        targetId: product.id,
+        afterState: {
+          title: product.title,
+          status: product.status,
+          sku: variant.sku,
+          sharedListingKey,
+          catalogueOwnerSellerId: owner.id,
+        },
+        reason: "Admin authored closed-catalogue SKU",
+        correlationId,
+      },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        eventType: "ProductApproved",
+        aggregateType: "product",
+        aggregateId: product.id,
+        payload: {
+          status: product.status,
+          sellerId: product.sellerId,
+          adminCatalogue: true,
+        },
+      },
+    });
+
+    return { product, variant, inventory, sharedListingKey };
+  });
+}
+
+/** Admin edits catalogue identity fields (sellers cannot). */
+export async function updateAdminCatalogueProduct(
+  actor: Actor,
+  input: UpdateAdminCatalogueProductInput,
+  correlationId: string,
+) {
+  requireAdmin(actor);
+  const existing = await prisma.product.findFirst({
+    where: { id: input.productId },
+    include: {
+      images: { orderBy: { sortOrder: "asc" }, take: 1 },
+      category: true,
+      brand: true,
+      variants: { take: 1, orderBy: { sellingPricePaise: "asc" } },
+    },
+  });
+  if (!existing) {
+    throw new NotFoundError("Product not found");
+  }
+
+  if (input.categoryId != null && input.categoryId !== existing.categoryId) {
+    const category = await prisma.category.findFirst({
+      where: { id: input.categoryId, isActive: true },
+    });
+    if (!category) {
+      throw new HttpValidationError("Category not found or inactive", {
+        categoryId: ["Category not found or inactive"],
+      });
+    }
+    assertPcCategory(category);
+  }
+
+  if (input.status === "archived" && existing.status !== "archived") {
+    assertProductTransition(existing.status, "archived");
+  }
+  if (input.status === "approved" && existing.status === "archived") {
+    assertProductTransition("archived", "approved");
+  }
+
+  const nextTitle = input.title ?? existing.title;
+  const nextSummary = input.summary ?? existing.summary;
+  const nextDescription = input.description ?? existing.description;
+  const categoryId = input.categoryId ?? existing.categoryId;
+  const category =
+    categoryId === existing.categoryId
+      ? existing.category
+      : await prisma.category.findUniqueOrThrow({ where: { id: categoryId } });
+
+  return prisma.$transaction(async (tx) => {
+    const product = await tx.product.update({
+      where: { id: existing.id },
+      data: {
+        title: nextTitle,
+        summary: nextSummary,
+        description: nextDescription,
+        categoryId,
+        ...(input.countryOfOrigin !== undefined
+          ? { countryOfOrigin: input.countryOfOrigin }
+          : {}),
+        ...(input.hsnCode !== undefined ? { hsnCode: input.hsnCode } : {}),
+        ...(input.status
+          ? {
+              status: input.status,
+              publishedAt: input.status === "approved" ? new Date() : null,
+              statusReason:
+                input.status === "archived"
+                  ? "Archived by admin"
+                  : "Restored by admin",
+            }
+          : {}),
+        searchDocument: buildSearchDocument({
+          title: nextTitle,
+          summary: nextSummary,
+          description: nextDescription,
+          brandName: existing.brand?.name,
+          categoryName: category.name,
+          sku: existing.variants[0]?.sku,
+        }),
+        version: { increment: 1 },
+      },
+    });
+
+    if (input.imageUrl) {
+      await tx.productImage.deleteMany({ where: { productId: product.id } });
+      await tx.productImage.create({
+        data: {
+          productId: product.id,
+          url: input.imageUrl,
+          altText: product.title,
+          sortOrder: 0,
+          isPrimary: true,
+        },
+      });
+    }
+
+    // Keep sibling offer copy in sync for the same shared listing.
+    if (existing.sharedListingKey) {
+      await tx.product.updateMany({
+        where: {
+          sharedListingKey: existing.sharedListingKey,
+          id: { not: product.id },
+          status: { not: "archived" },
+        },
+        data: {
+          title: nextTitle,
+          summary: nextSummary,
+          description: nextDescription,
+          categoryId,
+          ...(input.countryOfOrigin !== undefined
+            ? { countryOfOrigin: input.countryOfOrigin }
+            : {}),
+          ...(input.hsnCode !== undefined ? { hsnCode: input.hsnCode } : {}),
+        },
+      });
+      if (input.imageUrl) {
+        const siblings = await tx.product.findMany({
+          where: {
+            sharedListingKey: existing.sharedListingKey,
+            id: { not: product.id },
+            status: { not: "archived" },
+          },
+          select: { id: true, title: true },
+        });
+        for (const sibling of siblings) {
+          await tx.productImage.deleteMany({ where: { productId: sibling.id } });
+          await tx.productImage.create({
+            data: {
+              productId: sibling.id,
+              url: input.imageUrl,
+              altText: sibling.title,
+              sortOrder: 0,
+              isPrimary: true,
+            },
+          });
+        }
+      }
+    }
+
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "product.catalogue_updated",
+        targetType: "product",
+        targetId: product.id,
+        beforeState: {
+          title: existing.title,
+          status: existing.status,
+          categoryId: existing.categoryId,
+        },
+        afterState: {
+          title: product.title,
+          status: product.status,
+          categoryId: product.categoryId,
+        },
+        reason: "Admin updated catalogue product",
+        correlationId,
+      },
+    });
+
+    return product;
   });
 }
 
@@ -808,17 +1207,16 @@ export async function getSellerProduct(
   });
 }
 
+/**
+ * Closed catalogue: sellers may only change price, stock, or pause/unlist.
+ * Title, specs, and images are admin-owned.
+ */
 export async function updateSellerProduct(
   actor: Actor,
   input: {
     sellerId: string;
     productId: string;
-    title?: string;
-    summary?: string;
-    description?: string;
-    categoryId?: string;
-    status?: "draft" | "archived" | "approved";
-    imageUrl?: string;
+    status?: "draft" | "archived";
     variant?: {
       id: string;
       mrpPaise?: number;
@@ -833,23 +1231,10 @@ export async function updateSellerProduct(
     where: { id: input.productId, sellerId: input.sellerId },
     include: {
       variants: { include: { inventory: true } },
-      images: { orderBy: { sortOrder: "asc" }, take: 1 },
     },
   });
   if (!existing) {
     throw new NotFoundError("Product not found");
-  }
-
-  if (input.categoryId != null && input.categoryId !== existing.categoryId) {
-    const category = await prisma.category.findFirst({
-      where: { id: input.categoryId, isActive: true },
-    });
-    if (!category) {
-      throw new HttpValidationError("Category not found or inactive", {
-        categoryId: ["Category not found or inactive"],
-      });
-    }
-    assertPcCategory(category);
   }
 
   if (input.variant) {
@@ -870,19 +1255,10 @@ export async function updateSellerProduct(
     }
   }
 
-  const contentChanged =
-    (input.title != null && input.title !== existing.title) ||
-    (input.summary != null && input.summary !== existing.summary) ||
-    (input.description != null && input.description !== existing.description) ||
-    (input.categoryId != null && input.categoryId !== existing.categoryId) ||
-    (input.imageUrl != null &&
-      input.imageUrl !== (existing.images[0]?.url ?? null));
-
   return prisma.$transaction(async (tx) => {
     let nextStatus = existing.status;
     let statusReason = existing.statusReason;
     let publishedAt = existing.publishedAt;
-    let submittedAt = existing.submittedAt;
 
     if (input.status === "archived" || input.status === "draft") {
       assertProductTransition(existing.status, input.status);
@@ -890,41 +1266,17 @@ export async function updateSellerProduct(
       publishedAt = null;
       statusReason =
         input.status === "archived" ? "Paused by seller" : statusReason;
-    } else if (contentChanged && existing.status === "approved") {
-      assertProductTransition("approved", "submitted");
-      nextStatus = "submitted";
-      publishedAt = null;
-      submittedAt = new Date();
-      statusReason = "Seller updated listing content — awaiting review";
     }
 
     const product = await tx.product.update({
       where: { id: existing.id },
       data: {
-        ...(input.title ? { title: input.title } : {}),
-        ...(input.summary ? { summary: input.summary } : {}),
-        ...(input.description ? { description: input.description } : {}),
-        ...(input.categoryId ? { categoryId: input.categoryId } : {}),
         status: nextStatus,
         statusReason,
         publishedAt,
-        submittedAt,
         version: { increment: 1 },
       },
     });
-
-    if (input.imageUrl) {
-      await tx.productImage.deleteMany({ where: { productId: product.id } });
-      await tx.productImage.create({
-        data: {
-          productId: product.id,
-          url: input.imageUrl,
-          altText: product.title,
-          sortOrder: 0,
-          isPrimary: true,
-        },
-      });
-    }
 
     if (input.variant) {
       const variant = existing.variants.find((row) => row.id === input.variant!.id);
@@ -968,26 +1320,17 @@ export async function updateSellerProduct(
     await tx.auditLog.create({
       data: {
         actorId: actor.userId,
-        action: contentChanged
-          ? "product.seller_content_updated"
-          : "product.seller_updated",
+        action: "product.seller_updated",
         targetType: "product",
         targetId: product.id,
         beforeState: {
-          title: existing.title,
           status: existing.status,
-          categoryId: existing.categoryId,
         },
         afterState: {
-          title: product.title,
           status: product.status,
-          categoryId: product.categoryId,
-          contentChanged,
           variant: input.variant ?? null,
         },
-        reason: contentChanged
-          ? "Seller updated listing content"
-          : "Seller updated listing",
+        reason: "Seller updated price or stock",
         correlationId,
       },
     });

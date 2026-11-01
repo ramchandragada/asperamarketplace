@@ -129,7 +129,7 @@ describe.runIf(hasDatabase)("catalogue discovery integration", () => {
 
     const sku = `CAT-${suffix.toUpperCase()}`;
     const created = await createProductDraft(
-      sellerActor,
+      adminActor,
       {
         sellerId: sellerDraft.id,
         categoryId: category.id,

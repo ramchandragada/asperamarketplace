@@ -147,7 +147,7 @@ describe.runIf(hasDatabase)("cart checkout integration", () => {
     );
 
     const created = await createProductDraft(
-      sellerActor,
+      adminActor,
       {
         sellerId: sellerDraft.id,
         categoryId: category.id,

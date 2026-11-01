@@ -57,28 +57,8 @@ export function SellerProductEditPanel({
       setError("Selling price cannot be greater than MRP");
       return;
     }
-    const title = String(form.get("title") ?? "");
-    const summary = String(form.get("summary") ?? "");
-    const description = String(form.get("description") ?? "");
-    const imageUrl = String(form.get("imageUrl") ?? "").trim();
-    const contentChanged =
-      product.status === "approved" &&
-      (title !== product.title ||
-        summary !== product.summary ||
-        description !== product.description ||
-        (imageUrl !== "" && imageUrl !== (product.images[0]?.url ?? "")));
-    if (contentChanged) {
-      const confirmed = window.confirm(
-        "This will unpublish the listing until it's re-approved. Continue?",
-      );
-      if (!confirmed) return;
-    }
     const payload = {
       sellerId,
-      title,
-      summary,
-      description,
-      imageUrl: imageUrl || undefined,
       variant: {
         id: variant.id,
         mrpPaise: paiseFromRupees(mrpRupees),
@@ -121,25 +101,6 @@ export function SellerProductEditPanel({
     setMessage(status === "archived" ? "Listing paused" : "Moved to draft");
   }
 
-  async function submit() {
-    setError(null);
-    setMessage(null);
-    const response = await fetch("/api/seller/products/submit", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ productId: product.id }),
-    });
-    const body = (await response.json()) as {
-      message?: string;
-      fieldErrors?: Record<string, string[]> | null;
-    };
-    if (!response.ok) {
-      setError(apiErrorMessage(body, "Submit failed"));
-      return;
-    }
-    setMessage(body.message ?? "Submitted for review");
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -148,9 +109,7 @@ export function SellerProductEditPanel({
           {product.statusReason ? (
             <p
               className={`text-sm ${
-                product.status === "rejected"
-                  ? "text-danger"
-                  : "text-muted"
+                product.status === "rejected" ? "text-danger" : "text-muted"
               }`}
             >
               {product.statusReason}
@@ -165,13 +124,10 @@ export function SellerProductEditPanel({
       {message ? <p className="text-sm text-accent">{message}</p> : null}
       {error ? <p className="text-sm text-danger">{error}</p> : null}
 
-      {product.status === "approved" ? (
-        <p className="rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 text-sm text-warning">
-          Changing title, summary, description, or image will unpublish this
-          listing until an admin re-approves it. Price and stock-only edits keep
-          it live.
-        </p>
-      ) : null}
+      <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-muted">
+        Product title, specs, and images are controlled by Aspera. You can only
+        change price and stock on this listing.
+      </p>
 
       {product.images[0] ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -182,54 +138,20 @@ export function SellerProductEditPanel({
         />
       ) : null}
 
+      <div className="max-w-2xl">
+        <h1 className="text-2xl font-semibold">{product.title}</h1>
+        <p className="mt-2 text-sm text-muted">{product.summary}</p>
+      </div>
+
       <form
         onSubmit={save}
         className="grid max-w-2xl gap-3 rounded-card border border-border bg-surface p-4"
       >
-        <label className="text-sm">
-          Title
-          <input
-            name="title"
-            required
-            defaultValue={product.title}
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          Summary
-          <input
-            name="summary"
-            required
-            defaultValue={product.summary}
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          Description
-          <textarea
-            name="description"
-            required
-            rows={5}
-            defaultValue={product.description}
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
-        <label className="text-sm">
-          Primary image URL (Unsplash https)
-          <input
-            name="imageUrl"
-            type="url"
-            defaultValue={product.images[0]?.url ?? ""}
-            placeholder="https://images.unsplash.com/photo-..."
-            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-          />
-        </label>
         {variant ? (
           <>
             <p className="text-sm text-muted">
-              SKU {variant.sku} · reserved{" "}
-              {variant.inventory?.reserved ?? 0} · current{" "}
-              {formatPaise(variant.sellingPricePaise)}
+              SKU {variant.sku} · reserved {variant.inventory?.reserved ?? 0} ·
+              current {formatPaise(variant.sellingPricePaise)}
             </p>
             <label className="text-sm">
               MRP (₹)
@@ -272,20 +194,11 @@ export function SellerProductEditPanel({
           type="submit"
           className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground"
         >
-          Save changes
+          Save price &amp; stock
         </button>
       </form>
 
       <div className="flex flex-wrap gap-2">
-        {product.status === "draft" || product.status === "rejected" ? (
-          <button
-            type="button"
-            className="rounded-lg border border-border px-3 py-2 text-sm"
-            onClick={() => void submit()}
-          >
-            Submit for review
-          </button>
-        ) : null}
         {product.status === "approved" ? (
           <button
             type="button"

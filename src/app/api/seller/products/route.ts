@@ -1,10 +1,6 @@
 import { z } from "zod";
 import { requireActor } from "@/modules/identity/service";
-import { createProductSchema } from "@/modules/catalogue/schema";
-import {
-  createProductDraft,
-  listSellerProducts,
-} from "@/modules/catalogue/service";
+import { listSellerProducts } from "@/modules/catalogue/service";
 import { resolveSellerForActor } from "@/modules/seller/access";
 import { AuthorizationError } from "@/modules/identity/policy";
 import { assertUuid } from "@/platform/http/errors";
@@ -100,16 +96,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const requestId = getRequestId(request);
-  try {
-    const actor = await requireActor();
-    const raw = await request.json();
-    const body = createProductSchema.parse(raw);
-    const created = await createProductDraft(actor, body, requestId);
-    return jsonOk(created, requestId, {
-      status: 201,
-      message: "Product draft created",
-    });
-  } catch (error) {
-    return jsonError(requestId, error);
-  }
+  // Closed catalogue: sellers list existing SKUs via /api/seller/products/offer.
+  void request;
+  return jsonError(
+    requestId,
+    new AuthorizationError(
+      "Sellers cannot create products. Pick an approved catalogue SKU and set price and stock via the offer API.",
+    ),
+  );
 }

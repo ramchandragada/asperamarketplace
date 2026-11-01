@@ -81,7 +81,7 @@ export const asperaLegal = {
   },
   /** Live serviceable area until more pins / warehouses are configured. */
   serviceableAreaSummary:
-    "Pune Express pins starting with 411 (Maharashtra), prepaid delivery only",
+    "Pune Express pins starting with 411 (Maharashtra); COD available, online prepaid next",
   governingLaw: "Laws of India; exclusive jurisdiction of courts at Pune, Maharashtra",
   website: "https://aspera.market",
 } as const;

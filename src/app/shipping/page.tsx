@@ -43,7 +43,7 @@ export default function ShippingPage() {
 
       <h2 className="mt-8 text-lg font-semibold">Payment and dispatch</h2>
       <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm text-muted">
-        <li>Prepaid only — no cash on delivery.</li>
+        <li>Cash on delivery available on Pune Express pins; online prepaid returns when the gateway goes live.</li>
         <li>
           Dispatch starts after the payment gateway webhook confirms capture.
         </li>

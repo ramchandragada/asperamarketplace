@@ -60,5 +60,7 @@ export function fulfilmentStatusLabel(status: string): string {
 /** A friendly provider name instead of a slug like "mock". */
 export function paymentProviderLabel(provider: string): string {
   if (provider === "mock") return "Online payment";
+  if (provider === "cod") return "Cash on delivery";
+  if (provider === "razorpay") return "Razorpay";
   return humanize(provider);
 }

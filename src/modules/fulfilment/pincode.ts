@@ -81,7 +81,6 @@ export function checkPincodeServiceability(raw: string): PincodeCheckResult {
     };
   }
 
-  // COD is not offered — prepaid only.
   const known = puneExpressMeta(postalCode);
   if (known) {
     const etaLabel = formatEtaMinutes(known.etaMinutes);
@@ -93,8 +92,9 @@ export function checkPincodeServiceability(raw: string): PincodeCheckResult {
       etaLabel,
       etaMinutes: known.etaMinutes,
       express: known.express,
-      codAvailable: false,
-      message: `Pune Express · usually ${etaLabel} when in stock · Fulfilled by seller · Prepaid`,
+      // COD enabled so orders can complete while Razorpay goes live later.
+      codAvailable: true,
+      message: `Pune Express · usually ${etaLabel} when in stock · Fulfilled by seller · COD available`,
     };
   }
 

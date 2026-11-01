@@ -120,6 +120,7 @@ export async function createOrderFromCheckout(
   }
 
   const snapshot = checkout.snapshot as CheckoutSnapshot;
+  const paymentMethod = input.paymentMethod ?? "cod";
   const created = await prisma.$transaction(async (tx) => {
     const order = await tx.order.create({
       data: {
@@ -128,7 +129,10 @@ export async function createOrderFromCheckout(
         checkoutSessionId: checkout.id,
         addressId: checkout.addressId,
         status: "awaiting_payment",
-        snapshot,
+        snapshot: {
+          ...snapshot,
+          paymentMethod,
+        },
         subtotalPaise: checkout.subtotalPaise,
         discountPaise: checkout.discountPaise,
         shippingPaise: checkout.shippingPaise,
@@ -184,6 +188,7 @@ export async function createOrderFromCheckout(
           orderNumber: order.orderNumber,
           status: order.status,
           totalPaise: order.totalPaise,
+          paymentMethod,
         },
         reason: "Order created from reserved checkout",
         correlationId,
@@ -198,11 +203,16 @@ export async function createOrderFromCheckout(
           orderNumber: order.orderNumber,
           totalPaise: order.totalPaise,
           userId: actor.userId,
+          paymentMethod,
         },
       },
     });
     return order;
   });
+
+  if (paymentMethod === "cod") {
+    await confirmCodOrder(created.id, actor.userId, correlationId);
+  }
 
   const body = { order: await serializeOrder(created.id) };
   await completeIdempotentCommand({
@@ -212,6 +222,58 @@ export async function createOrderFromCheckout(
     responseBody: body,
   });
   return body;
+}
+
+/** Confirm a COD order: collect cash on delivery; no gateway capture. */
+async function confirmCodOrder(
+  orderId: string,
+  userId: string,
+  correlationId: string,
+) {
+  const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+  if (order.status !== "awaiting_payment") return;
+
+  const providerReference = `cod_${order.id.replace(/-/g, "").slice(0, 24)}`;
+  const payment = await prisma.paymentAttempt.create({
+    data: {
+      orderId: order.id,
+      userId,
+      provider: "cod",
+      providerReference,
+      status: "pending",
+      amountPaise: order.totalPaise,
+      currencyCode: order.currencyCode,
+      clientSecret: null,
+      idempotencyKey: `cod-${order.id}`,
+      rawCreateResponse: { method: "cod" },
+    },
+  });
+
+  const providerEventId = `cod_evt_${order.id}`;
+  const rawPayload = JSON.stringify({
+    id: providerEventId,
+    type: "payment.succeeded",
+    data: { providerReference, method: "cod" },
+  });
+  await prisma.paymentWebhookEvent.create({
+    data: {
+      provider: "cod",
+      providerEventId,
+      paymentAttemptId: payment.id,
+      eventType: "payment.succeeded",
+      payloadHash: createHash("sha256").update(rawPayload).digest("hex"),
+      signatureValid: true,
+      rawPayload: JSON.parse(rawPayload),
+      processed: false,
+    },
+  });
+
+  await markPaymentSucceeded(
+    payment.id,
+    providerEventId,
+    "cod",
+    correlationId,
+  );
 }
 
 export async function startPayment(
@@ -677,6 +739,7 @@ async function markPaymentSucceeded(
         taxPaise: payment.order.taxPaise,
         totalPaise: payment.order.totalPaise,
       },
+      collectionMode: payment.provider === "cod" ? "cod" : "prepaid",
     });
 
     const periodMonth = `${paidAt.getUTCFullYear()}-${String(
@@ -757,7 +820,10 @@ async function markPaymentSucceeded(
           invoiceNumber: document.invoiceNumber,
           ecoGstinTcs: asperaLegal.gstinTcs,
         },
-        reason: "Verified payment webhook",
+        reason:
+          providerName === "cod"
+            ? "COD order confirmed — collect cash on delivery"
+            : "Verified payment webhook",
         correlationId,
       },
     });
@@ -770,6 +836,7 @@ async function markPaymentSucceeded(
           orderNumber: payment.order.orderNumber,
           totalPaise: payment.order.totalPaise,
           invoiceNumber: document.invoiceNumber,
+          collectionMode: providerName === "cod" ? "cod" : "prepaid",
         },
       },
     });
@@ -791,7 +858,7 @@ async function markPaymentSucceeded(
   const sent = await notifier.send({
     channel: "email",
     recipient: payment.order.user.email,
-    templateKey: "order.paid",
+    templateKey: providerName === "cod" ? "order.cod_confirmed" : "order.paid",
     payload: {
       orderNumber: payment.order.orderNumber,
       totalPaise: payment.order.totalPaise,
@@ -801,7 +868,7 @@ async function markPaymentSucceeded(
     data: {
       channel: "email",
       recipient: payment.order.user.email,
-      templateKey: "order.paid",
+      templateKey: providerName === "cod" ? "order.cod_confirmed" : "order.paid",
       payload: {
         orderNumber: payment.order.orderNumber,
         totalPaise: payment.order.totalPaise,

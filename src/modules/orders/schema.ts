@@ -4,6 +4,11 @@ import { dbUuid } from "@/platform/validation/id";
 export const createOrderFromCheckoutSchema = z.object({
   checkoutSessionId: dbUuid,
   idempotencyKey: z.string().trim().min(8).max(120),
+  /**
+   * `cod` confirms the order immediately (cash collected on delivery).
+   * `prepaid` leaves the order awaiting gateway capture (Razorpay later).
+   */
+  paymentMethod: z.enum(["cod", "prepaid"]).default("cod"),
 });
 
 export const startPaymentSchema = z.object({

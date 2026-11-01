@@ -6,8 +6,12 @@ import {
   discountPercent,
   formatPaise,
   paiseFromRupees,
+  rupeesFromPaise,
 } from "@/modules/catalogue/helpers";
-import { ProductSourcePicker } from "@/components/product-source-picker";
+import {
+  ProductSourcePicker,
+  type CataloguePickSelection,
+} from "@/components/product-source-picker";
 import { apiErrorMessage } from "@/platform/http/api-error-message";
 
 type SellerProduct = {
@@ -55,8 +59,21 @@ export function SellerCataloguePanel({
   const [status, setStatus] = useState(initialStatus);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [offerSku, setOfferSku] = useState("");
+  const [offerVariantTitle, setOfferVariantTitle] = useState("Standard");
+  const [offerMrpRupees, setOfferMrpRupees] = useState("");
+  const [offerSellingRupees, setOfferSellingRupees] = useState("");
+  const [pickerKey, setPickerKey] = useState(0);
   const pageSize = initialPageSize;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
+
+  function applyCataloguePick(selection: CataloguePickSelection | null) {
+    if (!selection) return;
+    setOfferSku(selection.catalogueSku);
+    setOfferVariantTitle(selection.variantTitle || "Standard");
+    setOfferMrpRupees(rupeesFromPaise(selection.mrpPaise));
+    setOfferSellingRupees(rupeesFromPaise(selection.sellingPricePaise));
+  }
 
   const statusOptions = useMemo(
     () => ["", "draft", "submitted", "approved", "rejected", "archived"],
@@ -143,6 +160,11 @@ export function SellerCataloguePanel({
       body.message ?? "Listing live — manage price and stock from your catalogue",
     );
     event.currentTarget.reset();
+    setOfferSku("");
+    setOfferVariantTitle("Standard");
+    setOfferMrpRupees("");
+    setOfferSellingRupees("");
+    setPickerKey((value) => value + 1);
     await refresh({ page: 1 });
   }
 
@@ -159,16 +181,22 @@ export function SellerCataloguePanel({
           List from catalogue
         </h2>
         <p className="sm:col-span-2 text-sm text-muted">
-          Pick an admin-approved SKU. You only set your price, SKU, and stock —
-          product title, specs, and images stay with Aspera.
+          Select Category → Sub category → Brand → Product → SKU. You only set
+          your price and stock — product identity stays with Aspera.
         </p>
-        <ProductSourcePicker name="sourceProductId" />
+        <ProductSourcePicker
+          key={pickerKey}
+          name="sourceProductId"
+          onSelect={applyCataloguePick}
+        />
         <label className="text-sm">
           Your SKU
           <input
             name="offerSku"
             required
             pattern="[A-Z0-9-]+"
+            value={offerSku}
+            onChange={(event) => setOfferSku(event.target.value.toUpperCase())}
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 uppercase"
           />
         </label>
@@ -176,7 +204,8 @@ export function SellerCataloguePanel({
           Variant title
           <input
             name="offerVariantTitle"
-            defaultValue="Standard"
+            value={offerVariantTitle}
+            onChange={(event) => setOfferVariantTitle(event.target.value)}
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />
         </label>
@@ -188,6 +217,8 @@ export function SellerCataloguePanel({
             required
             min={0.01}
             step="0.01"
+            value={offerMrpRupees}
+            onChange={(event) => setOfferMrpRupees(event.target.value)}
             placeholder="e.g. 499"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />
@@ -200,6 +231,8 @@ export function SellerCataloguePanel({
             required
             min={0.01}
             step="0.01"
+            value={offerSellingRupees}
+            onChange={(event) => setOfferSellingRupees(event.target.value)}
             placeholder="e.g. 399"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />

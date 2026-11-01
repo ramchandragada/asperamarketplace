@@ -33,6 +33,7 @@ import {
   type SubmitProductInput,
   type UpdateAdminCatalogueProductInput,
 } from "@/modules/catalogue/schema";
+import { CATALOGUE_PICK_GROUPS } from "@/modules/catalogue/pick-groups";
 import { asperaLegal } from "@/platform/config/aspera-legal";
 import {
   HttpValidationError,
@@ -2106,6 +2107,146 @@ async function attachPrimaryImages<
       primaryImageAlt: image?.altText ?? item.title,
     };
   });
+}
+
+/**
+ * Closed-catalogue seller pick: Category (group) → Sub-category → Brand → Product → SKU.
+ */
+export async function listCataloguePickTree() {
+  const categories = await listActiveCategories();
+  const bySlug = new Map(categories.map((row) => [row.slug, row]));
+
+  // Prefer real parent/child rows when present.
+  const roots = categories.filter((row) => row.parentId == null);
+  const hasTree = categories.some((row) => row.parentId != null);
+  if (hasTree) {
+    return {
+      mode: "tree" as const,
+      categories: roots.map((root) => ({
+        id: root.id,
+        key: root.slug,
+        name: root.name,
+        slug: root.slug,
+        children: categories
+          .filter((child) => child.parentId === root.id)
+          .map((child) => ({
+            id: child.id,
+            slug: child.slug,
+            name: child.name,
+            productCount: child.productCount,
+          })),
+      })),
+    };
+  }
+
+  return {
+    mode: "groups" as const,
+    categories: CATALOGUE_PICK_GROUPS.map((group) => ({
+      id: group.key,
+      key: group.key,
+      name: group.name,
+      slug: group.key,
+      children: group.categorySlugs
+        .map((slug) => bySlug.get(slug))
+        .filter((row): row is (typeof categories)[number] => row != null)
+        .map((child) => ({
+          id: child.id,
+          slug: child.slug,
+          name: child.name,
+          productCount: child.productCount,
+        })),
+    })).filter((group) => group.children.length > 0),
+  };
+}
+
+export type CataloguePickProduct = {
+  id: string;
+  slug: string;
+  title: string;
+  brandName: string | null;
+  categorySlug: string;
+  imageUrl: string | null;
+  sharedListingKey: string | null;
+  variants: Array<{
+    id: string;
+    sku: string;
+    title: string;
+    mrpPaise: number;
+    sellingPricePaise: number;
+  }>;
+};
+
+/** Approved catalogue listings for a leaf category (+ optional brand), deduped by sharedListingKey. */
+export async function listCataloguePickProducts(input: {
+  categorySlug: string;
+  brandSlug?: string;
+}): Promise<CataloguePickProduct[]> {
+  const categorySlug = input.categorySlug.trim();
+  const brandSlug = input.brandSlug?.trim() || undefined;
+  if (!categorySlug) return [];
+
+  const products = await prisma.product.findMany({
+    where: {
+      status: "approved",
+      category: { slug: categorySlug, isActive: true },
+      ...(brandSlug ? { brand: { slug: brandSlug } } : {}),
+    },
+    orderBy: [{ title: "asc" }, { createdAt: "asc" }],
+    include: {
+      brand: { select: { name: true, slug: true } },
+      category: { select: { slug: true } },
+      seller: { select: { tradeName: true } },
+      images: {
+        where: { isPrimary: true },
+        take: 1,
+        orderBy: { sortOrder: "asc" },
+      },
+      variants: {
+        where: { isActive: true },
+        orderBy: { sellingPricePaise: "asc" },
+        select: {
+          id: true,
+          sku: true,
+          title: true,
+          mrpPaise: true,
+          sellingPricePaise: true,
+        },
+      },
+    },
+    take: 200,
+  });
+
+  const chosen = new Map<string, (typeof products)[number]>();
+  for (const product of products) {
+    if (product.variants.length === 0) continue;
+    const key = product.sharedListingKey ?? `solo:${product.id}`;
+    const existing = chosen.get(key);
+    if (!existing) {
+      chosen.set(key, product);
+      continue;
+    }
+    // Prefer the marketplace catalogue shell over dealer copies.
+    const existingIsCatalogue =
+      existing.seller.tradeName === CATALOGUE_OWNER_TRADE_NAME;
+    const nextIsCatalogue =
+      product.seller.tradeName === CATALOGUE_OWNER_TRADE_NAME;
+    if (!existingIsCatalogue && nextIsCatalogue) {
+      chosen.set(key, product);
+    }
+  }
+
+  return [...chosen.values()]
+    .sort((a, b) => a.title.localeCompare(b.title))
+    .map((product) => ({
+      id: product.id,
+      slug: product.slug,
+      title: product.title,
+      brandName: product.brand?.name ?? null,
+      categorySlug: product.category.slug,
+      imageUrl: product.images[0]?.url ?? null,
+      sharedListingKey: product.sharedListingKey,
+      variants: product.variants,
+    }));
 }
 
 export class CatalogueValidationError extends Error {

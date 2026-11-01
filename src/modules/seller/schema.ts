@@ -51,6 +51,18 @@ export const reviewSellerSchema = z.object({
   expectedVersion: z.number().int().positive(),
 });
 
+/** Admin: attach a verified Regular GSTIN so a shop can go live. */
+export const adminSetSellerGstinSchema = z.object({
+  sellerId: dbUuid,
+  gstin: createSellerDraftSchema.shape.gstin,
+  registeredState: indianState,
+  pickupCity: z.string().trim().min(2).max(80),
+  expectedVersion: z.number().int().positive(),
+  /** When true, re-approve suspended sellers missing GSTIN and republish drafts. */
+  republish: z.boolean().default(true),
+});
+
 export type CreateSellerDraftInput = z.infer<typeof createSellerDraftSchema>;
 export type SubmitSellerInput = z.infer<typeof submitSellerSchema>;
 export type ReviewSellerInput = z.infer<typeof reviewSellerSchema>;
+export type AdminSetSellerGstinInput = z.infer<typeof adminSetSellerGstinSchema>;

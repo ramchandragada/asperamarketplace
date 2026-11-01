@@ -58,12 +58,11 @@ export const asperaLegal = {
     "grievance@asperamarketplace.com",
   /**
    * Named grievance officer under Consumer Protection (E-commerce) Rules, 2020.
-   * Override SITE_GRIEVANCE_OFFICER_* in production with the appointed person.
+   * Production sets SITE_GRIEVANCE_OFFICER_NAME to the appointed person.
    */
   grievanceOfficer: {
     name:
-      process.env.SITE_GRIEVANCE_OFFICER_NAME?.trim() ||
-      "Head of Marketplace Operations",
+      process.env.SITE_GRIEVANCE_OFFICER_NAME?.trim() || "Ramchandra Gada",
     designation:
       process.env.SITE_GRIEVANCE_OFFICER_TITLE?.trim() || "Grievance Officer",
     email:

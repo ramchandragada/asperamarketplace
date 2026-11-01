@@ -223,6 +223,11 @@ export function FinanceConsolePanel({
             Export GSTR-8 CSV (current month)
           </a>
         </p>
+        <p className="text-xs text-muted">
+          GSTR-8 for ECO GSTIN <span className="font-mono">27AAXCA0147N1CF</span>{" "}
+          is export-only — the accountant files on GSTN. This console does not
+          auto-file.
+        </p>
         <form
           className="flex flex-wrap items-end gap-2 text-sm"
           onSubmit={(event) => {

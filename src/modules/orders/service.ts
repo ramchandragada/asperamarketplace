@@ -357,8 +357,8 @@ export async function startPayment(
       providerReference: payment.providerReference,
       clientSecret: payment.clientSecret,
       amountPaise: payment.amountPaise,
-      publicKey:
-        payment.provider === "razorpay" ? payment.clientSecret : null,
+      /** Razorpay Checkout.js key id (also mirrored on clientSecret for razorpay). */
+      publicKey: created.publicKey ?? null,
     },
   };
   await completeIdempotentCommand({

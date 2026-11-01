@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { PC_CATEGORY_SLUGS } from "@/modules/catalogue/pc-catalogue-data";
 import { prisma } from "@/platform/db/prisma";
 
 export const dynamic = "force-dynamic";
@@ -38,13 +39,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const [products, categories, sellers] = await Promise.all([
       prisma.product.findMany({
-        where: { status: "approved" },
+        where: {
+          status: "approved",
+          category: { isActive: true, slug: { in: [...PC_CATEGORY_SLUGS] } },
+        },
         select: { slug: true, updatedAt: true },
         take: 5000,
         orderBy: { updatedAt: "desc" },
       }),
       prisma.category.findMany({
-        where: { isActive: true },
+        where: { isActive: true, slug: { in: [...PC_CATEGORY_SLUGS] } },
         select: { slug: true, updatedAt: true },
       }),
       prisma.seller.findMany({

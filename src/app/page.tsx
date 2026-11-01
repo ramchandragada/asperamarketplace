@@ -21,11 +21,17 @@ import {
   listActiveCategories,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
+import { PC_CATEGORY_SLUGS } from "@/modules/catalogue/pc-catalogue-data";
 import { prisma } from "@/platform/db/prisma";
 import { slugify } from "@/modules/catalogue/helpers";
 import { ASPERA_BRAND_LANES, ASPERA_CATEGORY_TILES } from "@/lib/mega-menu";
 
 export const dynamic = "force-dynamic";
+
+const pcProductWhere = {
+  status: "approved" as const,
+  category: { isActive: true, slug: { in: [...PC_CATEGORY_SLUGS] } },
+};
 
 /** Build lanes — Gaming / Creator / Office */
 const BUILD_LANES = [
@@ -141,10 +147,10 @@ export default async function Home() {
         legalName: true,
         status: true,
         _count: {
-          select: { products: { where: { status: "approved" } } },
+          select: { products: { where: pcProductWhere } },
         },
         products: {
-          where: { status: "approved" },
+          where: pcProductWhere,
           select: {
             category: { select: { name: true } },
             images: {

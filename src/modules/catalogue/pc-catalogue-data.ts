@@ -86,6 +86,11 @@ export const PC_CATEGORIES: PcCategoryDef[] = [
   }
 ];
 
+/** Slugs allowed on the public storefront and closed-catalogue pick tree. */
+export const PC_CATEGORY_SLUGS: readonly string[] = PC_CATEGORIES.map(
+  (category) => category.slug,
+);
+
 export const PC_BRANDS: PcBrandDef[] = [
   {
     "slug": "acer",

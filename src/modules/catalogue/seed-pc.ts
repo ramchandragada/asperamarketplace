@@ -152,10 +152,11 @@ export async function seedPcCatalogue(
     sellerHasGstin[seller.key] = Boolean(row.gstin);
   }
 
-  // Hard-delete leftover non-PC products so reseeds cannot revive fashion/demo data.
-  // Products still referenced by orders need `scripts/hard-purge-non-pc.ts`.
+  // Hard-delete leftover non-PC products (wrong category). Do NOT key off product
+  // slug — seller offers use unique slugs and must survive reseed.
+  // Products still referenced by orders need `scripts/purge-non-pc-by-category.ts`.
   const nonPcProducts = await prisma.product.findMany({
-    where: { slug: { notIn: pcProductSlugs } },
+    where: { category: { slug: { notIn: pcCategorySlugs } } },
     select: { id: true },
   });
   const nonPcIds = nonPcProducts.map((p) => p.id);

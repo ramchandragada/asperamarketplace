@@ -79,7 +79,17 @@ export const adminSetSellerGstinSchema = z.object({
   republish: z.boolean().default(true),
 });
 
+/** Admin: permanently remove a non-live seller application (frees GSTIN). */
+export const deleteSellerApplicationSchema = z.object({
+  sellerId: dbUuid,
+  expectedVersion: z.number().int().positive(),
+  reason: z.string().trim().min(3).max(500),
+});
+
 export type CreateSellerDraftInput = z.infer<typeof createSellerDraftSchema>;
 export type SubmitSellerInput = z.infer<typeof submitSellerSchema>;
 export type ReviewSellerInput = z.infer<typeof reviewSellerSchema>;
 export type AdminSetSellerGstinInput = z.infer<typeof adminSetSellerGstinSchema>;
+export type DeleteSellerApplicationInput = z.infer<
+  typeof deleteSellerApplicationSchema
+>;

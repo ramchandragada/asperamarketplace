@@ -49,6 +49,19 @@ export type CataloguePickSelection = {
   sellingPricePaise: number;
 };
 
+function selectionFrom(
+  product: ProductOption,
+  variant: VariantOption,
+): CataloguePickSelection {
+  return {
+    sourceProductId: product.id,
+    catalogueSku: variant.sku,
+    variantTitle: variant.title,
+    mrpPaise: variant.mrpPaise,
+    sellingPricePaise: variant.sellingPricePaise,
+  };
+}
+
 /**
  * Closed-catalogue cascade: Category → Sub-category → Brand → Product → SKU.
  * Writes sourceProductId into a hidden input for the offer form.
@@ -111,20 +124,20 @@ export function ProductSourcePicker({
     () => products.find((row) => row.id === productId) ?? null,
     [products, productId],
   );
-  const variants = selectedProduct?.variants ?? [];
+  const variants = useMemo(
+    () => selectedProduct?.variants ?? [],
+    [selectedProduct],
+  );
   const selectedVariant = useMemo(
     () => variants.find((row) => row.id === variantId) ?? null,
     [variants, variantId],
   );
 
   useEffect(() => {
-    if (!categorySlug) {
-      setBrands([]);
-      return;
-    }
+    if (!categorySlug) return;
     let cancelled = false;
-    setLoadingBrands(true);
     void (async () => {
+      if (!cancelled) setLoadingBrands(true);
       try {
         const params = new URLSearchParams({ categorySlug });
         const response = await fetch(`/api/catalogue/pick?${params}`);
@@ -144,13 +157,10 @@ export function ProductSourcePicker({
   }, [categorySlug]);
 
   useEffect(() => {
-    if (!categorySlug || !brandSlug) {
-      setProducts([]);
-      return;
-    }
+    if (!categorySlug || !brandSlug) return;
     let cancelled = false;
-    setLoadingProducts(true);
     void (async () => {
+      if (!cancelled) setLoadingProducts(true);
       try {
         const params = new URLSearchParams({ categorySlug, brandSlug });
         const response = await fetch(`/api/catalogue/pick?${params}`);
@@ -169,40 +179,60 @@ export function ProductSourcePicker({
     };
   }, [categorySlug, brandSlug]);
 
-  useEffect(() => {
-    if (!selectedProduct) {
+  function clearBelowGroup() {
+    setCategorySlug("");
+    setBrandSlug("");
+    setProductId("");
+    setVariantId("");
+    setProducts([]);
+    setBrands([]);
+    onSelect?.(null);
+  }
+
+  function clearBelowCategory() {
+    setBrandSlug("");
+    setProductId("");
+    setVariantId("");
+    setBrands([]);
+    setProducts([]);
+    onSelect?.(null);
+  }
+
+  function clearBelowBrand() {
+    setProductId("");
+    setVariantId("");
+    setProducts([]);
+    onSelect?.(null);
+  }
+
+  function chooseProduct(nextProductId: string) {
+    setProductId(nextProductId);
+    const product = products.find((row) => row.id === nextProductId) ?? null;
+    if (!product || product.variants.length === 0) {
       setVariantId("");
       onSelect?.(null);
       return;
     }
-    if (selectedProduct.variants.length === 1) {
-      const only = selectedProduct.variants[0]!;
+    if (product.variants.length === 1) {
+      const only = product.variants[0]!;
       setVariantId(only.id);
-      onSelect?.({
-        sourceProductId: selectedProduct.id,
-        catalogueSku: only.sku,
-        variantTitle: only.title,
-        mrpPaise: only.mrpPaise,
-        sellingPricePaise: only.sellingPricePaise,
-      });
+      onSelect?.(selectionFrom(product, only));
       return;
     }
-    const variant = selectedProduct.variants.find((row) => row.id === variantId);
-    if (!variant) {
-      setVariantId("");
+    setVariantId("");
+    onSelect?.(null);
+  }
+
+  function chooseVariant(nextVariantId: string) {
+    setVariantId(nextVariantId);
+    const product = selectedProduct;
+    const variant = product?.variants.find((row) => row.id === nextVariantId);
+    if (!product || !variant) {
       onSelect?.(null);
       return;
     }
-    onSelect?.({
-      sourceProductId: selectedProduct.id,
-      catalogueSku: variant.sku,
-      variantTitle: variant.title,
-      mrpPaise: variant.mrpPaise,
-      sellingPricePaise: variant.sellingPricePaise,
-    });
-    // onSelect identity is unstable from parents; selection fields are the trigger.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedProduct, variantId]);
+    onSelect?.(selectionFrom(product, variant));
+  }
 
   const selectClass =
     "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2";
@@ -228,12 +258,7 @@ export function ProductSourcePicker({
           className={selectClass}
           onChange={(event) => {
             setGroupKey(event.target.value);
-            setCategorySlug("");
-            setBrandSlug("");
-            setProductId("");
-            setVariantId("");
-            setProducts([]);
-            setBrands([]);
+            clearBelowGroup();
           }}
         >
           <option value="">Select category</option>
@@ -254,10 +279,7 @@ export function ProductSourcePicker({
           className={selectClass}
           onChange={(event) => {
             setCategorySlug(event.target.value);
-            setBrandSlug("");
-            setProductId("");
-            setVariantId("");
-            setProducts([]);
+            clearBelowCategory();
           }}
         >
           <option value="">Select sub category</option>
@@ -279,8 +301,7 @@ export function ProductSourcePicker({
           className={selectClass}
           onChange={(event) => {
             setBrandSlug(event.target.value);
-            setProductId("");
-            setVariantId("");
+            clearBelowBrand();
           }}
         >
           <option value="">
@@ -302,10 +323,7 @@ export function ProductSourcePicker({
           value={productId}
           disabled={!brandSlug || loadingProducts}
           className={selectClass}
-          onChange={(event) => {
-            setProductId(event.target.value);
-            setVariantId("");
-          }}
+          onChange={(event) => chooseProduct(event.target.value)}
         >
           <option value="">
             {loadingProducts ? "Loading products…" : "Select product"}
@@ -325,7 +343,7 @@ export function ProductSourcePicker({
           value={variantId}
           disabled={!productId || variants.length === 0}
           className={selectClass}
-          onChange={(event) => setVariantId(event.target.value)}
+          onChange={(event) => chooseVariant(event.target.value)}
         >
           <option value="">Select SKU</option>
           {variants.map((variant) => (

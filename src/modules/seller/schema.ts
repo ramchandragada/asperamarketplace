@@ -28,9 +28,9 @@ export const createSellerDraftSchema = z.object({
     .regex(
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/,
       "Enter a valid GSTIN format",
-    )
-    .optional(),
+    ),
   registeredState: indianState,
+  pickupCity: z.string().trim().min(2).max(80),
 });
 
 export const submitSellerSchema = z.object({

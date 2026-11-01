@@ -35,6 +35,8 @@ type Settlement = {
   status: string;
   grossPaise: number;
   commissionPaise: number;
+  tcsPaise?: number;
+  tcsSupplyType?: string | null;
   netPaise: number;
   periodStart: string;
   periodEnd: string;
@@ -213,11 +215,41 @@ export function FinanceConsolePanel({
             </li>
           ))}
         </ul>
-        <p className="text-sm">
+        <p className="flex flex-wrap gap-4 text-sm">
           <a href="/api/finance/export" className="underline">
             Export settlements CSV
           </a>
+          <a href="/api/finance/gstr8" className="underline">
+            Export GSTR-8 CSV (current month)
+          </a>
         </p>
+        <form
+          className="flex flex-wrap items-end gap-2 text-sm"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            const period = String(form.get("period") ?? "").trim();
+            if (!/^\d{4}-\d{2}$/.test(period)) {
+              setError("Period must be YYYY-MM");
+              return;
+            }
+            window.location.href = `/api/finance/gstr8?period=${encodeURIComponent(period)}`;
+          }}
+        >
+          <label className="flex flex-col gap-1">
+            GSTR-8 period (YYYY-MM)
+            <input
+              name="period"
+              placeholder="2026-11"
+              pattern="\d{4}-\d{2}"
+              required
+              className="border border-black/20 bg-transparent px-3 py-2 font-mono text-xs"
+            />
+          </label>
+          <button type="submit" className="underline">
+            Download GSTR-8 CSV
+          </button>
+        </form>
       </section>
 
       <section className="flex flex-col gap-3">
@@ -270,7 +302,9 @@ export function FinanceConsolePanel({
               </p>
               <p className="text-muted">
                 Gross {formatPaise(batch.grossPaise)} · Commission{" "}
-                {formatPaise(batch.commissionPaise)} · Net{" "}
+                {formatPaise(batch.commissionPaise)} · TCS s.52{" "}
+                {formatPaise(batch.tcsPaise ?? 0)}
+                {batch.tcsSupplyType ? ` (${batch.tcsSupplyType})` : ""} · Net{" "}
                 {formatPaise(batch.netPaise)}
               </p>
               {batch.status === "pending" || batch.status === "held" ? (

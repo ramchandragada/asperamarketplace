@@ -504,8 +504,10 @@ export function OrderDetailPanel({ order }: { order: OrderDetail }) {
               <a
                 href={`/api/orders/${order.id}/invoices/${invoice.id}`}
                 className="text-accent underline"
+                target="_blank"
+                rel="noreferrer"
               >
-                Download
+                View / print invoice
               </a>
             </li>
           ))}

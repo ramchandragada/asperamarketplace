@@ -494,6 +494,8 @@ export function OrdersPanel({
                       <a
                         href={`/api/orders/${order.id}/invoices/${invoice.id}`}
                         className="text-accent hover:underline"
+                        target="_blank"
+                        rel="noreferrer"
                       >
                         Invoice
                       </a>

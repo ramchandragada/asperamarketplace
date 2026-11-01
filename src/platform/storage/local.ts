@@ -37,10 +37,12 @@ export class LocalObjectStorage implements ObjectStorage {
     contentType: string;
     bytes: Buffer;
   }): Promise<StoredObject> {
-    if (
-      !ALLOWED_TYPES.has(input.contentType) &&
-      !(input.namespace === "invoices" && input.contentType === "application/json")
-    ) {
+    const invoiceOk =
+      input.namespace === "invoices" &&
+      (input.contentType === "application/json" ||
+        input.contentType === "text/html" ||
+        input.contentType.startsWith("text/html;"));
+    if (!ALLOWED_TYPES.has(input.contentType) && !invoiceOk) {
       throw new StorageValidationError(
         "Only PDF, JPEG, and PNG documents are accepted",
       );

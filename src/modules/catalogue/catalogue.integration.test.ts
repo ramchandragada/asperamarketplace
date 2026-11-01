@@ -8,6 +8,7 @@ import {
   submitSellerForReview,
   uploadSellerDocument,
 } from "@/modules/seller/service";
+import { uniqueTestGstin } from "@/modules/seller/test-gstin";
 import {
   createProductDraft,
   ensureGenericCategory,
@@ -88,8 +89,9 @@ describe.runIf(hasDatabase)("catalogue discovery integration", () => {
         contactEmail: `cat-ops-${suffix}@aspera.local`,
         contactPhone: "9876543210",
         pan: "ABCDE1234F",
-        gstin: "29ABCDE1234F1Z5",
+        gstin: uniqueTestGstin(`catalogue-${suffix}`),
         registeredState: "Karnataka",
+        pickupCity: "Bengaluru",
       },
       crypto.randomUUID(),
     );

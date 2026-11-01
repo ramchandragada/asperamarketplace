@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { AdminCatalogueEditPanel } from "@/components/admin-catalogue-edit-panel";
 import { formatPaise } from "@/modules/catalogue/helpers";
+import { apiErrorMessage } from "@/platform/http/api-error-message";
 
 export type AdminProductTab =
   | "pending"
@@ -67,8 +69,8 @@ function buildHref(next: {
   sellerId?: string;
 }) {
   const params = new URLSearchParams();
-  const tab = next.tab ?? "pending";
-  if (tab !== "pending") params.set("tab", tab);
+  const tab = next.tab ?? "approved";
+  if (tab !== "approved") params.set("tab", tab);
   if (next.q) params.set("q", next.q);
   if (next.categoryId) params.set("categoryId", next.categoryId);
   if (next.sellerId) params.set("sellerId", next.sellerId);
@@ -115,6 +117,7 @@ export function AdminProductQueue({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   function hrefFor(overrides: {
     tab?: string;
@@ -161,6 +164,47 @@ export function AdminProductQueue({
     setRejectCode(REJECT_REASONS[0]);
     setRejectNotes("");
     setConfirm({ product, decision });
+  }
+
+  async function setCatalogueStatus(
+    product: AdminProduct,
+    status: "archived" | "approved",
+  ) {
+    const action =
+      status === "archived"
+        ? `Remove “${product.title}” from the catalogue? Sellers will no longer be able to pick this SKU.`
+        : `Restore “${product.title}” to the live catalogue?`;
+    if (!window.confirm(action)) return;
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/admin/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const body = (await response.json()) as {
+        message?: string;
+        fieldErrors?: Record<string, string[]> | null;
+      };
+      if (!response.ok) {
+        setError(apiErrorMessage(body, "Could not update product status"));
+        return;
+      }
+      setMessage(
+        status === "archived"
+          ? "Product removed from catalogue"
+          : "Product restored to catalogue",
+      );
+      setEditingId(null);
+      setExpandedId(null);
+      router.refresh();
+    } catch {
+      setError("Status update failed");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function submitReview() {
@@ -354,13 +398,54 @@ export function AdminProductQueue({
                     <button
                       type="button"
                       className="rounded-lg border border-border px-3 py-2 text-sm"
-                      onClick={() =>
-                        setExpandedId(open ? null : product.id)
-                      }
+                      onClick={() => {
+                        setExpandedId(open ? null : product.id);
+                        if (open) setEditingId(null);
+                      }}
                       aria-expanded={open}
                     >
-                      {open ? "Hide details" : "Review"}
+                      {open ? "Hide details" : "Details"}
                     </button>
+                    {product.status === "approved" ||
+                    product.status === "archived" ? (
+                      <button
+                        type="button"
+                        className="rounded-lg border border-border px-3 py-2 text-sm"
+                        disabled={busy}
+                        onClick={() => {
+                          setExpandedId(product.id);
+                          setEditingId(
+                            editingId === product.id ? null : product.id,
+                          );
+                        }}
+                      >
+                        {editingId === product.id ? "Close edit" : "Edit"}
+                      </button>
+                    ) : null}
+                    {product.status === "approved" ? (
+                      <button
+                        type="button"
+                        className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
+                        disabled={busy}
+                        onClick={() =>
+                          void setCatalogueStatus(product, "archived")
+                        }
+                      >
+                        Delete
+                      </button>
+                    ) : null}
+                    {product.status === "archived" ? (
+                      <button
+                        type="button"
+                        className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground"
+                        disabled={busy}
+                        onClick={() =>
+                          void setCatalogueStatus(product, "approved")
+                        }
+                      >
+                        Restore
+                      </button>
+                    ) : null}
                     {product.status === "submitted" ? (
                       <>
                         <button
@@ -460,6 +545,43 @@ export function AdminProductQueue({
                         >
                           Reject
                         </button>
+                      </div>
+                    ) : null}
+                    {editingId === product.id &&
+                    (product.status === "approved" ||
+                      product.status === "archived") ? (
+                      <AdminCatalogueEditPanel
+                        product={product}
+                        categories={categories}
+                        onDone={() => setEditingId(null)}
+                      />
+                    ) : null}
+                    {product.status === "approved" ||
+                    product.status === "archived" ? (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {product.status === "approved" ? (
+                          <button
+                            type="button"
+                            className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
+                            disabled={busy}
+                            onClick={() =>
+                              void setCatalogueStatus(product, "archived")
+                            }
+                          >
+                            Delete from catalogue
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground"
+                            disabled={busy}
+                            onClick={() =>
+                              void setCatalogueStatus(product, "approved")
+                            }
+                          >
+                            Restore to catalogue
+                          </button>
+                        )}
                       </div>
                     ) : null}
                   </div>

@@ -19,7 +19,8 @@ function parseTab(raw: string | undefined): AdminProductTab {
   if (raw && (TABS as readonly string[]).includes(raw)) {
     return raw as AdminProductTab;
   }
-  return "pending";
+  // Closed catalogue is mostly approved Aspera Catalogue SKUs.
+  return "approved";
 }
 
 export default async function AdminProductsPage({

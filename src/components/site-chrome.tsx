@@ -52,15 +52,23 @@ export async function SiteHeader() {
   const sellerWorkspace = actor
     ? await resolveSellerForActor(actor, "dashboard.read")
     : null;
-  const isSeller =
-    Boolean(sellerWorkspace) || (actor ? actorIsSellerStaff(actor) : false);
+  const isSellerStaff = actor ? actorIsSellerStaff(actor) : false;
+  const isSeller = Boolean(sellerWorkspace) || isSellerStaff;
+  // Approved → dashboard. Staff/owner mid-KYC → onboarding console (not /sell).
+  const sellHref = sellerWorkspace
+    ? "/seller"
+    : isSellerStaff
+      ? "/seller/onboarding"
+      : "/sell";
 
   return (
     <SiteHeaderClient
       cartCount={count}
-      accountHref={actor ? (isSeller ? "/seller" : "/account") : "/login"}
+      accountHref={
+        actor ? (isSeller ? sellHref : "/account") : "/login"
+      }
       accountLabel={actor ? (isSeller ? "Selling" : "Account") : "Account"}
-      sellHref={isSeller ? "/seller" : "/sell"}
+      sellHref={sellHref}
       sellLabel={isSeller ? "Seller console" : "Become a seller"}
       showAdmin={isAdmin}
     />

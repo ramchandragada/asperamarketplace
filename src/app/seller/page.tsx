@@ -60,7 +60,7 @@ export default async function SellerDashboardPage() {
   if (!actor) redirect("/login?next=%2Fseller");
 
   const seller = await resolveSellerForActor(actor, "dashboard.read");
-  if (!seller) redirect("/sell");
+  if (!seller) redirect("/seller/onboarding");
 
   const dash = await getSellerActionDashboard(actor, seller.id);
   const name = dash.tradeName ?? dash.legalName;

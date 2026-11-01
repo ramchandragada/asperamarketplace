@@ -246,6 +246,34 @@ export function AdminSellerQueue({
     router.refresh();
   }
 
+  async function deleteApplication(seller: AdminSeller) {
+    const reason = window.prompt(
+      `Delete ${seller.tradeName ?? seller.legalName}? This frees the GSTIN. Type a reason:`,
+      "Test application removed",
+    );
+    if (!reason || reason.trim().length < 3) return;
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    const response = await fetch("/api/admin/sellers/delete", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        sellerId: seller.id,
+        expectedVersion: seller.version,
+        reason: reason.trim().slice(0, 500),
+      }),
+    });
+    const body = (await response.json()) as { message?: string };
+    setBusy(false);
+    if (!response.ok) {
+      setError(body.message ?? "Could not delete application");
+      return;
+    }
+    setMessage(body.message ?? "Seller application deleted");
+    await refresh();
+  }
+
   async function submitReview() {
     if (!confirm) return;
     const trimmed = reason.trim();
@@ -463,7 +491,23 @@ export function AdminSellerQueue({
                       >
                         Request info
                       </button>
+                      <button
+                        type="button"
+                        className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
+                        onClick={() => void deleteApplication(seller)}
+                      >
+                        Delete application
+                      </button>
                     </>
+                  ) : null}
+                  {seller.status === "draft" || seller.status === "rejected" ? (
+                    <button
+                      type="button"
+                      className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
+                      onClick={() => void deleteApplication(seller)}
+                    >
+                      Delete application
+                    </button>
                   ) : null}
                   {seller.status === "approved" ? (
                     <button

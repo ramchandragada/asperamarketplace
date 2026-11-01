@@ -10,13 +10,17 @@ export const metadata = { title: "Register" };
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; intent?: string }>;
 }) {
   const params = await searchParams;
   const nextPath = safeInternalPath(params.next);
-  const registerHref = nextPath
+  const intent = params.intent === "seller" ? "seller" : "customer";
+  const isSellerSignup = intent === "seller";
+  const loginHref = nextPath
     ? `/login?next=${encodeURIComponent(nextPath)}`
-    : "/login";
+    : isSellerSignup
+      ? `/login?next=${encodeURIComponent("/seller/onboarding")}`
+      : "/login";
 
   let actor: Awaited<ReturnType<typeof getOptionalActor>> = null;
   try {
@@ -25,26 +29,55 @@ export default async function RegisterPage({
     actor = null;
   }
   if (actor) {
-    redirect(nextPath ?? "/account");
+    redirect(
+      nextPath ?? (isSellerSignup ? "/seller/onboarding" : "/account"),
+    );
   }
 
   return (
     <PageShell narrow className="items-center justify-center py-16 md:py-24">
       <div className="w-full max-w-md rounded-[var(--radius)] border border-border bg-surface p-6 shadow-[var(--shadow-card)] md:p-8">
-        <h1 className="font-display text-3xl font-semibold">Create an account</h1>
+        <h1 className="font-display text-3xl font-semibold">
+          {isSellerSignup ? "Create a seller account" : "Create an account"}
+        </h1>
         <p className="mt-2 text-sm text-muted">
-          Shopper accounts only. Want to sell on Aspera?{" "}
-          <Link href="/sell" className="font-medium text-accent underline">
-            Apply to become a seller
-          </Link>
-          .
+          {isSellerSignup ? (
+            <>
+              Register as the business owner, then complete GSTIN KYC. Already
+              shopping on Aspera?{" "}
+              <Link
+                href={`/login?next=${encodeURIComponent(nextPath ?? "/seller/onboarding")}`}
+                className="font-medium text-accent underline"
+              >
+                Sign in
+              </Link>{" "}
+              and open seller onboarding.
+            </>
+          ) : (
+            <>
+              Shopper account for orders and Express delivery. Want to sell?{" "}
+              <Link
+                href="/register?intent=seller&next=%2Fseller%2Fonboarding"
+                className="font-medium text-accent underline"
+              >
+                Create a seller account
+              </Link>
+              .
+            </>
+          )}
         </p>
         <div className="mt-6">
-          <AuthForm mode="register" nextPath={nextPath} />
+          <AuthForm
+            mode="register"
+            nextPath={
+              nextPath ?? (isSellerSignup ? "/seller/onboarding" : null)
+            }
+            intent={intent}
+          />
         </div>
         <p className="mt-4 text-sm text-muted">
           Already registered?{" "}
-          <Link href={registerHref} className="font-medium text-accent underline">
+          <Link href={loginHref} className="font-medium text-accent underline">
             Sign in
           </Link>
         </p>

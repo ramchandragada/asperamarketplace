@@ -53,11 +53,20 @@ export async function SiteHeader() {
     ? await resolveSellerForActor(actor, "dashboard.read")
     : null;
   const isSellerStaff = actor ? actorIsSellerStaff(actor) : false;
-  const isSeller = Boolean(sellerWorkspace) || isSellerStaff;
+  // Mid-KYC applicants may only be `customer` until draft creates owner role.
+  const ownedApplication = actor
+    ? await prisma.seller.findFirst({
+        where: { ownerUserId: actor.userId },
+        select: { id: true },
+        orderBy: { createdAt: "desc" },
+      })
+    : null;
+  const isSeller =
+    Boolean(sellerWorkspace) || isSellerStaff || Boolean(ownedApplication);
   // Approved → dashboard. Staff/owner mid-KYC → onboarding console (not /sell).
   const sellHref = sellerWorkspace
     ? "/seller"
-    : isSellerStaff
+    : isSeller
       ? "/seller/onboarding"
       : "/sell";
 

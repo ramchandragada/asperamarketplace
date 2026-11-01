@@ -10,6 +10,7 @@ import { maskGstin, maskPan } from "@/modules/identity/crypto";
 import type {
   AdminSetSellerGstinInput,
   CreateSellerDraftInput,
+  DeleteSellerApplicationInput,
   ReviewSellerInput,
   SubmitSellerInput,
 } from "@/modules/seller/schema";
@@ -75,6 +76,29 @@ export async function createSellerDraft(
         stage: KycStage.documents,
         status: KycCaseStatus.open,
       },
+    });
+
+    // Bind owner capability as soon as the draft exists so Seller console
+    // chrome and /seller routes recognize the applicant (approval still required
+    // for a live catalogue).
+    const ownerRole = await tx.role.findUniqueOrThrow({
+      where: { key: "seller_owner" },
+    });
+    await tx.userRole.upsert({
+      where: {
+        userId_roleId_scopeKey: {
+          userId: actor.userId,
+          roleId: ownerRole.id,
+          scopeKey: seller.id,
+        },
+      },
+      create: {
+        userId: actor.userId,
+        roleId: ownerRole.id,
+        scopeKey: seller.id,
+        sellerId: seller.id,
+      },
+      update: { sellerId: seller.id },
     });
 
     await tx.auditLog.create({
@@ -726,6 +750,105 @@ export async function adminSetSellerGstin(
 
     return { seller: updated, republished };
   });
+}
+
+/**
+ * Permanently remove a seller that never went live (no catalogue / orders).
+ * Frees the GSTIN so the dealer can apply again.
+ */
+export async function deleteSellerApplication(
+  actor: Actor,
+  input: DeleteSellerApplicationInput,
+  correlationId: string,
+) {
+  requireAdmin(actor);
+
+  const seller = await prisma.seller.findUnique({
+    where: { id: input.sellerId },
+    include: {
+      _count: {
+        select: {
+          products: true,
+          fulfilmentGroups: true,
+          offers: true,
+        },
+      },
+    },
+  });
+  if (!seller) {
+    throw new NotFoundError("Seller not found");
+  }
+  if (seller.version !== input.expectedVersion) {
+    throw new ConflictError(
+      "Seller was updated by another operator. Reload and retry.",
+    );
+  }
+  const removable = ["draft", "submitted", "under_review", "rejected"] as const;
+  if (
+    !removable.includes(seller.status as (typeof removable)[number]) ||
+    seller._count.products > 0 ||
+    seller._count.fulfilmentGroups > 0 ||
+    seller._count.offers > 0
+  ) {
+    throw new ConflictError(
+      "Only empty draft/submitted/rejected applications can be deleted",
+    );
+  }
+
+  const ownerUserId = seller.ownerUserId;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.kycDocument.deleteMany({ where: { sellerId: seller.id } });
+    await tx.sellerKycCase.deleteMany({ where: { sellerId: seller.id } });
+    await tx.userRole.deleteMany({ where: { sellerId: seller.id } });
+    await tx.seller.delete({ where: { id: seller.id } });
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "seller.application_deleted",
+        targetType: "seller",
+        targetId: seller.id,
+        beforeState: {
+          legalName: seller.legalName,
+          status: seller.status,
+          gstinMasked: seller.gstinMasked,
+          ownerUserId,
+        },
+        reason: input.reason,
+        correlationId,
+      },
+    });
+
+    // Remove the orphan applicant login when they have no other seller roles
+    // and no other owned shops.
+    const otherOwned = await tx.seller.count({
+      where: { ownerUserId },
+    });
+    const otherSellerRoles = await tx.userRole.count({
+      where: {
+        userId: ownerUserId,
+        role: {
+          key: {
+            in: [
+              "seller_owner",
+              "seller_operations",
+              "seller_finance",
+              "seller_support",
+              "admin",
+              "super_admin",
+            ],
+          },
+        },
+      },
+    });
+    if (otherOwned === 0 && otherSellerRoles === 0) {
+      await tx.session.deleteMany({ where: { userId: ownerUserId } });
+      await tx.userRole.deleteMany({ where: { userId: ownerUserId } });
+      await tx.user.delete({ where: { id: ownerUserId } });
+    }
+  });
+
+  return { deletedSellerId: seller.id, deletedOwnerUserId: ownerUserId };
 }
 
 export class ValidationError extends Error {

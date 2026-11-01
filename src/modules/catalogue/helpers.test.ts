@@ -8,6 +8,7 @@ import {
   paiseFromRupees,
   rupeesFromPaise,
   slugify,
+  suggestSellerOfferSku,
 } from "@/modules/catalogue/helpers";
 
 describe("catalogue helpers", () => {
@@ -58,5 +59,11 @@ describe("catalogue helpers", () => {
     expect(merged.withinMrp).toBe(false);
     expect(merged.mrpPaise).toBe(10000);
     expect(merged.sellingPricePaise).toBe(12000);
+  });
+
+  it("suggests a shop-unique offer SKU from catalogue SKU", () => {
+    expect(suggestSellerOfferSku("VSCG Distribution", "ASP-PRO-0003")).toBe(
+      "VSCGDISTRIBU-ASP-PRO-0003",
+    );
   });
 });

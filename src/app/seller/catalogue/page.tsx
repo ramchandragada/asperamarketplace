@@ -62,6 +62,7 @@ export default async function SellerCataloguePage({
       <SellerCataloguePanel
         key={`${status}|${q}|${listed.page}`}
         sellerId={seller.id}
+        sellerName={seller.tradeName ?? seller.legalName}
         initialProducts={listed.items}
         initialTotal={listed.total}
         initialPage={listed.page}

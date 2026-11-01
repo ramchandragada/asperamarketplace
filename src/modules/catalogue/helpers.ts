@@ -45,6 +45,20 @@ export function slugify(input: string): string {
     .slice(0, 80);
 }
 
+/** Seller-owned offer SKU — must not collide with the catalogue shell SKU. */
+export function suggestSellerOfferSku(
+  shopName: string,
+  catalogueSku: string,
+): string {
+  const prefix =
+    shopName
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, "")
+      .slice(0, 12) || "SHOP";
+  const sku = catalogueSku.toUpperCase().replace(/[^A-Z0-9-]+/g, "");
+  return `${prefix}-${sku}`.slice(0, 64);
+}
+
 export function buildSearchDocument(input: {
   title: string;
   summary: string;

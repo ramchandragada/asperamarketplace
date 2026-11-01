@@ -15,6 +15,7 @@ import {
   mergeVariantPrices,
   resolveProductBadge,
   slugify,
+  suggestSellerOfferSku,
   type ProductCardBadge,
 } from "@/modules/catalogue/helpers";
 import {
@@ -491,17 +492,11 @@ export async function createProductOffer(
   const baseSlug = slugify(source.title);
   const slug = `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`;
   const brandName = source.brand?.name;
-  const searchDocument = buildSearchDocument({
-    title: source.title,
-    summary: source.summary,
-    description: source.description,
-    brandName,
-    categoryName: source.category.name,
-    sku: input.variant.sku,
-  });
   const weightGrams =
     input.variant.weightGrams ?? source.variants[0]?.weightGrams ?? undefined;
   const now = new Date();
+  const catalogueSku = source.variants[0]?.sku ?? input.variant.sku;
+  const requestedSku = input.variant.sku.trim().toUpperCase();
 
   return prisma.$transaction(async (tx) => {
     if (!source.sharedListingKey) {
@@ -509,6 +504,32 @@ export async function createProductOffer(
         where: { id: source.id },
         data: { sharedListingKey },
       });
+    }
+
+    const shopLabel = seller.tradeName ?? seller.legalName;
+    const skuCandidates = [
+      requestedSku,
+      suggestSellerOfferSku(shopLabel, catalogueSku),
+      `${suggestSellerOfferSku(shopLabel, catalogueSku)}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`,
+      `S${seller.id.replace(/-/g, "").slice(0, 8).toUpperCase()}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`,
+    ];
+    let offerSku: string | null = null;
+    for (const candidate of skuCandidates) {
+      const normalized = candidate.slice(0, 64);
+      if (!/^[A-Z0-9-]+$/.test(normalized) || normalized.length < 3) continue;
+      const taken = await tx.productVariant.findUnique({
+        where: { sku: normalized },
+        select: { id: true },
+      });
+      if (!taken) {
+        offerSku = normalized;
+        break;
+      }
+    }
+    if (!offerSku) {
+      throw new CatalogueConflictError(
+        "Could not allocate a unique shop SKU — try a different Your SKU value",
+      );
     }
 
     const product = await tx.product.create({
@@ -526,7 +547,14 @@ export async function createProductOffer(
         hsnCode: source.hsnCode,
         sharedListingKey,
         attributes: source.attributes ?? undefined,
-        searchDocument,
+        searchDocument: buildSearchDocument({
+          title: source.title,
+          summary: source.summary,
+          description: source.description,
+          brandName,
+          categoryName: source.category.name,
+          sku: offerSku,
+        }),
         submittedAt: now,
         reviewedAt: now,
         publishedAt: now,
@@ -548,7 +576,7 @@ export async function createProductOffer(
     const variant = await tx.productVariant.create({
       data: {
         productId: product.id,
-        sku: input.variant.sku,
+        sku: offerSku,
         title: input.variant.title ?? source.variants[0]?.title ?? "Standard",
         mrpPaise: input.variant.mrpPaise,
         sellingPricePaise: input.variant.sellingPricePaise,

@@ -7,6 +7,7 @@ import {
   formatPaise,
   paiseFromRupees,
   rupeesFromPaise,
+  suggestSellerOfferSku,
 } from "@/modules/catalogue/helpers";
 import {
   ProductSourcePicker,
@@ -35,6 +36,7 @@ type SellerProduct = {
 
 export function SellerCataloguePanel({
   sellerId,
+  sellerName,
   initialProducts,
   initialTotal,
   initialPage,
@@ -43,6 +45,7 @@ export function SellerCataloguePanel({
   initialStatus,
 }: {
   sellerId: string;
+  sellerName: string;
   /** @deprecated Closed catalogue — categories kept optional for call-site compat */
   categories?: Array<{ id: string; slug: string; name: string }>;
   initialProducts: SellerProduct[];
@@ -63,16 +66,19 @@ export function SellerCataloguePanel({
   const [offerVariantTitle, setOfferVariantTitle] = useState("Standard");
   const [offerMrpRupees, setOfferMrpRupees] = useState("");
   const [offerSellingRupees, setOfferSellingRupees] = useState("");
+  const [offerStock, setOfferStock] = useState("10");
   const [pickerKey, setPickerKey] = useState(0);
   const pageSize = initialPageSize;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
   function applyCataloguePick(selection: CataloguePickSelection | null) {
     if (!selection) return;
-    setOfferSku(selection.catalogueSku);
+    // Never reuse the catalogue shell SKU — variant.sku is globally unique.
+    setOfferSku(suggestSellerOfferSku(sellerName, selection.catalogueSku));
     setOfferVariantTitle(selection.variantTitle || "Standard");
     setOfferMrpRupees(rupeesFromPaise(selection.mrpPaise));
     setOfferSellingRupees(rupeesFromPaise(selection.sellingPricePaise));
+    if (!offerStock.trim()) setOfferStock("10");
   }
 
   const statusOptions = useMemo(
@@ -164,6 +170,7 @@ export function SellerCataloguePanel({
     setOfferVariantTitle("Standard");
     setOfferMrpRupees("");
     setOfferSellingRupees("");
+    setOfferStock("10");
     setPickerKey((value) => value + 1);
     await refresh({ page: 1 });
   }
@@ -197,8 +204,12 @@ export function SellerCataloguePanel({
             pattern="[A-Z0-9-]+"
             value={offerSku}
             onChange={(event) => setOfferSku(event.target.value.toUpperCase())}
+            placeholder="Shop-unique SKU"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 uppercase"
           />
+          <span className="mt-1 block text-xs text-muted">
+            Must be unique to your shop — do not reuse the catalogue SKU.
+          </span>
         </label>
         <label className="text-sm">
           Variant title
@@ -245,6 +256,8 @@ export function SellerCataloguePanel({
             required
             min={0}
             step={1}
+            value={offerStock}
+            onChange={(event) => setOfferStock(event.target.value)}
             placeholder="e.g. 20"
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
           />

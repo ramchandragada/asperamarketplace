@@ -234,6 +234,31 @@ export function jsonError(
     );
   }
 
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  ) {
+    const targets = Array.isArray(error.meta?.target)
+      ? (error.meta.target as string[])
+      : [];
+    const field = targets[0] ?? "record";
+    return NextResponse.json(
+      fail({
+        requestId,
+        code: "CONFLICT",
+        message:
+          field === "sku"
+            ? "That SKU is already used. Enter a unique shop SKU for your listing."
+            : "A record with those unique fields already exists",
+        fieldErrors:
+          field === "sku"
+            ? { "variant.sku": ["SKU must be unique across the marketplace"] }
+            : undefined,
+      }),
+      { status: 409, headers: { [REQUEST_ID_HEADER]: requestId } },
+    );
+  }
+
   if (isPrismaInfrastructureError(error)) {
     const prismaCode =
       error instanceof Prisma.PrismaClientKnownRequestError

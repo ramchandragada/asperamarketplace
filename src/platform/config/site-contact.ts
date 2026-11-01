@@ -1,22 +1,22 @@
 /**
- * Single source for public support / legal contact shown in footer, checkout,
- * and help surfaces. Override via env in production deployments.
+ * Public support / legal contact shown in footer, checkout, and help.
+ * Legal entity fields are owned by aspera-legal.ts — do not reintroduce
+ * "Aspera Marketplace Private Limited".
  */
+import { asperaLegal } from "@/platform/config/aspera-legal";
+
 export const siteContact = {
-  brandName: "Aspera",
-  supportEmail:
-    process.env.SITE_SUPPORT_EMAIL?.trim() || "support@asperamarketplace.com",
-  supportPhoneDisplay:
-    process.env.SITE_SUPPORT_PHONE?.trim() || "+91 80 4680 1200",
-  supportPhoneTel:
-    process.env.SITE_SUPPORT_PHONE_TEL?.trim() || "+918046801200",
-  legalEntity:
-    process.env.SITE_LEGAL_ENTITY?.trim() ||
-    "Aspera Marketplace Private Limited",
-  registeredRegion: process.env.SITE_REGISTERED_REGION?.trim() || "India",
-  grievanceEmail:
-    process.env.SITE_GRIEVANCE_EMAIL?.trim() ||
-    "grievance@asperamarketplace.com",
+  brandName: asperaLegal.brandName,
+  supportEmail: asperaLegal.supportEmail,
+  supportPhoneDisplay: asperaLegal.supportPhoneDisplay,
+  supportPhoneTel: asperaLegal.supportPhoneTel,
+  legalEntity: asperaLegal.legalEntity,
+  registeredRegion: asperaLegal.state,
+  grievanceEmail: asperaLegal.grievanceEmail,
+  cin: asperaLegal.cin,
+  pan: asperaLegal.pan,
+  gstinRegular: asperaLegal.gstinRegular,
+  gstinTcs: asperaLegal.gstinTcs,
 } as const;
 
 export type SiteContact = typeof siteContact;

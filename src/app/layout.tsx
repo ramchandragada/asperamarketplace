@@ -32,11 +32,11 @@ export const metadata: Metadata = {
     template: "%s · Aspera",
   },
   description:
-    "Quick-commerce PC components: CPUs, GPUs, boards, RAM, SSDs and more from nearby hubs. Express delivery in under 90 minutes across Pune — prepaid and protected.",
+    "Multi-vendor PC components marketplace by Aspera Technologies Private Limited. Prepaid Express delivery on configured Pune pins — GST invoices from the selling dealer.",
   openGraph: {
     title: "Aspera Express — PC parts in minutes",
     description:
-      "Express PC parts for builders. Set your pin, see the ETA, get parts from local hubs.",
+      "PC parts from approved dealers. Set your pin, see the ETA, prepaid checkout.",
     type: "website",
     siteName: "Aspera",
   },
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Aspera Express — PC parts in minutes",
     description:
-      "Express PC components from nearby hubs. Under 90 minutes in Pune.",
+      "Prepaid PC components for builders. Express windows on configured Pune pins.",
   },
 };
 

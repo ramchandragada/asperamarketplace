@@ -107,14 +107,14 @@ const COMMUNITY_BLOCKS = [
     cta: "Browse components",
   },
   {
-    title: "Download Aspera App",
-    body: "iOS and Android builds are coming soon.",
-    href: "/download-app",
-    cta: "Download app",
+    title: "Buyer protection",
+    body: "Prepaid orders, GST invoices from the selling dealer, and a published grievance officer.",
+    href: "/buyer-protection",
+    cta: "Buyer protection",
   },
   {
     title: "Become a PC parts seller",
-    body: "Sell to builders with verified listings, transparent fees, and a dedicated seller dashboard.",
+    body: "Sell to builders with KYC approval, transparent fees, and section 52 TCS settlement.",
     href: "/seller/onboarding",
     cta: "Start selling",
   },
@@ -240,9 +240,9 @@ export function SiteFooter() {
             ASPERA
           </p>
           <p className="mt-2 max-w-xs leading-6 text-muted">
-            Express PC parts from authorised brand dealers — usually under 90
-            minutes in hub zones, with warranty pickup, free tech support, and
-            GST invoices for businesses.
+            Multi-vendor PC parts marketplace — prepaid Express delivery on
+            configured Pune pins, GST invoices from the selling dealer, TCS by
+            Aspera Technologies as ECO.
           </p>
           <div className="mt-4 space-y-1 text-xs text-muted">
             <p>
@@ -331,7 +331,7 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/help" className="hover:text-accent">
+              <Link href="/grievance" className="hover:text-accent">
                 Grievance officer
               </Link>
             </li>
@@ -464,10 +464,24 @@ export function SiteFooter() {
       <div className="border-t border-border">
         <div className="container-shell flex flex-col gap-2 py-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <p>© {year} {siteContact.brandName}. All rights reserved.</p>
             <p>
-              Registered entity: {siteContact.legalEntity} ·{" "}
-              {siteContact.registeredRegion}
+              © {year} {siteContact.legalEntity}. All rights reserved.
+            </p>
+            <p>
+              CIN {siteContact.cin} · PAN {siteContact.pan} · GSTIN (Regular){" "}
+              {siteContact.gstinRegular} · GSTIN (TCS / ECO){" "}
+              {siteContact.gstinTcs}
+            </p>
+            <p>
+              TCS PPoB: OFFICE NO. A/22/1 TO A/29/2, 2ND FLOOR, PANJWANI MARKET,
+              AKKALKOT ROAD, SOLAPUR, MAHARASHTRA 413006
+            </p>
+            <p>
+              Support: {siteContact.supportEmail} ·{" "}
+              {siteContact.supportPhoneDisplay} ·{" "}
+              <Link href="/grievance" className="hover:text-foreground">
+                Grievance officer
+              </Link>
             </p>
             <p>{ASPERA_PROMO.finePrint}</p>
           </div>
@@ -483,6 +497,9 @@ export function SiteFooter() {
             </Link>
             <Link href="/returns" className="hover:text-foreground">
               Returns
+            </Link>
+            <Link href="/seller-policies" className="hover:text-foreground">
+              Seller policies
             </Link>
           </p>
         </div>

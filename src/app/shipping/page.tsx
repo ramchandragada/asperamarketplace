@@ -1,94 +1,75 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { LegalImprint } from "@/components/legal-imprint";
+import { PageShell } from "@/components/ui/page-shell";
+import { asperaLegal } from "@/platform/config/aspera-legal";
 
 export const metadata: Metadata = {
-  title: "Aspera Express shipping",
+  title: "Shipping policy",
   description:
-    "Minute-level PC-parts delivery from nearby hubs — Pune Express under 90 minutes, same-day across major metros.",
+    "Prepaid delivery on Aspera Express — currently serviceable for configured Pune 411xxx pins; fulfilled by the selling dealer.",
 };
-
-const TIERS = [
-  {
-    title: "Pune Express",
-    eta: "under 90 minutes*",
-    body: "In-stock CPUs, boards, GPUs, SSDs, and peripherals from local hubs when your pin starts with 411. Exact window depends on pin and stock.",
-  },
-  {
-    title: "Metro same-day",
-    eta: "2–4 hours",
-    body: "Mumbai, Delhi, Bengaluru, Hyderabad, Chennai, Kolkata, and Ahmedabad hubs for Express windows while stock lasts.",
-  },
-  {
-    title: "Wider India",
-    eta: "Today / tomorrow morning",
-    body: "Serviceable pins outside Express hubs still get prepaid delivery with a clear ETA at checkout.",
-  },
-] as const;
 
 export default function ShippingPage() {
   return (
-    <main className="container-shell py-10 md:py-14">
+    <PageShell narrow>
       <p className="text-xs font-semibold tracking-[0.14em] text-accent uppercase">
-        Aspera Express
+        Shipping
       </p>
-      <h1 className="font-display mt-2 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-        Delivery in minutes, not days
+      <h1 className="font-display mt-2 text-3xl font-semibold">
+        Delivery on Aspera Express
       </h1>
-      <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
-        Aspera runs a quick-commerce model for PC components — set your pincode
-        once, see a live ETA, and get in-stock parts from nearby seller hubs.
-        Typical Express windows are under 90 minutes depending on your location and
-        live stock.
+      <p className="mt-3 text-muted leading-7">
+        Orders are fulfilled by the selling dealer from their shop stock unless
+        a listing expressly states fulfilment from an Aspera-operated warehouse
+        (none are configured for Express PC parts at launch). We do not brand a
+        dealer shop as an “Aspera Fulfilment Centre”.
       </p>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
-        {TIERS.map((tier) => (
-          <article
-            key={tier.title}
-            className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]"
-          >
-            <p className="text-xs font-semibold tracking-wide text-muted uppercase">
-              {tier.title}
-            </p>
-            <p className="font-display mt-2 text-2xl font-bold text-accent">
-              {tier.eta}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-muted">{tier.body}</p>
-          </article>
-        ))}
-      </div>
+      <h2 className="mt-8 text-lg font-semibold">Serviceable area</h2>
+      <p className="mt-2 text-sm leading-6 text-muted">
+        {asperaLegal.serviceableAreaSummary}. Set your pincode in the header to
+        see whether a listing can ship to you and the quoted ETA. Pins outside
+        the configured table are not offered at checkout.
+      </p>
 
-      <section className="mt-10 max-w-2xl space-y-3 text-sm leading-6 text-muted">
-        <h2 className="font-display text-xl font-bold text-foreground">
-          How Express works
-        </h2>
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Set your delivery pincode in the header location bar.</li>
-          <li>
-            We quote an ETA in minutes for Express hubs, or a same-day window
-            elsewhere.
-          </li>
-          <li>Checkout is prepaid — no cash on delivery yet.</li>
-          <li>
-            Large cabinets, monitors, and UPS may move in the upper end of the
-            quoted window.
-          </li>
-          <li>
-            *Express windows are typically under 90 minutes in hub zones depending
-            on your pincode and live stock.
-          </li>
-          <li>7-day easy returns on eligible parts after delivery.</li>
-        </ul>
-      </section>
+      <h2 className="mt-8 text-lg font-semibold">Pune Express (411xxx)</h2>
+      <p className="mt-2 text-sm leading-6 text-muted">
+        For in-stock items from approved Pune sellers, typical windows are under
+        90 minutes where the pincode table marks Express. Large cabinets,
+        monitors, and UPS may take longer within the quoted window. Exact
+        minutes depend on live stock and the seller’s pickup readiness.
+      </p>
+
+      <h2 className="mt-8 text-lg font-semibold">Payment and dispatch</h2>
+      <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm text-muted">
+        <li>Prepaid only — no cash on delivery.</li>
+        <li>
+          Dispatch starts after the payment gateway webhook confirms capture.
+        </li>
+        <li>
+          If the seller cannot fulfil after payment, we cancel the unfulfilled
+          lines and refund the captured amount to the original method.
+        </li>
+      </ul>
+
+      <h2 className="mt-8 text-lg font-semibold">What we do not claim</h2>
+      <p className="mt-2 text-sm leading-6 text-muted">
+        Aspera Express does not currently operate Express hubs in Mumbai, Delhi,
+        Bengaluru, Hyderabad, Chennai, Kolkata, or Ahmedabad for this
+        marketplace. Those cities are not listed as serviceable until pins and
+        approved seller or warehouse capacity exist in our configuration.
+      </p>
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Link href="/browse" className="btn-cta btn-cta-primary">
-          Start shopping
+          Browse components
         </Link>
-        <Link href="/buyer-protection" className="btn-cta btn-cta-ghost">
-          Buyer protection
+        <Link href="/returns" className="btn-cta btn-cta-ghost">
+          Returns
         </Link>
       </div>
-    </main>
+      <LegalImprint />
+    </PageShell>
   );
 }

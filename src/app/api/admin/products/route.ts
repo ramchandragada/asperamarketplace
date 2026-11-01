@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   try {
     const actor = await requireActor();
     const url = new URL(request.url);
-    const tabRaw = url.searchParams.get("tab") ?? "pending";
+    const tabRaw = url.searchParams.get("tab") ?? "approved";
     const status = (TABS as readonly string[]).includes(tabRaw)
       ? (tabRaw as AdminProductTab)
       : "pending";

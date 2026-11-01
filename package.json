@@ -25,6 +25,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:sync:catalogue": "node --import tsx scripts/sync-closed-catalogue.mjs",
     "db:purge:non-pc": "tsx scripts/purge-non-pc-by-category.ts",
+    "db:purge:demo-sellers": "tsx scripts/purge-demo-sellers.ts",
+    "db:audit:sellers": "tsx scripts/audit-live-sellers.ts",
     "db:backfill:v2": "tsx prisma/backfill-catalogue-v2.ts",
     "postinstall": "prisma generate"
   },

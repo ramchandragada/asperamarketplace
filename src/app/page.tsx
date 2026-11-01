@@ -21,6 +21,7 @@ import {
   listActiveCategories,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
+import { CATALOGUE_OWNER_TRADE_NAME } from "@/modules/catalogue/service";
 import { PC_CATEGORY_SLUGS } from "@/modules/catalogue/pc-catalogue-data";
 import { prisma } from "@/platform/db/prisma";
 import { slugify } from "@/modules/catalogue/helpers";
@@ -31,6 +32,7 @@ export const dynamic = "force-dynamic";
 const pcProductWhere = {
   status: "approved" as const,
   category: { isActive: true, slug: { in: [...PC_CATEGORY_SLUGS] } },
+  seller: { NOT: { tradeName: CATALOGUE_OWNER_TRADE_NAME } },
 };
 
 /** Build lanes — Gaming / Creator / Office */
@@ -138,7 +140,11 @@ export default async function Home() {
       inStockOnly: true,
     }),
     prisma.seller.findMany({
-      where: { status: "approved" },
+      where: {
+        status: "approved",
+        NOT: { tradeName: CATALOGUE_OWNER_TRADE_NAME },
+        gstin: { not: null },
+      },
       take: 14,
       orderBy: { tradeName: "asc" },
       select: {

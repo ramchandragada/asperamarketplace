@@ -8,6 +8,7 @@ import {
   submitSellerForReview,
   uploadSellerDocument,
 } from "@/modules/seller/service";
+import { uniqueTestGstin } from "@/modules/seller/test-gstin";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 import { LocalObjectStorage } from "@/platform/storage/local";
@@ -81,7 +82,7 @@ describe.runIf(hasDatabase)("seller onboarding integration", () => {
         contactEmail: `ops-${suffix}@aspera.local`,
         contactPhone: "9876543210",
         pan: "ABCDE1234F",
-        gstin: "29ABCDE1234F1Z5",
+        gstin: uniqueTestGstin(`onboarding-${suffix}`),
         registeredState: "Karnataka",
         pickupCity: "Bengaluru",
       },

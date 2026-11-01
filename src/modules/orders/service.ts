@@ -9,7 +9,7 @@ import {
 import {
   getPaymentProvider,
   MockPaymentProvider,
-  type MockWebhookPayload,
+  type PaymentWebhookPayload,
 } from "@/modules/payments/provider";
 import {
   buildEcoInvoiceDocument,
@@ -120,6 +120,7 @@ export async function createOrderFromCheckout(
   }
 
   const snapshot = checkout.snapshot as CheckoutSnapshot;
+  const paymentMethod = input.paymentMethod ?? "cod";
   const created = await prisma.$transaction(async (tx) => {
     const order = await tx.order.create({
       data: {
@@ -128,7 +129,10 @@ export async function createOrderFromCheckout(
         checkoutSessionId: checkout.id,
         addressId: checkout.addressId,
         status: "awaiting_payment",
-        snapshot,
+        snapshot: {
+          ...snapshot,
+          paymentMethod,
+        },
         subtotalPaise: checkout.subtotalPaise,
         discountPaise: checkout.discountPaise,
         shippingPaise: checkout.shippingPaise,
@@ -184,6 +188,7 @@ export async function createOrderFromCheckout(
           orderNumber: order.orderNumber,
           status: order.status,
           totalPaise: order.totalPaise,
+          paymentMethod,
         },
         reason: "Order created from reserved checkout",
         correlationId,
@@ -198,11 +203,16 @@ export async function createOrderFromCheckout(
           orderNumber: order.orderNumber,
           totalPaise: order.totalPaise,
           userId: actor.userId,
+          paymentMethod,
         },
       },
     });
     return order;
   });
+
+  if (paymentMethod === "cod") {
+    await confirmCodOrder(created.id, actor.userId, correlationId);
+  }
 
   const body = { order: await serializeOrder(created.id) };
   await completeIdempotentCommand({
@@ -212,6 +222,58 @@ export async function createOrderFromCheckout(
     responseBody: body,
   });
   return body;
+}
+
+/** Confirm a COD order: collect cash on delivery; no gateway capture. */
+async function confirmCodOrder(
+  orderId: string,
+  userId: string,
+  correlationId: string,
+) {
+  const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+  if (order.status !== "awaiting_payment") return;
+
+  const providerReference = `cod_${order.id.replace(/-/g, "").slice(0, 24)}`;
+  const payment = await prisma.paymentAttempt.create({
+    data: {
+      orderId: order.id,
+      userId,
+      provider: "cod",
+      providerReference,
+      status: "pending",
+      amountPaise: order.totalPaise,
+      currencyCode: order.currencyCode,
+      clientSecret: null,
+      idempotencyKey: `cod-${order.id}`,
+      rawCreateResponse: { method: "cod" },
+    },
+  });
+
+  const providerEventId = `cod_evt_${order.id}`;
+  const rawPayload = JSON.stringify({
+    id: providerEventId,
+    type: "payment.succeeded",
+    data: { providerReference, method: "cod" },
+  });
+  await prisma.paymentWebhookEvent.create({
+    data: {
+      provider: "cod",
+      providerEventId,
+      paymentAttemptId: payment.id,
+      eventType: "payment.succeeded",
+      payloadHash: createHash("sha256").update(rawPayload).digest("hex"),
+      signatureValid: true,
+      rawPayload: JSON.parse(rawPayload),
+      processed: false,
+    },
+  });
+
+  await markPaymentSucceeded(
+    payment.id,
+    providerEventId,
+    "cod",
+    correlationId,
+  );
 }
 
 export async function startPayment(
@@ -330,7 +392,7 @@ export async function startPayment(
           amountPaise: attempt.amountPaise,
           status: attempt.status,
         },
-        reason: "Mock payment attempt created",
+        reason: `Payment attempt created (${created.provider})`,
         correlationId,
       },
     });
@@ -342,6 +404,7 @@ export async function startPayment(
         payload: {
           orderId: order.id,
           providerReference: attempt.providerReference,
+          provider: attempt.provider,
         },
       },
     });
@@ -352,9 +415,12 @@ export async function startPayment(
     payment: {
       id: payment.id,
       status: payment.status,
+      provider: payment.provider,
       providerReference: payment.providerReference,
       clientSecret: payment.clientSecret,
       amountPaise: payment.amountPaise,
+      /** Razorpay Checkout.js key id (also mirrored on clientSecret for razorpay). */
+      publicKey: created.publicKey ?? null,
     },
   };
   await completeIdempotentCommand({
@@ -380,7 +446,7 @@ export async function simulateMockPaymentOutcome(
   }
 
   const provider = new MockPaymentProvider();
-  const payload: MockWebhookPayload = {
+  const payload: PaymentWebhookPayload = {
     id: `evt_${crypto.randomUUID()}`,
     type: input.outcome === "succeeded" ? "payment.succeeded" : "payment.failed",
     createdAt: new Date().toISOString(),
@@ -390,7 +456,7 @@ export async function simulateMockPaymentOutcome(
       currencyCode: payment.currencyCode,
       failureReason:
         input.outcome === "failed"
-          ? (input.failureReason ?? "Mock payment declined")
+          ? (input.failureReason ?? "Payment declined")
           : undefined,
     },
   };
@@ -408,7 +474,7 @@ export async function processPaymentWebhook(input: {
   signatureHeader: string;
   correlationId: string;
 }) {
-  const provider = new MockPaymentProvider();
+  const provider = getPaymentProvider();
   const signatureValid = provider.verifyWebhookSignature(
     input.rawBody,
     input.signatureHeader,
@@ -417,7 +483,7 @@ export async function processPaymentWebhook(input: {
     throw new WebhookRejectedError("Invalid webhook signature");
   }
 
-  let payload: MockWebhookPayload;
+  let payload: PaymentWebhookPayload;
   try {
     payload = provider.parseWebhook(input.rawBody);
   } catch {
@@ -425,11 +491,12 @@ export async function processPaymentWebhook(input: {
   }
 
   const payloadHash = createHash("sha256").update(input.rawBody).digest("hex");
+  const providerName = provider.name;
 
   const existing = await prisma.paymentWebhookEvent.findUnique({
     where: {
       provider_providerEventId: {
-        provider: "mock",
+        provider: providerName,
         providerEventId: payload.id,
       },
     },
@@ -450,6 +517,9 @@ export async function processPaymentWebhook(input: {
   if (!payment) {
     throw new WebhookRejectedError("Unknown payment reference");
   }
+  if (payment.provider !== providerName) {
+    throw new WebhookRejectedError("Webhook provider does not match payment");
+  }
   if (payment.amountPaise !== payload.data.amountPaise) {
     throw new WebhookRejectedError("Webhook amount does not match payment");
   }
@@ -460,7 +530,7 @@ export async function processPaymentWebhook(input: {
     try {
       await prisma.paymentWebhookEvent.create({
         data: {
-          provider: "mock",
+          provider: providerName,
           providerEventId: payload.id,
           paymentAttemptId: payment.id,
           eventType: payload.type,
@@ -474,7 +544,7 @@ export async function processPaymentWebhook(input: {
       const raced = await prisma.paymentWebhookEvent.findUnique({
         where: {
           provider_providerEventId: {
-            provider: "mock",
+            provider: providerName,
             providerEventId: payload.id,
           },
         },
@@ -491,11 +561,17 @@ export async function processPaymentWebhook(input: {
   }
 
   if (payload.type === "payment.succeeded") {
-    await markPaymentSucceeded(payment.id, payload.id, input.correlationId);
+    await markPaymentSucceeded(
+      payment.id,
+      payload.id,
+      providerName,
+      input.correlationId,
+    );
   } else {
     await markPaymentFailed(
       payment.id,
       payload.id,
+      providerName,
       payload.data.failureReason ?? "Payment failed",
       input.correlationId,
     );
@@ -504,7 +580,7 @@ export async function processPaymentWebhook(input: {
   const event = await prisma.paymentWebhookEvent.findUniqueOrThrow({
     where: {
       provider_providerEventId: {
-        provider: "mock",
+        provider: providerName,
         providerEventId: payload.id,
       },
     },
@@ -521,6 +597,7 @@ export async function processPaymentWebhook(input: {
 async function markPaymentSucceeded(
   paymentAttemptId: string,
   providerEventId: string,
+  providerName: string,
   correlationId: string,
 ) {
   const payment = await prisma.paymentAttempt.findUniqueOrThrow({
@@ -541,7 +618,6 @@ async function markPaymentSucceeded(
       },
     },
   });
-  const providerName = payment.provider || "mock";
 
   if (payment.status === "succeeded") {
     await prisma.paymentWebhookEvent.update({
@@ -663,6 +739,7 @@ async function markPaymentSucceeded(
         taxPaise: payment.order.taxPaise,
         totalPaise: payment.order.totalPaise,
       },
+      collectionMode: payment.provider === "cod" ? "cod" : "prepaid",
     });
 
     const periodMonth = `${paidAt.getUTCFullYear()}-${String(
@@ -743,7 +820,10 @@ async function markPaymentSucceeded(
           invoiceNumber: document.invoiceNumber,
           ecoGstinTcs: asperaLegal.gstinTcs,
         },
-        reason: "Verified payment webhook",
+        reason:
+          providerName === "cod"
+            ? "COD order confirmed — collect cash on delivery"
+            : "Verified payment webhook",
         correlationId,
       },
     });
@@ -756,6 +836,7 @@ async function markPaymentSucceeded(
           orderNumber: payment.order.orderNumber,
           totalPaise: payment.order.totalPaise,
           invoiceNumber: document.invoiceNumber,
+          collectionMode: providerName === "cod" ? "cod" : "prepaid",
         },
       },
     });
@@ -777,7 +858,7 @@ async function markPaymentSucceeded(
   const sent = await notifier.send({
     channel: "email",
     recipient: payment.order.user.email,
-    templateKey: "order.paid",
+    templateKey: providerName === "cod" ? "order.cod_confirmed" : "order.paid",
     payload: {
       orderNumber: payment.order.orderNumber,
       totalPaise: payment.order.totalPaise,
@@ -787,7 +868,7 @@ async function markPaymentSucceeded(
     data: {
       channel: "email",
       recipient: payment.order.user.email,
-      templateKey: "order.paid",
+      templateKey: providerName === "cod" ? "order.cod_confirmed" : "order.paid",
       payload: {
         orderNumber: payment.order.orderNumber,
         totalPaise: payment.order.totalPaise,
@@ -802,6 +883,7 @@ async function markPaymentSucceeded(
 async function markPaymentFailed(
   paymentAttemptId: string,
   providerEventId: string,
+  providerName: string,
   failureReason: string,
   correlationId: string,
 ) {
@@ -814,7 +896,7 @@ async function markPaymentFailed(
     await prisma.paymentWebhookEvent.update({
       where: {
         provider_providerEventId: {
-          provider: "mock",
+          provider: providerName,
           providerEventId,
         },
       },
@@ -902,7 +984,7 @@ async function markPaymentFailed(
     await tx.paymentWebhookEvent.update({
       where: {
         provider_providerEventId: {
-          provider: "mock",
+          provider: providerName,
           providerEventId,
         },
       },

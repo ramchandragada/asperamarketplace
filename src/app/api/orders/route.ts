@@ -25,9 +25,12 @@ export async function POST(request: Request) {
     const actor = await requireActor();
     const body = createOrderFromCheckoutSchema.parse(await request.json());
     const result = await createOrderFromCheckout(actor, body, requestId);
+    const isCod = (body.paymentMethod ?? "cod") === "cod";
     return jsonOk(result, requestId, {
       status: 201,
-      message: "Order created. Complete prepaid payment next.",
+      message: isCod
+        ? "COD order confirmed. Pay cash on delivery."
+        : "Order created. Complete prepaid payment next.",
     });
   } catch (error) {
     return jsonError(requestId, error);

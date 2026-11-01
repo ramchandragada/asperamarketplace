@@ -7,6 +7,7 @@ import {
 } from "@/modules/identity/policy";
 import { maskGstin, maskPan } from "@/modules/identity/crypto";
 import type {
+  AdminSetSellerGstinInput,
   CreateSellerDraftInput,
   ReviewSellerInput,
   SubmitSellerInput,
@@ -624,6 +625,104 @@ export async function listOwnedSellers(actor: Actor) {
         },
       },
     },
+  });
+}
+
+/**
+ * Attach a real Regular GSTIN after document review, then optionally
+ * approve + republish draft catalogue so the shop can stay live.
+ */
+export async function adminSetSellerGstin(
+  actor: Actor,
+  input: AdminSetSellerGstinInput,
+  correlationId: string,
+) {
+  requireAdmin(actor);
+  const seller = await prisma.seller.findUnique({ where: { id: input.sellerId } });
+  if (!seller) throw new NotFoundError("Seller not found");
+  if (seller.version !== input.expectedVersion) {
+    throw new ConflictError(
+      "Seller was updated by another operator. Reload and retry.",
+    );
+  }
+
+  const clash = await prisma.seller.findFirst({
+    where: { gstin: input.gstin, NOT: { id: seller.id } },
+    select: { id: true },
+  });
+  if (clash) {
+    throw new ConflictError("That GSTIN is already registered to another seller");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const shouldApprove =
+      input.republish &&
+      (seller.status === "suspended" ||
+        seller.status === "submitted" ||
+        seller.status === "under_review" ||
+        seller.status === "draft");
+
+    const updated = await tx.seller.update({
+      where: { id: seller.id, version: seller.version },
+      data: {
+        gstin: input.gstin,
+        gstinMasked: maskGstin(input.gstin),
+        registeredState: input.registeredState,
+        pickupCity: input.pickupCity,
+        fulfilmentBy: seller.fulfilmentBy || "seller_shop",
+        statusReason: shouldApprove ? null : seller.statusReason,
+        ...(shouldApprove
+          ? {
+              status: "approved" as const,
+              approvedAt: new Date(),
+              reviewedAt: new Date(),
+              reviewedByUserId: actor.userId,
+            }
+          : {}),
+        version: { increment: 1 },
+      },
+    });
+
+    let republished = 0;
+    if (input.republish && updated.status === "approved") {
+      const result = await tx.product.updateMany({
+        where: {
+          sellerId: seller.id,
+          status: { in: ["draft", "submitted"] },
+        },
+        data: {
+          status: "approved",
+          publishedAt: new Date(),
+          reviewedAt: new Date(),
+          reviewedByUserId: actor.userId,
+        },
+      });
+      republished = result.count;
+    }
+
+    await tx.auditLog.create({
+      data: {
+        actorId: actor.userId,
+        action: "seller.gstin_set",
+        targetType: "seller",
+        targetId: seller.id,
+        beforeState: {
+          status: seller.status,
+          gstinMasked: seller.gstinMasked,
+          version: seller.version,
+        },
+        afterState: {
+          status: updated.status,
+          gstinMasked: updated.gstinMasked,
+          version: updated.version,
+          republished,
+        },
+        reason: "Admin recorded verified Regular GSTIN for live catalogue",
+        correlationId,
+      },
+    });
+
+    return { seller: updated, republished };
   });
 }
 

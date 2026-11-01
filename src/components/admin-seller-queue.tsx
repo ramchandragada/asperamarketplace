@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 
 export type AdminSellerTab = "pending" | "approved" | "suspended" | "all";
 
@@ -154,6 +154,34 @@ export function AdminSellerQueue({
         ? new Set()
         : new Set(pendingVisible.map((seller) => seller.id)),
     );
+  }
+
+  async function saveGstin(event: FormEvent<HTMLFormElement>, seller: AdminSeller) {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    const form = new FormData(event.currentTarget);
+    const response = await fetch("/api/admin/sellers/gstin", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        sellerId: seller.id,
+        gstin: String(form.get("gstin") ?? ""),
+        registeredState: String(form.get("registeredState") ?? ""),
+        pickupCity: String(form.get("pickupCity") ?? ""),
+        expectedVersion: seller.version,
+        republish: form.get("republish") === "on",
+      }),
+    });
+    const body = (await response.json()) as { message?: string };
+    setBusy(false);
+    if (!response.ok) {
+      setError(body.message ?? "Could not save GSTIN");
+      return;
+    }
+    setMessage(body.message ?? "GSTIN saved");
+    router.refresh();
   }
 
   async function runBulk(decision: "approve" | "reject") {
@@ -503,6 +531,54 @@ export function AdminSellerQueue({
                   </ul>
                 )}
               </div>
+
+              <form
+                onSubmit={(event) => void saveGstin(event, seller)}
+                className="mt-4 grid gap-2 rounded-lg border border-dashed border-border p-3 sm:grid-cols-2"
+              >
+                <p className="sm:col-span-2 text-sm font-medium">
+                  Verified Regular GSTIN
+                  {seller.gstinMasked
+                    ? ` (on file: ${seller.gstinMasked})`
+                    : " — required before catalogue goes live"}
+                </p>
+                <input
+                  name="gstin"
+                  required
+                  placeholder="15-char GSTIN"
+                  className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+                />
+                <input
+                  name="registeredState"
+                  required
+                  defaultValue={seller.registeredState ?? "Maharashtra"}
+                  placeholder="Registered state"
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+                <input
+                  name="pickupCity"
+                  required
+                  defaultValue="Pune"
+                  placeholder="Pickup city"
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+                <label className="flex items-center gap-2 text-sm text-muted">
+                  <input
+                    type="checkbox"
+                    name="republish"
+                    defaultChecked
+                    className="rounded border-border"
+                  />
+                  Approve + republish draft listings
+                </label>
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground sm:col-span-2 sm:justify-self-start"
+                >
+                  Save GSTIN
+                </button>
+              </form>
             </li>
           ))}
         </ul>

@@ -46,6 +46,9 @@ export default async function OrdersPage() {
       <Suspense fallback={<p className="text-muted">Loading orders…</p>}>
         <OrdersPanel
           allowMockSelfPay={mockSelfPayAllowed()}
+          paymentProvider={(
+            process.env.PAYMENT_PROVIDER ?? "mock"
+          ).trim().toLowerCase()}
           initialOrders={orders.map((order) => ({
             id: order.id,
             orderNumber: order.orderNumber,

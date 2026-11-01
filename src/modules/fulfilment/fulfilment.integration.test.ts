@@ -230,6 +230,7 @@ describe.runIf(hasDatabase)("fulfilment and care integration", () => {
       {
         checkoutSessionId: reserved.checkout.id,
         idempotencyKey: `ful-ord-${suffix}`,
+        paymentMethod: "prepaid",
       },
       crypto.randomUUID(),
     );

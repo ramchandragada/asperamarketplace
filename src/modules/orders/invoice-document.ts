@@ -81,6 +81,8 @@ export type EcoInvoiceDocument = {
     totalPaise: number;
     tcsWithheldPaise: number;
   };
+  /** prepaid | cod — presentation only; TCS still withheld from seller. */
+  collectionMode: "prepaid" | "cod";
   disclaimer: string;
 };
 
@@ -98,7 +100,9 @@ export function buildEcoInvoiceDocument(input: {
     taxPaise: number;
     totalPaise: number;
   };
+  collectionMode?: "prepaid" | "cod";
 }): EcoInvoiceDocument {
+  const collectionMode = input.collectionMode ?? "prepaid";
   const destinationState = input.shipTo.state;
   let tcsWithheldPaise = 0;
 
@@ -163,6 +167,7 @@ export function buildEcoInvoiceDocument(input: {
       ...input.totals,
       tcsWithheldPaise,
     },
+    collectionMode,
     disclaimer:
       "Tax invoice for goods is issued by the selling dealer under their Regular GSTIN. " +
       `${asperaLegal.legalEntity} acts as electronic commerce operator and collects TCS under GSTIN ${asperaLegal.gstinTcs}.`,
@@ -243,13 +248,15 @@ export function renderInvoiceHtml(doc: EcoInvoiceDocument): string {
   </section>
   ${sellerBlocks}
   <section>
-    <h2>Buyer totals (prepaid)</h2>
+    <h2>Buyer totals (${doc.collectionMode === "cod" ? "COD" : "prepaid"})</h2>
     <p>Subtotal ${inr(doc.totals.subtotalPaise)} · Discount ${inr(
       doc.totals.discountPaise,
     )} · Shipping ${inr(doc.totals.shippingPaise)} · Tax ${inr(
       doc.totals.taxPaise,
     )}</p>
-    <p><strong>Total paid ${inr(doc.totals.totalPaise)}</strong></p>
+    <p><strong>${
+      doc.collectionMode === "cod" ? "Collect on delivery" : "Total paid"
+    } ${inr(doc.totals.totalPaise)}</strong></p>
     <p class="muted">TCS withheld from sellers (not added to buyer): ${inr(
       doc.totals.tcsWithheldPaise,
     )}</p>

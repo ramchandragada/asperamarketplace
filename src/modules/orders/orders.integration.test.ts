@@ -221,6 +221,7 @@ describe.runIf(hasDatabase)("orders and mock payments integration", () => {
       {
         checkoutSessionId: reserved.checkout.id,
         idempotencyKey: `ord-${suffix}`,
+        paymentMethod: "prepaid",
       },
       crypto.randomUUID(),
     );

@@ -12,7 +12,7 @@ export const metadata = {
 const TOPICS = [
   {
     title: "Orders & tracking",
-    body: "Sign in and open Orders for status. Dispatch starts after prepaid payment is confirmed by the gateway webhook.",
+    body: "Sign in and open Orders for status. COD orders confirm immediately; prepaid orders dispatch after gateway capture.",
     href: "/orders",
   },
   {

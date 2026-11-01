@@ -15,7 +15,7 @@ describe("checkPincodeServiceability", () => {
     expect(result.etaMinutes).toBeLessThanOrEqual(90);
     expect(result.etaLabel?.toLowerCase()).toContain("min");
     expect(result.message.toLowerCase()).toContain("express");
-    expect(result.codAvailable).toBe(false);
+    expect(result.codAvailable).toBe(true);
   });
 
   it("treats any 411xxx pin as Pune Express", () => {

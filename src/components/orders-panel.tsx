@@ -151,10 +151,13 @@ function toggleSet<T>(set: Set<T>, value: T): Set<T> {
 export function OrdersPanel({
   initialOrders,
   allowMockSelfPay = false,
+  paymentProvider = "mock",
 }: {
   initialOrders: OrderSummary[];
   /** Server-gated: never true on live production. */
   allowMockSelfPay?: boolean;
+  /** Active gateway from PAYMENT_PROVIDER. */
+  paymentProvider?: "mock" | "razorpay" | string;
 }) {
   const router = useRouter();
   const [orders, setOrders] = useState(initialOrders);
@@ -195,7 +198,7 @@ export function OrdersPanel({
     }
   }
 
-  async function startAndSucceed(orderId: string) {
+  async function startPrepaidPayment(orderId: string) {
     setPending(true);
     setError(null);
     setMessage(null);
@@ -208,7 +211,15 @@ export function OrdersPanel({
       }),
     });
     const startBody = (await start.json()) as {
-      data?: { payment: { id: string } };
+      data?: {
+        payment: {
+          id: string;
+          provider: string;
+          providerReference: string;
+          amountPaise: number;
+          publicKey: string | null;
+        };
+      };
       message?: string;
     };
     if (!start.ok || !startBody.data) {
@@ -216,11 +227,68 @@ export function OrdersPanel({
       setError(startBody.message ?? "Could not start payment");
       return;
     }
+
+    const payment = startBody.data.payment;
+    if (payment.provider === "razorpay") {
+      if (!payment.publicKey) {
+        setPending(false);
+        setError("Razorpay is not configured (missing public key)");
+        return;
+      }
+      try {
+        const { openRazorpayCheckout } = await import(
+          "@/lib/razorpay-checkout"
+        );
+        const result = await openRazorpayCheckout({
+          keyId: payment.publicKey,
+          orderId: payment.providerReference,
+          amountPaise: payment.amountPaise,
+          description: "Aspera Express prepaid order",
+        });
+        setPending(false);
+        if (result === "dismissed") {
+          setMessage("Payment window closed — order stays unpaid until capture");
+          return;
+        }
+        setMessage(
+          "Payment submitted. Order marks paid after Razorpay webhook confirms capture.",
+        );
+        // Poll briefly for webhook-driven paid status.
+        for (let i = 0; i < 8; i += 1) {
+          await new Promise((r) => setTimeout(r, 1500));
+          await refresh();
+          const updated = (
+            await (await fetch("/api/orders")).json()
+          ) as { data?: { orders: OrderSummary[] } };
+          const order = updated.data?.orders.find((row) => row.id === orderId);
+          if (order?.status === "paid") {
+            setMessage("Payment captured");
+            router.refresh();
+            return;
+          }
+        }
+        setMessage(
+          "Waiting for payment confirmation — refresh in a moment if still unpaid.",
+        );
+      } catch (err) {
+        setPending(false);
+        setError(
+          err instanceof Error ? err.message : "Could not open Razorpay Checkout",
+        );
+      }
+      return;
+    }
+
+    if (!allowMockSelfPay) {
+      setPending(false);
+      setError("Mock self-pay is disabled on this environment");
+      return;
+    }
     const complete = await fetch("/api/payments/mock-complete", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        paymentAttemptId: startBody.data.payment.id,
+        paymentAttemptId: payment.id,
         outcome: "succeeded",
       }),
     });
@@ -604,17 +672,22 @@ export function OrdersPanel({
                   >
                     Get help
                   </Link>
-                  {canPay && allowMockSelfPay ? (
+                  {canPay &&
+                  (paymentProvider === "razorpay" || allowMockSelfPay) ? (
                     <>
                       <button
                         type="button"
                         disabled={pending}
                         className="btn-cta btn-cta-primary h-10 w-full"
-                        onClick={() => void startAndSucceed(order.id)}
+                        onClick={() => void startPrepaidPayment(order.id)}
                       >
-                        Complete prepaid payment
+                        {paymentProvider === "razorpay"
+                          ? "Pay with Razorpay"
+                          : "Complete prepaid payment"}
                       </button>
-                      {process.env.NODE_ENV === "development" ? (
+                      {allowMockSelfPay &&
+                      paymentProvider !== "razorpay" &&
+                      process.env.NODE_ENV === "development" ? (
                         <button
                           type="button"
                           disabled={pending}
@@ -627,11 +700,12 @@ export function OrdersPanel({
                       ) : null}
                     </>
                   ) : null}
-                  {canPay && !allowMockSelfPay ? (
+                  {canPay &&
+                  paymentProvider !== "razorpay" &&
+                  !allowMockSelfPay ? (
                     <p className="rounded-md border border-border bg-background px-3 py-2 text-center text-xs text-muted">
-                      Complete prepaid payment from this order. Paid status is
-                      set only after the payment gateway webhook confirms
-                      capture.
+                      Prepaid payment gateway is not enabled yet. Paid status is
+                      set only after a verified webhook confirms capture.
                     </p>
                   ) : null}
                 </div>

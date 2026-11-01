@@ -18,8 +18,8 @@ export default function ReturnsPage() {
         may be returned within{" "}
         <strong className="text-foreground">7 days of delivery</strong> if
         unused, in original packaging, with seals and accessories intact.
-        Returns are processed against the prepaid order; there is no COD
-        refund path.
+        Returns are processed against the original order; COD refunds are
+        settled as store credit or bank transfer after inspection.
       </p>
 
       <h2 className="mt-8 text-lg font-semibold">How to return</h2>

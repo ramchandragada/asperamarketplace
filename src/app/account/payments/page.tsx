@@ -23,17 +23,16 @@ export default async function AccountPaymentsPage() {
           Payment options
         </h1>
         <p className="mt-2 text-muted">
-          Checkout is prepaid (UPI, card, or netbanking). Orders are marked paid
-          only after the payment gateway webhook confirms capture. Cash on
-          delivery is not offered.
+          Cash on delivery is available on Pune Express pins. Online prepaid
+          (UPI / card / netbanking) returns when the payment gateway goes live.
         </p>
       </div>
 
       <div className="rounded-[var(--radius)] border border-border bg-surface p-5 text-sm">
         <p className="font-semibold">Available</p>
         <ul className="mt-2 flex flex-col gap-1 text-muted">
-          <li>· Prepaid payment on unpaid orders</li>
-          <li>· Invoice download from each paid order</li>
+          <li>· Cash on delivery (pay the delivery partner on arrival)</li>
+          <li>· Invoice download from each confirmed order</li>
           <li>· Refund history on cancelled / returned lines</li>
           {selfPay ? (
             <li>
@@ -42,10 +41,10 @@ export default async function AccountPaymentsPage() {
             </li>
           ) : null}
         </ul>
-        <p className="mt-4 font-semibold">Not offered</p>
+        <p className="mt-4 font-semibold">Coming next</p>
         <ul className="mt-2 flex flex-col gap-1 text-muted">
-          <li>· Cash on delivery</li>
-          <li>· Saved cards / UPI handles until gateway tokenization is enabled</li>
+          <li>· Online prepaid via Razorpay (UPI / card / netbanking)</li>
+          <li>· Saved cards / UPI handles after gateway tokenization</li>
         </ul>
       </div>
 

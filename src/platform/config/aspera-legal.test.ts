@@ -35,6 +35,8 @@ describe("asperaLegal", () => {
   it("exposes real support contacts without demo placeholders", () => {
     expect(asperaLegal.supportEmail).not.toMatch(/\.example|\.local|demo/i);
     expect(asperaLegal.supportPhoneDisplay).not.toMatch(/00000/);
-    expect(asperaLegal.grievanceOfficer.name.length).toBeGreaterThan(2);
+    expect(asperaLegal.grievanceOfficer.name).toBe("Ramchandra Gada");
+    expect(asperaLegal.supportEmail).toBe("support@asperamarketplace.com");
+    expect(asperaLegal.supportPhoneDisplay).toBe("+91 80 4680 1200");
   });
 });

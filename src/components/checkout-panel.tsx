@@ -59,7 +59,9 @@ export function CheckoutPanel({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "netbanking" | "">("");
+  const [paymentMethod, setPaymentMethod] = useState<
+    "cod" | "upi" | "card" | "netbanking" | ""
+  >("cod");
 
   const [idempotencyKey] = useState(() => `chk-${crypto.randomUUID()}`);
 
@@ -137,12 +139,14 @@ export function CheckoutPanel({
   }, [addressId, appliedCoupon, reserved]);
 
   async function placeOrderFromReserved(checkoutId: string) {
+    const method = paymentMethod === "cod" ? "cod" : "prepaid";
     const response = await fetch("/api/orders", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         checkoutSessionId: checkoutId,
         idempotencyKey: `ord-${crypto.randomUUID()}`,
+        paymentMethod: method,
       }),
     });
     const body = (await response.json()) as {
@@ -426,34 +430,57 @@ export function CheckoutPanel({
       <section className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4">
         <h2 className="text-lg font-semibold">Payment method</h2>
         <p className="text-xs text-muted">
-          Prepaid only. Your order is marked paid after the payment gateway
-          confirms capture — not when you return from the bank page.
+          Cash on delivery is available on Pune Express pins. Online prepaid
+          (UPI / card) will return once the payment gateway goes live.
         </p>
         <div className="flex flex-col gap-2" role="radiogroup" aria-label="Payment method">
+          <label
+            className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm ${
+              paymentMethod === "cod"
+                ? "border-accent bg-accent-soft"
+                : "border-border bg-background"
+            }`}
+          >
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="cod"
+              checked={paymentMethod === "cod"}
+              onChange={() => setPaymentMethod("cod")}
+              className="accent-[var(--accent)]"
+            />
+            <span>
+              <span className="font-medium">Cash on delivery</span>
+              <span className="mt-0.5 block text-xs text-muted">
+                Pay the delivery partner when your order arrives
+              </span>
+            </span>
+          </label>
           {(
             [
-              { id: "upi", label: "UPI" },
-              { id: "card", label: "Credit / debit card" },
-              { id: "netbanking", label: "Netbanking" },
+              { id: "upi" as const, label: "UPI" },
+              { id: "card" as const, label: "Credit / debit card" },
+              { id: "netbanking" as const, label: "Netbanking" },
             ] as const
           ).map((option) => (
             <label
               key={option.id}
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-sm ${
-                paymentMethod === option.id
-                  ? "border-accent bg-accent-soft"
-                  : "border-border bg-background"
-              }`}
+              className="flex cursor-not-allowed items-center gap-3 rounded-lg border border-border bg-background px-3 py-2.5 text-sm opacity-60"
             >
               <input
                 type="radio"
                 name="paymentMethod"
                 value={option.id}
-                checked={paymentMethod === option.id}
-                onChange={() => setPaymentMethod(option.id)}
+                disabled
+                checked={false}
                 className="accent-[var(--accent)]"
               />
-              {option.label}
+              <span>
+                {option.label}
+                <span className="mt-0.5 block text-xs text-muted">
+                  Coming soon — prepaid gateway next
+                </span>
+              </span>
             </label>
           ))}
         </div>
@@ -469,12 +496,12 @@ export function CheckoutPanel({
           {pending
             ? "Placing order…"
             : snapshot
-              ? `Place order · ${formatPaise(snapshot.totalPaise)}`
-              : "Place order"}
+              ? `Place COD order · ${formatPaise(snapshot.totalPaise)}`
+              : "Place COD order"}
         </button>
         <p className="text-center text-xs text-muted">
-          Stock is reserved when you place the order. You complete prepaid
-          payment on the next screen.
+          Stock is reserved when you place the order. Pay cash to the delivery
+          partner on arrival.
         </p>
       </div>
     </div>

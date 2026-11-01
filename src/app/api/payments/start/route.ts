@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const result = await startPayment(actor, body, requestId);
     return jsonOk(result, requestId, {
       status: 201,
-      message: "Mock payment attempt created",
+      message: "Payment attempt created",
     });
   } catch (error) {
     return jsonError(requestId, error);

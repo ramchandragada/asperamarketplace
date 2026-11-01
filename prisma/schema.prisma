@@ -242,6 +242,14 @@ model Seller {
   registeredState   String?      @map("registered_state")
   /// City of seller pickup / shop fulfilment (shown as “Fulfilled by seller from …”).
   pickupCity        String?      @map("pickup_city")
+  /// Street / shop line for courier pickup.
+  pickupLine1       String?      @map("pickup_line1")
+  pickupPostalCode  String?      @map("pickup_postal_code")
+  /// Payout bank — store holder + IFSC + masked account only (never full account).
+  bankAccountHolder String?      @map("bank_account_holder")
+  bankName          String?      @map("bank_name")
+  bankIfsc          String?      @map("bank_ifsc")
+  bankAccountLast4  String?      @map("bank_account_last4")
   /// seller_shop | aspera_warehouse — never brand a dealer shop as Aspera FC.
   fulfilmentBy      String       @default("seller_shop") @map("fulfilment_by")
   agreementAcceptedAt DateTime?  @map("agreement_accepted_at") @db.Timestamptz(6)

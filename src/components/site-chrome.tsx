@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { getOptionalActor } from "@/modules/identity/service";
-import { actorIsAdmin } from "@/modules/identity/policy";
+import { actorIsAdmin, actorIsSellerStaff } from "@/modules/identity/policy";
 import { prisma } from "@/platform/db/prisma";
 import { SiteHeaderClient } from "@/components/site-header-client";
 import { readGuestCartToken } from "@/modules/cart/guest";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
 import { ASPERA_PROMO } from "@/lib/aspera-promises";
 import { siteContact } from "@/platform/config/site-contact";
+import { resolveSellerForActor } from "@/modules/seller/access";
 
 async function cartCount(userId: string | undefined, guestToken: string | null) {
   try {
@@ -48,24 +49,19 @@ export async function SiteHeader() {
 
   const count = await cartCount(actor?.userId, guestToken);
   const isAdmin = actor ? actorIsAdmin(actor) : false;
-  const hasSellerRole =
-    actor?.roles.some((role) =>
-      [
-        "seller_owner",
-        "seller_operations",
-        "seller_finance",
-        "seller_support",
-      ].includes(role.key),
-    ) ?? false;
+  const sellerWorkspace = actor
+    ? await resolveSellerForActor(actor, "dashboard.read")
+    : null;
+  const isSeller =
+    Boolean(sellerWorkspace) || (actor ? actorIsSellerStaff(actor) : false);
 
   return (
     <SiteHeaderClient
       cartCount={count}
-      accountHref={
-        actor ? (hasSellerRole ? "/seller" : "/account") : "/login"
-      }
-      accountLabel={actor ? (hasSellerRole ? "Selling" : "Account") : "Account"}
-      sellHref={hasSellerRole || actor ? "/seller" : "/sell"}
+      accountHref={actor ? (isSeller ? "/seller" : "/account") : "/login"}
+      accountLabel={actor ? (isSeller ? "Selling" : "Account") : "Account"}
+      sellHref={isSeller ? "/seller" : "/sell"}
+      sellLabel={isSeller ? "Seller console" : "Become a seller"}
       showAdmin={isAdmin}
     />
   );

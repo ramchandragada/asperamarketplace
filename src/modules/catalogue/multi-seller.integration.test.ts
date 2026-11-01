@@ -51,6 +51,11 @@ async function approveSeller(label: string, suffix: string, adminActor: Actor) {
       gstin: uniqueTestGstin(`${label}-${suffix}`),
       registeredState: "Karnataka",
         pickupCity: "Bengaluru",
+        pickupLine1: "Shop 12, Test Market",
+        pickupPostalCode: "560001",
+        bankAccountHolder: "Test Seller",
+        bankIfsc: "HDFC0001234",
+        bankAccountNumber: "123456789012",
     },
     crypto.randomUUID(),
   );

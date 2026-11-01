@@ -31,6 +31,23 @@ export const createSellerDraftSchema = z.object({
     ),
   registeredState: indianState,
   pickupCity: z.string().trim().min(2).max(80),
+  pickupLine1: z.string().trim().min(5).max(200),
+  pickupPostalCode: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "Enter a 6-digit pickup pincode"),
+  bankAccountHolder: z.string().trim().min(2).max(120),
+  bankName: z.string().trim().min(2).max(120).optional(),
+  bankIfsc: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Enter a valid IFSC"),
+  /** Full account number accepted once; only last4 is persisted. */
+  bankAccountNumber: z
+    .string()
+    .trim()
+    .regex(/^\d{9,18}$/, "Enter a 9–18 digit account number"),
 });
 
 export const submitSellerSchema = z.object({

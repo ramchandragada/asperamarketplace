@@ -143,6 +143,12 @@ export function SellerOnboardingPanel({
       gstin: String(form.get("gstin") ?? ""),
       registeredState: String(form.get("registeredState") ?? ""),
       pickupCity: String(form.get("pickupCity") ?? ""),
+      pickupLine1: String(form.get("pickupLine1") ?? ""),
+      pickupPostalCode: String(form.get("pickupPostalCode") ?? ""),
+      bankAccountHolder: String(form.get("bankAccountHolder") ?? ""),
+      bankName: String(form.get("bankName") ?? "") || undefined,
+      bankIfsc: String(form.get("bankIfsc") ?? ""),
+      bankAccountNumber: String(form.get("bankAccountNumber") ?? ""),
     };
     const response = await fetch("/api/seller", {
       method: "POST",
@@ -279,6 +285,48 @@ export function SellerOnboardingPanel({
           value={pickupCity}
           onChange={(event) => setPickupCity(event.target.value)}
           placeholder="Pickup city (e.g. Pune)"
+          className={inputClass}
+        />
+        <input
+          name="pickupLine1"
+          required
+          placeholder="Pickup / shop address line"
+          className={inputClass}
+        />
+        <input
+          name="pickupPostalCode"
+          required
+          inputMode="numeric"
+          maxLength={6}
+          placeholder="Pickup pincode"
+          className={inputClass}
+        />
+        <p className="pt-2 text-xs font-semibold tracking-wide text-muted uppercase">
+          Payout bank
+        </p>
+        <input
+          name="bankAccountHolder"
+          required
+          placeholder="Account holder name"
+          className={inputClass}
+        />
+        <input
+          name="bankName"
+          placeholder="Bank name (optional)"
+          className={inputClass}
+        />
+        <input
+          name="bankIfsc"
+          required
+          placeholder="IFSC e.g. HDFC0001234"
+          className={inputClass}
+          autoCapitalize="characters"
+        />
+        <input
+          name="bankAccountNumber"
+          required
+          inputMode="numeric"
+          placeholder="Account number (stored as last 4 only)"
           className={inputClass}
         />
         <input

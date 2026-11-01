@@ -8,8 +8,18 @@ export const startProcessingSchema = z.object({
 
 export const shipGroupSchema = z.object({
   fulfilmentGroupId: dbUuid,
-  carrier: z.string().trim().min(2).max(80).default("Mock Logistics"),
-  trackingNumber: z.string().trim().min(5).max(64).optional(),
+  carrier: z
+    .string()
+    .trim()
+    .min(2)
+    .max(80)
+    .describe("Courier name e.g. Delhivery, Blue Dart, India Post"),
+  trackingNumber: z
+    .string()
+    .trim()
+    .min(5)
+    .max(64)
+    .describe("AWB / consignment number from the courier"),
 });
 
 export const markDeliveredSchema = z.object({

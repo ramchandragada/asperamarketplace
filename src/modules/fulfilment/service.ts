@@ -1,4 +1,3 @@
-import { randomBytes } from "node:crypto";
 import { cappedReturnQuantity } from "@/modules/fulfilment/refund";
 import {
   createCappedLineRefund,
@@ -139,12 +138,44 @@ export async function listSellerFulfilment(actor: Actor, sellerId: string) {
           orderNumber: true,
           status: true,
           totalPaise: true,
+          address: {
+            select: {
+              fullName: true,
+              phone: true,
+              line1: true,
+              line2: true,
+              city: true,
+              state: true,
+              postalCode: true,
+              country: true,
+            },
+          },
         },
       },
       lines: true,
       shipment: true,
     },
   });
+}
+
+function trackingUrlFor(carrier: string, trackingNumber: string): string | null {
+  const c = carrier.toLowerCase();
+  if (c.includes("delhivery")) {
+    return `https://www.delhivery.com/track/package/${encodeURIComponent(trackingNumber)}`;
+  }
+  if (c.includes("bluedart") || c.includes("blue dart")) {
+    return "https://www.bluedart.com/tracking";
+  }
+  if (c.includes("india post") || c.includes("speed post") || c.includes("indiapost")) {
+    return "https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx";
+  }
+  if (c.includes("dtdc")) {
+    return `https://www.dtdc.in/tracking.asp`;
+  }
+  if (c.includes("ekart")) {
+    return "https://ekartlogistics.com/track";
+  }
+  return null;
 }
 
 export async function startProcessing(
@@ -207,17 +238,16 @@ export async function shipGroup(
   await assertFulfilmentWrite(actor, group.sellerId);
   assertFulfilmentTransition(group.status, "shipped");
 
-  const trackingNumber =
-    input.trackingNumber ??
-    `MOCK${randomBytes(5).toString("hex").toUpperCase()}`;
-  const trackingUrl = `https://tracking.mock.local/${trackingNumber}`;
+  const trackingNumber = input.trackingNumber.trim().toUpperCase();
+  const carrier = input.carrier.trim();
+  const trackingUrl = trackingUrlFor(carrier, trackingNumber);
 
   const updated = await prisma.$transaction(async (tx) => {
     const fulfilment = await tx.orderFulfilmentGroup.update({
       where: { id: group.id, version: group.version },
       data: {
         status: "shipped",
-        carrier: input.carrier,
+        carrier,
         trackingNumber,
         trackingUrl,
         shippedAt: new Date(),
@@ -227,7 +257,7 @@ export async function shipGroup(
     await tx.shipment.create({
       data: {
         fulfilmentGroupId: group.id,
-        carrier: input.carrier,
+        carrier,
         trackingNumber,
         trackingUrl,
         status: "in_transit",
@@ -239,8 +269,8 @@ export async function shipGroup(
         action: "fulfilment.shipped",
         targetType: "fulfilment_group",
         targetId: group.id,
-        afterState: { trackingNumber, carrier: input.carrier },
-        reason: "Mock shipment created",
+        afterState: { trackingNumber, carrier },
+        reason: "Seller recorded courier AWB",
         correlationId,
       },
     });
@@ -249,7 +279,7 @@ export async function shipGroup(
         eventType: "ShipmentCreated",
         aggregateType: "fulfilment_group",
         aggregateId: group.id,
-        payload: { trackingNumber, carrier: input.carrier },
+        payload: { trackingNumber, carrier },
       },
     });
     return fulfilment;
@@ -263,7 +293,7 @@ export async function shipGroup(
     payload: {
       orderId: group.orderId,
       trackingNumber,
-      carrier: input.carrier,
+      carrier,
     },
   });
 

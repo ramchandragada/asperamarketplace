@@ -6,6 +6,14 @@ import {
   type SellerCapability,
 } from "@/modules/identity/policy";
 
+/** KYC apply flow under /seller — reachable before an approved seller exists. */
+export function isSellerOnboardingPath(pathname: string) {
+  return (
+    pathname === "/seller/onboarding" ||
+    pathname.startsWith("/seller/onboarding/")
+  );
+}
+
 /**
  * Resolve an approved seller the actor may access for a capability.
  * Prefers preferredSellerId; otherwise first scoped role match, then owned seller.

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { SellerOnboardingPanel } from "@/components/seller-onboarding-panel";
+import { redirectToLogin } from "@/lib/login-redirect";
 import { getOptionalActor } from "@/modules/identity/service";
 import { listOwnedSellers } from "@/modules/seller/service";
 
@@ -10,8 +10,9 @@ export const metadata = { title: "Seller onboarding" };
 export default async function SellerOnboardingPage() {
   const actor = await getOptionalActor();
   if (!actor) {
-    redirect("/login");
+    await redirectToLogin("/seller/onboarding");
   }
+  if (!actor) return null;
   const sellers = await listOwnedSellers(actor);
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   formatPaise,
   paiseFromRupees,
@@ -37,6 +37,13 @@ export function SellerProductEditPanel({
   const variant = product.variants[0];
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const successRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!message) return;
+    successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [message]);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,48 +64,69 @@ export function SellerProductEditPanel({
       setError("Selling price cannot be greater than MRP");
       return;
     }
+    const onHand = Number(form.get("onHand"));
     const payload = {
       sellerId,
       variant: {
         id: variant.id,
         mrpPaise: paiseFromRupees(mrpRupees),
         sellingPricePaise: paiseFromRupees(sellingRupees),
-        onHand: Number(form.get("onHand")),
+        onHand,
       },
     };
-    const response = await fetch(`/api/seller/products/${product.id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const body = (await response.json()) as {
-      message?: string;
-      fieldErrors?: Record<string, string[]> | null;
-    };
-    if (!response.ok) {
-      setError(apiErrorMessage(body, "Update failed"));
-      return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/seller/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = (await response.json()) as {
+        message?: string;
+        fieldErrors?: Record<string, string[]> | null;
+      };
+      if (!response.ok) {
+        setError(apiErrorMessage(body, "Update failed"));
+        return;
+      }
+      setMessage(
+        `Price & stock saved — ${formatPaise(paiseFromRupees(sellingRupees))} · ${onHand} in stock`,
+      );
+    } catch {
+      setError("Network error — could not save");
+    } finally {
+      setBusy(false);
     }
-    setMessage(body.message ?? "Saved");
   }
 
   async function setStatus(status: "draft" | "archived") {
     setError(null);
     setMessage(null);
-    const response = await fetch(`/api/seller/products/${product.id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ sellerId, status }),
-    });
-    const body = (await response.json()) as {
-      message?: string;
-      fieldErrors?: Record<string, string[]> | null;
-    };
-    if (!response.ok) {
-      setError(apiErrorMessage(body, "Status change failed"));
-      return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/seller/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sellerId, status }),
+      });
+      const body = (await response.json()) as {
+        message?: string;
+        fieldErrors?: Record<string, string[]> | null;
+      };
+      if (!response.ok) {
+        setError(apiErrorMessage(body, "Status change failed"));
+        return;
+      }
+      setMessage(
+        status === "archived"
+          ? "Listing paused — buyers will not see this offer"
+          : "Moved to draft",
+      );
+    } catch {
+      setError("Network error — could not update status");
+    } finally {
+      setBusy(false);
     }
-    setMessage(status === "archived" ? "Listing paused" : "Moved to draft");
   }
 
   return (
@@ -121,8 +149,32 @@ export function SellerProductEditPanel({
         </Link>
       </div>
 
-      {message ? <p className="text-sm text-accent">{message}</p> : null}
-      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {message ? (
+        <div
+          ref={successRef}
+          role="status"
+          aria-live="polite"
+          className="rounded-card border border-success/40 bg-success-soft px-4 py-3 text-sm"
+        >
+          <p className="font-semibold text-success">Saved successfully</p>
+          <p className="mt-1 text-foreground">{message}</p>
+          <button
+            type="button"
+            className="mt-3 rounded-lg border border-border bg-background px-3 py-1.5 text-sm"
+            onClick={() => setMessage(null)}
+          >
+            Dismiss
+          </button>
+        </div>
+      ) : null}
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger"
+        >
+          {error}
+        </p>
+      ) : null}
 
       <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-muted">
         Product title, specs, and images are controlled by Aspera. You can only
@@ -192,9 +244,10 @@ export function SellerProductEditPanel({
         ) : null}
         <button
           type="submit"
-          className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground"
+          disabled={busy || !variant}
+          className="rounded-lg bg-accent px-4 py-2 font-medium text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Save price &amp; stock
+          {busy ? "Saving…" : "Save price & stock"}
         </button>
       </form>
 
@@ -202,7 +255,8 @@ export function SellerProductEditPanel({
         {product.status === "approved" ? (
           <button
             type="button"
-            className="rounded-lg border border-border px-3 py-2 text-sm"
+            disabled={busy}
+            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-50"
             onClick={() => void setStatus("archived")}
           >
             Pause / unlist
@@ -211,7 +265,8 @@ export function SellerProductEditPanel({
         {product.status === "archived" ? (
           <button
             type="button"
-            className="rounded-lg border border-border px-3 py-2 text-sm"
+            disabled={busy}
+            className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-50"
             onClick={() => void setStatus("draft")}
           >
             Move to draft

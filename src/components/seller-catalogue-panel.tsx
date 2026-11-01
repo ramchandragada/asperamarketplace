@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   discountPercent,
   formatPaise,
@@ -14,6 +14,14 @@ import {
   type CataloguePickSelection,
 } from "@/components/product-source-picker";
 import { apiErrorMessage } from "@/platform/http/api-error-message";
+
+type ListedNotice = {
+  productId: string;
+  title: string;
+  sku: string;
+  sellingPricePaise: number;
+  onHand: number;
+};
 
 type SellerProduct = {
   id: string;
@@ -60,7 +68,7 @@ export function SellerCataloguePanel({
   const [page, setPage] = useState(initialPage);
   const [query, setQuery] = useState(initialQuery);
   const [status, setStatus] = useState(initialStatus);
-  const [message, setMessage] = useState<string | null>(null);
+  const [listed, setListed] = useState<ListedNotice | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sourceProductId, setSourceProductId] = useState("");
   const [offerSku, setOfferSku] = useState("");
@@ -70,8 +78,14 @@ export function SellerCataloguePanel({
   const [offerStock, setOfferStock] = useState("10");
   const [pickerKey, setPickerKey] = useState(0);
   const [busy, setBusy] = useState(false);
+  const successRef = useRef<HTMLDivElement | null>(null);
   const pageSize = initialPageSize;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
+
+  useEffect(() => {
+    if (!listed) return;
+    successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [listed]);
 
   function applyCataloguePick(selection: CataloguePickSelection | null) {
     if (!selection) {
@@ -154,7 +168,7 @@ export function SellerCataloguePanel({
   async function createOffer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setMessage(null);
+    setListed(null);
     if (!sourceProductId) {
       setError("Select a catalogue product (Category → … → SKU) first");
       return;
@@ -195,15 +209,31 @@ export function SellerCataloguePanel({
       const body = (await response.json()) as {
         message?: string;
         fieldErrors?: Record<string, string[]> | null;
+        data?: {
+          product?: { id?: string; title?: string };
+          variant?: { sku?: string; sellingPricePaise?: number };
+          inventory?: { onHand?: number };
+        };
       };
       if (!response.ok) {
         setError(apiErrorMessage(body, "Could not create offer"));
         return;
       }
-      setMessage(
-        body.message ??
-          "Listing live — manage price and stock from your catalogue",
-      );
+      const productId = body.data?.product?.id ?? "";
+      const title = body.data?.product?.title?.trim() || "Product";
+      const listedSku = body.data?.variant?.sku ?? sku;
+      const sellingPricePaise =
+        body.data?.variant?.sellingPricePaise ??
+        paiseFromRupees(sellingRupees);
+      const onHand =
+        body.data?.inventory?.onHand ?? (Number(offerStock) || 0);
+      setListed({
+        productId,
+        title,
+        sku: listedSku,
+        sellingPricePaise,
+        onHand,
+      });
       setSourceProductId("");
       setOfferSku("");
       setOfferVariantTitle("Standard");
@@ -221,8 +251,51 @@ export function SellerCataloguePanel({
 
   return (
     <div className="flex flex-col gap-8">
-      {message ? <p className="text-sm text-accent">{message}</p> : null}
-      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {listed ? (
+        <div
+          ref={successRef}
+          role="status"
+          aria-live="polite"
+          className="rounded-card border border-success/40 bg-success-soft px-4 py-3 text-sm text-foreground"
+        >
+          <p className="font-semibold text-success">Product listed successfully</p>
+          <p className="mt-1">
+            <span className="font-medium">{listed.title}</span>
+            {" · "}
+            SKU {listed.sku}
+            {" · "}
+            {formatPaise(listed.sellingPricePaise)}
+            {" · "}
+            {listed.onHand} in stock
+          </p>
+          <p className="mt-1 text-muted">
+            It is live under Your listings below. You can change price and stock
+            anytime.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {listed.productId ? (
+              <Link
+                href={`/seller/catalogue/${listed.productId}`}
+                className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm"
+              >
+                Open listing
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm"
+              onClick={() => setListed(null)}
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {error ? (
+        <p role="alert" className="rounded-lg border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger">
+          {error}
+        </p>
+      ) : null}
 
       <form
         noValidate
@@ -393,10 +466,15 @@ export function SellerCataloguePanel({
                         : product.status === "rejected"
                           ? "text-danger"
                           : "text-muted";
+                  const isJustListed = listed?.productId === product.id;
                   return (
                     <tr
                       key={product.id}
-                      className="mb-3 block rounded-card border border-border bg-surface p-4 align-top md:mb-0 md:table-row md:border-0 md:bg-transparent md:p-0"
+                      className={`mb-3 block rounded-card border p-4 align-top md:mb-0 md:table-row md:border-0 md:p-0 ${
+                        isJustListed
+                          ? "border-success/40 bg-success-soft md:bg-success-soft"
+                          : "border-border bg-surface md:bg-transparent"
+                      }`}
                     >
                       <td className="block md:table-cell md:py-3 md:pr-3">
                         <Link

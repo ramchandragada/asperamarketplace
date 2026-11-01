@@ -51,7 +51,9 @@ export default async function SellerLayout({
     if (actorIsAdmin(actor)) {
       redirect("/admin");
     }
-    redirect("/sell");
+    // Never dump sellers onto the shopper /sell marketing page (categories +
+    // Express header). Incomplete KYC belongs in the seller onboarding console.
+    redirect("/seller/onboarding");
   }
 
   const sellerName = seller.tradeName ?? seller.legalName;

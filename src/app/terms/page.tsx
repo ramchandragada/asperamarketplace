@@ -42,10 +42,11 @@ export default function TermsPage() {
 
       <h2 className="mt-8 text-lg font-semibold">3. Payment</h2>
       <p className="mt-2 text-sm leading-6 text-muted">
-        Checkout is prepaid through the payment gateway configured for this
-        site. An order is treated as paid only after the gateway webhook
-        confirms successful capture. Cash on delivery is not offered. Failed or
-        abandoned payments do not create a fulfilled order.
+        Checkout currently offers cash on delivery on serviceable Pune Express
+        pins. COD orders are confirmed when placed; you pay the delivery partner
+        on arrival. Online prepaid (UPI / card / netbanking) will be offered
+        once the payment gateway is enabled — those orders are treated as paid
+        only after the gateway webhook confirms capture.
       </p>
 
       <h2 className="mt-8 text-lg font-semibold">4. Stock, delivery, cancellation</h2>

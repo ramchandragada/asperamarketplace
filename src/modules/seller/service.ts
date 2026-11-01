@@ -7,6 +7,7 @@ import {
   type Actor,
 } from "@/modules/identity/policy";
 import { maskGstin, maskPan } from "@/modules/identity/crypto";
+import { CATALOGUE_OWNER_TRADE_NAME } from "@/modules/catalogue/constants";
 import type {
   AdminSetSellerGstinInput,
   CreateSellerDraftInput,
@@ -25,6 +26,22 @@ function assertSellerOwner(actor: Actor, ownerUserId: string) {
   if (actor.userId !== ownerUserId) {
     throw new AuthorizationError("Only the seller owner can perform this action");
   }
+}
+
+/** Platform closed-catalogue owner — never delete/suspend from admin. */
+export function isPlatformCatalogueSeller(seller: {
+  tradeName?: string | null;
+}): boolean {
+  return seller.tradeName === CATALOGUE_OWNER_TRADE_NAME;
+}
+
+function assertNotPlatformCatalogueSeller(seller: {
+  tradeName?: string | null;
+}) {
+  if (!isPlatformCatalogueSeller(seller)) return;
+  throw new ConflictError(
+    "Aspera Catalogue is the platform catalogue owner and cannot be deleted, suspended, or removed. Doing so would wipe the closed catalogue.",
+  );
 }
 
 export async function createSellerDraft(
@@ -383,6 +400,13 @@ export async function reviewSeller(
   });
   if (seller.version !== input.expectedVersion) {
     throw new ConflictError("Seller was updated by another operator. Reload and retry.");
+  }
+  if (
+    input.decision === "suspend" ||
+    input.decision === "reject" ||
+    input.decision === "request_info"
+  ) {
+    assertNotPlatformCatalogueSeller(seller);
   }
 
   if (input.decision === "request_info") {
@@ -778,6 +802,7 @@ export async function deleteSellerApplication(
   if (!seller) {
     throw new NotFoundError("Seller not found");
   }
+  assertNotPlatformCatalogueSeller(seller);
   if (seller.version !== input.expectedVersion) {
     throw new ConflictError(
       "Seller was updated by another operator. Reload and retry.",

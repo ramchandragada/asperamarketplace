@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
+import { CATALOGUE_OWNER_TRADE_NAME } from "@/modules/catalogue/constants";
+
+function isPlatformCatalogueSeller(seller: { tradeName: string | null }) {
+  return seller.tradeName === CATALOGUE_OWNER_TRADE_NAME;
+}
 
 export type AdminSellerTab = "pending" | "approved" | "suspended" | "all";
 
@@ -228,6 +233,17 @@ export function AdminSellerQueue({
   }
 
   function openConfirm(seller: AdminSeller, decision: ReviewDecision) {
+    if (
+      isPlatformCatalogueSeller(seller) &&
+      (decision === "suspend" ||
+        decision === "reject" ||
+        decision === "request_info")
+    ) {
+      setError(
+        "Aspera Catalogue is protected — it cannot be suspended or removed.",
+      );
+      return;
+    }
     setError(null);
     setMessage(null);
     setReason(
@@ -247,6 +263,12 @@ export function AdminSellerQueue({
   }
 
   async function deleteApplication(seller: AdminSeller) {
+    if (isPlatformCatalogueSeller(seller)) {
+      setError(
+        "Aspera Catalogue is protected — deleting it would wipe the closed catalogue.",
+      );
+      return;
+    }
     const reason = window.prompt(
       `Delete ${seller.tradeName ?? seller.legalName}? This frees the GSTIN. Type a reason:`,
       "Test application removed",
@@ -459,74 +481,83 @@ export function AdminSellerQueue({
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  {isPending(seller.status) ? (
+                  {isPlatformCatalogueSeller(seller) ? (
+                    <span className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-muted">
+                      Protected — platform catalogue (cannot delete or suspend)
+                    </span>
+                  ) : (
                     <>
-                      <label className="flex items-center gap-1 text-xs text-muted">
-                        <input
-                          type="checkbox"
-                          checked={selected.has(seller.id)}
-                          onChange={() => toggleSelected(seller.id)}
-                          aria-label={`Select ${seller.tradeName ?? seller.legalName} for bulk action`}
-                        />
-                        Select
-                      </label>
-                      <button
-                        type="button"
-                        className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground"
-                        onClick={() => openConfirm(seller, "approve")}
-                      >
-                        Approve
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-lg border border-border px-3 py-2 text-sm"
-                        onClick={() => openConfirm(seller, "reject")}
-                      >
-                        Reject
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-lg border border-border px-3 py-2 text-sm"
-                        onClick={() => openConfirm(seller, "request_info")}
-                      >
-                        Request info
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
-                        onClick={() => void deleteApplication(seller)}
-                      >
-                        Delete application
-                      </button>
+                      {isPending(seller.status) ? (
+                        <>
+                          <label className="flex items-center gap-1 text-xs text-muted">
+                            <input
+                              type="checkbox"
+                              checked={selected.has(seller.id)}
+                              onChange={() => toggleSelected(seller.id)}
+                              aria-label={`Select ${seller.tradeName ?? seller.legalName} for bulk action`}
+                            />
+                            Select
+                          </label>
+                          <button
+                            type="button"
+                            className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground"
+                            onClick={() => openConfirm(seller, "approve")}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-lg border border-border px-3 py-2 text-sm"
+                            onClick={() => openConfirm(seller, "reject")}
+                          >
+                            Reject
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-lg border border-border px-3 py-2 text-sm"
+                            onClick={() => openConfirm(seller, "request_info")}
+                          >
+                            Request info
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
+                            onClick={() => void deleteApplication(seller)}
+                          >
+                            Delete application
+                          </button>
+                        </>
+                      ) : null}
+                      {seller.status === "draft" ||
+                      seller.status === "rejected" ? (
+                        <button
+                          type="button"
+                          className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
+                          onClick={() => void deleteApplication(seller)}
+                        >
+                          Delete application
+                        </button>
+                      ) : null}
+                      {seller.status === "approved" ? (
+                        <button
+                          type="button"
+                          className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
+                          onClick={() => openConfirm(seller, "suspend")}
+                        >
+                          Suspend
+                        </button>
+                      ) : null}
+                      {seller.status === "suspended" ? (
+                        <button
+                          type="button"
+                          className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground"
+                          onClick={() => openConfirm(seller, "reactivate")}
+                        >
+                          Reactivate
+                        </button>
+                      ) : null}
                     </>
-                  ) : null}
-                  {seller.status === "draft" || seller.status === "rejected" ? (
-                    <button
-                      type="button"
-                      className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
-                      onClick={() => void deleteApplication(seller)}
-                    >
-                      Delete application
-                    </button>
-                  ) : null}
-                  {seller.status === "approved" ? (
-                    <button
-                      type="button"
-                      className="rounded-lg border border-danger px-3 py-2 text-sm text-danger"
-                      onClick={() => openConfirm(seller, "suspend")}
-                    >
-                      Suspend
-                    </button>
-                  ) : null}
-                  {seller.status === "suspended" ? (
-                    <button
-                      type="button"
-                      className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground"
-                      onClick={() => openConfirm(seller, "reactivate")}
-                    >
-                      Reactivate
-                    </button>
-                  ) : null}
+                  )}
                 </div>
               </div>
 

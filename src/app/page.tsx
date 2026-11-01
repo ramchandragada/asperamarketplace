@@ -21,7 +21,7 @@ import {
   listActiveCategories,
   searchApprovedProducts,
 } from "@/modules/catalogue/service";
-import { CATALOGUE_OWNER_TRADE_NAME } from "@/modules/catalogue/service";
+import { CATALOGUE_OWNER_TRADE_NAME } from "@/modules/catalogue/constants";
 import { PC_CATEGORY_SLUGS } from "@/modules/catalogue/pc-catalogue-data";
 import { prisma } from "@/platform/db/prisma";
 import { slugify } from "@/modules/catalogue/helpers";

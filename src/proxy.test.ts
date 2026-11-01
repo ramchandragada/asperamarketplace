@@ -17,6 +17,14 @@ describe("proxy auth gates", () => {
     );
   });
 
+  it("redirects logged-out /seller/onboarding to login with next preserved", () => {
+    const response = proxy(request("/seller/onboarding"));
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toContain(
+      "/login?next=%2Fseller%2Fonboarding",
+    );
+  });
+
   it("redirects logged-out /admin to login", () => {
     const response = proxy(request("/admin"));
     expect(response.status).toBe(307);

@@ -1,10 +1,14 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { OperatorChrome } from "@/components/operator-chrome";
 import { SellerNav } from "@/components/seller-nav";
 import { PageShell } from "@/components/ui/page-shell";
 import { redirectToLogin } from "@/lib/login-redirect";
 import { getOptionalActor } from "@/modules/identity/service";
-import { resolveSellerForActor } from "@/modules/seller/access";
+import {
+  isSellerOnboardingPath,
+  resolveSellerForActor,
+} from "@/modules/seller/access";
 import {
   actorHasSellerCapability,
   actorIsAdmin,
@@ -22,8 +26,28 @@ export default async function SellerLayout({
   }
   if (!actor) return null;
 
+  const path = (await headers()).get("x-aspera-pathname") ?? "";
+  const onOnboarding = isSellerOnboardingPath(path);
+
   const seller = await resolveSellerForActor(actor, "dashboard.read");
   if (!seller) {
+    // Applicants (and draft/pending owners) must reach KYC without an
+    // approved seller workspace. Everything else under /seller stays gated.
+    if (onOnboarding) {
+      return (
+        <OperatorChrome
+          surface="seller"
+          title="Seller onboarding"
+          subtitle={actor.displayName}
+          showAdmin={actorIsAdmin(actor)}
+          showSeller={false}
+        >
+          <PageShell>
+            <div className="mx-auto w-full max-w-3xl">{children}</div>
+          </PageShell>
+        </OperatorChrome>
+      );
+    }
     if (actorIsAdmin(actor)) {
       redirect("/admin");
     }

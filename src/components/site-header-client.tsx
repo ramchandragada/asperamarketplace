@@ -525,12 +525,15 @@ export function SiteHeaderClient({
   accountHref,
   accountLabel,
   sellHref,
+  sellLabel = "Become a seller",
   showAdmin,
 }: {
   cartCount: number;
   accountHref: string;
   accountLabel: string;
   sellHref: string;
+  /** Shoppers: recruit. Sellers: open console — never keep "Become a seller". */
+  sellLabel?: string;
   showAdmin: boolean;
 }) {
   const [compact, setCompact] = useState(false);
@@ -621,7 +624,7 @@ export function SiteHeaderClient({
             href={sellHref}
             className="hidden min-h-11 items-center px-1 text-[14px] font-medium text-foreground hover:text-accent sm:inline-flex"
           >
-            Become a seller
+            {sellLabel}
           </Link>
           {showAdmin ? (
             <Link

@@ -65,6 +65,21 @@ export function actorIsAdmin(actor: Actor): boolean {
   return actorHasRole(actor, "admin") || actorHasRole(actor, "super_admin");
 }
 
+/**
+ * Who may open a new seller KYC draft.
+ * Seller staff (ops/finance/support) already belong to a shop and must not
+ * create a second business under their staff login — use a customer account.
+ */
+export function actorCanStartSellerApplication(actor: Actor): boolean {
+  return actor.roles.some(
+    (role) =>
+      role.key === "seller_owner" ||
+      role.key === "customer" ||
+      role.key === "admin" ||
+      role.key === "super_admin",
+  );
+}
+
 export function actorOwnsSeller(actor: Actor, sellerId: string): boolean {
   return actorHasRole(actor, "seller_owner", sellerId);
 }

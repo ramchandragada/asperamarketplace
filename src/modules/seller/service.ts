@@ -2,6 +2,7 @@ import { KycCaseStatus, KycStage, type Prisma } from "@prisma/client";
 import { prisma } from "@/platform/db/prisma";
 import {
   AuthorizationError,
+  actorCanStartSellerApplication,
   requireAdmin,
   type Actor,
 } from "@/modules/identity/policy";
@@ -30,15 +31,10 @@ export async function createSellerDraft(
   input: CreateSellerDraftInput,
   correlationId: string,
 ) {
-  const canStart = actor.roles.some(
-    (role) =>
-      role.key === "seller_owner" ||
-      role.key === "customer" ||
-      role.key === "admin" ||
-      role.key === "super_admin",
-  );
-  if (!canStart) {
-    throw new AuthorizationError("An authenticated account is required");
+  if (!actorCanStartSellerApplication(actor)) {
+    throw new AuthorizationError(
+      "Seller staff accounts cannot start a new seller application. Sign out and use a customer account (or register a new one) to apply.",
+    );
   }
 
   return prisma.$transaction(async (tx) => {

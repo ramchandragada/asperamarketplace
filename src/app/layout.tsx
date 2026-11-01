@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Source_Sans_3 } from "next/font/google";
-import { headers } from "next/headers";
 import { Suspense } from "react";
 import { AnalyticsBeacon } from "@/components/analytics-beacon";
 import { BackToTopButton } from "@/components/back-to-top";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import {
+  ShopperChromeGate,
+  ShopperContentShell,
+} from "@/components/shopper-chrome-gate";
 import { ToastHost } from "@/components/toast-host";
 import "./globals.css";
 
@@ -48,15 +51,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const headerList = await headers();
-  const surface = headerList.get("x-aspera-surface") ?? "shopper";
-  const isPanel = surface === "admin" || surface === "seller";
-
+  // Do not gate chrome on x-aspera-surface alone: the root layout survives
+  // client navigations, so soft links from / → /seller kept the shopper
+  // header (categories + Express search) stacked on OperatorChrome.
   return (
     <html
       lang="en"
@@ -66,27 +68,19 @@ export default async function RootLayout({
         <a className="skip-link" href="#content">
           Skip to content
         </a>
-        {isPanel ? null : <SiteHeader />}
-        <div
-          id="content"
-          tabIndex={-1}
-          className={isPanel ? "flex-1" : "flex-1 pb-[5.75rem] md:pb-0"}
-        >
-          {children}
-        </div>
-        {isPanel ? null : (
-          <>
-            <SiteFooter />
-            <MobileBottomNav />
-            <BackToTopButton />
-          </>
-        )}
-        <ToastHost />
-        {isPanel ? null : (
+        <ShopperChromeGate>
+          <SiteHeader />
+        </ShopperChromeGate>
+        <ShopperContentShell>{children}</ShopperContentShell>
+        <ShopperChromeGate>
+          <SiteFooter />
+          <MobileBottomNav />
+          <BackToTopButton />
           <Suspense fallback={null}>
             <AnalyticsBeacon />
           </Suspense>
-        )}
+        </ShopperChromeGate>
+        <ToastHost />
       </body>
     </html>
   );

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { CATALOGUE_OWNER_TRADE_NAME } from "@/modules/catalogue/service";
 import { PC_CATEGORY_SLUGS } from "@/modules/catalogue/pc-catalogue-data";
 import { prisma } from "@/platform/db/prisma";
 
@@ -42,6 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         where: {
           status: "approved",
           category: { isActive: true, slug: { in: [...PC_CATEGORY_SLUGS] } },
+          seller: { NOT: { tradeName: CATALOGUE_OWNER_TRADE_NAME } },
         },
         select: { slug: true, updatedAt: true },
         take: 5000,
@@ -52,7 +54,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         select: { slug: true, updatedAt: true },
       }),
       prisma.seller.findMany({
-        where: { status: "approved" },
+        where: {
+          status: "approved",
+          NOT: { tradeName: CATALOGUE_OWNER_TRADE_NAME },
+          gstin: { not: null },
+        },
         select: { tradeName: true, legalName: true, updatedAt: true },
         take: 500,
       }),

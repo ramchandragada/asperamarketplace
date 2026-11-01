@@ -78,11 +78,25 @@ export async function seedPcCatalogue(
     brandId[brand.slug] = row.id;
   }
 
-  // Pune sellers — seed shops have no real Regular GSTIN, so they stay
-  // suspended and their catalogue stays unpublished until KYC completes.
+  // Demo Pune sellers are local/dev only. Production go-live keeps VSCG +
+  // Aspera Catalogue; never recreate DigitalDeck / TechZone / etc. unless
+  // ASPERA_SEED_DEMO_SELLERS=1 is set explicitly.
+  const seedDemoSellers =
+    process.env.ASPERA_SEED_DEMO_SELLERS === "1" &&
+    process.env.VERCEL_ENV !== "production" &&
+    process.env.NODE_ENV !== "production";
+
   const sellerId: Record<string, string> = {};
   const sellerHasGstin: Record<string, boolean> = {};
-  for (const seller of PC_SELLERS) {
+  if (!seedDemoSellers) {
+    console.warn(
+      JSON.stringify({
+        warn: "seed-pc-skipped-demo-sellers",
+        hint: "Set ASPERA_SEED_DEMO_SELLERS=1 for local fixtures only",
+      }),
+    );
+  }
+  for (const seller of seedDemoSellers ? PC_SELLERS : []) {
     const email = `${seller.key}@aspera.local`;
     const user = await prisma.user.upsert({
       where: { email },
@@ -240,6 +254,18 @@ export async function seedPcCatalogue(
   const categoryName = Object.fromEntries(
     PC_CATEGORIES.map((c) => [c.slug, c.name]),
   );
+
+  // PC products under demo sellers — skipped on go-live. Use
+  // `pnpm db:sync:catalogue` for Aspera Catalogue shells instead.
+  if (!seedDemoSellers) {
+    return {
+      categories: PC_CATEGORIES.length,
+      brands: PC_BRANDS.length,
+      sellers: 0,
+      products: 0,
+      removedNonPc,
+    };
+  }
 
   // PC products.
   for (const item of PC_PRODUCTS) {

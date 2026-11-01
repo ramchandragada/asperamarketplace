@@ -108,6 +108,7 @@ export async function listActiveBrands(input?: {
   const productWhere: Prisma.ProductWhereInput = {
     status: "approved",
     category: storefrontCategoryWhere(categorySlug),
+    seller: shoppableSellerWhere(),
   };
 
   const brands = await prisma.brand.findMany({
@@ -217,6 +218,17 @@ function storefrontCategoryWhere(
     return { slug: categorySlug, isActive: true };
   }
   return { isActive: true, slug: { in: allowed } };
+}
+
+/**
+ * Shopper storefront never sells as "Aspera Catalogue" — that seller owns
+ * closed-catalogue shells for dealer pick only. Real dealer offers only.
+ */
+function shoppableSellerWhere(): Prisma.SellerWhereInput {
+  return {
+    status: "approved",
+    NOT: { tradeName: CATALOGUE_OWNER_TRADE_NAME },
+  };
 }
 
 function assertPcCategory(category: { slug: string; name: string }) {
@@ -1612,6 +1624,7 @@ export async function getPublicProductBySlug(slug: string) {
       slug,
       status: "approved",
       category: storefrontCategoryWhere(),
+      seller: shoppableSellerWhere(),
     },
     include: {
       seller: {
@@ -1743,6 +1756,8 @@ export async function searchApprovedProducts(
         WHERE p.status = 'approved'
           AND c.is_active = true
           AND c.slug IN (${Prisma.join(storefrontCategorySlugs())})
+          AND s.status = 'approved'
+          AND (s.trade_name IS NULL OR s.trade_name <> ${CATALOGUE_OWNER_TRADE_NAME})
           AND (
             -- Match title/summary/category tightly so long descriptions do not
             -- pull unrelated listings (e.g. sandals for "dress").
@@ -1882,10 +1897,15 @@ export async function searchApprovedProducts(
   const where: Prisma.ProductWhereInput = {
     status: "approved",
     // PC-only storefront — never surface test / fashion / demo categories.
+    // Never sell as Aspera Catalogue shells — dealer offers only.
     category: storefrontCategoryWhere(input.categorySlug),
+    seller: input.verifiedSellerOnly
+      ? shoppableSellerWhere()
+      : {
+          NOT: { tradeName: CATALOGUE_OWNER_TRADE_NAME },
+        },
     ...(input.brandSlug ? { brand: { slug: input.brandSlug } } : {}),
     ...(facetFilters.length > 0 ? { AND: facetFilters } : {}),
-    ...(input.verifiedSellerOnly ? { seller: { status: "approved" } } : {}),
     variants: {
       some: {
         isActive: true,

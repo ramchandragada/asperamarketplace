@@ -23,6 +23,7 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:status": "prisma migrate status",
     "db:seed": "tsx prisma/seed.ts",
+    "db:sync:catalogue": "node --import tsx scripts/sync-closed-catalogue.mjs",
     "db:backfill:v2": "tsx prisma/backfill-catalogue-v2.ts",
     "postinstall": "prisma generate"
   },

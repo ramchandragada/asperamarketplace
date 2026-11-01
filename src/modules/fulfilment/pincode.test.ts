@@ -7,11 +7,6 @@ describe("checkPincodeServiceability", () => {
     expect(result.serviceable).toBe(false);
   });
 
-  it("rejects blocked prefixes", () => {
-    const result = checkPincodeServiceability("001001");
-    expect(result.serviceable).toBe(false);
-  });
-
   it("quotes Pune Express in minutes", () => {
     const result = checkPincodeServiceability("411001");
     expect(result.serviceable).toBe(true);
@@ -20,6 +15,7 @@ describe("checkPincodeServiceability", () => {
     expect(result.etaMinutes).toBeLessThanOrEqual(90);
     expect(result.etaLabel?.toLowerCase()).toContain("min");
     expect(result.message.toLowerCase()).toContain("express");
+    expect(result.codAvailable).toBe(false);
   });
 
   it("treats any 411xxx pin as Pune Express", () => {
@@ -29,28 +25,18 @@ describe("checkPincodeServiceability", () => {
     expect(result.city).toBe("Pune");
   });
 
-  it("autofills known metro pins with same-day express windows", () => {
+  it("does not invent Bengaluru / other metro Express hubs", () => {
     const result = checkPincodeServiceability("560001");
-    expect(result.serviceable).toBe(true);
-    expect(result.city).toBe("Bengaluru");
-    expect(result.state).toBe("Karnataka");
-    expect(result.etaLabel).toBeTruthy();
-    expect(result.express).toBe(true);
+    expect(result.serviceable).toBe(false);
+    expect(result.express).toBe(false);
+    expect(result.message.toLowerCase()).toContain("pune");
   });
 
-  it("treats other valid pins as serviceable without inventing a precise ETA", () => {
+  it("rejects other valid Indian pins outside configured area", () => {
     const result = checkPincodeServiceability("641001");
-    expect(result.serviceable).toBe(true);
+    expect(result.serviceable).toBe(false);
     expect(result.express).toBe(false);
     expect(result.etaMinutes).toBeNull();
-    expect(result.etaLabel?.toLowerCase()).toContain("usually");
     expect(result.codAvailable).toBe(false);
-  });
-
-  it("does not advertise COD on known metro pins (COD deferred)", () => {
-    const result = checkPincodeServiceability("560001");
-    expect(result.serviceable).toBe(true);
-    expect(result.codAvailable).toBe(false);
-    expect(result.message.toLowerCase()).not.toContain("cash on delivery");
   });
 });

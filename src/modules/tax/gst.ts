@@ -117,7 +117,10 @@ export function splitGst(input: {
   };
 }
 
-/** Marketplace TCS u/s 206C(1H) — 0.5% of net seller consideration (goods). */
+/**
+ * Income-tax marketplace TCS u/s 206C(1H) — 0.5% of net seller consideration.
+ * Do NOT confuse with GST TCS under CGST Act s.52 (see tcs-section52.ts).
+ */
 export const MARKETPLACE_TCS_BPS = 50;
 
 export function computeMarketplaceTcs(netConsiderationPaise: number): number {

@@ -24,7 +24,10 @@ import {
 } from "@/modules/catalogue/claims";
 import { SHIPPING_POLICY } from "@/modules/cart/pricing";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
-import { PC_CATEGORIES } from "@/modules/catalogue/pc-catalogue-data";
+import {
+  PC_CATEGORIES,
+  PC_CATEGORY_SLUGS,
+} from "@/modules/catalogue/pc-catalogue-data";
 import {
   searchProductsSchema,
   type CreateAdminCatalogueProductInput,
@@ -60,11 +63,18 @@ async function requireApprovedSellerOwnership(actor: Actor, sellerId: string) {
 
 export async function listActiveCategories() {
   const categories = await prisma.category.findMany({
-    where: { isActive: true },
+    where: storefrontCategoryWhere(),
     orderBy: { name: "asc" },
     include: {
       _count: {
-        select: { products: { where: { status: "approved" } } },
+        select: {
+          products: {
+            where: {
+              status: "approved",
+              category: storefrontCategoryWhere(),
+            },
+          },
+        },
       },
     },
   });
@@ -97,9 +107,7 @@ export async function listActiveBrands(input?: {
   const categorySlug = input?.categorySlug?.trim() || undefined;
   const productWhere: Prisma.ProductWhereInput = {
     status: "approved",
-    ...(categorySlug
-      ? { category: { slug: categorySlug, isActive: true } }
-      : {}),
+    category: storefrontCategoryWhere(categorySlug),
   };
 
   const brands = await prisma.brand.findMany({
@@ -188,10 +196,31 @@ export async function listBrandFilterIndex(): Promise<{
   };
 }
 
-const PC_CATEGORY_SLUGS = new Set(PC_CATEGORIES.map((category) => category.slug));
+const PC_CATEGORY_SLUG_SET = new Set(PC_CATEGORY_SLUGS);
+
+/** Categories shoppers may see. Test fixtures may include general-merchandise. */
+function storefrontCategorySlugs(): string[] {
+  if (process.env.NODE_ENV === "test") {
+    return [...PC_CATEGORY_SLUGS, "general-merchandise"];
+  }
+  return [...PC_CATEGORY_SLUGS];
+}
+
+function storefrontCategoryWhere(
+  categorySlug?: string,
+): Prisma.CategoryWhereInput {
+  const allowed = storefrontCategorySlugs();
+  if (categorySlug) {
+    if (!allowed.includes(categorySlug)) {
+      return { slug: "__not_a_pc_category__" };
+    }
+    return { slug: categorySlug, isActive: true };
+  }
+  return { isActive: true, slug: { in: allowed } };
+}
 
 function assertPcCategory(category: { slug: string; name: string }) {
-  if (PC_CATEGORY_SLUGS.has(category.slug)) return;
+  if (PC_CATEGORY_SLUG_SET.has(category.slug)) return;
   // Integration fixtures still use ensureGenericCategory(); keep that path
   // test-only so production never accepts non-PC taxonomy.
   if (
@@ -1579,7 +1608,11 @@ export async function listAdminProducts(
 export async function getPublicProductBySlug(slug: string) {
   await releaseExpiredCheckoutReservations();
   return prisma.product.findFirst({
-    where: { slug, status: "approved" },
+    where: {
+      slug,
+      status: "approved",
+      category: storefrontCategoryWhere(),
+    },
     include: {
       seller: {
         select: {
@@ -1708,6 +1741,8 @@ export async function searchApprovedProducts(
           GROUP BY product_id
         ) rv ON rv.product_id = p.id
         WHERE p.status = 'approved'
+          AND c.is_active = true
+          AND c.slug IN (${Prisma.join(storefrontCategorySlugs())})
           AND (
             -- Match title/summary/category tightly so long descriptions do not
             -- pull unrelated listings (e.g. sandals for "dress").
@@ -1846,11 +1881,8 @@ export async function searchApprovedProducts(
 
   const where: Prisma.ProductWhereInput = {
     status: "approved",
-    // Always require an active category so retired categories never leak
-    // into New arrivals / Trending / browse.
-    category: input.categorySlug
-      ? { slug: input.categorySlug, isActive: true }
-      : { isActive: true },
+    // PC-only storefront — never surface test / fashion / demo categories.
+    category: storefrontCategoryWhere(input.categorySlug),
     ...(input.brandSlug ? { brand: { slug: input.brandSlug } } : {}),
     ...(facetFilters.length > 0 ? { AND: facetFilters } : {}),
     ...(input.verifiedSellerOnly ? { seller: { status: "approved" } } : {}),

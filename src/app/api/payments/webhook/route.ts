@@ -8,6 +8,7 @@ export async function POST(request: Request) {
   try {
     const rawBody = await request.text();
     const signatureHeader =
+      request.headers.get("x-razorpay-signature") ??
       request.headers.get("x-aspera-mock-signature") ??
       request.headers.get("x-signature") ??
       "";

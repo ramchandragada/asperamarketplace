@@ -9,7 +9,7 @@ import {
 import {
   getPaymentProvider,
   MockPaymentProvider,
-  type MockWebhookPayload,
+  type PaymentWebhookPayload,
 } from "@/modules/payments/provider";
 import {
   buildEcoInvoiceDocument,
@@ -330,7 +330,7 @@ export async function startPayment(
           amountPaise: attempt.amountPaise,
           status: attempt.status,
         },
-        reason: "Mock payment attempt created",
+        reason: `Payment attempt created (${created.provider})`,
         correlationId,
       },
     });
@@ -342,6 +342,7 @@ export async function startPayment(
         payload: {
           orderId: order.id,
           providerReference: attempt.providerReference,
+          provider: attempt.provider,
         },
       },
     });
@@ -352,9 +353,12 @@ export async function startPayment(
     payment: {
       id: payment.id,
       status: payment.status,
+      provider: payment.provider,
       providerReference: payment.providerReference,
       clientSecret: payment.clientSecret,
       amountPaise: payment.amountPaise,
+      publicKey:
+        payment.provider === "razorpay" ? payment.clientSecret : null,
     },
   };
   await completeIdempotentCommand({
@@ -380,7 +384,7 @@ export async function simulateMockPaymentOutcome(
   }
 
   const provider = new MockPaymentProvider();
-  const payload: MockWebhookPayload = {
+  const payload: PaymentWebhookPayload = {
     id: `evt_${crypto.randomUUID()}`,
     type: input.outcome === "succeeded" ? "payment.succeeded" : "payment.failed",
     createdAt: new Date().toISOString(),
@@ -390,7 +394,7 @@ export async function simulateMockPaymentOutcome(
       currencyCode: payment.currencyCode,
       failureReason:
         input.outcome === "failed"
-          ? (input.failureReason ?? "Mock payment declined")
+          ? (input.failureReason ?? "Payment declined")
           : undefined,
     },
   };
@@ -408,7 +412,7 @@ export async function processPaymentWebhook(input: {
   signatureHeader: string;
   correlationId: string;
 }) {
-  const provider = new MockPaymentProvider();
+  const provider = getPaymentProvider();
   const signatureValid = provider.verifyWebhookSignature(
     input.rawBody,
     input.signatureHeader,
@@ -417,7 +421,7 @@ export async function processPaymentWebhook(input: {
     throw new WebhookRejectedError("Invalid webhook signature");
   }
 
-  let payload: MockWebhookPayload;
+  let payload: PaymentWebhookPayload;
   try {
     payload = provider.parseWebhook(input.rawBody);
   } catch {
@@ -425,11 +429,12 @@ export async function processPaymentWebhook(input: {
   }
 
   const payloadHash = createHash("sha256").update(input.rawBody).digest("hex");
+  const providerName = provider.name;
 
   const existing = await prisma.paymentWebhookEvent.findUnique({
     where: {
       provider_providerEventId: {
-        provider: "mock",
+        provider: providerName,
         providerEventId: payload.id,
       },
     },
@@ -450,6 +455,9 @@ export async function processPaymentWebhook(input: {
   if (!payment) {
     throw new WebhookRejectedError("Unknown payment reference");
   }
+  if (payment.provider !== providerName) {
+    throw new WebhookRejectedError("Webhook provider does not match payment");
+  }
   if (payment.amountPaise !== payload.data.amountPaise) {
     throw new WebhookRejectedError("Webhook amount does not match payment");
   }
@@ -460,7 +468,7 @@ export async function processPaymentWebhook(input: {
     try {
       await prisma.paymentWebhookEvent.create({
         data: {
-          provider: "mock",
+          provider: providerName,
           providerEventId: payload.id,
           paymentAttemptId: payment.id,
           eventType: payload.type,
@@ -474,7 +482,7 @@ export async function processPaymentWebhook(input: {
       const raced = await prisma.paymentWebhookEvent.findUnique({
         where: {
           provider_providerEventId: {
-            provider: "mock",
+            provider: providerName,
             providerEventId: payload.id,
           },
         },
@@ -491,11 +499,17 @@ export async function processPaymentWebhook(input: {
   }
 
   if (payload.type === "payment.succeeded") {
-    await markPaymentSucceeded(payment.id, payload.id, input.correlationId);
+    await markPaymentSucceeded(
+      payment.id,
+      payload.id,
+      providerName,
+      input.correlationId,
+    );
   } else {
     await markPaymentFailed(
       payment.id,
       payload.id,
+      providerName,
       payload.data.failureReason ?? "Payment failed",
       input.correlationId,
     );
@@ -504,7 +518,7 @@ export async function processPaymentWebhook(input: {
   const event = await prisma.paymentWebhookEvent.findUniqueOrThrow({
     where: {
       provider_providerEventId: {
-        provider: "mock",
+        provider: providerName,
         providerEventId: payload.id,
       },
     },
@@ -521,6 +535,7 @@ export async function processPaymentWebhook(input: {
 async function markPaymentSucceeded(
   paymentAttemptId: string,
   providerEventId: string,
+  providerName: string,
   correlationId: string,
 ) {
   const payment = await prisma.paymentAttempt.findUniqueOrThrow({
@@ -541,7 +556,6 @@ async function markPaymentSucceeded(
       },
     },
   });
-  const providerName = payment.provider || "mock";
 
   if (payment.status === "succeeded") {
     await prisma.paymentWebhookEvent.update({
@@ -802,6 +816,7 @@ async function markPaymentSucceeded(
 async function markPaymentFailed(
   paymentAttemptId: string,
   providerEventId: string,
+  providerName: string,
   failureReason: string,
   correlationId: string,
 ) {
@@ -814,7 +829,7 @@ async function markPaymentFailed(
     await prisma.paymentWebhookEvent.update({
       where: {
         provider_providerEventId: {
-          provider: "mock",
+          provider: providerName,
           providerEventId,
         },
       },
@@ -902,7 +917,7 @@ async function markPaymentFailed(
     await tx.paymentWebhookEvent.update({
       where: {
         provider_providerEventId: {
-          provider: "mock",
+          provider: providerName,
           providerEventId,
         },
       },

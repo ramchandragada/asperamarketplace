@@ -77,6 +77,9 @@ function processorFacets(title: string): Record<string, string> {
     facets.memoryType = "DDR5";
   } else if (facets.socket === "AM4") {
     facets.memoryType = "DDR4";
+  } else if (facets.socket === "LGA 1700") {
+    // Alder Lake / Raptor Lake: board chooses DDR4 or DDR5
+    facets.memoryType = "DDR4 / DDR5";
   }
 
   return facets;

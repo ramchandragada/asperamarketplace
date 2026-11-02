@@ -3,6 +3,7 @@ import {
   mergeFacetOverrides,
 } from "@/modules/catalogue/category-facets";
 import { LAPTOP_ENRICHMENT_OVERRIDES } from "@/modules/catalogue/laptop-enrichment-overrides";
+import { PROCESSOR_ENRICHMENT_OVERRIDES } from "@/modules/catalogue/processor-enrichment-overrides";
 import type {
   DescriptionBlock,
   EnrichmentAttributes,
@@ -626,8 +627,10 @@ function deriveGenericLaptop(p: EnrichableProduct): ProductEnrichment {
 }
 
 export function enrichProduct(product: EnrichableProduct): ProductEnrichment {
-  const override = LAPTOP_ENRICHMENT_OVERRIDES[product.slug];
-  if (override) return override;
+  const laptopOverride = LAPTOP_ENRICHMENT_OVERRIDES[product.slug];
+  if (laptopOverride) return laptopOverride;
+  const processorOverride = PROCESSOR_ENRICHMENT_OVERRIDES[product.slug];
+  if (processorOverride) return processorOverride;
 
   switch (product.categorySlug) {
     case "laptops":

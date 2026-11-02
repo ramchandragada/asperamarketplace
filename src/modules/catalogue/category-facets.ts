@@ -215,6 +215,9 @@ function psuFacets(title: string): Record<string, string> {
   }
   const eff = match(title, /\b(Platinum|Gold|Silver|Bronze)\b/i);
   if (eff) facets.efficiency = eff;
+  if (/fully\s*modular/i.test(title)) facets.modularity = "Fully modular";
+  else if (/semi[\s-]*modular/i.test(title)) facets.modularity = "Semi-modular";
+  else if (/non[\s-]*modular/i.test(title)) facets.modularity = "Non-modular";
   return facets;
 }
 
@@ -241,6 +244,11 @@ function peripheralFacets(title: string): Record<string, string> {
     : "Wired";
   if (/gaming/i.test(title)) facets.useCase = "Gaming";
   else if (/wireless|bluetooth/i.test(title)) facets.useCase = "Productivity";
+  if (/mechanical/i.test(title)) facets.switchType = "Mechanical";
+  else if (/membrane/i.test(title)) facets.switchType = "Membrane";
+  else if (facets.type === "Keyboard" || facets.type === "Combo") {
+    facets.switchType = "Other";
+  }
   return facets;
 }
 
@@ -269,6 +277,14 @@ function monitorFacets(title: string): Record<string, string> {
     facets.useCase = "Smart / entertainment";
   } else {
     facets.useCase = "Office / general";
+  }
+  const hz = match(title, /(\d{2,3})\s*Hz\b/i);
+  if (hz) {
+    const n = Number(hz);
+    if (n <= 60) facets.refreshRate = "60 Hz";
+    else if (n <= 100) facets.refreshRate = "75–100 Hz";
+    else if (n <= 144) facets.refreshRate = "120–144 Hz";
+    else facets.refreshRate = "165 Hz & above";
   }
   return facets;
 }
@@ -381,6 +397,7 @@ export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
       { key: "brandFamily", label: "Brand family" },
       { key: "tier", label: "Series / tier" },
       { key: "socket", label: "Socket" },
+      { key: "memoryType", label: "Memory type" },
       { key: "integratedGraphics", label: "Integrated graphics" },
     ],
   },
@@ -433,6 +450,7 @@ export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
     facets: [
       { key: "wattageBand", label: "Wattage" },
       { key: "efficiency", label: "Efficiency" },
+      { key: "modularity", label: "Modularity" },
       { key: "wattage", label: "Exact wattage", sort: "numeric" },
     ],
   },
@@ -449,6 +467,7 @@ export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
     facets: [
       { key: "type", label: "Type" },
       { key: "connectivity", label: "Connectivity" },
+      { key: "switchType", label: "Switch type" },
       { key: "useCase", label: "Use case" },
     ],
   },
@@ -457,6 +476,7 @@ export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
     facets: [
       { key: "sizeBand", label: "Screen size" },
       { key: "resolution", label: "Resolution" },
+      { key: "refreshRate", label: "Refresh rate" },
       { key: "panelType", label: "Panel type" },
       { key: "useCase", label: "Use case" },
     ],
@@ -527,6 +547,37 @@ export function extractProductFacets(input: {
     default:
       return {};
   }
+}
+
+/**
+ * Merge admin-authored facet overrides onto title-extracted values.
+ * Empty override values clear the extracted key so admins can blank a guess.
+ */
+export function mergeFacetOverrides(
+  extracted: Record<string, string>,
+  overrides?: Record<string, string> | null,
+): Record<string, string> {
+  if (!overrides) return { ...extracted };
+  const next = { ...extracted };
+  for (const [rawKey, rawValue] of Object.entries(overrides)) {
+    const key = rawKey.trim().slice(0, 60);
+    if (!key) continue;
+    const value = rawValue.trim().slice(0, 80);
+    if (!value) {
+      delete next[key];
+      continue;
+    }
+    next[key] = value;
+  }
+  return next;
+}
+
+/** Keys configured for a category — used to validate admin facet payloads. */
+export function facetKeysForCategory(
+  categorySlug: string | null | undefined,
+): Set<string> {
+  const config = getCategoryFacetConfig(categorySlug);
+  return new Set(config?.facets.map((facet) => facet.key) ?? []);
 }
 
 function numericSortKey(value: string): number {

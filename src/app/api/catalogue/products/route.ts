@@ -10,10 +10,18 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const facets = parseFacetSearchParams(url.searchParams);
+    const brandSlugs = url.searchParams
+      .getAll("brandSlug")
+      .map((value) => value.trim())
+      .filter(Boolean);
     const input = searchProductsSchema.parse({
       q: url.searchParams.get("q") ?? undefined,
       categorySlug: url.searchParams.get("categorySlug") ?? undefined,
-      brandSlug: url.searchParams.get("brandSlug") ?? undefined,
+      brandSlug:
+        brandSlugs.length === 1
+          ? brandSlugs[0]
+          : (url.searchParams.get("brandSlug") ?? undefined),
+      brandSlugs: brandSlugs.length > 1 ? brandSlugs : undefined,
       facets: Object.keys(facets).length > 0 ? facets : undefined,
       minPricePaise: url.searchParams.get("minPricePaise") ?? undefined,
       maxPricePaise: url.searchParams.get("maxPricePaise") ?? undefined,

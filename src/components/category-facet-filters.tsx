@@ -7,28 +7,54 @@ import {
   type FacetSelection,
 } from "@/modules/catalogue/category-facets";
 
+export type FacetCountMap = Record<string, Record<string, number>>;
+
 export function CategoryFacetFilters({
   categorySlug,
   selected,
   onChange,
   openSections,
   onToggleSection,
+  counts,
 }: {
   categorySlug: string;
   selected: FacetSelection;
   onChange: (next: FacetSelection) => void;
   openSections: Record<string, boolean>;
   onToggleSection: (key: string) => void;
+  /** Live counts keyed by facet key → value → count. Hide zero when provided. */
+  counts?: FacetCountMap | null;
 }) {
   const config = getCategoryFacetConfig(categorySlug);
   if (!config) return null;
-  const options = CATALOGUE_FACET_OPTIONS[categorySlug] ?? {};
+  const staticOptions = CATALOGUE_FACET_OPTIONS[categorySlug] ?? {};
 
   return (
     <>
       {config.facets.map((facet) => {
-        const values = options[facet.key] ?? [];
-        if (values.length === 0) return null;
+        const live = counts?.[facet.key];
+        const values =
+          live != null
+            ? Object.keys(live).sort((a, b) => {
+                if (facet.sort === "numeric") {
+                  const an = Number(a.match(/(\d+(?:\.\d+)?)/)?.[1] ?? Infinity);
+                  const bn = Number(b.match(/(\d+(?:\.\d+)?)/)?.[1] ?? Infinity);
+                  return an - bn;
+                }
+                return a.localeCompare(b, "en", { numeric: true });
+              })
+            : (staticOptions[facet.key] ?? []);
+        // Hide empty options when live counts are available; keep selected
+        // values visible even if the current slice momentarily zeros them.
+        const visibleValues =
+          live != null
+            ? values.filter(
+                (value) =>
+                  (live[value] ?? 0) > 0 ||
+                  (selected[facet.key] ?? []).includes(value),
+              )
+            : values;
+        if (visibleValues.length === 0) return null;
         const sectionKey = `facet:${facet.key}`;
         const open = openSections[sectionKey] !== false;
         const activeValues = selected[facet.key] ?? [];
@@ -47,8 +73,9 @@ export function CategoryFacetFilters({
             </button>
             {open ? (
               <ul className="mt-2 max-h-52 space-y-1 overflow-y-auto pr-1">
-                {values.map((value) => {
+                {visibleValues.map((value) => {
                   const active = activeValues.includes(value);
+                  const count = live?.[value];
                   return (
                     <li key={value}>
                       <label className="flex cursor-pointer items-start gap-2 rounded px-1 py-1 text-sm hover:bg-surface">
@@ -70,6 +97,11 @@ export function CategoryFacetFilters({
                           }
                         >
                           {value}
+                          {count != null ? (
+                            <span className="ml-1 text-xs text-[#888]">
+                              ({count})
+                            </span>
+                          ) : null}
                         </span>
                       </label>
                     </li>

@@ -14,7 +14,10 @@ import {
   useTransition,
   type ReactNode,
 } from "react";
-import { CategoryFacetFilters } from "@/components/category-facet-filters";
+import {
+  CategoryFacetFilters,
+  type FacetCountMap,
+} from "@/components/category-facet-filters";
 import { ProductCard, type ProductCardModel } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -72,9 +75,26 @@ type CatalogueBrowseProps = {
 function listingRouteKey(sp: URLSearchParams): string {
   return [
     sp.get("categorySlug") ?? "",
-    sp.get("brandSlug") ?? "",
+    sp.getAll("brandSlug").map((v) => v.trim()).filter(Boolean).sort().join(","),
     sp.get("q") ?? "",
   ].join("|");
+}
+
+function readBrandSlugs(sp: URLSearchParams): string[] {
+  return [
+    ...new Set(
+      sp
+        .getAll("brandSlug")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+}
+
+function toggleBrandSlug(selected: string[], slug: string): string[] {
+  return selected.includes(slug)
+    ? selected.filter((entry) => entry !== slug)
+    : [...selected, slug].sort((a, b) => a.localeCompare(b));
 }
 
 /** Full query fingerprint for detecting stale RSC props vs the address bar. */
@@ -262,7 +282,7 @@ function CatalogueBrowseInner({
     const sp = new URLSearchParams(raw);
     return {
       categorySlug: sp.get("categorySlug") ?? "",
-      brandSlug: sp.get("brandSlug") ?? "",
+      brandSlugs: readBrandSlugs(sp),
       query: sp.get("q") ?? "",
       sort: sp.get("sort") ?? initialSort,
       inStockOnly: sp.get("inStockOnly") === "true",
@@ -287,7 +307,7 @@ function CatalogueBrowseInner({
     new URLSearchParams(
       [
         initialCategorySlug ? `categorySlug=${initialCategorySlug}` : "",
-        initialBrandSlug ? `brandSlug=${initialBrandSlug}` : "",
+        ...(initialBrandSlug ? [`brandSlug=${initialBrandSlug}`] : []),
         initialQuery ? `q=${initialQuery}` : "",
         initialSort ? `sort=${initialSort}` : "",
         initialInStockOnly ? "inStockOnly=true" : "",
@@ -317,7 +337,11 @@ function CatalogueBrowseInner({
   const bootCategorySlug = propsStale
     ? urlBoot!.categorySlug
     : initialCategorySlug;
-  const bootBrandSlug = propsStale ? urlBoot!.brandSlug : initialBrandSlug;
+  const bootBrandSlugs = propsStale
+    ? urlBoot!.brandSlugs
+    : initialBrandSlug
+      ? [initialBrandSlug]
+      : [];
   const bootQuery = propsStale ? urlBoot!.query : initialQuery;
   const bootSort = propsStale ? urlBoot!.sort : initialSort;
   const bootInStock = propsStale ? urlBoot!.inStockOnly : initialInStockOnly;
@@ -353,8 +377,10 @@ function CatalogueBrowseInner({
   const [loadingMore, setLoadingMore] = useState(false);
   const [query, setQuery] = useState(bootQuery);
   const [categorySlug, setCategorySlug] = useState(bootCategorySlug);
-  const [brandSlug, setBrandSlug] = useState(bootBrandSlug);
+  const [brandSlugs, setBrandSlugs] = useState<string[]>(bootBrandSlugs);
   const [facets, setFacets] = useState<FacetSelection>(bootFacets);
+  const [facetCounts, setFacetCounts] = useState<FacetCountMap | null>(null);
+  const [brandCounts, setBrandCounts] = useState<Record<string, number>>({});
   const [sort, setSort] = useState(bootSort);
   const [inStockOnly, setInStockOnly] = useState(bootInStock);
   const [verifiedOnly, setVerifiedOnly] = useState(bootVerified);
@@ -400,11 +426,6 @@ function CatalogueBrowseInner({
     return brands;
   }, [brands, brandsByCategory, categorySlug]);
 
-  const brandName =
-    scopedBrands.find((entry) => entry.slug === brandSlug)?.name ??
-    brands.find((entry) => entry.slug === brandSlug)?.name ??
-    null;
-
   const filteredCategories = useMemo(() => {
     const term = categorySearch.trim().toLowerCase();
     if (!term) return categories;
@@ -432,8 +453,12 @@ function CatalogueBrowseInner({
     if (categorySlug) {
       list.push({ key: "cat", label: categoryName });
     }
-    if (brandSlug && brandName) {
-      list.push({ key: "brand", label: brandName });
+    for (const slug of brandSlugs) {
+      const name =
+        scopedBrands.find((entry) => entry.slug === slug)?.name ??
+        brands.find((entry) => entry.slug === slug)?.name ??
+        slug;
+      list.push({ key: `brand:${slug}`, label: name });
     }
     if (pricePreset) {
       const preset = PRICE_PRESETS.find((entry) => entry.key === pricePreset);
@@ -472,8 +497,9 @@ function CatalogueBrowseInner({
     query,
     categorySlug,
     categoryName,
-    brandSlug,
-    brandName,
+    brandSlugs,
+    scopedBrands,
+    brands,
     inStockOnly,
     verifiedOnly,
     pricePreset,
@@ -488,7 +514,7 @@ function CatalogueBrowseInner({
   async function runSearch(next?: {
     q?: string;
     categorySlug?: string;
-    brandSlug?: string;
+    brandSlugs?: string[];
     facets?: FacetSelection;
     sort?: string;
     inStockOnly?: boolean;
@@ -506,7 +532,7 @@ function CatalogueBrowseInner({
     const params = new URLSearchParams();
     const q = (next?.q ?? query).trim();
     const cat = next?.categorySlug ?? categorySlug;
-    const brand = next?.brandSlug ?? brandSlug;
+    const brandsSelected = next?.brandSlugs ?? brandSlugs;
     const facetValues = next?.facets ?? facets;
     const sortValue = next?.sort ?? sort;
     const stock = next?.inStockOnly ?? inStockOnly;
@@ -520,7 +546,9 @@ function CatalogueBrowseInner({
     const append = next?.append === true;
     if (q) params.set("q", q);
     if (cat) params.set("categorySlug", cat);
-    if (brand) params.set("brandSlug", brand);
+    for (const slug of brandsSelected) {
+      params.append("brandSlug", slug);
+    }
     for (const [key, value] of facetQueryEntries(facetValues)) {
       params.append(key, value);
     }
@@ -589,6 +617,85 @@ function CatalogueBrowseInner({
     // Mount-only — keyed remount creates a fresh instance per URL.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const histogramActive = Boolean(categorySlug) || brandSlugs.length > 0;
+  // Ignore stale histogram state when no category/brand slice is active.
+  const liveFacetCounts = histogramActive ? facetCounts : null;
+  const liveBrandCounts = histogramActive ? brandCounts : {};
+
+  // Live facet / brand counts for the current filter slice.
+  useEffect(() => {
+    if (!histogramActive) return;
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    if (categorySlug) params.set("categorySlug", categorySlug);
+    for (const slug of brandSlugs) params.append("brandSlug", slug);
+    for (const [key, value] of facetQueryEntries(facets)) {
+      params.append(key, value);
+    }
+    if (inStockOnly) params.set("inStockOnly", "true");
+    if (verifiedOnly) params.set("verifiedSellerOnly", "true");
+    if (minPrice.trim()) {
+      params.set("minPricePaise", String(Math.round(Number(minPrice) * 100)));
+    }
+    if (maxPrice.trim()) {
+      params.set("maxPricePaise", String(Math.round(Number(maxPrice) * 100)));
+    }
+    if (minRating != null) params.set("minRating", String(minRating));
+    if (minDiscount != null) {
+      params.set("minDiscountPercent", String(minDiscount));
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void fetch(`/api/catalogue/facet-histogram?${params.toString()}`)
+        .then(async (response) => {
+          if (!response.ok) return null;
+          return (await response.json()) as {
+            data?: {
+              facets?: Record<string, Array<{ value: string; count: number }>>;
+              brands?: Array<{ slug: string; name: string; count: number }>;
+            };
+          };
+        })
+        .then((body) => {
+          if (cancelled || !body?.data) return;
+          const nextFacets: FacetCountMap = {};
+          for (const [key, entries] of Object.entries(body.data.facets ?? {})) {
+            nextFacets[key] = Object.fromEntries(
+              entries.map((entry) => [entry.value, entry.count]),
+            );
+          }
+          setFacetCounts(nextFacets);
+          setBrandCounts(
+            Object.fromEntries(
+              (body.data.brands ?? []).map((entry) => [
+                entry.slug,
+                entry.count,
+              ]),
+            ),
+          );
+        })
+        .catch(() => {
+          /* keep last good histogram */
+        });
+    }, 120);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [
+    histogramActive,
+    query,
+    categorySlug,
+    brandSlugs,
+    facets,
+    inStockOnly,
+    verifiedOnly,
+    minPrice,
+    maxPrice,
+    minRating,
+    minDiscount,
+  ]);
 
   function loadMore() {
     if (loadMoreLockRef.current || loadingMore || pending) return;
@@ -663,7 +770,7 @@ function CatalogueBrowseInner({
   function clearAll() {
     setQuery("");
     setCategorySlug("");
-    setBrandSlug("");
+    setBrandSlugs([]);
     setSort(initialQuery.trim() ? "relevance" : "newest");
     setInStockOnly(false);
     setVerifiedOnly(false);
@@ -679,7 +786,7 @@ function CatalogueBrowseInner({
       void runSearch({
         q: "",
         categorySlug: "",
-        brandSlug: "",
+        brandSlugs: [],
         facets: {},
         sort: initialQuery.trim() ? "relevance" : "newest",
         inStockOnly: false,
@@ -721,9 +828,14 @@ function CatalogueBrowseInner({
       setFacets(nextFacets);
       next.facets = nextFacets;
     }
-    if (key === "brand") {
-      setBrandSlug("");
-      next.brandSlug = "";
+    if (key === "brand" || key.startsWith("brand:")) {
+      const slug =
+        key === "brand" ? "" : key.slice("brand:".length);
+      const nextBrands = slug
+        ? brandSlugs.filter((entry) => entry !== slug)
+        : [];
+      setBrandSlugs(nextBrands);
+      next.brandSlugs = nextBrands;
     }
     if (key === "price" || key === "priceCustom") {
       setPricePreset("");
@@ -862,21 +974,20 @@ function CatalogueBrowseInner({
                     setFacets({});
                     setBrandSearch("");
                     setBrandShowAll(false);
-                    // Clear brand if it has no products in the newly selected category.
-                    const nextBrands =
+                    // Drop brands that have no products in the newly selected category.
+                    const nextBrandPool =
                       next && brandsByCategory[next]
                         ? brandsByCategory[next]
                         : brands;
-                    const brandStillValid =
-                      !brandSlug ||
-                      nextBrands.some((brand) => brand.slug === brandSlug);
-                    const nextBrand = brandStillValid ? brandSlug : "";
-                    if (!brandStillValid) setBrandSlug("");
+                    const nextBrands = brandSlugs.filter((slug) =>
+                      nextBrandPool.some((brand) => brand.slug === slug),
+                    );
+                    setBrandSlugs(nextBrands);
                     startTransition(() => {
                       void runSearch({
                         categorySlug: next,
                         facets: {},
-                        brandSlug: nextBrand,
+                        brandSlugs: nextBrands,
                       });
                     });
                   }}
@@ -905,6 +1016,7 @@ function CatalogueBrowseInner({
         <CategoryFacetFilters
           categorySlug={categorySlug}
           selected={facets}
+          counts={liveFacetCounts}
           openSections={openSections}
           onToggleSection={toggleSection}
           onChange={(nextFacets) => {
@@ -936,25 +1048,40 @@ function CatalogueBrowseInner({
           />
           <ul className="space-y-2">
             {(brandShowAll ? filteredBrands : filteredBrands.slice(0, 6)).map(
-              (brand) => (
+              (brand) => {
+                const count = liveBrandCounts[brand.slug];
+                const hideEmpty =
+                  Object.keys(liveBrandCounts).length > 0 &&
+                  (count == null || count <= 0) &&
+                  !brandSlugs.includes(brand.slug);
+                if (hideEmpty) return null;
+                return (
                 <li key={brand.slug}>
                   <label className="flex min-h-11 cursor-pointer items-center gap-2 text-[13px] text-[#333] lg:min-h-0">
                     <input
                       type="checkbox"
-                      checked={brandSlug === brand.slug}
+                      checked={brandSlugs.includes(brand.slug)}
                       onChange={() => {
-                        const next = brandSlug === brand.slug ? "" : brand.slug;
-                        setBrandSlug(next);
+                        const next = toggleBrandSlug(brandSlugs, brand.slug);
+                        setBrandSlugs(next);
                         startTransition(() => {
-                          void runSearch({ brandSlug: next });
+                          void runSearch({ brandSlugs: next });
                         });
                       }}
                       className="h-3.5 w-3.5 accent-[var(--accent)]"
                     />
-                    <span className="min-w-0 flex-1 truncate">{brand.name}</span>
+                    <span className="min-w-0 flex-1 truncate">
+                      {brand.name}
+                      {count != null ? (
+                        <span className="ml-1 text-xs text-[#888]">
+                          ({count})
+                        </span>
+                      ) : null}
+                    </span>
                   </label>
                 </li>
-              ),
+              );
+              },
             )}
             {filteredBrands.length === 0 ? (
               <li className="text-xs text-[#888]">No brands match</li>

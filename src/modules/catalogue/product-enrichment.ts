@@ -1,4 +1,7 @@
-import { extractProductFacets } from "@/modules/catalogue/category-facets";
+import {
+  extractProductFacets,
+  mergeFacetOverrides,
+} from "@/modules/catalogue/category-facets";
 import { LAPTOP_ENRICHMENT_OVERRIDES } from "@/modules/catalogue/laptop-enrichment-overrides";
 import type {
   DescriptionBlock,
@@ -659,7 +662,13 @@ export function enrichProduct(product: EnrichableProduct): ProductEnrichment {
 export function toEnrichmentAttributes(
   product: EnrichableProduct,
   enrichment: ProductEnrichment,
+  facetOverrides?: Record<string, string> | null,
 ): EnrichmentAttributes {
+  const extracted = extractProductFacets({
+    slug: product.slug,
+    title: product.title,
+    categorySlug: product.categorySlug,
+  });
   return {
     brand: brandDisplay(product.brandSlug, product.brandName),
     city: "Pune",
@@ -670,10 +679,6 @@ export function toEnrichmentAttributes(
     descriptionBlocks: enrichment.descriptionBlocks,
     warranty: enrichment.warranty,
     cardBullets: enrichment.cardBullets,
-    facets: extractProductFacets({
-      slug: product.slug,
-      title: product.title,
-      categorySlug: product.categorySlug,
-    }),
+    facets: mergeFacetOverrides(extracted, facetOverrides),
   };
 }

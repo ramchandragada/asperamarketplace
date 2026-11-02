@@ -5,6 +5,7 @@ import {
   extractProductFacets,
   facetQueryEntries,
   getCategoryFacetConfig,
+  mergeFacetOverrides,
   parseFacetSearchParams,
 } from "@/modules/catalogue/category-facets";
 
@@ -85,18 +86,56 @@ describe("extractProductFacets", () => {
     ).toBe("NAS / enclosure");
   });
 
-  it("adds monitor panel type and size bands", () => {
+  it("adds monitor panel type, size bands, and refresh rate", () => {
     expect(
       extractProductFacets({
         slug: "msi-oled",
-        title: "MSI MAG 341CQP QD-OLED 34 Inch Curved Gaming Monitor",
+        title: "MSI MAG 341CQP QD-OLED 34 Inch 165Hz Curved Gaming Monitor",
         categorySlug: "monitors",
       }),
     ).toMatchObject({
       sizeBand: `34" & ultrawide`,
       panelType: "OLED",
       useCase: "Gaming",
+      refreshRate: "165 Hz & above",
     });
+  });
+
+  it("tags PSU modularity and keyboard switch type", () => {
+    expect(
+      extractProductFacets({
+        slug: "corsair-rm750",
+        title: "Corsair RM750x Fully Modular Gold SMPS 750W",
+        categorySlug: "power-supplies",
+      }),
+    ).toMatchObject({
+      modularity: "Fully modular",
+      efficiency: "Gold",
+      wattage: "750 W",
+    });
+    expect(
+      extractProductFacets({
+        slug: "keychron-k2",
+        title: "Keychron K2 Wireless Mechanical Keyboard",
+        categorySlug: "keyboard-mouse",
+      }).switchType,
+    ).toBe("Mechanical");
+  });
+
+  it("merges admin facet overrides over title extraction", () => {
+    expect(
+      mergeFacetOverrides(
+        { socket: "AM5", tier: "Ryzen 5" },
+        { socket: "AM4", integratedGraphics: "Yes" },
+      ),
+    ).toEqual({
+      socket: "AM4",
+      tier: "Ryzen 5",
+      integratedGraphics: "Yes",
+    });
+    expect(
+      mergeFacetOverrides({ socket: "AM5" }, { socket: "" }),
+    ).toEqual({});
   });
 
   it("normalizes laptop processor families from overrides", () => {
@@ -128,6 +167,10 @@ describe("facet catalogue options", () => {
             "capacity",
             "screenSize",
             "size",
+            "modularity",
+            "refreshRate",
+            "switchType",
+            "memoryType",
           ].includes(facet.key)
         ) {
           expect(

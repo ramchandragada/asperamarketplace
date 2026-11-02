@@ -38,6 +38,16 @@ import {
   type UpdateAdminCatalogueProductInput,
 } from "@/modules/catalogue/schema";
 import { CATALOGUE_PICK_GROUPS } from "@/modules/catalogue/pick-groups";
+import {
+  enrichProduct,
+  toEnrichmentAttributes,
+} from "@/modules/catalogue/product-enrichment";
+import type { EnrichmentAttributes } from "@/modules/catalogue/product-enrichment-types";
+import {
+  getCategoryFacetConfig,
+  mergeFacetOverrides,
+  extractProductFacets,
+} from "@/modules/catalogue/category-facets";
 import { asperaLegal } from "@/platform/config/aspera-legal";
 import {
   HttpValidationError,
@@ -46,6 +56,32 @@ import {
 
 import { CATALOGUE_OWNER_TRADE_NAME } from "@/modules/catalogue/constants";
 export { CATALOGUE_OWNER_TRADE_NAME };
+
+function resolveSearchBrandSlugs(input: {
+  brandSlug?: string;
+  brandSlugs?: string[];
+}): string[] {
+  if (input.brandSlugs && input.brandSlugs.length > 0) {
+    return [...new Set(input.brandSlugs.map((slug) => slug.trim()).filter(Boolean))];
+  }
+  if (input.brandSlug?.trim()) return [input.brandSlug.trim()];
+  return [];
+}
+
+function productMatchesFacetSelection(
+  facets: Record<string, string> | null | undefined,
+  selected: Record<string, string[]> | undefined,
+  excludeKey?: string,
+): boolean {
+  if (!selected) return true;
+  for (const [key, values] of Object.entries(selected)) {
+    if (excludeKey && key === excludeKey) continue;
+    if (!values || values.length === 0) continue;
+    const actual = facets?.[key];
+    if (!actual || !values.includes(actual)) return false;
+  }
+  return true;
+}
 
 async function requireApprovedSellerOwnership(actor: Actor, sellerId: string) {
   const seller = await prisma.seller.findUniqueOrThrow({
@@ -708,8 +744,9 @@ export async function createAdminCatalogueProduct(
   assertPcCategory(category);
 
   let brandId: string | undefined;
+  let brandSlug = "generic";
   if (input.brandName) {
-    const brandSlug = slugify(input.brandName);
+    brandSlug = slugify(input.brandName);
     const brand = await prisma.brand.upsert({
       where: { slug: brandSlug },
       create: { slug: brandSlug, name: input.brandName },
@@ -729,6 +766,20 @@ export async function createAdminCatalogueProduct(
     categoryName: category.name,
     sku: input.variant.sku,
   });
+  const enrichable = {
+    slug,
+    title: input.title,
+    categorySlug: category.slug,
+    brandSlug,
+    brandName: input.brandName,
+    categoryName: category.name,
+  };
+  const enrichment = enrichProduct(enrichable);
+  const attributes = toEnrichmentAttributes(
+    enrichable,
+    enrichment,
+    input.facets,
+  ) as Prisma.InputJsonValue;
   const now = new Date();
 
   return prisma.$transaction(async (tx) => {
@@ -747,6 +798,7 @@ export async function createAdminCatalogueProduct(
         hsnCode: input.hsnCode,
         sharedListingKey,
         searchDocument,
+        attributes,
         submittedAt: now,
         reviewedAt: now,
         reviewedByUserId: actor.userId,
@@ -868,6 +920,59 @@ export async function updateAdminCatalogueProduct(
       ? existing.category
       : await prisma.category.findUniqueOrThrow({ where: { id: categoryId } });
 
+  const titleOrCategoryChanged =
+    nextTitle !== existing.title || categoryId !== existing.categoryId;
+  const shouldRefreshAttributes =
+    titleOrCategoryChanged || input.facets !== undefined;
+
+  let nextAttributes: Prisma.InputJsonValue | undefined;
+  if (shouldRefreshAttributes) {
+    const brandSlug = existing.brand?.slug ?? "generic";
+    const enrichable = {
+      slug: existing.slug,
+      title: nextTitle,
+      categorySlug: category.slug,
+      brandSlug,
+      brandName: existing.brand?.name,
+      categoryName: category.name,
+    };
+    if (titleOrCategoryChanged) {
+      const enrichment = enrichProduct(enrichable);
+      nextAttributes = toEnrichmentAttributes(
+        enrichable,
+        enrichment,
+        input.facets,
+      ) as Prisma.InputJsonValue;
+    } else {
+      const existingAttrs =
+        (existing.attributes as EnrichmentAttributes | null) ?? null;
+      const extracted = extractProductFacets(enrichable);
+      const facets = mergeFacetOverrides(
+        extracted,
+        input.facets ?? existingAttrs?.facets ?? null,
+      );
+      nextAttributes = {
+        ...(existingAttrs ?? {
+          brand: existing.brand?.name ?? brandSlug,
+          city: "Pune",
+          source: "derived",
+          highlights: {},
+          highlightRows: [],
+          specificationGroups: [],
+          descriptionBlocks: [],
+          warranty: {
+            summary: "6–12 months seller / brand warranty (see listing)",
+            covered: "Manufacturing defects under brand or seller policy",
+            notCovered: "Physical damage, liquid spill, burn, misuse",
+            serviceType: "Seller-facilitated / brand carry-in as applicable",
+          },
+          cardBullets: [],
+        }),
+        facets,
+      } as Prisma.InputJsonValue;
+    }
+  }
+
   return prisma.$transaction(async (tx) => {
     const product = await tx.product.update({
       where: { id: existing.id },
@@ -880,6 +985,7 @@ export async function updateAdminCatalogueProduct(
           ? { countryOfOrigin: input.countryOfOrigin }
           : {}),
         ...(input.hsnCode !== undefined ? { hsnCode: input.hsnCode } : {}),
+        ...(nextAttributes !== undefined ? { attributes: nextAttributes } : {}),
         ...(input.status
           ? {
               status: input.status,
@@ -932,6 +1038,7 @@ export async function updateAdminCatalogueProduct(
             ? { countryOfOrigin: input.countryOfOrigin }
             : {}),
           ...(input.hsnCode !== undefined ? { hsnCode: input.hsnCode } : {}),
+          ...(nextAttributes !== undefined ? { attributes: nextAttributes } : {}),
         },
       });
       if (input.imageUrl) {
@@ -1681,6 +1788,7 @@ export async function searchApprovedProducts(
   const offset = (page - 1) * pageSize;
   const query = input.q?.trim() ?? "";
   const sort = input.sort ?? "newest";
+  const brandSlugs = resolveSearchBrandSlugs(input);
 
   if (query) {
     const orderSql =
@@ -1780,9 +1888,11 @@ export async function searchApprovedProducts(
               : Prisma.empty
           }
           ${
-            input.brandSlug
-              ? Prisma.sql`AND b.slug = ${input.brandSlug}`
-              : Prisma.empty
+            brandSlugs.length === 1
+              ? Prisma.sql`AND b.slug = ${brandSlugs[0]}`
+              : brandSlugs.length > 1
+                ? Prisma.sql`AND b.slug IN (${Prisma.join(brandSlugs)})`
+                : Prisma.empty
           }
           ${
             input.facets && Object.keys(input.facets).length > 0
@@ -1904,7 +2014,11 @@ export async function searchApprovedProducts(
       : {
           NOT: { tradeName: CATALOGUE_OWNER_TRADE_NAME },
         },
-    ...(input.brandSlug ? { brand: { slug: input.brandSlug } } : {}),
+    ...(brandSlugs.length === 1
+      ? { brand: { slug: brandSlugs[0] } }
+      : brandSlugs.length > 1
+        ? { brand: { slug: { in: brandSlugs } } }
+        : {}),
     ...(facetFilters.length > 0 ? { AND: facetFilters } : {}),
     variants: {
       some: {
@@ -2074,6 +2188,200 @@ export async function searchApprovedProducts(
     pageSize,
     total: filteredTotal,
   };
+}
+
+export type FacetHistogram = {
+  facets: Record<string, Array<{ value: string; count: number }>>;
+  brands: Array<{ slug: string; name: string; count: number }>;
+};
+
+/**
+ * Live facet / brand counts for the current browse filter slice.
+ * Counts for facet key K ignore the selection on K (so multi-select can expand).
+ * Brand counts ignore the brand selection. Other filters stay applied.
+ * In-memory aggregation is fine at current catalogue scale (~400 SKUs).
+ */
+export async function listFacetHistogram(
+  raw: z.input<typeof searchProductsSchema>,
+): Promise<FacetHistogram> {
+  const input = searchProductsSchema.parse({
+    ...raw,
+    page: 1,
+    pageSize: 48,
+  });
+  const brandSlugs = resolveSearchBrandSlugs(input);
+  const categorySlug = input.categorySlug?.trim() || undefined;
+  const facetConfig = getCategoryFacetConfig(categorySlug);
+
+  const where: Prisma.ProductWhereInput = {
+    status: "approved",
+    category: storefrontCategoryWhere(categorySlug),
+    seller: input.verifiedSellerOnly
+      ? shoppableSellerWhere()
+      : {
+          NOT: { tradeName: CATALOGUE_OWNER_TRADE_NAME },
+        },
+    variants: {
+      some: {
+        isActive: true,
+        ...(input.minPricePaise !== undefined ||
+        input.maxPricePaise !== undefined
+          ? {
+              sellingPricePaise: {
+                ...(input.minPricePaise !== undefined
+                  ? { gte: input.minPricePaise }
+                  : {}),
+                ...(input.maxPricePaise !== undefined
+                  ? { lte: input.maxPricePaise }
+                  : {}),
+              },
+            }
+          : {}),
+        ...(input.inStockOnly
+          ? {
+              inventory: {
+                is: {
+                  onHand: { gt: 0 },
+                },
+              },
+            }
+          : {}),
+      },
+    },
+  };
+
+  const query = input.q?.trim() ?? "";
+  if (query) {
+    where.OR = [
+      { title: { contains: query, mode: "insensitive" } },
+      { summary: { contains: query, mode: "insensitive" } },
+      { searchDocument: { contains: query, mode: "insensitive" } },
+    ];
+  }
+
+  const products = await prisma.product.findMany({
+    where,
+    select: {
+      attributes: true,
+      brand: { select: { slug: true, name: true } },
+      variants: {
+        where: { isActive: true },
+        select: {
+          mrpPaise: true,
+          sellingPricePaise: true,
+          inventory: { select: { onHand: true, reserved: true } },
+        },
+      },
+    },
+    take: 2_000,
+  });
+
+  type Row = {
+    facets: Record<string, string>;
+    brandSlug: string | null;
+    brandName: string | null;
+    availableQty: number;
+    discountPercent: number;
+  };
+
+  const rows: Row[] = products.map((product) => {
+    const attrs = product.attributes as EnrichmentAttributes | null;
+    const facets =
+      attrs?.facets && typeof attrs.facets === "object"
+        ? (attrs.facets as Record<string, string>)
+        : {};
+    const availableQty = product.variants.reduce((sum, variant) => {
+      const onHand = variant.inventory?.onHand ?? 0;
+      const reserved = variant.inventory?.reserved ?? 0;
+      return sum + Math.max(onHand - reserved, 0);
+    }, 0);
+    const minPrice = Math.min(
+      ...product.variants.map((v) => v.sellingPricePaise),
+      Number.POSITIVE_INFINITY,
+    );
+    const minMrp = Math.min(
+      ...product.variants.map((v) => v.mrpPaise),
+      Number.POSITIVE_INFINITY,
+    );
+    return {
+      facets,
+      brandSlug: product.brand?.slug ?? null,
+      brandName: product.brand?.name ?? null,
+      availableQty,
+      discountPercent:
+        Number.isFinite(minPrice) && Number.isFinite(minMrp)
+          ? (discountPercent(minMrp, minPrice) ?? 0)
+          : 0,
+    };
+  });
+
+  const filtered = rows.filter((row) => {
+    if (input.inStockOnly && row.availableQty <= 0) return false;
+    if (
+      input.minDiscountPercent != null &&
+      row.discountPercent < input.minDiscountPercent
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  const facetResult: FacetHistogram["facets"] = {};
+  if (facetConfig) {
+    for (const facet of facetConfig.facets) {
+      const counts = new Map<string, number>();
+      for (const row of filtered) {
+        if (
+          !productMatchesFacetSelection(row.facets, input.facets, facet.key)
+        ) {
+          continue;
+        }
+        if (
+          brandSlugs.length > 0 &&
+          (!row.brandSlug || !brandSlugs.includes(row.brandSlug))
+        ) {
+          continue;
+        }
+        const value = row.facets[facet.key];
+        if (!value) continue;
+        counts.set(value, (counts.get(value) ?? 0) + 1);
+      }
+      const values = [...counts.entries()].map(([value, count]) => ({
+        value,
+        count,
+      }));
+      if (facet.sort === "numeric") {
+        values.sort((a, b) => {
+          const an = Number(a.value.match(/(\d+(?:\.\d+)?)/)?.[1] ?? Infinity);
+          const bn = Number(b.value.match(/(\d+(?:\.\d+)?)/)?.[1] ?? Infinity);
+          return an - bn;
+        });
+      } else {
+        values.sort((a, b) =>
+          a.value.localeCompare(b.value, "en", { numeric: true }),
+        );
+      }
+      facetResult[facet.key] = values;
+    }
+  }
+
+  const brandCounts = new Map<string, { name: string; count: number }>();
+  for (const row of filtered) {
+    if (!productMatchesFacetSelection(row.facets, input.facets)) continue;
+    if (!row.brandSlug || !row.brandName) continue;
+    const prev = brandCounts.get(row.brandSlug);
+    if (prev) prev.count += 1;
+    else brandCounts.set(row.brandSlug, { name: row.brandName, count: 1 });
+  }
+  const brands = [...brandCounts.entries()]
+    .map(([slug, entry]) => ({
+      slug,
+      name: entry.name,
+      count: entry.count,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, "en"));
+
+  return { facets: facetResult, brands };
 }
 
 async function enrichStorefrontCards<

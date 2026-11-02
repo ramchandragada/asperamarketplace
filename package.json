@@ -28,6 +28,7 @@
     "db:purge:demo-sellers": "tsx scripts/purge-demo-sellers.ts",
     "db:audit:sellers": "tsx scripts/audit-live-sellers.ts",
     "db:backfill:v2": "tsx prisma/backfill-catalogue-v2.ts",
+    "db:backfill:facets": "node --import tsx scripts/backfill-product-facets.mjs",
     "postinstall": "prisma generate"
   },
   "prisma": {

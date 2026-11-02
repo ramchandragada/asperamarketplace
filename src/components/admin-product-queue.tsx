@@ -15,6 +15,7 @@ export type AdminProductTab =
 
 type AdminProduct = {
   id: string;
+  slug?: string;
   title: string;
   summary: string;
   description: string;
@@ -22,8 +23,9 @@ type AdminProduct = {
   version: number;
   statusReason: string | null;
   hsnCode: string | null;
+  attributes?: unknown;
   seller: { id: string; legalName: string; tradeName: string | null };
-  category: { id: string; name: string };
+  category: { id: string; name: string; slug?: string };
   brand: { id: string; name: string } | null;
   images: Array<{ id: string; url: string; altText: string }>;
   variants: Array<{
@@ -102,7 +104,7 @@ export function AdminProductQueue({
   counts: Counts;
   categoryId: string;
   sellerId: string;
-  categories: Array<{ id: string; name: string }>;
+  categories: Array<{ id: string; name: string; slug: string }>;
   sellers: Array<{ id: string; legalName: string; tradeName: string | null }>;
   products: AdminProduct[];
 }) {

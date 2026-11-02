@@ -24,10 +24,7 @@ import {
 } from "@/modules/catalogue/claims";
 import { SHIPPING_POLICY } from "@/modules/cart/pricing";
 import { releaseExpiredCheckoutReservations } from "@/modules/cart/reservations";
-import {
-  PC_CATEGORIES,
-  PC_CATEGORY_SLUGS,
-} from "@/modules/catalogue/pc-catalogue-data";
+import { PC_CATEGORY_SLUGS } from "@/modules/catalogue/pc-catalogue-data";
 import {
   searchProductsSchema,
   type CreateAdminCatalogueProductInput,
@@ -47,6 +44,8 @@ import {
   getCategoryFacetConfig,
   mergeFacetOverrides,
   extractProductFacets,
+  facetKeysForCategory,
+  scopeFacetsToCategory,
 } from "@/modules/catalogue/category-facets";
 import { asperaLegal } from "@/platform/config/aspera-legal";
 import {
@@ -950,6 +949,7 @@ export async function updateAdminCatalogueProduct(
       const facets = mergeFacetOverrides(
         extracted,
         input.facets ?? existingAttrs?.facets ?? null,
+        category.slug,
       );
       nextAttributes = {
         ...(existingAttrs ?? {
@@ -1789,6 +1789,19 @@ export async function searchApprovedProducts(
   const query = input.q?.trim() ?? "";
   const sort = input.sort ?? "newest";
   const brandSlugs = resolveSearchBrandSlugs(input);
+  // Category-specific facets only — never apply monitor keys to processors, etc.
+  const facetSelection =
+    input.categorySlug && input.facets
+      ? Object.fromEntries(
+          Object.entries(input.facets).filter(([key]) =>
+            facetKeysForCategory(input.categorySlug).has(key),
+          ),
+        )
+      : undefined;
+  const activeFacets =
+    facetSelection && Object.keys(facetSelection).length > 0
+      ? facetSelection
+      : undefined;
 
   if (query) {
     const orderSql =
@@ -1895,9 +1908,9 @@ export async function searchApprovedProducts(
                 : Prisma.empty
           }
           ${
-            input.facets && Object.keys(input.facets).length > 0
+            activeFacets
               ? Prisma.sql`AND ${Prisma.join(
-                  Object.entries(input.facets).map(([key, values]) => {
+                  Object.entries(activeFacets).map(([key, values]) => {
                     const list = Array.isArray(values) ? values : [values];
                     return Prisma.sql`(${Prisma.join(
                       list.map(
@@ -1981,28 +1994,27 @@ export async function searchApprovedProducts(
     };
   }
 
-  const facetFilters =
-    input.facets && Object.keys(input.facets).length > 0
-      ? Object.entries(input.facets).map(([key, values]) => {
-          const list = Array.isArray(values) ? values : [values];
-          if (list.length === 1) {
-            return {
-              attributes: {
-                path: ["facets", key],
-                equals: list[0],
-              },
-            } satisfies Prisma.ProductWhereInput;
-          }
+  const facetFilters = activeFacets
+    ? Object.entries(activeFacets).map(([key, values]) => {
+        const list = Array.isArray(values) ? values : [values];
+        if (list.length === 1) {
           return {
-            OR: list.map((value) => ({
-              attributes: {
-                path: ["facets", key],
-                equals: value,
-              },
-            })),
+            attributes: {
+              path: ["facets", key],
+              equals: list[0],
+            },
           } satisfies Prisma.ProductWhereInput;
-        })
-      : [];
+        }
+        return {
+          OR: list.map((value) => ({
+            attributes: {
+              path: ["facets", key],
+              equals: value,
+            },
+          })),
+        } satisfies Prisma.ProductWhereInput;
+      })
+    : [];
 
   const where: Prisma.ProductWhereInput = {
     status: "approved",
@@ -2212,6 +2224,14 @@ export async function listFacetHistogram(
   const brandSlugs = resolveSearchBrandSlugs(input);
   const categorySlug = input.categorySlug?.trim() || undefined;
   const facetConfig = getCategoryFacetConfig(categorySlug);
+  const selectedFacets =
+    categorySlug && input.facets
+      ? Object.fromEntries(
+          Object.entries(input.facets).filter(([key]) =>
+            facetKeysForCategory(categorySlug).has(key),
+          ),
+        )
+      : undefined;
 
   const where: Prisma.ProductWhereInput = {
     status: "approved",
@@ -2286,10 +2306,11 @@ export async function listFacetHistogram(
 
   const rows: Row[] = products.map((product) => {
     const attrs = product.attributes as EnrichmentAttributes | null;
-    const facets =
+    const rawFacets =
       attrs?.facets && typeof attrs.facets === "object"
         ? (attrs.facets as Record<string, string>)
         : {};
+    const facets = scopeFacetsToCategory(categorySlug, rawFacets);
     const availableQty = product.variants.reduce((sum, variant) => {
       const onHand = variant.inventory?.onHand ?? 0;
       const reserved = variant.inventory?.reserved ?? 0;
@@ -2332,7 +2353,7 @@ export async function listFacetHistogram(
       const counts = new Map<string, number>();
       for (const row of filtered) {
         if (
-          !productMatchesFacetSelection(row.facets, input.facets, facet.key)
+          !productMatchesFacetSelection(row.facets, selectedFacets, facet.key)
         ) {
           continue;
         }
@@ -2367,7 +2388,7 @@ export async function listFacetHistogram(
 
   const brandCounts = new Map<string, { name: string; count: number }>();
   for (const row of filtered) {
-    if (!productMatchesFacetSelection(row.facets, input.facets)) continue;
+    if (!productMatchesFacetSelection(row.facets, selectedFacets)) continue;
     if (!row.brandSlug || !row.brandName) continue;
     const prev = brandCounts.get(row.brandSlug);
     if (prev) prev.count += 1;

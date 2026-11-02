@@ -7,6 +7,7 @@ import {
   getCategoryFacetConfig,
   mergeFacetOverrides,
   parseFacetSearchParams,
+  scopeFacetsToCategory,
 } from "@/modules/catalogue/category-facets";
 
 describe("extractProductFacets", () => {
@@ -21,6 +22,7 @@ describe("extractProductFacets", () => {
       brandFamily: "AMD Ryzen",
       tier: "Ryzen 5",
       socket: "AM5",
+      memoryType: "DDR5",
     });
   });
 
@@ -70,9 +72,9 @@ describe("extractProductFacets", () => {
         categorySlug: "storage-ssd",
       }),
     ).toMatchObject({
-      capacity: "3.84 TB",
-      capacityBand: "Above 2 TB",
-      interface: "SSD",
+      storageCapacity: "3.84 TB",
+      storageCapacityBand: "Above 2 TB",
+      storageInterface: "SSD",
     });
   });
 
@@ -82,23 +84,24 @@ describe("extractProductFacets", () => {
         slug: "qnap-ts-253e",
         title: "QNAP TS-253E-8G 2-Bay Tower NAS Enclosure",
         categorySlug: "storage-ssd",
-      }).interface,
+      }).storageInterface,
     ).toBe("NAS / enclosure");
   });
 
   it("adds monitor panel type, size bands, and refresh rate", () => {
-    expect(
-      extractProductFacets({
-        slug: "msi-oled",
-        title: "MSI MAG 341CQP QD-OLED 34 Inch 165Hz Curved Gaming Monitor",
-        categorySlug: "monitors",
-      }),
-    ).toMatchObject({
+    const facets = extractProductFacets({
+      slug: "msi-oled",
+      title: "MSI MAG 341CQP QD-OLED 34 Inch 165Hz Curved Gaming Monitor",
+      categorySlug: "monitors",
+    });
+    expect(facets).toMatchObject({
       sizeBand: `34" & ultrawide`,
       panelType: "OLED",
-      useCase: "Gaming",
+      monitorUseCase: "Gaming",
       refreshRate: "165 Hz & above",
     });
+    expect(facets).not.toHaveProperty("screenSize");
+    expect(facets).not.toHaveProperty("socket");
   });
 
   it("tags PSU modularity and keyboard switch type", () => {
@@ -118,15 +121,19 @@ describe("extractProductFacets", () => {
         slug: "keychron-k2",
         title: "Keychron K2 Wireless Mechanical Keyboard",
         categorySlug: "keyboard-mouse",
-      }).switchType,
-    ).toBe("Mechanical");
+      }),
+    ).toMatchObject({
+      switchType: "Mechanical",
+      peripheralType: "Keyboard",
+    });
   });
 
-  it("merges admin facet overrides over title extraction", () => {
+  it("merges admin facet overrides and scopes to category", () => {
     expect(
       mergeFacetOverrides(
         { socket: "AM5", tier: "Ryzen 5" },
-        { socket: "AM4", integratedGraphics: "Yes" },
+        { socket: "AM4", integratedGraphics: "Yes", screenSize: "27\"" },
+        "processors",
       ),
     ).toEqual({
       socket: "AM4",
@@ -134,7 +141,7 @@ describe("extractProductFacets", () => {
       integratedGraphics: "Yes",
     });
     expect(
-      mergeFacetOverrides({ socket: "AM5" }, { socket: "" }),
+      mergeFacetOverrides({ socket: "AM5" }, { socket: "" }, "processors"),
     ).toEqual({});
   });
 
@@ -150,6 +157,54 @@ describe("extractProductFacets", () => {
   });
 });
 
+describe("category-scoped facet keys", () => {
+  it("keeps facet key sets disjoint across unrelated categories", () => {
+    const byKey = new Map<string, string[]>();
+    for (const config of CATEGORY_FACET_CONFIGS) {
+      for (const facet of config.facets) {
+        const cats = byKey.get(facet.key) ?? [];
+        cats.push(config.categorySlug);
+        byKey.set(facet.key, cats);
+      }
+    }
+    // memoryType is intentionally shared across PC-build memory categories.
+    const allowedShared = new Set(["memoryType"]);
+    for (const [key, cats] of byKey) {
+      if (allowedShared.has(key)) continue;
+      expect(cats, `facet key "${key}" shared by ${cats.join(", ")}`).toHaveLength(
+        1,
+      );
+    }
+    expect(byKey.get("socket")).toEqual(["processors"]);
+    expect(byKey.get("monitorUseCase")).toEqual(["monitors"]);
+    expect(byKey.get("screenSize")).toEqual(["laptops"]);
+  });
+
+  it("strips foreign keys when scoping facets to a category", () => {
+    expect(
+      scopeFacetsToCategory("monitors", {
+        sizeBand: `27"`,
+        socket: "AM5",
+        screenSize: `27"`,
+        panelType: "OLED",
+      }),
+    ).toEqual({
+      sizeBand: `27"`,
+      panelType: "OLED",
+    });
+    expect(
+      scopeFacetsToCategory("processors", {
+        socket: "LGA 1700",
+        panelType: "OLED",
+        brandFamily: "Intel Core",
+      }),
+    ).toEqual({
+      socket: "LGA 1700",
+      brandFamily: "Intel Core",
+    });
+  });
+});
+
 describe("facet catalogue options", () => {
   it("exposes options for every configured category facet", () => {
     for (const config of CATEGORY_FACET_CONFIGS) {
@@ -157,16 +212,16 @@ describe("facet catalogue options", () => {
       for (const facet of config.facets) {
         const values = options[facet.key] ?? [];
         expect(Array.isArray(values)).toBe(true);
-        // Primary facets should have at least one real catalogue value
         if (
           ![
             "chipset",
             "series",
-            "speed",
+            "ramSpeed",
             "wattage",
-            "capacity",
+            "storageCapacity",
+            "upsCapacity",
             "screenSize",
-            "size",
+            "coolerSize",
             "modularity",
             "refreshRate",
             "switchType",

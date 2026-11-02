@@ -90,7 +90,7 @@ function motherboardFacets(title: string): Record<string, string> {
   const mem = match(title, /\b(DDR[45])\b/i);
   if (mem) facets.memoryType = mem.toUpperCase();
   const form = match(title, /\b(E-?ATX|Micro-?ATX|M-?ATX|Mini-?ITX|ITX|ATX)\b/i);
-  if (form) facets.formFactor = normalizeForm(form);
+  if (form) facets.boardFormFactor = normalizeForm(form);
   const chipset = match(title, /\b([ABZHX]\d{3}[A-Z]?)\b/i);
   if (chipset) facets.chipset = chipset.toUpperCase();
   if (/B650|X670|A620|B840|X870/i.test(title)) facets.cpuPlatform = "AMD AM5";
@@ -146,10 +146,12 @@ function ramFacets(title: string): Record<string, string> {
   const type = match(title, /\b(DDR5|DDR4|LPDDR5|LPDDR4X)\b/i);
   if (type) facets.memoryType = type.toUpperCase();
   const size = match(title, /(\d+)\s*GB/i);
-  if (size) facets.capacity = `${size} GB`;
+  if (size) facets.ramCapacity = `${size} GB`;
   const speed = match(title, /(\d{3,5})\s*MHz/i);
-  if (speed) facets.speed = `${speed} MHz`;
-  facets.formFactor = /laptop/i.test(title) ? "Laptop (SO-DIMM)" : "Desktop (DIMM)";
+  if (speed) facets.ramSpeed = `${speed} MHz`;
+  facets.ramFormFactor = /laptop/i.test(title)
+    ? "Laptop (SO-DIMM)"
+    : "Desktop (DIMM)";
   return facets;
 }
 
@@ -169,20 +171,21 @@ function storageFacets(title: string): Record<string, string> {
   if (capAmount && capUnit) {
     const amount = Number(capAmount);
     const unit = capUnit.toUpperCase();
-    facets.capacity =
+    facets.storageCapacity =
       Number.isInteger(amount) || amount % 1 === 0
         ? `${Math.round(amount)} ${unit}`
         : `${amount} ${unit}`;
-    facets.capacityBand = storageCapacityBand(amount, unit);
+    facets.storageCapacityBand = storageCapacityBand(amount, unit);
   }
-  if (/NAS/i.test(title)) facets.interface = "NAS / enclosure";
-  else if (/NVMe|PCIe/i.test(title)) facets.interface = "NVMe / PCIe";
-  else if (/SATA/i.test(title)) facets.interface = "SATA";
-  else if (/USB|Pen Drive/i.test(title)) facets.interface = "USB flash";
-  else if (/MicroSD|SDXC|Memory Card/i.test(title)) facets.interface = "Memory card";
-  else if (/HDD|Hard Disk|Hard Drive|Barracuda|My Book|One Touch/i.test(title)) {
-    facets.interface = "HDD";
-  } else if (/SSD/i.test(title)) facets.interface = "SSD";
+  if (/NAS/i.test(title)) facets.storageInterface = "NAS / enclosure";
+  else if (/NVMe|PCIe/i.test(title)) facets.storageInterface = "NVMe / PCIe";
+  else if (/SATA/i.test(title)) facets.storageInterface = "SATA";
+  else if (/USB|Pen Drive/i.test(title)) facets.storageInterface = "USB flash";
+  else if (/MicroSD|SDXC|Memory Card/i.test(title)) {
+    facets.storageInterface = "Memory card";
+  } else if (/HDD|Hard Disk|Hard Drive|Barracuda|My Book|One Touch/i.test(title)) {
+    facets.storageInterface = "HDD";
+  } else if (/SSD/i.test(title)) facets.storageInterface = "SSD";
   return facets;
 }
 
@@ -192,7 +195,7 @@ function cabinetFacets(title: string): Record<string, string> {
   if (tower) facets.towerSize = normalizeForm(tower);
   const mb = match(title, /\b(E-?ATX|Micro-?ATX|M-?ATX|Mini-?ITX|ITX|ATX)\b/i);
   if (mb) facets.motherboardSupport = normalizeForm(mb);
-  facets.lighting = /\b(ARGB|RGB)\b/i.test(title) ? "ARGB / RGB" : "Non-RGB";
+  facets.caseLighting = /\b(ARGB|RGB)\b/i.test(title) ? "ARGB / RGB" : "Non-RGB";
   if (/White|Ivory/i.test(title)) facets.color = "White";
   else facets.color = "Black";
   return facets;
@@ -226,11 +229,11 @@ function psuFacets(title: string): Record<string, string> {
 
 function coolerFacets(title: string): Record<string, string> {
   const facets: Record<string, string> = {};
-  if (/\b(AIO|liquid)\b/i.test(title)) facets.type = "AIO liquid";
-  else facets.type = "Air cooler";
+  if (/\b(AIO|liquid)\b/i.test(title)) facets.coolerType = "AIO liquid";
+  else facets.coolerType = "Air cooler";
   const size = match(title, /\b(360|280|240|120)\s*mm\b/i);
-  if (size) facets.size = `${size} mm`;
-  facets.lighting = /\b(ARGB|RGB|Rainbow|LED)\b/i.test(title)
+  if (size) facets.coolerSize = `${size} mm`;
+  facets.coolerLighting = /\b(ARGB|RGB|Rainbow|LED)\b/i.test(title)
     ? "RGB / LED"
     : "Non-RGB";
   return facets;
@@ -238,18 +241,24 @@ function coolerFacets(title: string): Record<string, string> {
 
 function peripheralFacets(title: string): Record<string, string> {
   const facets: Record<string, string> = {};
-  if (/keyboard/i.test(title) && /mouse/i.test(title)) facets.type = "Combo";
-  else if (/keyboard/i.test(title)) facets.type = "Keyboard";
-  else if (/mouse/i.test(title)) facets.type = "Mouse";
-  else facets.type = "Accessory";
+  if (/keyboard/i.test(title) && /mouse/i.test(title)) {
+    facets.peripheralType = "Combo";
+  } else if (/keyboard/i.test(title)) facets.peripheralType = "Keyboard";
+  else if (/mouse/i.test(title)) facets.peripheralType = "Mouse";
+  else facets.peripheralType = "Accessory";
   facets.connectivity = /wireless|bluetooth|2\.4/i.test(title)
     ? "Wireless"
     : "Wired";
-  if (/gaming/i.test(title)) facets.useCase = "Gaming";
-  else if (/wireless|bluetooth/i.test(title)) facets.useCase = "Productivity";
+  if (/gaming/i.test(title)) facets.peripheralUseCase = "Gaming";
+  else if (/wireless|bluetooth/i.test(title)) {
+    facets.peripheralUseCase = "Productivity";
+  }
   if (/mechanical/i.test(title)) facets.switchType = "Mechanical";
   else if (/membrane/i.test(title)) facets.switchType = "Membrane";
-  else if (facets.type === "Keyboard" || facets.type === "Combo") {
+  else if (
+    facets.peripheralType === "Keyboard" ||
+    facets.peripheralType === "Combo"
+  ) {
     facets.switchType = "Other";
   }
   return facets;
@@ -259,7 +268,6 @@ function monitorFacets(title: string): Record<string, string> {
   const facets: Record<string, string> = {};
   const size = match(title, /(\d{2}(?:\.\d+)?)\s*(?:Inch|inch)/i);
   if (size) {
-    facets.screenSize = `${size}"`;
     const n = Number(size);
     if (n <= 24) facets.sizeBand = `24" & under`;
     else if (n <= 27) facets.sizeBand = `25–27"`;
@@ -275,11 +283,11 @@ function monitorFacets(title: string): Record<string, string> {
   else if (/Curved/i.test(title)) facets.panelType = "Curved LCD";
   else facets.panelType = "Flat LCD";
   if (/gaming|ultragear|odyssey|legion|alienware|agon|rog/i.test(title)) {
-    facets.useCase = "Gaming";
+    facets.monitorUseCase = "Gaming";
   } else if (/smart/i.test(title)) {
-    facets.useCase = "Smart / entertainment";
+    facets.monitorUseCase = "Smart / entertainment";
   } else {
-    facets.useCase = "Office / general";
+    facets.monitorUseCase = "Office / general";
   }
   const hz = match(title, /(\d{2,3})\s*Hz\b/i);
   if (hz) {
@@ -296,14 +304,14 @@ function upsFacets(title: string): Record<string, string> {
   const facets: Record<string, string> = {};
   const va = match(title, /(\d{3,4})\s*VA/i);
   if (va) {
-    facets.capacity = `${va} VA`;
+    facets.upsCapacity = `${va} VA`;
     const n = Number(va);
-    if (n < 800) facets.capacityBand = "Under 800 VA";
-    else if (n < 1500) facets.capacityBand = "800–1499 VA";
-    else facets.capacityBand = "1500 VA & above";
+    if (n < 800) facets.upsCapacityBand = "Under 800 VA";
+    else if (n < 1500) facets.upsCapacityBand = "800–1499 VA";
+    else facets.upsCapacityBand = "1500 VA & above";
   }
-  if (/online|OLS/i.test(title)) facets.topology = "Online";
-  else facets.topology = "Line-interactive";
+  if (/online|OLS/i.test(title)) facets.upsTopology = "Online";
+  else facets.upsTopology = "Line-interactive";
   return facets;
 }
 
@@ -393,6 +401,11 @@ function laptopFacets(title: string, slug?: string): Record<string, string> {
   return facets;
 }
 
+/**
+ * Per-category browse facets. Keys are unique across unrelated categories so a
+ * monitor never shares filter attributes with a processor (or cooler, UPS, …).
+ * Related PC-build categories may share `memoryType` (DDR4/DDR5) intentionally.
+ */
 export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
   {
     categorySlug: "processors",
@@ -409,7 +422,7 @@ export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
     facets: [
       { key: "cpuPlatform", label: "CPU platform" },
       { key: "memoryType", label: "Memory type" },
-      { key: "formFactor", label: "Form factor" },
+      { key: "boardFormFactor", label: "Form factor" },
       { key: "chipset", label: "Chipset" },
     ],
   },
@@ -426,17 +439,17 @@ export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
     categorySlug: "memory-ram",
     facets: [
       { key: "memoryType", label: "Memory type" },
-      { key: "capacity", label: "Capacity", sort: "numeric" },
-      { key: "speed", label: "Speed", sort: "numeric" },
-      { key: "formFactor", label: "Form factor" },
+      { key: "ramCapacity", label: "Capacity", sort: "numeric" },
+      { key: "ramSpeed", label: "Speed", sort: "numeric" },
+      { key: "ramFormFactor", label: "Form factor" },
     ],
   },
   {
     categorySlug: "storage-ssd",
     facets: [
-      { key: "interface", label: "Type / interface" },
-      { key: "capacityBand", label: "Capacity" },
-      { key: "capacity", label: "Exact capacity", sort: "numeric" },
+      { key: "storageInterface", label: "Type / interface" },
+      { key: "storageCapacityBand", label: "Capacity" },
+      { key: "storageCapacity", label: "Exact capacity", sort: "numeric" },
     ],
   },
   {
@@ -444,7 +457,7 @@ export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
     facets: [
       { key: "towerSize", label: "Case size" },
       { key: "motherboardSupport", label: "Motherboard support" },
-      { key: "lighting", label: "Lighting" },
+      { key: "caseLighting", label: "Lighting" },
       { key: "color", label: "Color" },
     ],
   },
@@ -460,18 +473,18 @@ export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
   {
     categorySlug: "cpu-coolers",
     facets: [
-      { key: "type", label: "Cooler type" },
-      { key: "size", label: "Size", sort: "numeric" },
-      { key: "lighting", label: "Lighting" },
+      { key: "coolerType", label: "Cooler type" },
+      { key: "coolerSize", label: "Size", sort: "numeric" },
+      { key: "coolerLighting", label: "Lighting" },
     ],
   },
   {
     categorySlug: "keyboard-mouse",
     facets: [
-      { key: "type", label: "Type" },
+      { key: "peripheralType", label: "Type" },
       { key: "connectivity", label: "Connectivity" },
       { key: "switchType", label: "Switch type" },
-      { key: "useCase", label: "Use case" },
+      { key: "peripheralUseCase", label: "Use case" },
     ],
   },
   {
@@ -481,15 +494,15 @@ export const CATEGORY_FACET_CONFIGS: CategoryFacetConfig[] = [
       { key: "resolution", label: "Resolution" },
       { key: "refreshRate", label: "Refresh rate" },
       { key: "panelType", label: "Panel type" },
-      { key: "useCase", label: "Use case" },
+      { key: "monitorUseCase", label: "Use case" },
     ],
   },
   {
     categorySlug: "ups",
     facets: [
-      { key: "capacityBand", label: "Capacity" },
-      { key: "topology", label: "Topology" },
-      { key: "capacity", label: "Exact VA", sort: "numeric" },
+      { key: "upsCapacityBand", label: "Capacity" },
+      { key: "upsTopology", label: "Topology" },
+      { key: "upsCapacity", label: "Exact VA", sort: "numeric" },
     ],
   },
   {
@@ -522,57 +535,48 @@ export function extractProductFacets(input: {
   title: string;
   categorySlug: string;
 }): Record<string, string> {
+  let raw: Record<string, string>;
   switch (input.categorySlug) {
     case "processors":
-      return processorFacets(input.title);
+      raw = processorFacets(input.title);
+      break;
     case "motherboards":
-      return motherboardFacets(input.title);
+      raw = motherboardFacets(input.title);
+      break;
     case "graphics-cards":
-      return gpuFacets(input.title);
+      raw = gpuFacets(input.title);
+      break;
     case "memory-ram":
-      return ramFacets(input.title);
+      raw = ramFacets(input.title);
+      break;
     case "storage-ssd":
-      return storageFacets(input.title);
+      raw = storageFacets(input.title);
+      break;
     case "cabinets":
-      return cabinetFacets(input.title);
+      raw = cabinetFacets(input.title);
+      break;
     case "power-supplies":
-      return psuFacets(input.title);
+      raw = psuFacets(input.title);
+      break;
     case "cpu-coolers":
-      return coolerFacets(input.title);
+      raw = coolerFacets(input.title);
+      break;
     case "keyboard-mouse":
-      return peripheralFacets(input.title);
+      raw = peripheralFacets(input.title);
+      break;
     case "monitors":
-      return monitorFacets(input.title);
+      raw = monitorFacets(input.title);
+      break;
     case "ups":
-      return upsFacets(input.title);
+      raw = upsFacets(input.title);
+      break;
     case "laptops":
-      return laptopFacets(input.title, input.slug);
+      raw = laptopFacets(input.title, input.slug);
+      break;
     default:
-      return {};
+      raw = {};
   }
-}
-
-/**
- * Merge admin-authored facet overrides onto title-extracted values.
- * Empty override values clear the extracted key so admins can blank a guess.
- */
-export function mergeFacetOverrides(
-  extracted: Record<string, string>,
-  overrides?: Record<string, string> | null,
-): Record<string, string> {
-  if (!overrides) return { ...extracted };
-  const next = { ...extracted };
-  for (const [rawKey, rawValue] of Object.entries(overrides)) {
-    const key = rawKey.trim().slice(0, 60);
-    if (!key) continue;
-    const value = rawValue.trim().slice(0, 80);
-    if (!value) {
-      delete next[key];
-      continue;
-    }
-    next[key] = value;
-  }
-  return next;
+  return scopeFacetsToCategory(input.categorySlug, raw);
 }
 
 /** Keys configured for a category — used to validate admin facet payloads. */
@@ -581,6 +585,56 @@ export function facetKeysForCategory(
 ): Set<string> {
   const config = getCategoryFacetConfig(categorySlug);
   return new Set(config?.facets.map((facet) => facet.key) ?? []);
+}
+
+/**
+ * Drop any facet keys that do not belong to this category.
+ * Guarantees a monitor never stores processor (or laptop) attributes, etc.
+ */
+export function scopeFacetsToCategory(
+  categorySlug: string | null | undefined,
+  facets: Record<string, string> | null | undefined,
+): Record<string, string> {
+  if (!facets) return {};
+  const allowed = facetKeysForCategory(categorySlug);
+  if (allowed.size === 0) return {};
+  const scoped: Record<string, string> = {};
+  for (const [key, value] of Object.entries(facets)) {
+    if (!allowed.has(key)) continue;
+    const trimmed = value.trim().slice(0, 80);
+    if (!trimmed) continue;
+    scoped[key] = trimmed;
+  }
+  return scoped;
+}
+
+/**
+ * Merge admin-authored facet overrides onto title-extracted values, then
+ * scope to the category allowlist.
+ * Empty override values clear the extracted key so admins can blank a guess.
+ */
+export function mergeFacetOverrides(
+  extracted: Record<string, string>,
+  overrides?: Record<string, string> | null,
+  categorySlug?: string | null,
+): Record<string, string> {
+  let next = { ...extracted };
+  if (overrides) {
+    for (const [rawKey, rawValue] of Object.entries(overrides)) {
+      const key = rawKey.trim().slice(0, 60);
+      if (!key) continue;
+      const value = rawValue.trim().slice(0, 80);
+      if (!value) {
+        delete next[key];
+        continue;
+      }
+      next[key] = value;
+    }
+  }
+  if (categorySlug) {
+    next = scopeFacetsToCategory(categorySlug, next);
+  }
+  return next;
 }
 
 function numericSortKey(value: string): number {

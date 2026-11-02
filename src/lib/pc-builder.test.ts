@@ -49,12 +49,12 @@ describe("PC builder compatibility locks", () => {
     const selection: BuilderSelection = {
       cpu: part({ facets: { socket: "AM5", memoryType: "DDR5" } }),
       motherboard: part({
-        facets: { cpuPlatform: "AMD AM5", formFactor: "ATX" },
+        facets: { cpuPlatform: "AMD AM5", boardFormFactor: "ATX" },
       }),
     };
     expect(compatibilityFacetsForSlot("memory", selection)).toEqual({
       memoryType: ["DDR5"],
-      formFactor: ["Desktop (DIMM)"],
+      ramFormFactor: ["Desktop (DIMM)"],
     });
   });
 
@@ -83,7 +83,7 @@ describe("PC builder compatibility locks", () => {
       }),
       memory: part({
         variantId: "ram-ddr4",
-        facets: { memoryType: "DDR4", formFactor: "Desktop (DIMM)" },
+        facets: { memoryType: "DDR4", ramFormFactor: "Desktop (DIMM)" },
       }),
     };
     const pruned = pruneIncompatibleSelection(selection, "cpu");
@@ -99,11 +99,11 @@ describe("PC builder compatibility locks", () => {
         facets: {
           cpuPlatform: "AMD AM5",
           memoryType: "DDR5",
-          formFactor: "ATX",
+          boardFormFactor: "ATX",
         },
       }),
       memory: part({
-        facets: { memoryType: "DDR5", formFactor: "Desktop (DIMM)" },
+        facets: { memoryType: "DDR5", ramFormFactor: "Desktop (DIMM)" },
       }),
     };
     const pruned = pruneIncompatibleSelection(selection, "cpu");
@@ -114,14 +114,14 @@ describe("PC builder compatibility locks", () => {
   it("filters out laptop RAM against desktop lock", () => {
     const filters = {
       memoryType: ["DDR5"],
-      formFactor: ["Desktop (DIMM)"],
+      ramFormFactor: ["Desktop (DIMM)"],
     };
     expect(
       partMatchesCompatibilityFacets(
         part({
           facets: {
             memoryType: "DDR5",
-            formFactor: "Laptop (SO-DIMM)",
+            ramFormFactor: "Laptop (SO-DIMM)",
           },
         }),
         filters,
@@ -132,7 +132,7 @@ describe("PC builder compatibility locks", () => {
         part({
           facets: {
             memoryType: "DDR5",
-            formFactor: "Desktop (DIMM)",
+            ramFormFactor: "Desktop (DIMM)",
           },
         }),
         filters,

@@ -679,6 +679,10 @@ export function toEnrichmentAttributes(
     descriptionBlocks: enrichment.descriptionBlocks,
     warranty: enrichment.warranty,
     cardBullets: enrichment.cardBullets,
-    facets: mergeFacetOverrides(extracted, facetOverrides),
+    facets: mergeFacetOverrides(
+      extracted,
+      facetOverrides,
+      product.categorySlug,
+    ),
   };
 }

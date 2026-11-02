@@ -1,11 +1,14 @@
 /**
  * Recompute Product.attributes.facets for approved catalogue SKUs.
- * Preserves other enrichment fields; refreshes facets from title (+ admin
- * values already stored when present as the previous facets baseline).
+ * Always scopes keys to the product's category so monitors never keep
+ * processor/laptop attributes (and vice versa).
  */
 import type { PrismaClient } from "@prisma/client";
 import { Prisma } from "@prisma/client";
-import { extractProductFacets } from "@/modules/catalogue/category-facets";
+import {
+  extractProductFacets,
+  scopeFacetsToCategory,
+} from "@/modules/catalogue/category-facets";
 import type { EnrichmentAttributes } from "@/modules/catalogue/product-enrichment-types";
 import { CATALOGUE_OWNER_TRADE_NAME } from "@/modules/catalogue/constants";
 
@@ -23,6 +26,7 @@ export type BackfillFacetsResult = {
   scanned: number;
   updated: number;
   skipped: number;
+  strippedForeignKeys: number;
 };
 
 export async function backfillProductFacets(
@@ -52,21 +56,28 @@ export async function backfillProductFacets(
 
   let updated = 0;
   let skipped = 0;
+  let strippedForeignKeys = 0;
 
   for (const product of products) {
     const categorySlug = product.category.slug;
     const existing = (product.attributes as EnrichmentAttributes | null) ?? null;
     const previousFacets = existing?.facets ?? {};
+    const previousScoped = scopeFacetsToCategory(categorySlug, previousFacets);
+    strippedForeignKeys +=
+      Object.keys(previousFacets).length - Object.keys(previousScoped).length;
+
     const extracted = extractProductFacets({
       slug: product.slug,
       title: product.title,
       categorySlug,
     });
-    // Title extraction wins on shared keys; keep any admin-only keys not
-    // produced by the extractor so manual edits are not wiped.
-    const nextFacets = { ...previousFacets, ...extracted };
+    // Keep scoped admin-only keys; title extraction wins on shared keys.
+    const merged = scopeFacetsToCategory(categorySlug, {
+      ...previousScoped,
+      ...extracted,
+    });
 
-    if (existing?.facets && facetsEqual(previousFacets, nextFacets)) {
+    if (existing?.facets && facetsEqual(previousFacets, merged)) {
       skipped += 1;
       continue;
     }
@@ -88,7 +99,7 @@ export async function backfillProductFacets(
         },
         cardBullets: [],
       }),
-      facets: nextFacets,
+      facets: merged,
     } satisfies EnrichmentAttributes;
 
     if (!dryRun) {
@@ -97,7 +108,6 @@ export async function backfillProductFacets(
         data: { attributes: nextAttributes as Prisma.InputJsonValue },
       });
 
-      // Keep dealer offer copies aligned with the catalogue shell facets.
       if (
         product.sharedListingKey &&
         product.seller.tradeName === CATALOGUE_OWNER_TRADE_NAME
@@ -115,5 +125,5 @@ export async function backfillProductFacets(
     updated += 1;
   }
 
-  return { scanned: products.length, updated, skipped };
+  return { scanned: products.length, updated, skipped, strippedForeignKeys };
 }

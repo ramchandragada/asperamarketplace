@@ -2,10 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdminFacetFields } from "@/components/admin-facet-fields";
 import { paiseFromRupees } from "@/modules/catalogue/helpers";
 import { apiErrorMessage } from "@/platform/http/api-error-message";
 
-type Category = { id: string; name: string };
+type Category = { id: string; name: string; slug: string };
 
 export function AdminCatalogueCreatePanel({
   categories,
@@ -17,6 +18,9 @@ export function AdminCatalogueCreatePanel({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
+  const [title, setTitle] = useState("");
+  const [facets, setFacets] = useState<Record<string, string>>({});
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,6 +46,7 @@ export function AdminCatalogueCreatePanel({
       countryOfOrigin: String(form.get("countryOfOrigin") ?? "") || undefined,
       hsnCode: String(form.get("hsnCode") ?? "") || undefined,
       imageUrl: String(form.get("imageUrl") ?? "").trim(),
+      facets: Object.keys(facets).length > 0 ? facets : undefined,
       variant: {
         sku: String(form.get("sku") ?? "").toUpperCase(),
         title: String(form.get("variantTitle") ?? ""),
@@ -69,6 +74,9 @@ export function AdminCatalogueCreatePanel({
       }
       setMessage(body.message ?? "Catalogue product published");
       event.currentTarget.reset();
+      setTitle("");
+      setFacets({});
+      setCategoryId(categories[0]?.id ?? "");
       setOpen(false);
       router.refresh();
     } catch {
@@ -111,7 +119,8 @@ export function AdminCatalogueCreatePanel({
               name="categoryId"
               required
               className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
-              defaultValue={categories[0]?.id}
+              value={categoryId}
+              onChange={(event) => setCategoryId(event.target.value)}
             >
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
@@ -126,9 +135,17 @@ export function AdminCatalogueCreatePanel({
               name="title"
               required
               minLength={3}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
               className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
             />
           </label>
+          <AdminFacetFields
+            categories={categories}
+            categoryId={categoryId}
+            title={title}
+            onChange={setFacets}
+          />
           <label className="text-sm sm:col-span-2">
             Summary
             <input

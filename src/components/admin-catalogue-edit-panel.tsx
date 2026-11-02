@@ -2,20 +2,38 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdminFacetFields } from "@/components/admin-facet-fields";
 import { apiErrorMessage } from "@/platform/http/api-error-message";
 
-type Category = { id: string; name: string };
+type Category = { id: string; name: string; slug: string };
 
 type EditableProduct = {
   id: string;
+  slug?: string;
   title: string;
   summary: string;
   description: string;
   status: string;
   hsnCode: string | null;
-  category: { id: string; name: string };
+  category: { id: string; name: string; slug?: string };
   images: Array<{ url: string }>;
+  attributes?: unknown;
 };
+
+function readExistingFacets(
+  attributes: unknown,
+): Record<string, string> | null {
+  if (!attributes || typeof attributes !== "object") return null;
+  const facets = (attributes as { facets?: unknown }).facets;
+  if (!facets || typeof facets !== "object") return null;
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(facets)) {
+    if (typeof value === "string" && value.trim()) {
+      result[key] = value.trim();
+    }
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
 
 export function AdminCatalogueEditPanel({
   product,
@@ -30,6 +48,11 @@ export function AdminCatalogueEditPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [categoryId, setCategoryId] = useState(product.category.id);
+  const [title, setTitle] = useState(product.title);
+  const [facets, setFacets] = useState<Record<string, string>>(
+    () => readExistingFacets(product.attributes) ?? {},
+  );
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,6 +66,7 @@ export function AdminCatalogueEditPanel({
       categoryId: String(form.get("categoryId") ?? "").trim(),
       hsnCode: String(form.get("hsnCode") ?? "").trim() || null,
       imageUrl: String(form.get("imageUrl") ?? "").trim() || undefined,
+      facets,
     };
     setBusy(true);
     try {
@@ -89,7 +113,8 @@ export function AdminCatalogueEditPanel({
           name="title"
           required
           minLength={3}
-          defaultValue={product.title}
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
           className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2"
         />
       </label>
@@ -98,7 +123,8 @@ export function AdminCatalogueEditPanel({
         <select
           name="categoryId"
           required
-          defaultValue={product.category.id}
+          value={categoryId}
+          onChange={(event) => setCategoryId(event.target.value)}
           className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2"
         >
           {categories.map((category) => (
@@ -118,6 +144,14 @@ export function AdminCatalogueEditPanel({
           className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2 font-mono"
         />
       </label>
+      <AdminFacetFields
+        categories={categories}
+        categoryId={categoryId}
+        title={title}
+        slugHint={product.slug ?? "admin-edit"}
+        initialFacets={readExistingFacets(product.attributes)}
+        onChange={setFacets}
+      />
       <label className="sm:col-span-2 text-sm">
         Summary
         <textarea

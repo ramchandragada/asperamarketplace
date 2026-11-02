@@ -60,7 +60,11 @@ export default async function AdminProductsPage({
     }),
   ]);
 
-  const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
+  const categoryOptions = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+  }));
 
   return (
     <div className="flex flex-col gap-6">

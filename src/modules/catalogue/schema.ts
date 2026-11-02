@@ -87,10 +87,24 @@ export const reviewProductSchema = z.object({
   expectedVersion: z.number().int().positive(),
 });
 
+/** Admin-authored category facet overrides (canonical strings). */
+export const adminFacetsSchema = z
+  .record(
+    z.string().trim().min(1).max(60),
+    z.string().trim().max(80),
+  )
+  .optional();
+
 export const searchProductsSchema = z.object({
   q: z.string().trim().max(120).optional(),
   categorySlug: z.string().trim().max(120).optional(),
+  /** Single brand (legacy / deep-link). Prefer brandSlugs for multi-select. */
   brandSlug: z.string().trim().max(120).optional(),
+  /** Multi-brand OR filter. When set, takes precedence over brandSlug. */
+  brandSlugs: z
+    .array(z.string().trim().min(1).max(120))
+    .max(24)
+    .optional(),
   /**
    * Category-specific multi-select facets from Product.attributes.facets.
    * Within a key values are OR'd; across keys they are AND'd.
@@ -164,6 +178,8 @@ export const createAdminCatalogueProductSchema = z
       .regex(/^\d{4,8}$/, "HSN must be 4 to 8 digits")
       .optional(),
     imageUrl: catalogueImageUrlSchema,
+    /** Category facet overrides; title autofill is applied server-side when omitted. */
+    facets: adminFacetsSchema,
     variant: z.object({
       sku: z
         .string()
@@ -197,6 +213,8 @@ export const updateAdminCatalogueProductSchema = z.object({
     .regex(/^\d{4,8}$/, "HSN must be 4 to 8 digits")
     .optional()
     .nullable(),
+  /** When provided, replaces attributes.facets (merged over title extraction). */
+  facets: adminFacetsSchema,
   /** archive = remove from storefront picker and public browse */
   status: z.enum(["approved", "archived"]).optional(),
 });

@@ -31,9 +31,17 @@ export default async function BrowsePage({
     const value = params[key];
     return typeof value === "string" ? value : undefined;
   };
+  const readAll = (key: string) => {
+    const value = params[key];
+    if (Array.isArray(value)) {
+      return value.map((entry) => entry.trim()).filter(Boolean);
+    }
+    if (typeof value === "string" && value.trim()) return [value.trim()];
+    return [];
+  };
   const query = read("q")?.trim() ?? "";
   const categorySlug = read("categorySlug")?.trim() ?? "";
-  const brandSlug = read("brandSlug")?.trim() ?? "";
+  const brandSlugParams = readAll("brandSlug");
   const sort = SORTS.has(read("sort") ?? "")
     ? (read("sort") as string)
     : query
@@ -54,19 +62,22 @@ export default async function BrowsePage({
     listBrandFilterIndex(),
   ]);
 
-  // Ignore a brand that has no products in the selected category.
+  // Ignore brands that have no products in the selected category.
   const brandsForCategory = categorySlug
     ? (brandIndex.byCategory[categorySlug] ?? [])
     : brandIndex.all;
-  const resolvedBrandSlug =
-    brandSlug && brandsForCategory.some((brand) => brand.slug === brandSlug)
-      ? brandSlug
-      : "";
+  const resolvedBrandSlugs = brandSlugParams.filter((slug) =>
+    brandsForCategory.some((brand) => brand.slug === slug),
+  );
+  const resolvedBrandSlug = resolvedBrandSlugs[0] ?? "";
 
   const result = await searchApprovedProducts({
     q: query || undefined,
     categorySlug: categorySlug || undefined,
-    brandSlug: resolvedBrandSlug || undefined,
+    brandSlug:
+      resolvedBrandSlugs.length === 1 ? resolvedBrandSlugs[0] : undefined,
+    brandSlugs:
+      resolvedBrandSlugs.length > 1 ? resolvedBrandSlugs : undefined,
     facets: Object.keys(facets).length > 0 ? facets : undefined,
     sort: sort as
       | "relevance"

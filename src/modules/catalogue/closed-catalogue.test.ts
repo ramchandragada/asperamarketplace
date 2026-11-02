@@ -20,6 +20,7 @@ describe("closed catalogue schemas", () => {
         "Fictional admin catalogue SKU used to validate closed-catalogue authoring rules.",
       imageUrl:
         "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=80",
+      facets: { socket: "AM4", tier: "Ryzen 5" },
       variant: {
         sku: "CPU-R5-5600",
         title: "Tray",
@@ -28,6 +29,7 @@ describe("closed catalogue schemas", () => {
       },
     });
     expect(parsed.variant.sku).toBe("CPU-R5-5600");
+    expect(parsed.facets?.socket).toBe("AM4");
   });
 
   it("rejects seller content fields on update schema", () => {
@@ -46,8 +48,10 @@ describe("closed catalogue schemas", () => {
       productId: PRODUCT,
       title: "Updated catalogue title for SKU",
       status: "archived",
+      facets: { generation: "RTX 50-series", vram: "16 GB" },
     });
     expect(parsed.title).toContain("Updated");
     expect(parsed.status).toBe("archived");
+    expect(parsed.facets?.vram).toBe("16 GB");
   });
 });

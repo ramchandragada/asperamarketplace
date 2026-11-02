@@ -1,60 +1,60 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import {
   extractProductFacets,
   getCategoryFacetConfig,
-  mergeFacetOverrides,
 } from "@/modules/catalogue/category-facets";
 
 type CategoryOption = { id: string; name: string; slug: string };
 
+/** Suggest facets from title for the selected category (pure helper for parents). */
+export function suggestFacetsFromTitle(input: {
+  categories: CategoryOption[];
+  categoryId: string;
+  title: string;
+  slugHint?: string;
+}): Record<string, string> {
+  const categorySlug =
+    input.categories.find((entry) => entry.id === input.categoryId)?.slug ?? "";
+  if (!categorySlug || !input.title.trim()) return {};
+  return extractProductFacets({
+    slug: input.slugHint ?? "admin-draft",
+    title: input.title.trim(),
+    categorySlug,
+  });
+}
+
 /**
  * Category-specific facet editors for admin catalogue create/edit.
- * Title changes autofill suggestions; admins can override any value.
+ * Fully controlled — parent owns values and title autofill.
  */
 export function AdminFacetFields({
   categories,
   categoryId,
   title,
   slugHint = "admin-draft",
-  initialFacets,
+  values,
   onChange,
 }: {
   categories: CategoryOption[];
   categoryId: string;
   title: string;
-  /** Existing product slug improves laptop override lookup on edit. */
   slugHint?: string;
-  initialFacets?: Record<string, string> | null;
-  onChange: (facets: Record<string, string>) => void;
+  values: Record<string, string>;
+  onChange: (
+    facets: Record<string, string>,
+    meta?: { refill?: boolean },
+  ) => void;
 }) {
   const categorySlug =
     categories.find((entry) => entry.id === categoryId)?.slug ?? "";
   const config = getCategoryFacetConfig(categorySlug);
-
-  const suggested = useMemo(() => {
-    if (!categorySlug || !title.trim()) return {};
-    return extractProductFacets({
-      slug: slugHint,
-      title: title.trim(),
-      categorySlug,
-    });
-  }, [categorySlug, title, slugHint]);
-
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    mergeFacetOverrides(suggested, initialFacets ?? null),
-  );
-  const [touched, setTouched] = useState(false);
-
-  // When category/title change and admin has not edited yet, follow autofill.
-  useEffect(() => {
-    if (touched) return;
-    const next = mergeFacetOverrides(suggested, initialFacets ?? null);
-    setValues(next);
-    onChange(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-autofill from title/category
-  }, [suggested, initialFacets, touched]);
+  const suggested = suggestFacetsFromTitle({
+    categories,
+    categoryId,
+    title,
+    slugHint,
+  });
 
   if (!config || config.facets.length === 0) {
     return (
@@ -66,18 +66,9 @@ export function AdminFacetFields({
   }
 
   function setFacet(key: string, value: string) {
-    setTouched(true);
     const next = { ...values };
     if (!value.trim()) delete next[key];
     else next[key] = value.trim();
-    setValues(next);
-    onChange(next);
-  }
-
-  function refillFromTitle() {
-    setTouched(false);
-    const next = { ...suggested };
-    setValues(next);
     onChange(next);
   }
 
@@ -94,7 +85,7 @@ export function AdminFacetFields({
         <button
           type="button"
           className="rounded-md border border-border px-2.5 py-1 text-xs font-medium hover:border-accent"
-          onClick={refillFromTitle}
+          onClick={() => onChange({ ...suggested }, { refill: true })}
         >
           Refill from title
         </button>

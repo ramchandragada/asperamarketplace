@@ -618,13 +618,14 @@ function CatalogueBrowseInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const histogramActive = Boolean(categorySlug) || brandSlugs.length > 0;
+  // Ignore stale histogram state when no category/brand slice is active.
+  const liveFacetCounts = histogramActive ? facetCounts : null;
+  const liveBrandCounts = histogramActive ? brandCounts : {};
+
   // Live facet / brand counts for the current filter slice.
   useEffect(() => {
-    if (!categorySlug && brandSlugs.length === 0) {
-      setFacetCounts(null);
-      setBrandCounts({});
-      return;
-    }
+    if (!histogramActive) return;
     const params = new URLSearchParams();
     if (query.trim()) params.set("q", query.trim());
     if (categorySlug) params.set("categorySlug", categorySlug);
@@ -683,6 +684,7 @@ function CatalogueBrowseInner({
       window.clearTimeout(timer);
     };
   }, [
+    histogramActive,
     query,
     categorySlug,
     brandSlugs,
@@ -1014,7 +1016,7 @@ function CatalogueBrowseInner({
         <CategoryFacetFilters
           categorySlug={categorySlug}
           selected={facets}
-          counts={facetCounts}
+          counts={liveFacetCounts}
           openSections={openSections}
           onToggleSection={toggleSection}
           onChange={(nextFacets) => {
@@ -1047,9 +1049,9 @@ function CatalogueBrowseInner({
           <ul className="space-y-2">
             {(brandShowAll ? filteredBrands : filteredBrands.slice(0, 6)).map(
               (brand) => {
-                const count = brandCounts[brand.slug];
+                const count = liveBrandCounts[brand.slug];
                 const hideEmpty =
-                  Object.keys(brandCounts).length > 0 &&
+                  Object.keys(liveBrandCounts).length > 0 &&
                   (count == null || count <= 0) &&
                   !brandSlugs.includes(brand.slug);
                 if (hideEmpty) return null;

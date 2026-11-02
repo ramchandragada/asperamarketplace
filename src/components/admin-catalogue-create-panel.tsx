@@ -2,7 +2,10 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AdminFacetFields } from "@/components/admin-facet-fields";
+import {
+  AdminFacetFields,
+  suggestFacetsFromTitle,
+} from "@/components/admin-facet-fields";
 import { paiseFromRupees } from "@/modules/catalogue/helpers";
 import { apiErrorMessage } from "@/platform/http/api-error-message";
 
@@ -21,6 +24,7 @@ export function AdminCatalogueCreatePanel({
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [title, setTitle] = useState("");
   const [facets, setFacets] = useState<Record<string, string>>({});
+  const [facetsTouched, setFacetsTouched] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -76,6 +80,7 @@ export function AdminCatalogueCreatePanel({
       event.currentTarget.reset();
       setTitle("");
       setFacets({});
+      setFacetsTouched(false);
       setCategoryId(categories[0]?.id ?? "");
       setOpen(false);
       router.refresh();
@@ -120,7 +125,19 @@ export function AdminCatalogueCreatePanel({
               required
               className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
               value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
+              onChange={(event) => {
+                const nextCategoryId = event.target.value;
+                setCategoryId(nextCategoryId);
+                if (!facetsTouched) {
+                  setFacets(
+                    suggestFacetsFromTitle({
+                      categories,
+                      categoryId: nextCategoryId,
+                      title,
+                    }),
+                  );
+                }
+              }}
             >
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
@@ -136,7 +153,19 @@ export function AdminCatalogueCreatePanel({
               required
               minLength={3}
               value={title}
-              onChange={(event) => setTitle(event.target.value)}
+              onChange={(event) => {
+                const nextTitle = event.target.value;
+                setTitle(nextTitle);
+                if (!facetsTouched) {
+                  setFacets(
+                    suggestFacetsFromTitle({
+                      categories,
+                      categoryId,
+                      title: nextTitle,
+                    }),
+                  );
+                }
+              }}
               className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2"
             />
           </label>
@@ -144,7 +173,11 @@ export function AdminCatalogueCreatePanel({
             categories={categories}
             categoryId={categoryId}
             title={title}
-            onChange={setFacets}
+            values={facets}
+            onChange={(next, meta) => {
+              setFacetsTouched(!meta?.refill);
+              setFacets(next);
+            }}
           />
           <label className="text-sm sm:col-span-2">
             Summary

@@ -2,7 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AdminFacetFields } from "@/components/admin-facet-fields";
+import {
+  AdminFacetFields,
+  suggestFacetsFromTitle,
+} from "@/components/admin-facet-fields";
+import { mergeFacetOverrides } from "@/modules/catalogue/category-facets";
 import { apiErrorMessage } from "@/platform/http/api-error-message";
 
 type Category = { id: string; name: string; slug: string };
@@ -50,9 +54,11 @@ export function AdminCatalogueEditPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState(product.category.id);
   const [title, setTitle] = useState(product.title);
+  const existingFacets = readExistingFacets(product.attributes);
   const [facets, setFacets] = useState<Record<string, string>>(
-    () => readExistingFacets(product.attributes) ?? {},
+    () => existingFacets ?? {},
   );
+  const [facetsTouched, setFacetsTouched] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -114,7 +120,23 @@ export function AdminCatalogueEditPanel({
           required
           minLength={3}
           value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          onChange={(event) => {
+            const nextTitle = event.target.value;
+            setTitle(nextTitle);
+            if (!facetsTouched) {
+              setFacets(
+                mergeFacetOverrides(
+                  suggestFacetsFromTitle({
+                    categories,
+                    categoryId,
+                    title: nextTitle,
+                    slugHint: product.slug ?? "admin-edit",
+                  }),
+                  existingFacets,
+                ),
+              );
+            }
+          }}
           className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2"
         />
       </label>
@@ -124,7 +146,23 @@ export function AdminCatalogueEditPanel({
           name="categoryId"
           required
           value={categoryId}
-          onChange={(event) => setCategoryId(event.target.value)}
+          onChange={(event) => {
+            const nextCategoryId = event.target.value;
+            setCategoryId(nextCategoryId);
+            if (!facetsTouched) {
+              setFacets(
+                mergeFacetOverrides(
+                  suggestFacetsFromTitle({
+                    categories,
+                    categoryId: nextCategoryId,
+                    title,
+                    slugHint: product.slug ?? "admin-edit",
+                  }),
+                  existingFacets,
+                ),
+              );
+            }
+          }}
           className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2"
         >
           {categories.map((category) => (
@@ -149,8 +187,11 @@ export function AdminCatalogueEditPanel({
         categoryId={categoryId}
         title={title}
         slugHint={product.slug ?? "admin-edit"}
-        initialFacets={readExistingFacets(product.attributes)}
-        onChange={setFacets}
+        values={facets}
+        onChange={(next, meta) => {
+          setFacetsTouched(!meta?.refill);
+          setFacets(next);
+        }}
       />
       <label className="sm:col-span-2 text-sm">
         Summary

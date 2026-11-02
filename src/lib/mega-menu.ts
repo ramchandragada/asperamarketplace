@@ -205,8 +205,8 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           link("DDR4 boards", "motherboards", {
             facets: { memoryType: "DDR4" },
           }),
-          link("ATX", "motherboards", { facets: { formFactor: "ATX" } }),
-          link("mATX", "motherboards", { facets: { formFactor: "mATX" } }),
+          link("ATX", "motherboards", { facets: { boardFormFactor: "ATX" } }),
+          link("mATX", "motherboards", { facets: { boardFormFactor: "mATX" } }),
           link("All motherboards", "motherboards"),
         ],
       },
@@ -269,19 +269,19 @@ export const MEGA_MENU: MegaMenuCategory[] = [
           link("DDR5", "memory-ram", { facets: { memoryType: "DDR5" } }),
           link("DDR4", "memory-ram", { facets: { memoryType: "DDR4" } }),
           link("Desktop DIMM", "memory-ram", {
-            facets: { formFactor: "Desktop (DIMM)" },
+            facets: { ramFormFactor: "Desktop (DIMM)" },
           }),
           link("Laptop SO-DIMM", "memory-ram", {
-            facets: { formFactor: "Laptop (SO-DIMM)" },
+            facets: { ramFormFactor: "Laptop (SO-DIMM)" },
           }),
         ],
       },
       {
         heading: "By capacity",
         links: [
-          link("16 GB", "memory-ram", { facets: { capacity: "16 GB" } }),
-          link("32 GB", "memory-ram", { facets: { capacity: "32 GB" } }),
-          link("64 GB", "memory-ram", { facets: { capacity: "64 GB" } }),
+          link("16 GB", "memory-ram", { facets: { ramCapacity: "16 GB" } }),
+          link("32 GB", "memory-ram", { facets: { ramCapacity: "32 GB" } }),
+          link("64 GB", "memory-ram", { facets: { ramCapacity: "64 GB" } }),
           link("All memory", "memory-ram"),
         ],
       },
@@ -303,12 +303,12 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         heading: "By interface",
         links: [
           link("NVMe (M.2)", "storage-ssd", {
-            facets: { interface: "NVMe / PCIe" },
+            facets: { storageInterface: "NVMe / PCIe" },
           }),
-          link("SATA / SSD", "storage-ssd", { facets: { interface: "SSD" } }),
-          link("HDD", "storage-ssd", { facets: { interface: "HDD" } }),
+          link("SATA / SSD", "storage-ssd", { facets: { storageInterface: "SSD" } }),
+          link("HDD", "storage-ssd", { facets: { storageInterface: "HDD" } }),
           link("USB flash", "storage-ssd", {
-            facets: { interface: "USB flash" },
+            facets: { storageInterface: "USB flash" },
           }),
         ],
       },
@@ -316,13 +316,13 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         heading: "By capacity",
         links: [
           link("Under 500 GB", "storage-ssd", {
-            facets: { capacityBand: "Under 500 GB" },
+            facets: { storageCapacityBand: "Under 500 GB" },
           }),
           link("500 GB – 1 TB", "storage-ssd", {
-            facets: { capacityBand: "500 GB – 1 TB" },
+            facets: { storageCapacityBand: "500 GB – 1 TB" },
           }),
           link("1–2 TB", "storage-ssd", {
-            facets: { capacityBand: "1–2 TB" },
+            facets: { storageCapacityBand: "1–2 TB" },
           }),
           link("All storage", "storage-ssd"),
         ],
@@ -360,7 +360,7 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         heading: "Style",
         links: [
           link("ARGB / RGB", "cabinets", {
-            facets: { lighting: "ARGB / RGB" },
+            facets: { caseLighting: "ARGB / RGB" },
           }),
           link("White builds", "cabinets", { facets: { color: "White" } }),
           link("ATX support", "cabinets", {
@@ -432,19 +432,19 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         heading: "Cooling type",
         links: [
           link("Air coolers", "cpu-coolers", {
-            facets: { type: "Air cooler" },
+            facets: { coolerType: "Air cooler" },
           }),
           link("AIO liquid", "cpu-coolers", {
-            facets: { type: "AIO liquid" },
+            facets: { coolerType: "AIO liquid" },
           }),
           link("240 mm AIO", "cpu-coolers", {
-            facets: { type: "AIO liquid", size: "240 mm" },
+            facets: { coolerType: "AIO liquid", coolerSize: "240 mm" },
           }),
           link("360 mm AIO", "cpu-coolers", {
-            facets: { type: "AIO liquid", size: "360 mm" },
+            facets: { coolerType: "AIO liquid", coolerSize: "360 mm" },
           }),
           link("RGB coolers", "cpu-coolers", {
-            facets: { lighting: "RGB / LED" },
+            facets: { coolerLighting: "RGB / LED" },
           }),
           link("All coolers", "cpu-coolers"),
         ],
@@ -467,11 +467,11 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "Type",
         links: [
-          link("Combos", "keyboard-mouse", { facets: { type: "Combo" } }),
+          link("Combos", "keyboard-mouse", { facets: { peripheralType: "Combo" } }),
           link("Keyboards", "keyboard-mouse", {
-            facets: { type: "Keyboard" },
+            facets: { peripheralType: "Keyboard" },
           }),
-          link("Mice", "keyboard-mouse", { facets: { type: "Mouse" } }),
+          link("Mice", "keyboard-mouse", { facets: { peripheralType: "Mouse" } }),
         ],
       },
       {
@@ -484,7 +484,7 @@ export const MEGA_MENU: MegaMenuCategory[] = [
             facets: { connectivity: "Wired" },
           }),
           link("Gaming", "keyboard-mouse", {
-            facets: { useCase: "Gaming" },
+            facets: { peripheralUseCase: "Gaming" },
           }),
           link("All combos", "keyboard-mouse"),
         ],
@@ -520,9 +520,9 @@ export const MEGA_MENU: MegaMenuCategory[] = [
       {
         heading: "By use",
         links: [
-          link("Gaming", "monitors", { facets: { useCase: "Gaming" } }),
+          link("Gaming", "monitors", { facets: { monitorUseCase: "Gaming" } }),
           link("Office", "monitors", {
-            facets: { useCase: "Office / general" },
+            facets: { monitorUseCase: "Office / general" },
           }),
           link("4K / UHD", "monitors", { facets: { resolution: "4K" } }),
           link("OLED", "monitors", { facets: { panelType: "OLED" } }),
@@ -550,13 +550,13 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         heading: "Capacity",
         links: [
           link("Under 800 VA", "ups", {
-            facets: { capacityBand: "Under 800 VA" },
+            facets: { upsCapacityBand: "Under 800 VA" },
           }),
           link("800–1499 VA", "ups", {
-            facets: { capacityBand: "800–1499 VA" },
+            facets: { upsCapacityBand: "800–1499 VA" },
           }),
           link("1500 VA & above", "ups", {
-            facets: { capacityBand: "1500 VA & above" },
+            facets: { upsCapacityBand: "1500 VA & above" },
           }),
         ],
       },
@@ -564,9 +564,9 @@ export const MEGA_MENU: MegaMenuCategory[] = [
         heading: "Topology",
         links: [
           link("Line-interactive", "ups", {
-            facets: { topology: "Line-interactive" },
+            facets: { upsTopology: "Line-interactive" },
           }),
-          link("Online UPS", "ups", { facets: { topology: "Online" } }),
+          link("Online UPS", "ups", { facets: { upsTopology: "Online" } }),
           link("All UPS", "ups"),
         ],
       },

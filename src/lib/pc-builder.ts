@@ -88,7 +88,7 @@ export const BUILDER_SLOTS: BuilderSlot[] = [
     label: "Keyboard",
     categorySlug: "keyboard-mouse",
     required: false,
-    facetDefaults: { type: ["Keyboard"] },
+    facetDefaults: { peripheralType: ["Keyboard"] },
     hint: "Optional Express peripheral",
   },
   {
@@ -96,7 +96,7 @@ export const BUILDER_SLOTS: BuilderSlot[] = [
     label: "Mouse",
     categorySlug: "keyboard-mouse",
     required: false,
-    facetDefaults: { type: ["Mouse"] },
+    facetDefaults: { peripheralType: ["Mouse"] },
     hint: "Optional Express peripheral",
   },
 ];
@@ -133,8 +133,9 @@ const HARD_COMPAT_FACETS = new Set([
   "socket",
   "cpuPlatform",
   "memoryType",
-  "type",
-  "formFactor",
+  "peripheralType",
+  "boardFormFactor",
+  "ramFormFactor",
 ]);
 
 export function platformForSocket(socket?: string | null): string | null {
@@ -216,11 +217,11 @@ export function compatibilityFacetsForSlot(
     const mem = resolvedMemoryType(selection);
     if (mem) filters.memoryType = [mem];
     // Desktop builds should not surface laptop SO-DIMM kits
-    filters.formFactor = ["Desktop (DIMM)"];
+    filters.ramFormFactor = ["Desktop (DIMM)"];
   }
 
-  if (slotId === "case" && mobo.formFactor) {
-    filters.motherboardSupport = caseSupportValuesForBoard(mobo.formFactor);
+  if (slotId === "case" && mobo.boardFormFactor) {
+    filters.motherboardSupport = caseSupportValuesForBoard(mobo.boardFormFactor);
   }
 
   if (slotId === "psu") {
@@ -256,17 +257,17 @@ export function compatibilityLockLabels(
     if (mem) labels.push(`${mem} only`);
     labels.push("Desktop DIMM");
   }
-  if (slotId === "case" && mobo?.facets.formFactor) {
-    labels.push(`Fits ${mobo.facets.formFactor} boards`);
+  if (slotId === "case" && mobo?.facets.boardFormFactor) {
+    labels.push(`Fits ${mobo.facets.boardFormFactor} boards`);
   }
   if (slotId === "psu" && filters.wattageBand?.length) {
     const est = estimateSystemWattage(selection);
     labels.push(`${est.recommendedPsuW} W+ recommended`);
   }
-  if (slotId === "keyboard" && filters.type?.[0]) {
+  if (slotId === "keyboard" && filters.peripheralType?.[0]) {
     labels.push("Keyboards only");
   }
-  if (slotId === "mouse" && filters.type?.[0]) {
+  if (slotId === "mouse" && filters.peripheralType?.[0]) {
     labels.push("Mice only");
   }
   return labels;
@@ -409,16 +410,18 @@ export function evaluateCompatibility(
 
   if (mobo && cabinet) {
     if (
-      mobo.facets.formFactor &&
+      mobo.facets.boardFormFactor &&
       cabinet.facets.motherboardSupport &&
       !cabinet.facets.motherboardSupport
         .toUpperCase()
-        .includes(mobo.facets.formFactor.toUpperCase().replace("MINI-", "MINI"))
+        .includes(
+          mobo.facets.boardFormFactor.toUpperCase().replace("MINI-", "MINI"),
+        )
     ) {
       // Soft warn — support strings vary
       issues.push({
         severity: "warn",
-        message: `Confirm cabinet supports ${mobo.facets.formFactor} boards.`,
+        message: `Confirm cabinet supports ${mobo.facets.boardFormFactor} boards.`,
       });
     }
   }
@@ -544,8 +547,8 @@ export const BUILDER_PRESETS: BuilderPreset[] = [
     hints: {
       cpu: { q: "Ryzen 5" },
       gpu: { facets: { generation: ["RTX 40-series", "RTX 50-series"] } },
-      memory: { facets: { capacity: ["32 GB", "16 GB"] } },
-      storage: { facets: { interface: ["NVMe / PCIe"] } },
+      memory: { facets: { ramCapacity: ["32 GB", "16 GB"] } },
+      storage: { facets: { storageInterface: ["NVMe / PCIe"] } },
     },
   },
   {
@@ -554,8 +557,8 @@ export const BUILDER_PRESETS: BuilderPreset[] = [
     description: "Multi-core CPU, fast NVMe, colour-ready workflow",
     hints: {
       cpu: { q: "Ryzen 7" },
-      memory: { facets: { capacity: ["32 GB", "64 GB"] } },
-      storage: { facets: { capacityBand: ["1–2 TB"] } },
+      memory: { facets: { ramCapacity: ["32 GB", "64 GB"] } },
+      storage: { facets: { storageCapacityBand: ["1–2 TB"] } },
       gpu: { facets: { generation: ["RTX 40-series"] } },
     },
   },
@@ -565,8 +568,8 @@ export const BUILDER_PRESETS: BuilderPreset[] = [
     description: "Reliable CPU + SSD — GPU optional, quieter power",
     hints: {
       cpu: { q: "i5" },
-      memory: { facets: { capacity: ["16 GB"] } },
-      storage: { facets: { capacityBand: ["500 GB – 1 TB"] } },
+      memory: { facets: { ramCapacity: ["16 GB"] } },
+      storage: { facets: { storageCapacityBand: ["500 GB – 1 TB"] } },
     },
   },
 ];

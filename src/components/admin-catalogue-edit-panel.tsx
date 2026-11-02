@@ -124,6 +124,8 @@ export function AdminCatalogueEditPanel({
             const nextTitle = event.target.value;
             setTitle(nextTitle);
             if (!facetsTouched) {
+              const slug =
+                categories.find((entry) => entry.id === categoryId)?.slug ?? "";
               setFacets(
                 mergeFacetOverrides(
                   suggestFacetsFromTitle({
@@ -133,6 +135,7 @@ export function AdminCatalogueEditPanel({
                     slugHint: product.slug ?? "admin-edit",
                   }),
                   existingFacets,
+                  slug,
                 ),
               );
             }
@@ -149,19 +152,17 @@ export function AdminCatalogueEditPanel({
           onChange={(event) => {
             const nextCategoryId = event.target.value;
             setCategoryId(nextCategoryId);
-            if (!facetsTouched) {
-              setFacets(
-                mergeFacetOverrides(
-                  suggestFacetsFromTitle({
-                    categories,
-                    categoryId: nextCategoryId,
-                    title,
-                    slugHint: product.slug ?? "admin-edit",
-                  }),
-                  existingFacets,
-                ),
-              );
-            }
+            // Category change always rebuilds facets for the new schema only
+            // (never carry processor keys onto a monitor, etc.).
+            setFacetsTouched(false);
+            setFacets(
+              suggestFacetsFromTitle({
+                categories,
+                categoryId: nextCategoryId,
+                title,
+                slugHint: product.slug ?? "admin-edit",
+              }),
+            );
           }}
           className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2"
         >
